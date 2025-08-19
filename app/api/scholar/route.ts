@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+// Statically import cache so it's bundled in the serverless function
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - JSON module
+import cachedStatic from "../../../data/scholar-cache.json";
 
 // Cache duration for both upstream fetch and CDN response (in seconds)
 const REVALIDATE_SECONDS = 3600; // 1 hour
@@ -69,10 +73,13 @@ function parsePubs($: cheerio.CheerioAPI) {
 
 async function loadCachedData() {
   try {
-    const filePath = path.join(process.cwd(), "data", "scholar-cache.json");
-    const raw = await fs.readFile(filePath, "utf-8");
-    const json = JSON.parse(raw);
-    return json;
+  // Prefer statically bundled cache
+  if (cachedStatic) return cachedStatic as any;
+  // Fallback to reading from filesystem (may not exist on all hosts)
+  const filePath = path.join(process.cwd(), "data", "scholar-cache.json");
+  const raw = await fs.readFile(filePath, "utf-8");
+  const json = JSON.parse(raw);
+  return json;
   } catch (e) {
     return null;
   }
