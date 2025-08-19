@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBF Lab - Interactive Control Barrier Functions</title>
+    <style>
+        /* Basic styling for the page */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px 0;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tab-button {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            color: #e2e8f0;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-button:hover {
+            background: rgba(71, 85, 105, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .demo-card {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .demo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border-color: rgba(96, 165, 250, 0.5);
+        }
+
+        .demo-canvas {
+            width: 100%;
+            height: 300px;
+            background: #1e293b;
+            border-radius: 12px;
+            border: 2px solid #334155;
+            margin: 15px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .control-group {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #334155;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .button {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .button.danger {
+            background: linear-gradient(135deg, #ef4444, #f97316);
+        }
+
+        .theory-section {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .theory-section h3 {
+            color: #60a5fa;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .math-formula {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #3b82f6;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        .status-display {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 8px;
+        }
+
+        .status-item {
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .status-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .status-label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .safe { color: #10b981; }
+        .unsafe { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        .infeasible { color: #a78bfa; }
+
+
+        .info-panel {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .grid-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background-image: 
+                linear-gradient(rgba(148, 163, 184, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, 0.3) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .parameter-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .parameter-card {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CBF Lab</h1>
+            <p>Interactive Educational Platform for Control Barrier Functions - Explore Safety-Critical Control Theory</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="tab-button active" onclick="switchTab('basic-demo', event)">Basic CBF Demo</button>
+            <button class="tab-button" onclick="switchTab('hocbf-demo', event)">High-Order CBF</button>
+            <button class="tab-button" onclick="switchTab('multi-agent', event)">Multi-Agent Systems</button>
+        </div>
+
+        <!-- Basic CBF Demo -->
+        <div id="basic-demo" class="content-section active">
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <h3>2D Point Robot with Obstacle Avoidance</h3>
+                    <div class="demo-canvas" id="basic-canvas">
+                        <div class="grid-background"></div>
+                        <svg width="100%" height="100%" id="basic-svg"></svg>
+                    </div>
+                    
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Safety Margin (α): <span id="alpha-basic-value">1.0</span></label>
+                            <input type="range" id="alpha-basic" min="0.1" max="3" step="0.1" value="1.0">
+                        </div>
+                        <div class="control-group">
+                            <label>Obstacle Size: <span id="obstacle-size-value">40</span></label>
+                            <input type="range" id="obstacle-size" min="20" max="80" step="5" value="40">
+                        </div>
+                        <div class="control-group">
+                            <label>Robot Speed: <span id="robot-speed-value">50</span></label>
+                            <input type="range" id="robot-speed" min="20" max="100" step="5" value="50">
+                        </div>
+                    </div>
+                    
+                    <div class="controls">
+                        <button class="button" onclick="resetBasicDemo()">Reset Demo</button>
+                        <button class="button" onclick="toggleBasicAnimation()">Start/Stop</button>
+                        <button class="button danger" onclick="addRandomObstacle()">Add Obstacle</button>
+                        <button class="button" onclick="clearExtraObstacles()">Clear Extra</button>
+                        <button class="button" onclick="testCBF()">Test CBF</button>
+                    </div>
+                    
+                    <div class="status-display">
+                        <div class="status-item">
+                            <div class="status-value safe" id="cbf-value-basic">1.25</div>
+                            <div class="status-label">Min CBF Value h(x)</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value safe" id="safety-status-basic">SAFE</div>
+                            <div class="status-label">Safety Status</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value" id="control-modification">0%</div>
+                            <div class="status-label">Control Modification</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-card">
+                    <h3>CBF Theory & Visualization</h3>
+                    <div class="info-panel">
+                        <h4>Control Barrier Function Math:</h4>
+                        <div class="math-formula" style="font-size: 0.9rem;">
+                            h(x) = ||x - x_obs|| - r_safe ≥ 0<br>
+                            CBF Constraint: ḣ(x) = ∇h(x)·ẋ ≥ -α·h(x)<br>
+                            where ∇h(x) = (x - x_obs) / ||x - x_obs||
+                        </div>
+                        <h4>Interactive Elements:</h4>
+                        <ul style="color: #94a3b8; line-height: 1.8;">
+                            <li><span style="color: #10b981;">●</span> Green Robot - Safe, nominal control active</li>
+                            <li><span style="color: #f59e0b;">●</span> Orange Robot - CBF safety filter modifying control</li>
+                            <li><span style="color: #ef4444;">●</span> Red Robot - Constraint violated (shouldn't happen with CBF)</li>
+                            <li><span style="color: #ef4444;">●</span> Red Obstacles - Click and drag to reposition</li>
+                            <li><span style="color: #10b981;">○</span> Dashed Circle - Safe set boundary</li>
+                            <li><span style="color: #60a5fa;">—</span> Blue Trail - Robot trajectory</li>
+                            <li><span style="color: #94a3b8;">→</span> Gray Arrow - Nominal control (desired)</li>
+                            <li><span style="color: #f59e0b;">→</span> Orange Arrow - CBF-filtered safe control</li>
+                        </ul>
+                        <p style="color: #94a3b8; margin-top: 10px;">
+                            <strong>Click on canvas to set new goal position!</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- High-Order CBF Demo -->
+        <div id="hocbf-demo" class="content-section">
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <h3>Double Integrator with HOCBF</h3>
+                    <div class="demo-canvas" id="hocbf-canvas">
+                        <div class="grid-background"></div>
+                        <svg width="100%" height="100%" id="hocbf-svg"></svg>
+                    </div>
+                    
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>α₁ (Position CBF): <span id="alpha1-hocbf-value">1.0</span></label>
+                            <input type="range" id="alpha1-hocbf" min="0.1" max="3" step="0.1" value="1.0">
+                        </div>
+                        <div class="control-group">
+                            <label>α₂ (Velocity CBF): <span id="alpha2-hocbf-value">2.0</span></label>
+                            <input type="range" id="alpha2-hocbf" min="0.1" max="5" step="0.1" value="2.0">
+                        </div>
+                        <div class="control-group">
+                            <label>Control Limit: <span id="control-limit-value">50</span></label>
+                            <input type="range" id="control-limit" min="10" max="100" step="5" value="50">
+                        </div>
+                    </div>
+                    
+                    <div class="controls">
+                        <button class="button" onclick="resetHOCBFDemo()">Reset Demo</button>
+                        <button class="button" onclick="toggleHOCBFAnimation()">Start/Stop</button>
+                        <button class="button danger" onclick="addDisturbance()">Add Disturbance</button>
+                    </div>
+                    
+                    <div class="parameter-display">
+                        <div class="parameter-card">
+                            <div class="status-value" id="position-value">250</div>
+                            <div class="status-label">Position</div>
+                        </div>
+                        <div class="parameter-card">
+                            <div class="status-value" id="velocity-value">0</div>
+                            <div class="status-label">Velocity</div>
+                        </div>
+                        <div class="parameter-card">
+                            <div class="status-value safe" id="h0-value">100</div>
+                            <div class="status-label">h₀(x)</div>
+                        </div>
+                        <div class="parameter-card">
+                            <div class="status-value" id="control-value">0</div>
+                            <div class="status-label">Control u</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-card">
+                    <h3>HOCBF Theory</h3>
+                    <div class="info-panel">
+                        <h4>High-Order Control Barrier Functions:</h4>
+                        <p style="color: #94a3b8; line-height: 1.6;">
+                            For a double integrator system (ẍ = u) with position constraint h₀(x) ≥ 0,
+                            we recursively define new barrier functions until the control u appears.
+                        </p>
+                        <div class="math-formula" style="font-size: 0.9rem;">
+                            h₀(x) = x - x_obs<br>
+                            h₁(x,ẋ) = ḣ₀ + α₁·h₀ = ẋ + α₁·h₀<br>
+                            CBF constraint: ḣ₁ + α₂·h₁ ≥ 0<br>
+                            ḣ₁ = ẍ + α₁·ḣ₀ = u + α₁·ẋ<br>
+                            (u + α₁·ẋ) + α₂·h₁ ≥ 0<br>
+                            u ≥ -α₁·ẋ - α₂·h₁
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Multi-Agent Demo -->
+        <div id="multi-agent" class="content-section">
+            <div class="demo-card">
+                <h3>Multi-Agent Collision Avoidance</h3>
+                <div class="demo-canvas" id="multiagent-canvas" style="height: 400px;">
+                    <div class="grid-background"></div>
+                    <svg width="100%" height="100%" id="multiagent-svg"></svg>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Number of Agents: <span id="num-agents-value">4</span></label>
+                        <input type="range" id="num-agents" min="2" max="8" step="1" value="4">
+                    </div>
+                    <div class="control-group">
+                        <label>Safety Distance: <span id="safety-distance-value">30</span></label>
+                        <input type="range" id="safety-distance" min="20" max="60" step="5" value="30">
+                    </div>
+                    <div class="control-group">
+                        <label>CBF Gain (α): <span id="cbf-gain-value">2.0</span></label>
+                        <input type="range" id="cbf-gain" min="0.5" max="5" step="0.5" value="2.0">
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="button" onclick="resetMultiAgentDemo()">Reset Formation</button>
+                    <button class="button" onclick="toggleMultiAgentAnimation()">Start/Stop</button>
+                    <button class="button danger" onclick="scrambleAgents()">Scramble Agents</button>
+                </div>
+                
+                <div class="status-display">
+                    <div class="status-item">
+                        <div class="status-value safe" id="min-distance">45</div>
+                        <div class="status-label">Min Distance</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="active-constraints">0</div>
+                        <div class="status-label">Active CBFs</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value safe" id="collisions">0</div>
+                        <div class="status-label">Collisions</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state for animations
+        let animations = {
+            basic: false,
+            hocbf: false,
+            multiagent: false
+        };
+
+        // Basic Demo State
+        let basicDemo = {
+            robot: { x: 100, y: 150, vx: 0, vy: 0, goalX: 300, goalY: 150 },
+            obstacles: [{ x: 200, y: 150, radius: 40 }],
+            trajectory: [],
+            alpha: 1.0,
+            speed: 50,
+            dt: 0.016, // Corresponds to ~60 FPS
+            controlModification: 0
+        };
+
+        // HOCBF Demo State
+        let hocbfDemo = {
+            position: 250,       // CORRECTED: Start in the safe zone
+            velocity: 0,
+            goalPosition: 170,   // CORRECTED: Goal is closer to the obstacle to test CBF
+            obstaclePosition: 150, // The "wall" is at x=150. Safe zone is x > 150.
+            alpha1: 1.0,
+            alpha2: 2.0,
+            controlLimit: 50,
+            dt: 0.016,
+            control: 0,
+            isCBFActive: false,
+            isInfeasible: false
+        };
+
+        // Multi-Agent Demo State
+        let multiAgentDemo = {
+            agents: [],
+            numAgents: 4,
+            safetyDistance: 30,
+            cbfGain: 2.0,
+            activeConstraints: 0,
+            collisions: 0,
+            dt: 0.016
+        };
+
+        // Function to switch between demo tabs
+        function switchTab(tabName, event) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Initialize demos when switching to them
+            if (tabName === 'basic-demo') initBasicDemo();
+            if (tabName === 'hocbf-demo') initHOCBFDemo();
+            if (tabName === 'multi-agent') initMultiAgentDemo();
+        }
+
+        // ============= BASIC CBF DEMO =============
+        function initBasicDemo() {
+            const canvas = document.getElementById('basic-canvas');
+            
+            // One-time setup of event listeners
+            if (!canvas.dataset.initialized) {
+                canvas.dataset.initialized = 'true';
+
+                // Canvas click handler for setting a new goal
+                canvas.addEventListener('click', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    // Check if clicking on an obstacle to avoid setting goal inside it
+                    let clickedObstacle = false;
+                    basicDemo.obstacles.forEach(obs => {
+                        const dist = Math.sqrt((x - obs.x)**2 + (y - obs.y)**2);
+                        if (dist < obs.radius) clickedObstacle = true;
+                    });
+                    
+                    if (!clickedObstacle) {
+                        basicDemo.robot.goalX = x;
+                        basicDemo.robot.goalY = y;
+                    }
+                });
+                
+                // Obstacle dragging logic
+                let isDragging = false;
+                let dragIndex = -1;
+                
+                canvas.addEventListener('mousedown', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    basicDemo.obstacles.forEach((obs, i) => {
+                        const dist = Math.sqrt((x - obs.x)**2 + (y - obs.y)**2);
+                        if (dist < obs.radius) {
+                            isDragging = true;
+                            dragIndex = i;
+                        }
+                    });
+                });
+                
+                canvas.addEventListener('mousemove', (e) => {
+                    if (isDragging && dragIndex >= 0) {
+                        const rect = canvas.getBoundingClientRect();
+                        basicDemo.obstacles[dragIndex].x = e.clientX - rect.left;
+                        basicDemo.obstacles[dragIndex].y = e.clientY - rect.top;
+                    }
+                });
+                
+                canvas.addEventListener('mouseup', () => {
+                    isDragging = false;
+                    dragIndex = -1;
+                });
+                canvas.addEventListener('mouseleave', () => {
+                     isDragging = false;
+                     dragIndex = -1;
+                });
+                
+                // Control listeners
+                document.getElementById('alpha-basic').addEventListener('input', (e) => {
+                    basicDemo.alpha = parseFloat(e.target.value);
+                    document.getElementById('alpha-basic-value').textContent = e.target.value;
+                });
+                
+                document.getElementById('obstacle-size').addEventListener('input', (e) => {
+                    if (basicDemo.obstacles.length > 0) {
+                       basicDemo.obstacles[0].radius = parseInt(e.target.value);
+                    }
+                    document.getElementById('obstacle-size-value').textContent = e.target.value;
+                });
+                
+                document.getElementById('robot-speed').addEventListener('input', (e) => {
+                    basicDemo.speed = parseInt(e.target.value);
+                    document.getElementById('robot-speed-value').textContent = e.target.value;
+                });
+            }
+            
+            renderBasicDemo();
+        }
+
+        function renderBasicDemo() {
+            const svg = document.getElementById('basic-svg');
+            if (!svg) return;
+            
+            // Define SVG markers for arrows
+            svg.innerHTML = `
+                <defs>
+                    <marker id="arrow-gray" markerWidth="10" markerHeight="7" 
+                            refX="10" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/>
+                    </marker>
+                    <marker id="arrow-orange" markerWidth="10" markerHeight="7" 
+                            refX="10" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#f59e0b"/>
+                    </marker>
+                </defs>
+            `;
+            
+            // Draw trajectory path
+            if (basicDemo.trajectory.length > 1) {
+                let pathData = `M ${basicDemo.trajectory[0].x} ${basicDemo.trajectory[0].y}`;
+                for (let i = 1; i < basicDemo.trajectory.length; i++) {
+                    pathData += ` L ${basicDemo.trajectory[i].x} ${basicDemo.trajectory[i].y}`;
+                }
+                svg.innerHTML += `<path d="${pathData}" stroke="#60a5fa" stroke-width="2" fill="none" opacity="0.7"/>`;
+            }
+            
+            // Draw obstacles and their safe zones
+            basicDemo.obstacles.forEach(obs => {
+                svg.innerHTML += `
+                    <circle cx="${obs.x}" cy="${obs.y}" r="${obs.radius + 20}" 
+                            fill="none" stroke="#10b981" stroke-width="2" 
+                            stroke-dasharray="5,5" opacity="0.4"/>
+                    <circle cx="${obs.x}" cy="${obs.y}" r="${obs.radius}" 
+                            fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" stroke-width="2"/>
+                `;
+            });
+            
+            // Draw goal position
+            svg.innerHTML += `
+                <circle cx="${basicDemo.robot.goalX}" cy="${basicDemo.robot.goalY}" 
+                        r="8" fill="none" stroke="#a78bfa" stroke-width="2" 
+                        stroke-dasharray="3,3"/>
+                <circle cx="${basicDemo.robot.goalX}" cy="${basicDemo.robot.goalY}" 
+                        r="3" fill="#a78bfa"/>
+            `;
+            
+            // Determine robot color based on safety status
+            let minH = Infinity;
+            basicDemo.obstacles.forEach(obs => {
+                const dist = Math.sqrt((basicDemo.robot.x - obs.x)**2 + (basicDemo.robot.y - obs.y)**2);
+                minH = Math.min(minH, dist - obs.radius);
+            });
+            
+            let robotColor = '#10b981'; // Green (safe)
+            if (minH < 0) {
+                robotColor = '#ef4444'; // Red (collision)
+            } else if (basicDemo.controlModification > 10) {
+                robotColor = '#f59e0b'; // Orange (CBF active)
+            }
+            
+            // Draw control vectors
+            if (basicDemo.nominalControl && basicDemo.safeControl) {
+                const scale = 1.5;
+                
+                // Nominal control vector (gray)
+                const nomX = basicDemo.nominalControl.x * scale;
+                const nomY = basicDemo.nominalControl.y * scale;
+                if (Math.abs(nomX) > 1 || Math.abs(nomY) > 1) {
+                    const dashArray = basicDemo.controlModification > 10 ? "5,5" : "none";
+                    svg.innerHTML += `
+                        <line x1="${basicDemo.robot.x}" y1="${basicDemo.robot.y}" 
+                              x2="${basicDemo.robot.x + nomX}" y2="${basicDemo.robot.y + nomY}" 
+                              stroke="#94a3b8" stroke-width="2" stroke-dasharray="${dashArray}"
+                              marker-end="url(#arrow-gray)" opacity="0.6"/>
+                    `;
+                }
+                
+                // Safe control vector (orange, only shown when active)
+                if (basicDemo.controlModification > 10) {
+                    const safeX = basicDemo.safeControl.x * scale;
+                    const safeY = basicDemo.safeControl.y * scale;
+                    svg.innerHTML += `
+                        <line x1="${basicDemo.robot.x}" y1="${basicDemo.robot.y}" 
+                              x2="${basicDemo.robot.x + safeX}" y2="${basicDemo.robot.y + safeY}" 
+                              stroke="#f59e0b" stroke-width="3" 
+                              marker-end="url(#arrow-orange)"/>
+                    `;
+                }
+            }
+            
+            // Draw robot
+            svg.innerHTML += `
+                <circle cx="${basicDemo.robot.x}" cy="${basicDemo.robot.y}" 
+                        r="8" fill="${robotColor}" stroke="#ffffff" stroke-width="2"/>
+            `;
+            
+            updateBasicStatus();
+        }
+
+        function updateBasicStatus() {
+            let minCBF = Infinity;
+            
+            basicDemo.obstacles.forEach(obs => {
+                const dist = Math.sqrt((basicDemo.robot.x - obs.x)**2 + (basicDemo.robot.y - obs.y)**2);
+                const cbf = dist - obs.radius;
+                minCBF = Math.min(minCBF, cbf);
+            });
+            
+            const isSafe = minCBF >= 0;
+            document.getElementById('cbf-value-basic').textContent = minCBF.toFixed(2);
+            document.getElementById('cbf-value-basic').className = `status-value ${isSafe ? 'safe' : 'unsafe'}`;
+            
+            document.getElementById('safety-status-basic').textContent = isSafe ? 'SAFE' : 'COLLISION';
+            document.getElementById('safety-status-basic').className = `status-value ${isSafe ? 'safe' : 'unsafe'}`;
+            
+            document.getElementById('control-modification').textContent = `${Math.round(basicDemo.controlModification)}%`;
+            document.getElementById('control-modification').className = `status-value ${basicDemo.controlModification > 50 ? 'warning' : ''}`;
+        }
+
+        function computeCBFControl(robot, obstacles, nominalControl, alpha) {
+            let safeControl = {...nominalControl};
+            let maxModification = 0;
+            
+            obstacles.forEach(obs => {
+                const dx = robot.x - obs.x;
+                const dy = robot.y - obs.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist < 0.001) return; // Avoid division by zero
+                
+                const h = dist - obs.radius;
+                
+                // Only apply CBF if approaching the obstacle's buffer zone
+                if (h < obs.radius * 2) {
+                    const grad_h_x = dx / dist;
+                    const grad_h_y = dy / dist;
+                    
+                    const u_dot_grad_h = safeControl.x * grad_h_x + safeControl.y * grad_h_y;
+                    
+                    // CBF constraint for single integrator (ẋ=u): ∇h·u ≥ -α·h
+                    const constraint_rhs = -alpha * h;
+                    
+                    if (u_dot_grad_h < constraint_rhs) {
+                        const delta = constraint_rhs - u_dot_grad_h;
+                        safeControl.x += delta * grad_h_x;
+                        safeControl.y += delta * grad_h_y;
+                    }
+                }
+            });
+
+            // Calculate the magnitude of the modification for visualization
+            const modMag = Math.sqrt((safeControl.x - nominalControl.x)**2 + (safeControl.y - nominalControl.y)**2);
+            const nomMag = Math.sqrt(nominalControl.x**2 + nominalControl.y**2);
+            if (nomMag > 0.1) {
+                maxModification = 100 * modMag / nomMag;
+            }
+
+            return { safeControl, modification: maxModification };
+        }
+
+        function animateBasicDemo() {
+            if (!animations.basic) return;
+            
+            const robot = basicDemo.robot;
+            const dt = basicDemo.dt;
+            
+            // Compute nominal control (move towards goal)
+            const dx = robot.goalX - robot.x;
+            const dy = robot.goalY - robot.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            
+            let nominalControl = { x: 0, y: 0 };
+            if (dist > 5) {
+                nominalControl.x = (dx / dist) * basicDemo.speed;
+                nominalControl.y = (dy / dist) * basicDemo.speed;
+            }
+            
+            // Apply CBF safety filter to get safe control
+            const { safeControl, modification } = computeCBFControl(
+                robot, 
+                basicDemo.obstacles, 
+                nominalControl, 
+                basicDemo.alpha
+            );
+            
+            basicDemo.nominalControl = nominalControl;
+            basicDemo.safeControl = safeControl;
+            basicDemo.controlModification = modification;
+            
+            // Update robot state using safe control (single integrator dynamics)
+            robot.vx = safeControl.x;
+            robot.vy = safeControl.y;
+            robot.x += robot.vx * dt;
+            robot.y += robot.vy * dt;
+            
+            // Update trajectory for drawing
+            if (basicDemo.trajectory.length === 0 || 
+                Math.hypot(robot.x - basicDemo.trajectory[basicDemo.trajectory.length-1].x, 
+                           robot.y - basicDemo.trajectory[basicDemo.trajectory.length-1].y) > 5) {
+                basicDemo.trajectory.push({x: robot.x, y: robot.y});
+                if (basicDemo.trajectory.length > 100) {
+                    basicDemo.trajectory.shift();
+                }
+            }
+            
+            renderBasicDemo();
+            requestAnimationFrame(animateBasicDemo);
+        }
+
+        function toggleBasicAnimation() {
+            animations.basic = !animations.basic;
+            if (animations.basic) {
+                animateBasicDemo();
+            }
+        }
+
+        function resetBasicDemo() {
+            basicDemo.robot = { x: 100, y: 150, vx: 0, vy: 0, goalX: 300, goalY: 150 };
+            basicDemo.trajectory = [];
+            basicDemo.controlModification = 0;
+            renderBasicDemo();
+        }
+
+        function testCBF() {
+            // Set up a direct collision course to test the CBF
+            if (basicDemo.obstacles.length === 0) return;
+            const obs = basicDemo.obstacles[0];
+            basicDemo.robot.x = obs.x - 100;
+            basicDemo.robot.y = obs.y;
+            basicDemo.robot.goalX = obs.x + 100;
+            basicDemo.robot.goalY = obs.y;
+            basicDemo.trajectory = [];
+            renderBasicDemo();
+        }
+
+        function addRandomObstacle() {
+            const canvas = document.getElementById('basic-canvas');
+            const rect = canvas.getBoundingClientRect();
+            
+            const newObs = {
+                x: 50 + Math.random() * (rect.width - 100),
+                y: 50 + Math.random() * (rect.height - 100),
+                radius: 20 + Math.random() * 30
+            };
+            
+            basicDemo.obstacles.push(newObs);
+            renderBasicDemo();
+        }
+
+        function clearExtraObstacles() {
+            basicDemo.obstacles = [basicDemo.obstacles[0]];
+            renderBasicDemo();
+        }
+
+        // ============= HIGH-ORDER CBF DEMO =============
+        function initHOCBFDemo() {
+            const canvas = document.getElementById('hocbf-canvas');
+            if (!canvas.dataset.initialized) {
+                canvas.dataset.initialized = 'true';
+                // Control listeners
+                document.getElementById('alpha1-hocbf').addEventListener('input', (e) => {
+                    hocbfDemo.alpha1 = parseFloat(e.target.value);
+                    document.getElementById('alpha1-hocbf-value').textContent = e.target.value;
+                });
+                
+                document.getElementById('alpha2-hocbf').addEventListener('input', (e) => {
+                    hocbfDemo.alpha2 = parseFloat(e.target.value);
+                    document.getElementById('alpha2-hocbf-value').textContent = e.target.value;
+                });
+                
+                document.getElementById('control-limit').addEventListener('input', (e) => {
+                    hocbfDemo.controlLimit = parseInt(e.target.value);
+                    document.getElementById('control-limit-value').textContent = e.target.value;
+                });
+            }
+            renderHOCBFDemo();
+        }
+
+        function renderHOCBFDemo() {
+            const svg = document.getElementById('hocbf-svg');
+            if (!svg) return;
+            
+            const width = svg.clientWidth || 400;
+            const height = svg.clientHeight || 300;
+            
+            svg.innerHTML = '';
+            
+            // Draw track
+            svg.innerHTML += `
+                <line x1="20" y1="${height/2}" x2="${width-20}" y2="${height/2}" 
+                      stroke="#334155" stroke-width="4"/>
+                <text x="20" y="${height/2 - 10}" fill="#94a3b8" font-size="12">0</text>
+                <text x="${width-20}" y="${height/2 - 10}" fill="#94a3b8" font-size="12" text-anchor="end">300</text>
+            `;
+            
+            // Scale positions to fit canvas width
+            const scale = (width - 40) / 300;
+            const robotX = 20 + hocbfDemo.position * scale;
+            const obstacleX = 20 + hocbfDemo.obstaclePosition * scale;
+            const goalX = 20 + hocbfDemo.goalPosition * scale;
+            
+            // Draw obstacle
+            svg.innerHTML += `
+                <rect x="${obstacleX}" y="${height/2 - 20}" width="10" height="40" 
+                      fill="#ef4444" stroke="#dc2626" stroke-width="2"/>
+            `;
+            
+            // Draw goal
+            svg.innerHTML += `
+                <circle cx="${goalX}" cy="${height/2}" r="8" 
+                        fill="none" stroke="#a78bfa" stroke-width="2" stroke-dasharray="3,3"/>
+            `;
+            
+            // Determine robot color based on status
+            const h0 = hocbfDemo.position - hocbfDemo.obstaclePosition;
+            let robotColor = '#3b82f6'; // Default blue
+            if (h0 < 0) {
+                robotColor = '#ef4444'; // Red for collision
+            } else if (hocbfDemo.isInfeasible) {
+                robotColor = '#a78bfa'; // Purple for infeasible (control limits exceeded)
+            } else if (hocbfDemo.isCBFActive) {
+                robotColor = '#f59e0b'; // Orange for CBF actively modifying control
+            }
+            
+            svg.innerHTML += `
+                <circle cx="${robotX}" cy="${height/2}" r="10" 
+                        fill="${robotColor}" stroke="#ffffff" stroke-width="2"/>
+            `;
+            
+            // Draw velocity arrow
+            if (Math.abs(hocbfDemo.velocity) > 1) {
+                const velScale = 0.5;
+                svg.innerHTML += `
+                    <line x1="${robotX}" y1="${height/2 - 15}" 
+                          x2="${robotX + hocbfDemo.velocity * velScale}" y2="${height/2 - 15}" 
+                          stroke="#60a5fa" stroke-width="3" marker-end="url(#arrow-gray)"/>
+                `;
+            }
+            
+            updateHOCBFStatus();
+        }
+
+        function updateHOCBFStatus() {
+            const h0 = hocbfDemo.position - hocbfDemo.obstaclePosition;
+            
+            document.getElementById('position-value').textContent = Math.round(hocbfDemo.position);
+            document.getElementById('velocity-value').textContent = hocbfDemo.velocity.toFixed(1);
+            document.getElementById('h0-value').textContent = h0.toFixed(1);
+            document.getElementById('h0-value').className = `status-value ${h0 >= 0 ? 'safe' : 'unsafe'}`;
+            document.getElementById('control-value').textContent = hocbfDemo.control.toFixed(1);
+        }
+
+        function animateHOCBFDemo() {
+            if (!animations.hocbf) return;
+            
+            const dt = hocbfDemo.dt;
+            
+            // Nominal control (PD controller to drive to goal)
+            const error = hocbfDemo.goalPosition - hocbfDemo.position;
+            const kp = 2.0;
+            const kd = 3.0;
+            let u_nominal = kp * error - kd * hocbfDemo.velocity;
+            
+            // Apply control limits to nominal control
+            u_nominal = Math.max(-hocbfDemo.controlLimit, 
+                                 Math.min(hocbfDemo.controlLimit, u_nominal));
+            
+            // HOCBF calculation
+            const h0 = hocbfDemo.position - hocbfDemo.obstaclePosition;
+            const h1 = hocbfDemo.velocity + hocbfDemo.alpha1 * h0;
+            
+            // Constraint from theory: u ≥ -α₁·v - α₂·h₁
+            const u_min = -hocbfDemo.alpha1 * hocbfDemo.velocity - hocbfDemo.alpha2 * h1;
+            
+            // Apply safety filter
+            let u_safe = u_nominal;
+            hocbfDemo.isCBFActive = false;
+            if (u_nominal < u_min) {
+                u_safe = u_min;
+                hocbfDemo.isCBFActive = true;
+            }
+            
+            // Check if the required safe control is achievable within actuator limits
+            hocbfDemo.isInfeasible = (u_safe > hocbfDemo.controlLimit || u_safe < -hocbfDemo.controlLimit);
+            
+            // Apply physical control limits to the final safe control
+            u_safe = Math.max(-hocbfDemo.controlLimit, 
+                              Math.min(hocbfDemo.controlLimit, u_safe));
+            
+            hocbfDemo.control = u_safe;
+            
+            // Update dynamics (double integrator: ẍ = u)
+            hocbfDemo.velocity += u_safe * dt;
+            hocbfDemo.position += hocbfDemo.velocity * dt;
+            
+            // Apply some damping to prevent oscillations
+            hocbfDemo.velocity *= 0.995;
+            
+            renderHOCBFDemo();
+            requestAnimationFrame(animateHOCBFDemo);
+        }
+
+        function toggleHOCBFAnimation() {
+            animations.hocbf = !animations.hocbf;
+            if (animations.hocbf) {
+                animateHOCBFDemo();
+            }
+        }
+
+        function resetHOCBFDemo() {
+            // CORRECTED: Reset to a valid, safe initial state
+            hocbfDemo.position = 250;
+            hocbfDemo.velocity = 0;
+            hocbfDemo.control = 0;
+            hocbfDemo.goalPosition = 170;
+            hocbfDemo.isCBFActive = false;
+            hocbfDemo.isInfeasible = false;
+            renderHOCBFDemo();
+        }
+
+        function addDisturbance() {
+            hocbfDemo.velocity += (Math.random() - 0.5) * 40;
+        }
+
+        // ============= MULTI-AGENT DEMO =============
+        function initMultiAgentDemo() {
+            const canvas = document.getElementById('multiagent-canvas');
+            if(!canvas.dataset.initialized) {
+                canvas.dataset.initialized = 'true';
+                // Control listeners
+                document.getElementById('num-agents').addEventListener('input', (e) => {
+                    multiAgentDemo.numAgents = parseInt(e.target.value);
+                    document.getElementById('num-agents-value').textContent = e.target.value;
+                    createAgents();
+                });
+                
+                document.getElementById('safety-distance').addEventListener('input', (e) => {
+                    multiAgentDemo.safetyDistance = parseInt(e.target.value);
+                    document.getElementById('safety-distance-value').textContent = e.target.value;
+                });
+                
+                document.getElementById('cbf-gain').addEventListener('input', (e) => {
+                    multiAgentDemo.cbfGain = parseFloat(e.target.value);
+                    document.getElementById('cbf-gain-value').textContent = e.target.value;
+                });
+            }
+            
+            createAgents();
+            renderMultiAgentDemo();
+        }
+
+        function createAgents() {
+            const canvas = document.getElementById('multiagent-canvas');
+            const rect = canvas.getBoundingClientRect();
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            multiAgentDemo.agents = [];
+            const num = multiAgentDemo.numAgents;
+            const radius = Math.min(rect.width, rect.height) / 3;
+
+            for (let i = 0; i < num; i++) {
+                const angle = (i / num) * 2 * Math.PI;
+                
+                multiAgentDemo.agents.push({
+                    id: i,
+                    x: centerX + radius * Math.cos(angle),
+                    y: centerY + radius * Math.sin(angle),
+                    vx: 0,
+                    vy: 0,
+                    goalX: centerX + radius * Math.cos(angle + Math.PI),
+                    goalY: centerY + radius * Math.sin(angle + Math.PI),
+                    color: `hsl(${i * 360 / num}, 70%, 60%)`
+                });
+            }
+        }
+
+        function renderMultiAgentDemo() {
+            const svg = document.getElementById('multiagent-svg');
+            if (!svg) return;
+            
+            svg.innerHTML = '';
+            
+            // Draw lines between agents that are close to violating safety
+            multiAgentDemo.agents.forEach((agent, i) => {
+                multiAgentDemo.agents.forEach((other, j) => {
+                    if (i >= j) return;
+                    const dist = Math.hypot(agent.x - other.x, agent.y - other.y);
+                    if (dist < multiAgentDemo.safetyDistance * 1.5) {
+                        const opacity = 1 - (dist - multiAgentDemo.safetyDistance) / (multiAgentDemo.safetyDistance * 0.5);
+                        svg.innerHTML += `
+                            <line x1="${agent.x}" y1="${agent.y}" 
+                                  x2="${other.x}" y2="${other.y}" 
+                                  stroke="#ef4444" stroke-width="1" 
+                                  opacity="${Math.max(0, opacity * 0.5)}"/>
+                        `;
+                    }
+                });
+            });
+            
+            // Draw agents, their goals, and safety zones
+            multiAgentDemo.agents.forEach(agent => {
+                // Safety zone
+                svg.innerHTML += `
+                    <circle cx="${agent.x}" cy="${agent.y}" r="${multiAgentDemo.safetyDistance / 2}" 
+                            fill="none" stroke="${agent.color}" stroke-width="1" 
+                            stroke-dasharray="3,3" opacity="0.3"/>
+                `;
+                
+                // Goal
+                svg.innerHTML += `
+                    <circle cx="${agent.goalX}" cy="${agent.goalY}" r="5" 
+                            fill="none" stroke="${agent.color}" stroke-width="2" 
+                            stroke-dasharray="2,2" opacity="0.6"/>
+                `;
+                
+                // Agent
+                svg.innerHTML += `
+                    <circle cx="${agent.x}" cy="${agent.y}" r="8" 
+                            fill="${agent.color}" stroke="#ffffff" stroke-width="2"/>
+                    <text x="${agent.x}" y="${agent.y + 3}" text-anchor="middle" 
+                          fill="white" font-size="10" font-weight="bold">${agent.id + 1}</text>
+                `;
+            });
+            
+            updateMultiAgentStatus();
+        }
+
+        function updateMultiAgentStatus() {
+            let minDistance = Infinity;
+            let collisions = 0;
+            
+            multiAgentDemo.agents.forEach((agent, i) => {
+                multiAgentDemo.agents.forEach((other, j) => {
+                    if (i >= j) return;
+                    const dist = Math.hypot(agent.x - other.x, agent.y - other.y);
+                    minDistance = Math.min(minDistance, dist);
+                    if (dist < 16) { // 2 * radius
+                        collisions++;
+                    }
+                });
+            });
+            
+            document.getElementById('min-distance').textContent = Math.round(minDistance);
+            document.getElementById('min-distance').className = `status-value ${minDistance > multiAgentDemo.safetyDistance ? 'safe' : 'warning'}`;
+            
+            document.getElementById('active-constraints').textContent = multiAgentDemo.activeConstraints;
+            
+            document.getElementById('collisions').textContent = multiAgentDemo.collisions > 0 ? multiAgentDemo.collisions : collisions;
+            document.getElementById('collisions').className = `status-value ${collisions === 0 ? 'safe' : 'unsafe'}`;
+        }
+
+        function animateMultiAgentDemo() {
+            if (!animations.multiagent) return;
+            
+            const dt = multiAgentDemo.dt;
+            let totalActiveConstraints = 0;
+            const agentControls = [];
+
+            // First, compute nominal control for all agents
+            multiAgentDemo.agents.forEach(agent => {
+                const dx = agent.goalX - agent.x;
+                const dy = agent.goalY - agent.y;
+                const dist = Math.hypot(dx, dy);
+                
+                let ux = 0, uy = 0;
+                if (dist > 5) {
+                    ux = (dx / dist) * 30;
+                    uy = (dy / dist) * 30;
+                }
+                agentControls.push({ux, uy});
+            });
+
+            // Second, compute safe control for all agents
+            const safeControls = [];
+            multiAgentDemo.agents.forEach((agent, i) => {
+                let { ux, uy } = agentControls[i];
+
+                // Apply CBF constraints from all other agents
+                multiAgentDemo.agents.forEach((other, j) => {
+                    if (i === j) return;
+                    
+                    const dx_rel = agent.x - other.x;
+                    const dy_rel = agent.y - other.y;
+                    const dist_rel = Math.hypot(dx_rel, dy_rel);
+                    
+                    if (dist_rel < 0.001) return;
+                    
+                    // CBF: h = ||x_i - x_j||^2 - d_safe^2
+                    const h = dist_rel * dist_rel - multiAgentDemo.safetyDistance * multiAgentDemo.safetyDistance;
+
+                    // Only apply if getting close
+                    if (h < multiAgentDemo.safetyDistance * 50) {
+                         // Lie Derivative: ḣ = 2(x_i-x_j)·(u_i-u_j)
+                         // Constraint: ḣ + αh ≥ 0
+                         // Decentralized form for u_i: 2(x_i-x_j)·u_i ≥ -αh + 2(x_i-x_j)·u_j_nom
+                         // To be fully decentralized, we use reciprocal avoidance (each takes half responsibility)
+                         // Constraint on u_i: (x_i-x_j)·u_i ≥ -(α/2)h
+                         const grad_h_x = 2 * dx_rel;
+                         const grad_h_y = 2 * dy_rel;
+
+                         const u_dot_grad_h = ux * grad_h_x + uy * grad_h_y;
+                         const constraint_rhs = - (multiAgentDemo.cbfGain / 2) * h;
+
+                         if (u_dot_grad_h < constraint_rhs) {
+                             const delta = (constraint_rhs - u_dot_grad_h) / (grad_h_x**2 + grad_h_y**2);
+                             ux += delta * grad_h_x;
+                             uy += delta * grad_h_y;
+                             totalActiveConstraints++;
+                         }
+                    }
+                });
+                safeControls.push({ux, uy});
+            });
+
+            // Third, update all agents' positions using their new safe controls
+            multiAgentDemo.agents.forEach((agent, i) => {
+                agent.vx = safeControls[i].ux;
+                agent.vy = safeControls[i].uy;
+                agent.x += agent.vx * dt;
+                agent.y += agent.vy * dt;
+
+                const canvas = document.getElementById('multiagent-canvas');
+                const rect = canvas.getBoundingClientRect();
+                agent.x = Math.max(8, Math.min(rect.width - 8, agent.x));
+                agent.y = Math.max(8, Math.min(rect.height - 8, agent.y));
+            });
+            
+            multiAgentDemo.activeConstraints = totalActiveConstraints;
+            
+            renderMultiAgentDemo();
+            requestAnimationFrame(animateMultiAgentDemo);
+        }
+
+        function toggleMultiAgentAnimation() {
+            animations.multiagent = !animations.multiagent;
+            if (animations.multiagent) {
+                multiAgentDemo.collisions = 0;
+                animateMultiAgentDemo();
+            }
+        }
+
+        function resetMultiAgentDemo() {
+            createAgents();
+            renderMultiAgentDemo();
+        }
+
+        function scrambleAgents() {
+            const canvas = document.getElementById('multiagent-canvas');
+            const rect = canvas.getBoundingClientRect();
+            
+            multiAgentDemo.agents.forEach(agent => {
+                agent.x = 20 + Math.random() * (rect.width - 40);
+                agent.y = 20 + Math.random() * (rect.height - 40);
+                agent.vx = 0;
+                agent.vy = 0;
+            });
+            
+            renderMultiAgentDemo();
+        }
+
+        // Initialize the first demo on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initBasicDemo();
+        });
+    </script>
+</body>
+</html>

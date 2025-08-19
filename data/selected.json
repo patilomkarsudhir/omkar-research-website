@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Composite adaptive Lyapunov-based deep neural networks for simultaneous online identification and control",
+    "authors": "O. S. Patil, W. E. Dixon",
+    "venue": "Preprint",
+    "year": 2025,
+    "links": {
+      "pdf": "",
+      "code": "",
+      "video": ""
+    },
+    "blurb": "Composite adaptive update with online stability guarantees and improved transient response."
+  },
+  {
+    "title": "Lyapunov-based LSTM observer for partially observed nonlinear systems",
+    "authors": "O. S. Patil, W. E. Dixon",
+    "venue": "Preprint",
+    "year": 2024,
+    "links": {
+      "pdf": "",
+      "code": "",
+      "video": ""
+    },
+    "blurb": "LSTM observer trained with a Lyapunov energy for robust state estimation."
+  }
+]

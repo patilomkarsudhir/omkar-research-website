@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "next.config.mjs",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "SCHOLAR_USER": "EtkfNQMAAAAJ"
+  }
+}

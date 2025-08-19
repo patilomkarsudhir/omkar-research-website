@@ -1,0 +1,3512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyapunov-based deep neural network - Intermittent Feedback</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 45% 55%;
+            gap: 20px;
+            height: calc(100vh - 180px);
+            min-height: 600px;
+        }
+
+        .control-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            max-height: calc(100vh - 180px);
+        }
+
+        .simulation-area {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            max-height: calc(100vh - 180px);
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h3 {
+            color: #4a5568;
+            margin-bottom: 18px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+
+        .parameter-group {
+            display: grid;
+            gap: 15px;
+        }
+
+        .parameter {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .parameter label {
+            font-weight: 500;
+            color: #2d3748;
+            font-size: 1rem;
+        }
+
+        .parameter input[type="range"] {
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .parameter input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+
+        .parameter input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+
+        .parameter-value {
+            font-size: 1.1rem;
+            color: #667eea;
+            font-weight: 600;
+            text-align: center;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .control-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 18px 25px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #forceFeedbackLoss {
+            background: linear-gradient(135deg, #f56565, #e53e3e) !important;
+            border: none !important;
+            color: white !important;
+        }
+
+        #forceFeedbackLoss:hover {
+            background: linear-gradient(135deg, #e53e3e, #c53030) !important;
+        }
+
+        #restoreFeedback {
+            background: linear-gradient(135deg, #48bb78, #38a169) !important;
+            border: none !important;
+            color: white !important;
+        }
+
+        #restoreFeedback:hover {
+            background: linear-gradient(135deg, #38a169, #2f855a) !important;
+        }
+
+        .controller-selection {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .controller-btn {
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            color: #4a5568;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .controller-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .controller-btn:hover:not(.active) {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .charts-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 360px 340px;
+            gap: 15px;
+            min-height: 0;
+            overflow-y: auto;
+            padding-bottom: 25px;
+            max-height: calc(100vh - 280px);
+        }
+
+        .chart-panel {
+            background: white;
+            border-radius: 10px;
+            padding: 12px;
+            padding-bottom: 60px; /* Extra space for 3D controls */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        canvas {
+            width: 100%;
+            height: calc(100% - 80px); /* More space reserved for 3D controls */
+            border-radius: 5px;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            flex-shrink: 0;
+        }
+
+        .metric {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 10px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .metric-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        .feedback-active {
+            background: linear-gradient(135deg, #48bb78, #38a169) !important;
+        }
+
+        .feedback-lost {
+            background: linear-gradient(135deg, #f56565, #e53e3e) !important;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .status.running {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+        }
+
+        .status.stopped {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+            color: white;
+            box-shadow: 0 4px 12px rgba(237, 137, 54, 0.3);
+        }
+
+        .initial-conditions-display {
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .condition-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 5px 0;
+        }
+
+        .condition-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .condition-label {
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.9rem;
+            min-width: 120px;
+        }
+
+        .condition-values {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #667eea;
+            font-weight: 500;
+            text-align: right;
+        }
+
+        .scenario-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .scenario-modal.show {
+            display: flex;
+        }
+
+        .scenario-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .scenario-content h3 {
+            margin-bottom: 20px;
+            color: #4a5568;
+            text-align: center;
+        }
+
+        .scenario-options {
+            display: grid;
+            gap: 10px;
+        }
+
+        .scenario-option {
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .scenario-option:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .scenario-option h4 {
+            color: #2d3748;
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+
+        .scenario-option p {
+            color: #718096;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .btn-modal {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-modal.cancel {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-modal.cancel:hover {
+            background: #cbd5e0;
+        }
+
+        .trajectory-3d {
+            grid-column: 1 / 3;
+            grid-row: 1;
+        }
+
+        .trajectory-3d canvas {
+            height: calc(100% - 90px) !important; /* Extra space for 3D controls */
+        }
+
+        .controls-3d {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            z-index: 10;
+        }
+
+        .animation-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .animation-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .animation-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+
+        .animation-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .view-controls {
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+            flex-wrap: wrap;
+        }
+
+        .view-controls label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #4a5568;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .view-controls label:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .view-controls input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #667eea;
+        }
+
+        #trajectory3D {
+            position: relative;
+        }
+
+        @media (max-width: 1200px) {
+            .controls-3d {
+                flex-direction: column;
+                gap: 12px;
+                padding: 20px;
+                bottom: 20px;
+            }
+            
+            .view-controls {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 12px;
+            }
+            
+            .animation-controls {
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                height: auto;
+                min-height: calc(100vh - 180px);
+            }
+            
+            .control-panel {
+                max-height: 50vh;
+                overflow-y: auto;
+            }
+
+            .simulation-area {
+                max-height: 70vh;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .metrics {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(3, 1fr);
+            }
+
+            .scenario-content {
+                width: 95%;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .charts-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 250px 250px 250px;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+
+            .trajectory-3d {
+                grid-column: 1;
+                grid-row: 1;
+            }
+
+            .metrics {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            .metric {
+                padding: 12px 8px;
+            }
+
+            .metric-value {
+                font-size: 1.1rem;
+            }
+
+            .metric-label {
+                font-size: 0.7rem;
+            }
+
+            .control-buttons {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .controller-selection {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .condition-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 3px;
+            }
+
+            .condition-label {
+                min-width: auto;
+            }
+
+            .condition-values {
+                text-align: left;
+                font-size: 0.8rem;
+            }
+
+            .scenario-content {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            .scenario-option {
+                padding: 12px;
+            }
+
+            .scenario-option h4 {
+                font-size: 0.9rem;
+            }
+
+            .scenario-option p {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚁 Lyapunov-based deep neural network - Intermittent Feedback</h1>
+            <p>Real-time simulation with Jacobian-based neural network adaptation and intermittent feedback loss</p>
+        </div>
+
+        <div class="main-grid">
+            <div class="control-panel">
+                <div class="section">
+                    <h3>Controller Type</h3>
+                    <div class="controller-selection three-column">
+                        <div class="controller-btn active" id="compositeBtn" data-controller="composite">
+                            🎯 Composite Adaptive
+                        </div>
+                        <div class="controller-btn" id="trackingBtn" data-controller="tracking">
+                            📍 Tracking Only
+                        </div>
+                        <div class="controller-btn" id="pidBtn" data-controller="pid">
+                            ⚙️ PID Control
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-buttons">
+                    <button class="btn btn-primary" id="startBtn">Start Simulation</button>
+                    <button class="btn btn-secondary" id="resetBtn">Reset</button>
+                </div>
+
+                <div class="control-buttons">
+                    <button class="btn btn-secondary" id="newConditionsBtn">New Initial Conditions</button>
+                    <button class="btn btn-secondary" id="scenarioBtn">Load Scenario</button>
+                </div>
+
+                <div id="status" class="status stopped">Simulation Stopped</div>
+
+                <div class="section">
+                    <h3>Initial Conditions</h3>
+                    <div class="initial-conditions-display">
+                        <div class="condition-group">
+                            <div class="condition-label">Position (m):</div>
+                            <div class="condition-values" id="initialPosition">x: 0.10, y: -0.10, z: 0.05</div>
+                        </div>
+                        <div class="condition-group">
+                            <div class="condition-label">Orientation (rad):</div>
+                            <div class="condition-values" id="initialOrientation">φ: 0.02, θ: -0.02, ψ: 0.01</div>
+                        </div>
+                        <div class="condition-group">
+                            <div class="condition-label">Velocity (m/s):</div>
+                            <div class="condition-values" id="initialVelocity">ẋ: 0.00, ẏ: 0.00, ż: 0.00</div>
+                        </div>
+                        <div class="condition-group">
+                            <div class="condition-label">Angular Rate (rad/s):</div>
+                            <div class="condition-values" id="initialAngularRate">φ̇: 0.00, θ̇: 0.00, ψ̇: 0.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section adaptive-params">
+                    <h3>Neural Network</h3>
+                    <div class="parameter-group">
+                        <div class="parameter">
+                            <label for="hiddenDim">Hidden Dimension</label>
+                            <input type="range" id="hiddenDim" min="16" max="128" value="32" step="16">
+                            <span class="parameter-value" id="hiddenDimValue">32</span>
+                        </div>
+                        <div class="parameter">
+                            <label for="numBlocks">Number of Blocks</label>
+                            <input type="range" id="numBlocks" min="1" max="6" value="3" step="1">
+                            <span class="parameter-value" id="numBlocksValue">3</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section adaptive-params">
+                    <h3>Control Gains</h3>
+                    <div class="parameter-group">
+                        <div class="parameter">
+                            <label for="alpha1">Alpha 1</label>
+                            <input type="range" id="alpha1" min="1" max="20" value="8" step="0.5">
+                            <span class="parameter-value" id="alpha1Value">8.0</span>
+                        </div>
+                        <div class="parameter">
+                            <label for="alpha2">Alpha 2</label>
+                            <input type="range" id="alpha2" min="5" max="30" value="15" step="1">
+                            <span class="parameter-value" id="alpha2Value">15.0</span>
+                        </div>
+                        <div class="parameter">
+                            <label for="alpha3">Alpha 3</label>
+                            <input type="range" id="alpha3" min="10" max="50" value="25" step="2.5">
+                            <span class="parameter-value" id="alpha3Value">25.0</span>
+                        </div>
+                        <div class="parameter">
+                            <label for="kr">Kr (Robustness)</label>
+                            <input type="range" id="kr" min="5" max="25" value="12" step="1">
+                            <span class="parameter-value" id="krValue">12.0</span>
+                        </div>
+                        <div class="parameter">
+                            <label for="kf">Kf (Filter)</label>
+                            <input type="range" id="kf" min="10" max="50" value="30" step="2">
+                            <span class="parameter-value" id="kfValue">30.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section adaptive-params">
+                    <h3>Adaptation Gains</h3>
+                    <div class="parameter-group">
+                        <div class="parameter">
+                            <label for="gammaBase">Gamma Base</label>
+                            <input type="range" id="gammaBase" min="1" max="10" value="5" step="0.5">
+                            <span class="parameter-value" id="gammaBaseValue">5.0e-5</span>
+                        </div>
+                        <div class="parameter">
+                            <label for="beta0">Beta 0</label>
+                            <input type="range" id="beta0" min="5" max="30" value="15" step="1">
+                            <span class="parameter-value" id="beta0Value">15.0</span>
+                        </div>
+                        <div class="parameter">
+                            <label for="kappa0">Kappa 0</label>
+                            <input type="range" id="kappa0" min="15" max="50" value="30" step="2.5">
+                            <span class="parameter-value" id="kappa0Value">30.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section pid-params" style="display: none;">
+                    <h3>Position PID Gains</h3>
+                    <div class="parameter-group">
+                        <div class="parameter">
+                            <label for="kp_pos">Kp Position</label>
+                            <input type="range" id="kp_pos" min="1" max="20" value="8" step="0.5">
+                            <span class="parameter-value" id="kp_posValue">8.0</span>
+                        </div>
+                        <div class="parameter">
+                            <label for="ki_pos">Ki Position</label>
+                            <input type="range" id="ki_pos" min="0" max="5" value="1" step="0.1">
+                            <span class="parameter-value" id="ki_posValue">1.0</span>
+                        </div>
+                        <div class="parameter">
+                            <label for="kd_pos">Kd Position</label>
+                            <input type="range" id="kd_pos" min="1" max="15" value="5" step="0.5">
+                            <span class="parameter-value" id="kd_posValue">5.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section pid-params" style="display: none;">
+                    <h3>Orientation PID Gains</h3>
+                    <div class="parameter-group">
+                        <div class="parameter">
+                            <label for="kp_att">Kp Attitude</label>
+                            <input type="range" id="kp_att" min="5" max="50" value="20" step="1">
+                            <span class="parameter-value" id="kp_attValue">20.0</span>
+                        </div>
+                        <div class="parameter">
+                            <label for="ki_att">Ki Attitude</label>
+                            <input type="range" id="ki_att" min="0" max="10" value="2" step="0.5">
+                            <span class="parameter-value" id="ki_attValue">2.0</span>
+                        </div>
+                        <div class="parameter">
+                            <label for="kd_att">Kd Attitude</label>
+                            <input type="range" id="kd_att" min="2" max="20" value="8" step="0.5">
+                            <span class="parameter-value" id="kd_attValue">8.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Intermittent Feedback</h3>
+                    <div class="parameter-group">
+                        <div class="parameter">
+                            <label for="feedbackMode">Feedback Mode:</label>
+                            <select id="feedbackMode" style="padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 1rem; width: 100%;">
+                                <option value="automatic">Automatic (Probabilistic)</option>
+                                <option value="manual">Manual (User Control)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Manual Control Buttons -->
+                        <div id="manualControlSection" style="display: none;" class="parameter">
+                            <label>Manual Feedback Control:</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                                <button id="forceFeedbackLoss" class="btn btn-secondary" style="padding: 12px; font-size: 0.9rem;">
+                                    🔴 Lose Feedback
+                                </button>
+                                <button id="restoreFeedback" class="btn btn-primary" style="padding: 12px; font-size: 0.9rem;">
+                                    🟢 Restore Feedback
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Automatic Control Settings -->
+                        <div id="automaticControlSection" class="parameter">
+                            <label for="enableFeedbackLoss">Enable Automatic Loss:</label>
+                            <input type="checkbox" id="enableFeedbackLoss" checked>
+                        </div>
+                        <div id="automaticSettings">
+                            <div class="parameter">
+                                <label for="feedbackLossRate">Feedback Loss Rate (%): <span id="feedbackLossRateValue">10</span></label>
+                                <input type="range" id="feedbackLossRate" min="0" max="50" value="10" step="1">
+                            </div>
+                            <div class="parameter">
+                                <label for="feedbackLossDuration">Loss Duration (s): <span id="feedbackLossDurationValue">0.5</span></label>
+                                <input type="range" id="feedbackLossDuration" min="0.1" max="2.0" value="0.5" step="0.1">
+                            </div>
+                            <div class="parameter">
+                                <label for="feedbackRecoveryTime">Recovery Time (s): <span id="feedbackRecoveryTimeValue">0.2</span></label>
+                                <input type="range" id="feedbackRecoveryTime" min="0.1" max="1.0" value="0.2" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Environment</h3>
+                    <div class="parameter-group">
+                        <div class="parameter">
+                            <label for="windStrength">Wind Strength</label>
+                            <input type="range" id="windStrength" min="0" max="2" value="0.5" step="0.1">
+                            <span class="parameter-value" id="windStrengthValue">0.5</span>
+                        </div>
+                        <div class="parameter">
+                            <label for="dragCoeff">Drag Coefficient</label>
+                            <input type="range" id="dragCoeff" min="0.1" max="1" value="0.25" step="0.05">
+                            <span class="parameter-value" id="dragCoeffValue">0.25</span>
+                        </div>
+                        <div class="parameter">
+                            <label for="maxForce">Max Force (N)</label>
+                            <input type="range" id="maxForce" min="20" max="100" value="50" step="5">
+                            <span class="parameter-value" id="maxForceValue">50</span>
+                        </div>
+                        <div class="parameter">
+                            <label for="maxTorque">Max Torque (Nm)</label>
+                            <input type="range" id="maxTorque" min="2" max="15" value="5" step="0.5">
+                            <span class="parameter-value" id="maxTorqueValue">5.0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="simulation-area">
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value" id="positionError">0.000</div>
+                        <div class="metric-label">Position Error (m)</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="orientationError">0.000</div>
+                        <div class="metric-label">Orientation Error (rad)</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="controlEffortValue">0.000</div>
+                        <div class="metric-label">Control Effort</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="adaptationRate">0.000</div>
+                        <div class="metric-label">Adaptation Rate</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="predictionError">0.000</div>
+                        <div class="metric-label">Prediction Error</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="feedbackStatus">ACTIVE</div>
+                        <div class="metric-label">Feedback Status</div>
+                    </div>
+                </div>
+
+                <div class="charts-container">
+                    <div class="chart-panel trajectory-3d">
+                        <div class="chart-title">🚁 3D Quadrotor Simulation Environment</div>
+                        <canvas id="trajectory3D"></canvas>
+                        <div class="controls-3d">
+                            <div class="animation-controls">
+                                <button id="playAnimation" class="animation-btn play">▶️ Play</button>
+                                <button id="pauseAnimation" class="animation-btn pause">⏸️ Pause</button>
+                                <button id="resetAnimation" class="animation-btn reset">⏹️ Reset</button>
+                            </div>
+                            <div class="view-controls">
+                                <label><input type="checkbox" id="showTrajectory" checked> Trajectory Trail</label>
+                                <label><input type="checkbox" id="showGrid" checked> Grid</label>
+                                <label><input type="checkbox" id="showTarget" checked> Target</label>
+                                <label><input type="checkbox" id="showEnvironment" checked> Environment</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-panel">
+                        <div class="chart-title">📊 Position Error</div>
+                        <canvas id="positionErrorChart"></canvas>
+                    </div>
+                    <div class="chart-panel">
+                        <div class="chart-title">🎮 Control Effort</div>
+                        <canvas id="controlEffortChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scenario Selection Modal -->
+    <div class="scenario-modal" id="scenarioModal">
+        <div class="scenario-content">
+            <h3>🎯 Select Initial Condition Scenario</h3>
+            <div class="scenario-options">
+                <div class="scenario-option" data-scenario="hover">
+                    <h4>Hovering Start</h4>
+                    <p>Near-zero initial conditions, perfect for smooth trajectory tracking</p>
+                </div>
+                <div class="scenario-option" data-scenario="displaced">
+                    <h4>Large Displacement</h4>
+                    <p>Start far from origin with random orientation - tests adaptation</p>
+                </div>
+                <div class="scenario-option" data-scenario="moving">
+                    <h4>Moving Start</h4>
+                    <p>Non-zero initial velocities and angular rates</p>
+                </div>
+                <div class="scenario-option" data-scenario="inverted">
+                    <h4>Inverted Start</h4>
+                    <p>Large initial roll/pitch angles - challenging recovery</p>
+                </div>
+                <div class="scenario-option" data-scenario="spinning">
+                    <h4>High Angular Rate</h4>
+                    <p>Fast initial rotation - tests angular control</p>
+                </div>
+                <div class="scenario-option" data-scenario="random">
+                    <h4>Random Conditions</h4>
+                    <p>Completely randomized initial state</p>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-modal cancel" id="modalCancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables for 3D visualization
+        let scene, camera, renderer, controls;
+        let quadrotorMesh, targetSphere, environmentMesh;
+        let trajectoryLine, currentTrajectoryPoints = [];
+        let animationId, isAnimating = false;
+        let currentAnimationFrame = 0;
+        let skybox, clouds = [];
+        let particles = [], particleSystem;
+        let feedbackLossEffect = false;
+        
+        class Matrix {
+            constructor(rows, cols, data = null) {
+                this.rows = rows;
+                this.cols = cols;
+                this.data = data || new Array(rows * cols).fill(0);
+            }
+
+            get(i, j) {
+                return this.data[i * this.cols + j];
+            }
+
+            set(i, j, value) {
+                this.data[i * this.cols + j] = value;
+            }
+
+            static zeros(rows, cols) {
+                return new Matrix(rows, cols);
+            }
+
+            static random(rows, cols, scale = 0.1) {
+                const data = new Array(rows * cols).fill(0).map(() => (Math.random() - 0.5) * 2 * scale);
+                return new Matrix(rows, cols, data);
+            }
+
+            multiply(other) {
+                if (this.cols !== other.rows) {
+                    throw new Error('Matrix dimensions do not match for multiplication');
+                }
+                const result = Matrix.zeros(this.rows, other.cols);
+                for (let i = 0; i < this.rows; i++) {
+                    for (let j = 0; j < other.cols; j++) {
+                        let sum = 0;
+                        for (let k = 0; k < this.cols; k++) {
+                            sum += this.get(i, k) * other.get(k, j);
+                        }
+                        result.set(i, j, sum);
+                    }
+                }
+                return result;
+            }
+
+            add(other) {
+                const result = Matrix.zeros(this.rows, this.cols);
+                for (let i = 0; i < this.data.length; i++) {
+                    result.data[i] = this.data[i] + other.data[i];
+                }
+                return result;
+            }
+
+            relu() {
+                const result = Matrix.zeros(this.rows, this.cols);
+                for (let i = 0; i < this.data.length; i++) {
+                    result.data[i] = Math.max(0, this.data[i]);
+                }
+                return result;
+            }
+
+            norm() {
+                return Math.sqrt(this.data.reduce((sum, val) => sum + val * val, 0));
+            }
+
+            clone() {
+                return new Matrix(this.rows, this.cols, [...this.data]);
+            }
+
+            transpose() {
+                const result = Matrix.zeros(this.cols, this.rows);
+                for (let i = 0; i < this.rows; i++) {
+                    for (let j = 0; j < this.cols; j++) {
+                        result.set(j, i, this.get(i, j));
+                    }
+                }
+                return result;
+            }
+        }
+
+        class QuadrotorResNet {
+            constructor(inputDim = 12, outputDim = 6, hiddenDim = 32, numBlocks = 3) {
+                this.inputDim = inputDim;
+                this.outputDim = outputDim;
+                this.hiddenDim = hiddenDim;
+                this.numBlocks = numBlocks;
+                
+                this.initializeWeights();
+                this.cache = {};
+            }
+
+            initializeWeights() {
+                // Input layer
+                this.W_in = Matrix.random(this.hiddenDim, this.inputDim, 0.1);
+                this.b_in = Matrix.zeros(this.hiddenDim, 1);
+
+                // Residual blocks
+                this.blocks = [];
+                for (let i = 0; i < this.numBlocks; i++) {
+                    this.blocks.push({
+                        W1: Matrix.random(this.hiddenDim, this.hiddenDim, 0.1),
+                        b1: Matrix.zeros(this.hiddenDim, 1),
+                        W2: Matrix.random(this.hiddenDim, this.hiddenDim, 0.1),
+                        b2: Matrix.zeros(this.hiddenDim, 1)
+                    });
+                }
+
+                // Output layer
+                this.W_out = Matrix.random(this.outputDim, this.hiddenDim, 0.1);
+                this.b_out = Matrix.zeros(this.outputDim, 1);
+            }
+
+            forward(input, computeCache = false) {
+                const x = new Matrix(this.inputDim, 1, input);
+                
+                if (computeCache) {
+                    this.cache = { x: x };
+                }
+                
+                // Input layer
+                const z_in = this.W_in.multiply(x).add(this.b_in);
+                let h = z_in.relu();
+                
+                if (computeCache) {
+                    this.cache.z_in = z_in;
+                    this.cache.h_in = h;
+                    this.cache.blocks = [];
+                }
+
+                // Residual blocks
+                for (let i = 0; i < this.blocks.length; i++) {
+                    const block = this.blocks[i];
+                    const identity = h.clone();
+                    
+                    const z1 = block.W1.multiply(h).add(block.b1);
+                    const h1 = z1.relu();
+                    const z2 = block.W2.multiply(h1).add(block.b2);
+                    const pre_relu = z2.add(identity);
+                    h = pre_relu.relu();
+                    
+                    if (computeCache) {
+                        this.cache.blocks.push({
+                            identity: identity,
+                            z1: z1,
+                            h1: h1,
+                            z2: z2,
+                            pre_relu: pre_relu,
+                            h_out: h
+                        });
+                    }
+                }
+
+                // Output layer
+                const output = this.W_out.multiply(h).add(this.b_out);
+                
+                if (computeCache) {
+                    this.cache.h_final = h;
+                    this.cache.output = output;
+                }
+                
+                return output.data;
+            }
+
+            computeJacobian(outputGradient) {
+                const grad = new Matrix(this.outputDim, 1, outputGradient);
+                
+                // Backprop through output layer
+                const dW_out = this.outerProduct(grad, this.cache.h_final);
+                const db_out = grad.clone();
+                let dh = this.W_out.transpose().multiply(grad);
+                
+                // Backprop through residual blocks (in reverse order)
+                const blockGrads = [];
+                for (let i = this.numBlocks - 1; i >= 0; i--) {
+                    const blockCache = this.cache.blocks[i];
+                    
+                    // Gradient through final ReLU
+                    const dPre_relu = this.reluGradient(dh, blockCache.pre_relu);
+                    
+                    // Split gradient: one path through residual, one through identity
+                    const dZ2 = dPre_relu.clone();
+                    const dIdentity = dPre_relu.clone();
+                    
+                    // Backprop through second layer of block
+                    const dW2 = this.outerProduct(dZ2, blockCache.h1);
+                    const db2 = dZ2.clone();
+                    const dH1 = this.blocks[i].W2.transpose().multiply(dZ2);
+                    
+                    // Backprop through first ReLU
+                    const dZ1 = this.reluGradient(dH1, blockCache.z1);
+                    
+                    // Backprop through first layer of block
+                    const dW1 = this.outerProduct(dZ1, blockCache.identity);
+                    const db1 = dZ1.clone();
+                    const dH_block = this.blocks[i].W1.transpose().multiply(dZ1);
+                    
+                    // Combine gradients (residual + identity)
+                    dh = dH_block.add(dIdentity);
+                    
+                    blockGrads.unshift({ dW1, db1, dW2, db2 });
+                }
+                
+                // Backprop through input layer
+                const dH_in_relu = this.reluGradient(dh, this.cache.z_in);
+                const dW_in = this.outerProduct(dH_in_relu, this.cache.x);
+                const db_in = dH_in_relu.clone();
+                
+                // Flatten all gradients into a single vector
+                return this.flattenGradients({
+                    dW_in, db_in, blockGrads, dW_out, db_out
+                });
+            }
+
+            outerProduct(a, b) {
+                const result = Matrix.zeros(a.rows, b.rows);
+                for (let i = 0; i < a.rows; i++) {
+                    for (let j = 0; j < b.rows; j++) {
+                        result.set(i, j, a.get(i, 0) * b.get(j, 0));
+                    }
+                }
+                return result;
+            }
+
+            reluGradient(gradient, preActivation) {
+                const result = Matrix.zeros(gradient.rows, gradient.cols);
+                for (let i = 0; i < gradient.data.length; i++) {
+                    result.data[i] = preActivation.data[i] > 0 ? gradient.data[i] : 0;
+                }
+                return result;
+            }
+
+            flattenGradients(grads) {
+                const flattened = [];
+                
+                // Input layer
+                flattened.push(...grads.dW_in.data);
+                flattened.push(...grads.db_in.data);
+                
+                // Residual blocks
+                for (const blockGrad of grads.blockGrads) {
+                    flattened.push(...blockGrad.dW1.data);
+                    flattened.push(...blockGrad.db1.data);
+                    flattened.push(...blockGrad.dW2.data);
+                    flattened.push(...blockGrad.db2.data);
+                }
+                
+                // Output layer
+                flattened.push(...grads.dW_out.data);
+                flattened.push(...grads.db_out.data);
+                
+                return flattened;
+            }
+
+            updateWeights(gradients, learningRate) {
+                let idx = 0;
+                
+                // Update input layer
+                for (let i = 0; i < this.W_in.data.length; i++) {
+                    this.W_in.data[i] -= learningRate * gradients[idx++];
+                }
+                for (let i = 0; i < this.b_in.data.length; i++) {
+                    this.b_in.data[i] -= learningRate * gradients[idx++];
+                }
+                
+                // Update residual blocks
+                for (const block of this.blocks) {
+                    for (let i = 0; i < block.W1.data.length; i++) {
+                        block.W1.data[i] -= learningRate * gradients[idx++];
+                    }
+                    for (let i = 0; i < block.b1.data.length; i++) {
+                        block.b1.data[i] -= learningRate * gradients[idx++];
+                    }
+                    for (let i = 0; i < block.W2.data.length; i++) {
+                        block.W2.data[i] -= learningRate * gradients[idx++];
+                    }
+                    for (let i = 0; i < block.b2.data.length; i++) {
+                        block.b2.data[i] -= learningRate * gradients[idx++];
+                    }
+                }
+                
+                // Update output layer
+                for (let i = 0; i < this.W_out.data.length; i++) {
+                    this.W_out.data[i] -= learningRate * gradients[idx++];
+                }
+                for (let i = 0; i < this.b_out.data.length; i++) {
+                    this.b_out.data[i] -= learningRate * gradients[idx++];
+                }
+            }
+
+            getParameterCount() {
+                return this.hiddenDim * this.inputDim + this.hiddenDim + 
+                       this.numBlocks * (2 * this.hiddenDim * this.hiddenDim + 2 * this.hiddenDim) + 
+                       this.outputDim * this.hiddenDim + this.outputDim;
+            }
+        }
+
+        // 3D Visualization System
+        class QuadrotorVisualizer {
+            constructor() {
+                this.canvas = document.getElementById('trajectory3D');
+                this.init3D();
+                this.setupEventListeners();
+            }
+
+            init3D() {
+                // Create scene
+                scene = new THREE.Scene();
+                
+                // Create skybox with gradient
+                const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
+                const skyMaterial = new THREE.ShaderMaterial({
+                    uniforms: {
+                        topColor: { value: new THREE.Color(0x87CEEB) },
+                        bottomColor: { value: new THREE.Color(0xffffff) },
+                        offset: { value: 33 },
+                        exponent: { value: 0.6 }
+                    },
+                    vertexShader: `
+                        varying vec3 vWorldPosition;
+                        void main() {
+                            vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+                            vWorldPosition = worldPosition.xyz;
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform vec3 topColor;
+                        uniform vec3 bottomColor;
+                        uniform float offset;
+                        uniform float exponent;
+                        varying vec3 vWorldPosition;
+                        void main() {
+                            float h = normalize(vWorldPosition + offset).y;
+                            gl_FragColor = vec4(mix(bottomColor, topColor, max(pow(max(h, 0.0), exponent), 0.0)), 1.0);
+                        }
+                    `,
+                    side: THREE.BackSide
+                });
+                skybox = new THREE.Mesh(skyGeometry, skyMaterial);
+                scene.add(skybox);
+
+                // Create camera
+                camera = new THREE.PerspectiveCamera(75, this.canvas.clientWidth / this.canvas.clientHeight, 0.1, 1000);
+                camera.position.set(8, 6, 8);
+
+                // Create renderer
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                renderer.setClearColor(0x87CEEB, 1);
+                
+                // Replace canvas with renderer's canvas
+                this.canvas.parentNode.replaceChild(renderer.domElement, this.canvas);
+                renderer.domElement.id = 'trajectory3D';
+
+                // Add orbit controls
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+                controls.screenSpacePanning = false;
+                controls.minDistance = 3;
+                controls.maxDistance = 50;
+                controls.maxPolarAngle = Math.PI / 2;
+
+                // Enhanced lighting
+                const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+                scene.add(ambientLight);
+
+                const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                sunLight.position.set(10, 10, 5);
+                sunLight.castShadow = true;
+                sunLight.shadow.mapSize.width = 2048;
+                sunLight.shadow.mapSize.height = 2048;
+                sunLight.shadow.camera.near = 0.5;
+                sunLight.shadow.camera.far = 50;
+                sunLight.shadow.camera.left = -10;
+                sunLight.shadow.camera.right = 10;
+                sunLight.shadow.camera.top = 10;
+                sunLight.shadow.camera.bottom = -10;
+                scene.add(sunLight);
+
+                // Add fill light
+                const fillLight = new THREE.DirectionalLight(0x87CEEB, 0.3);
+                fillLight.position.set(-5, 5, -5);
+                scene.add(fillLight);
+
+                // Create enhanced environment
+                this.createEnvironment();
+                this.createQuadrotor();
+                this.createTarget();
+                this.createTrajectoryLine();
+                this.createClouds();
+                this.createParticleSystem();
+
+                // Start render loop
+                this.animate();
+
+                // Handle window resize
+                window.addEventListener('resize', () => this.onWindowResize());
+            }
+
+            createEnvironment() {
+                // Enhanced ground with texture-like appearance
+                const groundGeometry = new THREE.PlaneGeometry(40, 40, 50, 50);
+                const groundMaterial = new THREE.ShaderMaterial({
+                    uniforms: {
+                        time: { value: 0 },
+                        grassColor: { value: new THREE.Color(0x4a7c59) },
+                        dirtColor: { value: new THREE.Color(0x8b4513) }
+                    },
+                    vertexShader: `
+                        varying vec2 vUv;
+                        varying vec3 vPosition;
+                        void main() {
+                            vUv = uv;
+                            vPosition = position;
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform float time;
+                        uniform vec3 grassColor;
+                        uniform vec3 dirtColor;
+                        varying vec2 vUv;
+                        varying vec3 vPosition;
+                        
+                        float noise(vec2 p) {
+                            return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453123);
+                        }
+                        
+                        void main() {
+                            vec2 p = vUv * 20.0;
+                            float n = noise(floor(p)) * 0.3 + noise(floor(p * 2.0)) * 0.15;
+                            vec3 color = mix(grassColor, dirtColor, n);
+                            
+                            // Add grid lines
+                            vec2 grid = abs(fract(vUv * 10.0) - 0.5);
+                            float line = 1.0 - min(grid.x, grid.y) * 40.0;
+                            color = mix(color, vec3(0.3, 0.5, 0.3), clamp(line, 0.0, 0.1));
+                            
+                            gl_FragColor = vec4(color, 1.0);
+                        }
+                    `
+                });
+                
+                const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+                ground.rotation.x = -Math.PI / 2;
+                ground.receiveShadow = true;
+                scene.add(ground);
+                environmentMesh = ground;
+
+                // Add some trees/obstacles
+                this.createTrees();
+                
+                // Add landing pad
+                const padGeometry = new THREE.CylinderGeometry(1.5, 1.5, 0.1, 16);
+                const padMaterial = new THREE.MeshLambertMaterial({ color: 0xff6b6b });
+                const landingPad = new THREE.Mesh(padGeometry, padMaterial);
+                landingPad.position.set(0, 0.05, 0);
+                landingPad.castShadow = true;
+                landingPad.receiveShadow = true;
+                scene.add(landingPad);
+
+                // Add "H" on landing pad
+                const textGeometry = new THREE.RingGeometry(0.3, 0.4, 16);
+                const textMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+                const hMarker1 = new THREE.Mesh(textGeometry, textMaterial);
+                hMarker1.position.set(0, 0.11, 0);
+                hMarker1.rotation.x = -Math.PI / 2;
+                scene.add(hMarker1);
+            }
+
+            createTrees() {
+                const treePositions = [
+                    [8, 0, 8], [-8, 0, 8], [8, 0, -8], [-8, 0, -8],
+                    [12, 0, 0], [-12, 0, 0], [0, 0, 12], [0, 0, -12]
+                ];
+
+                treePositions.forEach(pos => {
+                    // Tree trunk
+                    const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.3, 2, 8);
+                    const trunkMaterial = new THREE.MeshLambertMaterial({ color: 0x8b4513 });
+                    const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+                    trunk.position.set(pos[0], 1, pos[2]);
+                    trunk.castShadow = true;
+                    trunk.receiveShadow = true;
+                    scene.add(trunk);
+
+                    // Tree crown
+                    const crownGeometry = new THREE.SphereGeometry(1.5, 8, 6);
+                    const crownMaterial = new THREE.MeshLambertMaterial({ color: 0x228b22 });
+                    const crown = new THREE.Mesh(crownGeometry, crownMaterial);
+                    crown.position.set(pos[0], 3, pos[2]);
+                    crown.castShadow = true;
+                    crown.receiveShadow = true;
+                    scene.add(crown);
+                });
+            }
+
+            createClouds() {
+                clouds = [];
+                for (let i = 0; i < 8; i++) {
+                    const cloudGeometry = new THREE.SphereGeometry(2 + Math.random() * 2, 8, 6);
+                    const cloudMaterial = new THREE.MeshLambertMaterial({ 
+                        color: 0xffffff, 
+                        transparent: true, 
+                        opacity: 0.8 
+                    });
+                    const cloud = new THREE.Mesh(cloudGeometry, cloudMaterial);
+                    cloud.position.set(
+                        (Math.random() - 0.5) * 60,
+                        15 + Math.random() * 10,
+                        (Math.random() - 0.5) * 60
+                    );
+                    cloud.userData = {
+                        velocity: new THREE.Vector3(
+                            (Math.random() - 0.5) * 0.02,
+                            0,
+                            (Math.random() - 0.5) * 0.02
+                        )
+                    };
+                    clouds.push(cloud);
+                    scene.add(cloud);
+                }
+            }
+
+            createQuadrotor() {
+                quadrotorMesh = new THREE.Group();
+
+                // Main body
+                const bodyGeometry = new THREE.BoxGeometry(0.8, 0.15, 0.8);
+                const bodyMaterial = new THREE.MeshPhongMaterial({ 
+                    color: 0x2c3e50,
+                    shininess: 100 
+                });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.castShadow = true;
+                body.receiveShadow = true;
+                quadrotorMesh.add(body);
+
+                // Arms
+                const armGeometry = new THREE.BoxGeometry(1.5, 0.08, 0.08);
+                const armMaterial = new THREE.MeshPhongMaterial({ color: 0x34495e });
+                
+                const arm1 = new THREE.Mesh(armGeometry, armMaterial);
+                arm1.rotation.z = Math.PI / 4;
+                arm1.castShadow = true;
+                quadrotorMesh.add(arm1);
+                
+                const arm2 = new THREE.Mesh(armGeometry, armMaterial);
+                arm2.rotation.z = -Math.PI / 4;
+                arm2.castShadow = true;
+                quadrotorMesh.add(arm2);
+
+                // Propellers
+                const propGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.02, 16);
+                const propMaterial = new THREE.MeshPhongMaterial({ 
+                    color: 0x3498db,
+                    transparent: true,
+                    opacity: 0.7 
+                });
+
+                const propPositions = [
+                    [0.75, 0.1, 0.75], [-0.75, 0.1, 0.75], 
+                    [0.75, 0.1, -0.75], [-0.75, 0.1, -0.75]
+                ];
+
+                quadrotorMesh.userData.propellers = [];
+                propPositions.forEach((pos, i) => {
+                    const prop = new THREE.Mesh(propGeometry, propMaterial);
+                    prop.position.set(pos[0], pos[1], pos[2]);
+                    prop.rotation.x = Math.PI / 2;
+                    prop.castShadow = true;
+                    quadrotorMesh.userData.propellers.push(prop);
+                    quadrotorMesh.add(prop);
+                });
+
+                // LED indicators
+                const ledGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+                const ledMaterials = [
+                    new THREE.MeshLambertMaterial({ color: 0xff0000, emissive: 0x440000 }),
+                    new THREE.MeshLambertMaterial({ color: 0x00ff00, emissive: 0x004400 }),
+                    new THREE.MeshLambertMaterial({ color: 0xff0000, emissive: 0x440000 }),
+                    new THREE.MeshLambertMaterial({ color: 0x00ff00, emissive: 0x004400 })
+                ];
+
+                propPositions.forEach((pos, i) => {
+                    const led = new THREE.Mesh(ledGeometry, ledMaterials[i]);
+                    led.position.set(pos[0] * 0.8, pos[1] + 0.1, pos[2] * 0.8);
+                    quadrotorMesh.add(led);
+                });
+
+                quadrotorMesh.position.set(0, 2, 0);
+                quadrotorMesh.castShadow = true;
+                scene.add(quadrotorMesh);
+            }
+
+            createTarget() {
+                const targetGeometry = new THREE.SphereGeometry(0.15, 16, 16);
+                const targetMaterial = new THREE.MeshPhongMaterial({ 
+                    color: 0xff6b6b,
+                    emissive: 0x220000,
+                    transparent: true,
+                    opacity: 0.8 
+                });
+                targetSphere = new THREE.Mesh(targetGeometry, targetMaterial);
+                
+                // Add pulsing animation data
+                targetSphere.userData = { 
+                    phase: 0,
+                    baseScale: 1,
+                    pulseSpeed: 3 
+                };
+                
+                scene.add(targetSphere);
+
+                // Target marker ring
+                const ringGeometry = new THREE.RingGeometry(0.3, 0.35, 16);
+                const ringMaterial = new THREE.MeshLambertMaterial({ 
+                    color: 0xff6b6b,
+                    transparent: true,
+                    opacity: 0.5,
+                    side: THREE.DoubleSide 
+                });
+                const targetRing = new THREE.Mesh(ringGeometry, ringMaterial);
+                targetRing.rotation.x = -Math.PI / 2;
+                targetSphere.add(targetRing);
+            }
+
+            createTrajectoryLine() {
+                const lineGeometry = new THREE.BufferGeometry();
+                const lineMaterial = new THREE.LineBasicMaterial({ 
+                    color: 0x3498db,
+                    linewidth: 3,
+                    transparent: true,
+                    opacity: 0.8 
+                });
+                trajectoryLine = new THREE.Line(lineGeometry, lineMaterial);
+                scene.add(trajectoryLine);
+            }
+
+            createParticleSystem() {
+                // Create particle system for feedback loss effects
+                const particleCount = 200;
+                const particleGeometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(particleCount * 3);
+                const colors = new Float32Array(particleCount * 3);
+                const sizes = new Float32Array(particleCount);
+
+                for (let i = 0; i < particleCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 20;
+                    positions[i * 3 + 1] = Math.random() * 10;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+
+                    colors[i * 3] = 1.0;     // Red
+                    colors[i * 3 + 1] = 0.3; // Green
+                    colors[i * 3 + 2] = 0.3; // Blue
+
+                    sizes[i] = Math.random() * 2 + 1;
+                }
+
+                particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+                particleGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+                const particleMaterial = new THREE.ShaderMaterial({
+                    uniforms: {
+                        time: { value: 0 },
+                        opacity: { value: 0.0 }
+                    },
+                    vertexShader: `
+                        attribute float size;
+                        attribute vec3 color;
+                        varying vec3 vColor;
+                        uniform float time;
+                        
+                        void main() {
+                            vColor = color;
+                            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                            
+                            // Add floating motion
+                            mvPosition.y += sin(time * 2.0 + position.x * 0.1) * 0.5;
+                            mvPosition.x += cos(time * 1.5 + position.z * 0.1) * 0.3;
+                            
+                            gl_PointSize = size * (300.0 / -mvPosition.z);
+                            gl_Position = projectionMatrix * mvPosition;
+                        }
+                    `,
+                    fragmentShader: `
+                        varying vec3 vColor;
+                        uniform float opacity;
+                        
+                        void main() {
+                            vec2 center = gl_PointCoord - vec2(0.5);
+                            float dist = length(center);
+                            if (dist > 0.5) discard;
+                            
+                            float alpha = (1.0 - dist * 2.0) * opacity;
+                            gl_FragColor = vec4(vColor, alpha);
+                        }
+                    `,
+                    transparent: true,
+                    blending: THREE.AdditiveBlending,
+                    vertexColors: true
+                });
+
+                particleSystem = new THREE.Points(particleGeometry, particleMaterial);
+                scene.add(particleSystem);
+            }
+
+            updateTrajectory(positions) {
+                if (positions.length === 0) return;
+                
+                // Limit points to improve performance (keep every 3rd point for large datasets)
+                let displayPositions = positions;
+                if (positions.length > 500) {
+                    displayPositions = positions.filter((_, i) => i % 3 === 0 || i === positions.length - 1);
+                }
+                
+                const points = displayPositions.map(pos => new THREE.Vector3(pos[0], pos[2], pos[1]));
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                trajectoryLine.geometry.dispose();
+                trajectoryLine.geometry = geometry;
+            }
+
+            updateQuadrotorPosition(state) {
+                if (!quadrotorMesh || !state) return;
+
+                const [x, y, z, phi, theta, psi] = state;
+                
+                // Store previous position for speed calculation
+                const prevPos = quadrotorMesh.userData.prevPosition || new THREE.Vector3(x, z, y);
+                const currentPos = new THREE.Vector3(x, z, y);
+                const speed = prevPos.distanceTo(currentPos);
+                
+                quadrotorMesh.position.set(x, z, y);
+                quadrotorMesh.rotation.set(phi, psi, theta);
+                quadrotorMesh.userData.prevPosition = currentPos.clone();
+
+                // Animate propellers based on speed
+                if (quadrotorMesh.userData.propellers) {
+                    const time = Date.now() * 0.01;
+                    const propSpeed = 5 + speed * 20; // Speed affects propeller rotation
+                    quadrotorMesh.userData.propellers.forEach((prop, i) => {
+                        prop.rotation.z = time * (i % 2 === 0 ? 1 : -1) * propSpeed;
+                        
+                        // Add slight tilt based on movement
+                        prop.rotation.x = Math.PI / 2 + speed * Math.sin(time + i) * 0.1;
+                    });
+                }
+
+                // Update camera to follow quadrotor smoothly with dynamic distance based on speed
+                const followDistance = 8 + speed * 5;
+                const targetPos = new THREE.Vector3(x + followDistance, z + 6, y + followDistance);
+                camera.position.lerp(targetPos, 0.02);
+                controls.target.lerp(new THREE.Vector3(x, z, y), 0.02);
+
+                // Add speed-based trail effect by adjusting trajectory opacity
+                if (trajectoryLine && trajectoryLine.material) {
+                    trajectoryLine.material.opacity = Math.min(1.0, 0.6 + speed * 2);
+                }
+            }
+
+            updateTargetPosition(desiredState) {
+                if (!targetSphere || !desiredState) return;
+
+                const [x, y, z] = desiredState;
+                targetSphere.position.set(x, z, y);
+
+                // Animate target pulsing
+                targetSphere.userData.phase += 0.1;
+                const scale = targetSphere.userData.baseScale + 
+                            Math.sin(targetSphere.userData.phase * targetSphere.userData.pulseSpeed) * 0.2;
+                targetSphere.scale.setScalar(scale);
+            }
+
+            setFeedbackLossEffect(isLost) {
+                feedbackLossEffect = isLost;
+                if (particleSystem) {
+                    particleSystem.material.uniforms.opacity.value = isLost ? 0.6 : 0.0;
+                }
+
+                // Change quadrotor appearance during feedback loss
+                if (quadrotorMesh) {
+                    const intensity = isLost ? 0.3 : 0.0;
+                    quadrotorMesh.children.forEach(child => {
+                        if (child.material) {
+                            if (child.material.emissive) {
+                                child.material.emissive.setRGB(intensity, 0, 0);
+                            }
+                        }
+                    });
+                }
+            }
+
+            setupEventListeners() {
+                // Animation controls
+                document.getElementById('playAnimation').addEventListener('click', () => {
+                    isAnimating = !isAnimating;
+                    document.getElementById('playAnimation').textContent = isAnimating ? '⏸️ Pause' : '▶️ Play';
+                });
+
+                document.getElementById('pauseAnimation').addEventListener('click', () => {
+                    isAnimating = false;
+                    document.getElementById('playAnimation').textContent = '▶️ Play';
+                });
+
+                document.getElementById('resetAnimation').addEventListener('click', () => {
+                    isAnimating = false;
+                    currentAnimationFrame = 0;
+                    document.getElementById('playAnimation').textContent = '▶️ Play';
+                });
+
+                // View controls
+                document.getElementById('showTrajectory').addEventListener('change', (e) => {
+                    if (trajectoryLine) trajectoryLine.visible = e.target.checked;
+                });
+
+                document.getElementById('showGrid').addEventListener('change', (e) => {
+                    if (environmentMesh) environmentMesh.visible = e.target.checked;
+                });
+
+                document.getElementById('showTarget').addEventListener('change', (e) => {
+                    if (targetSphere) targetSphere.visible = e.target.checked;
+                });
+
+                document.getElementById('showEnvironment').addEventListener('change', (e) => {
+                    // Toggle trees and environment objects
+                    scene.children.forEach(child => {
+                        if (child.userData && child.userData.isEnvironment) {
+                            child.visible = e.target.checked;
+                        }
+                    });
+                });
+            }
+
+            onWindowResize() {
+                const canvas = document.getElementById('trajectory3D');
+                camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+
+                const time = Date.now() * 0.001;
+
+                // Update controls
+                controls.update();
+
+                // Animate clouds
+                clouds.forEach(cloud => {
+                    cloud.position.add(cloud.userData.velocity);
+                    if (cloud.position.x > 30) cloud.position.x = -30;
+                    if (cloud.position.x < -30) cloud.position.x = 30;
+                    if (cloud.position.z > 30) cloud.position.z = -30;
+                    if (cloud.position.z < -30) cloud.position.z = 30;
+                });
+
+                // Update environment animation
+                if (environmentMesh && environmentMesh.material.uniforms) {
+                    environmentMesh.material.uniforms.time.value = time;
+                }
+
+                // Update particle system
+                if (particleSystem) {
+                    particleSystem.material.uniforms.time.value = time;
+                    
+                    // Smooth transition for feedback loss effect
+                    const targetOpacity = feedbackLossEffect ? 0.6 : 0.0;
+                    const currentOpacity = particleSystem.material.uniforms.opacity.value;
+                    particleSystem.material.uniforms.opacity.value = 
+                        currentOpacity + (targetOpacity - currentOpacity) * 0.05;
+                }
+
+                // Render scene
+                renderer.render(scene, camera);
+            }
+        }
+
+        class QuadrotorDynamics {
+            constructor() {
+                this.m = 1.5;
+                this.g = 9.81;
+                this.L = 0.3;
+                this.Ixx = 0.0347563;
+                this.Iyy = 0.0347563;
+                this.Izz = 0.0977;
+                this.kd_linear = 0.25;
+                this.kd_angular = 0.03;
+                this.wind_strength = 0.5;
+                this.maxForce = 50.0;
+                this.maxTorque = 5.0;
+            }
+
+            setWindStrength(strength) {
+                this.wind_strength = strength;
+            }
+
+            setDragCoeff(coeff) {
+                this.kd_linear = coeff;
+            }
+
+            setSaturationLimits(maxForce, maxTorque) {
+                this.maxForce = maxForce;
+                this.maxTorque = maxTorque;
+            }
+
+            getUnknownDynamics(state, stateDot, time) {
+                const [x, y, z, phi, theta, psi] = state;
+                const [x_dot, y_dot, z_dot, phi_dot, theta_dot, psi_dot] = stateDot;
+
+                // Aerodynamic drag
+                const drag_x = -this.kd_linear * x_dot * Math.abs(x_dot);
+                const drag_y = -this.kd_linear * y_dot * Math.abs(y_dot);
+                const drag_z = -this.kd_linear * z_dot * Math.abs(z_dot);
+
+                // Angular drag
+                const drag_phi = -this.kd_angular * phi_dot * Math.abs(phi_dot);
+                const drag_theta = -this.kd_angular * theta_dot * Math.abs(theta_dot);
+                const drag_psi = -this.kd_angular * psi_dot * Math.abs(psi_dot);
+
+                // Gyroscopic effects
+                const gyro_phi = (this.Iyy - this.Izz) * theta_dot * psi_dot / this.Ixx;
+                const gyro_theta = (this.Izz - this.Ixx) * phi_dot * psi_dot / this.Iyy;
+                const gyro_psi = (this.Ixx - this.Iyy) * phi_dot * theta_dot / this.Izz;
+
+                // Wind disturbances
+                const stateSum = state.reduce((a, b) => a + b, 0);
+                const wind_x = this.wind_strength * Math.sin(0.1 * time) * Math.cos(0.3 * stateSum);
+                const wind_y = this.wind_strength * Math.cos(0.15 * time) * Math.sin(0.25 * stateSum);
+                const wind_z = 0.3 * this.wind_strength * Math.sin(0.2 * time);
+
+                return [
+                    drag_x / this.m + wind_x / this.m,
+                    drag_y / this.m + wind_y / this.m,
+                    drag_z / this.m + wind_z / this.m,
+                    gyro_phi + drag_phi,
+                    gyro_theta + drag_theta,
+                    gyro_psi + drag_psi
+                ];
+            }
+
+            step(state, stateDot, controlInput, dt, time) {
+                // Apply control input saturation (realistic actuator limits)
+                const saturatedControl = [
+                    // Position control (forces)
+                    Math.max(-this.maxForce, Math.min(this.maxForce, controlInput[0])),
+                    Math.max(-this.maxForce, Math.min(this.maxForce, controlInput[1])),
+                    Math.max(-this.maxForce, Math.min(this.maxForce, controlInput[2])),
+                    // Attitude control (torques)
+                    Math.max(-this.maxTorque, Math.min(this.maxTorque, controlInput[3])),
+                    Math.max(-this.maxTorque, Math.min(this.maxTorque, controlInput[4])),
+                    Math.max(-this.maxTorque, Math.min(this.maxTorque, controlInput[5]))
+                ];
+
+                const nominalDynamics = [0, 0, -this.g, 0, 0, 0];
+                const unknownDynamics = this.getUnknownDynamics(state, stateDot, time);
+
+                const stateDdot = nominalDynamics.map((nom, i) => 
+                    nom + unknownDynamics[i] + saturatedControl[i]);
+
+                const newStateDot = stateDot.map((vel, i) => vel + dt * stateDdot[i]);
+
+                const newState = state.map((pos, i) => pos + dt * newStateDot[i]);
+
+                // Wrap angles to [-π, π]
+                for (let i = 3; i < 6; i++) {
+                    newState[i] = ((newState[i] + Math.PI) % (2 * Math.PI)) - Math.PI;
+                }
+
+                return [newState, newStateDot, unknownDynamics];
+            }
+        }
+
+        class QuadrotorAdaptiveController {
+            constructor(params) {
+                this.dnn = new QuadrotorResNet(12, 6, params.hiddenDim, params.numBlocks);
+                
+                this.alpha1 = params.alpha1;
+                this.alpha2 = params.alpha2;
+                this.alpha3 = params.alpha3;
+                this.kr = params.kr;
+                this.kf = params.kf;
+                
+                const paramCount = this.dnn.getParameterCount();
+                this.Gamma_diag = new Array(paramCount).fill(params.gammaBase * 1e-5);
+                this.beta0 = params.beta0;
+                this.kappa0 = params.kappa0;
+                
+                this.r_hat = new Array(6).fill(0);
+                this.f_hat = new Array(6).fill(0);
+                
+                // Store last known state for feedback loss scenarios
+                this.lastState = new Array(6).fill(0);
+                this.lastStateDot = new Array(6).fill(0);
+                this.lastDesiredState = new Array(6).fill(0);
+                this.lastDesiredStateDot = new Array(6).fill(0);
+                this.lastDesiredStateDdot = new Array(6).fill(0);
+                
+                this.normalizationFactor = 1.0;
+                this.maxGradientNorm = 10.0;
+            }
+
+            step(state, stateDot, desiredState, desiredStateDot, desiredStateDdot, dt, useComposite = true, feedbackAvailable = true) {
+                // Store current values for potential future use during feedback loss
+                if (feedbackAvailable && state && stateDot) {
+                    this.lastState = [...state];
+                    this.lastStateDot = [...stateDot];
+                    this.lastDesiredState = [...desiredState];
+                    this.lastDesiredStateDot = [...desiredStateDot];
+                    this.lastDesiredStateDdot = [...desiredStateDdot];
+                }
+
+                // Use estimated or measured state depending on feedback availability
+                const currentState = feedbackAvailable && state ? state : this.estimateState(dt);
+                const currentStateDot = feedbackAvailable && stateDot ? stateDot : this.estimateStateDot(dt);
+                
+                // Debug output when feedback is lost (uncomment for debugging)
+                // if (!feedbackAvailable || !state) {
+                //     console.log('Adaptive using estimated state:', currentState.map(x => x.toFixed(3)));
+                // }
+                
+                // Tracking error
+                const e = currentState.map((s, i) => s - desiredState[i]);
+                const r = currentStateDot.map((sd, i) => sd - desiredStateDot[i] + this.alpha1 * e[i]);
+
+                // DNN forward pass with caching (always use current estimated dynamics)
+                const X = [...currentState, ...currentStateDot];
+                const phi_hat = this.dnn.forward(X, true);
+
+                // Control input with DNN compensation
+                const u = desiredStateDdot.map((dd, i) => 
+                    dd - (this.alpha1 + this.kr) * r[i] + (this.alpha1 * this.alpha1 - 1) * e[i] - phi_hat[i]);
+
+                // Observer update - reduce adaptation rate during feedback loss
+                const adaptationFactor = feedbackAvailable ? 1.0 : 0.1;
+                const r_tilde = r.map((ri, i) => ri - this.r_hat[i]);
+                const r_dot_obs = u.map((ui, i) => 
+                    (ui - desiredStateDdot[i] + this.alpha1 * r[i] + this.f_hat[i] + this.alpha2 * r_tilde[i]) * adaptationFactor);
+                
+                for (let i = 0; i < 6; i++) {
+                    this.r_hat[i] += r_dot_obs[i] * dt;
+                }
+
+                const f_dot_obs = r_tilde.map((rt, i) => 
+                    (this.kf * (rt + this.alpha2 * rt) + rt) * adaptationFactor);
+                
+                for (let i = 0; i < 6; i++) {
+                    this.f_hat[i] += f_dot_obs[i] * dt;
+                }
+
+                // Prediction error
+                const E = this.f_hat.map((fh, i) => fh - phi_hat[i]);
+                const predictionErrorNorm = Math.sqrt(E.reduce((sum, val) => sum + val * val, 0));
+
+                // Adaptation signal with reduced learning during feedback loss
+                const adaptationSignal = useComposite ? 
+                    r.map((ri, i) => ri + this.alpha3 * E[i]) : r;
+
+                const signalNorm = Math.sqrt(adaptationSignal.reduce((sum, val) => sum + val * val, 0));
+                this.normalizationFactor = 1.0 / (1.0 + signalNorm);
+
+                let adaptationRate = 0;
+
+                // Jacobian-based adaptation with reduced rate during feedback loss
+                if (signalNorm > 0.001) {
+                    const jacobian = this.dnn.computeJacobian(adaptationSignal);
+                    
+                    const gradientNorm = Math.sqrt(jacobian.reduce((sum, val) => sum + val * val, 0));
+                    let clippedJacobian = jacobian;
+                    
+                    if (gradientNorm > this.maxGradientNorm) {
+                        const clipFactor = this.maxGradientNorm / gradientNorm;
+                        clippedJacobian = jacobian.map(grad => grad * clipFactor);
+                    }
+                    
+                    const weightUpdates = clippedJacobian.map((grad, i) => {
+                        return -this.Gamma_diag[i] * grad * this.normalizationFactor * dt * adaptationFactor;
+                    });
+                    
+                    adaptationRate = Math.sqrt(weightUpdates.reduce((sum, val) => sum + val * val, 0));
+                    
+                    this.dnn.updateWeights(weightUpdates, 1.0);
+                    this.projectWeights();
+                }
+
+                // Adaptive gain scheduling
+                const deadZone = 0.1;
+                if (signalNorm > deadZone && feedbackAvailable) {
+                    const gainUpdate = 1.0 + 0.001 * dt * (signalNorm - deadZone);
+                    for (let i = 0; i < this.Gamma_diag.length; i++) {
+                        this.Gamma_diag[i] = Math.min(this.Gamma_diag[i] * gainUpdate, 0.01);
+                    }
+                }
+
+                return [u, phi_hat, adaptationRate, predictionErrorNorm];
+            }
+
+            // Estimate state during feedback loss using previous dynamics knowledge
+            estimateState(dt) {
+                // Simple propagation using last known dynamics and current DNN estimate
+                const X = [...this.lastState, ...this.lastStateDot];
+                const phi_hat = this.dnn.forward(X, false);
+                
+                // Predict next state using dynamics model
+                const estimatedStateDot = this.lastStateDot.map((vel, i) => {
+                    if (i < 3) {
+                        // Position derivatives (velocities)
+                        return this.lastStateDot[i];
+                    } else {
+                        // Velocity derivatives include DNN compensation
+                        return vel + dt * (this.lastDesiredStateDdot[i] - phi_hat[i]);
+                    }
+                });
+                
+                const estimatedState = this.lastState.map((pos, i) => 
+                    pos + dt * estimatedStateDot[i]);
+                
+                // Update last known state with estimation
+                this.lastState = estimatedState;
+                this.lastStateDot = estimatedStateDot;
+                
+                return estimatedState;
+            }
+
+            // Estimate state derivatives during feedback loss
+            estimateStateDot(dt) {
+                return this.lastStateDot;
+            }
+
+            projectWeights() {
+                const maxWeight = 5.0;
+                
+                for (let i = 0; i < this.dnn.W_in.data.length; i++) {
+                    this.dnn.W_in.data[i] = Math.max(-maxWeight, Math.min(maxWeight, this.dnn.W_in.data[i]));
+                }
+                
+                for (const block of this.dnn.blocks) {
+                    for (let i = 0; i < block.W1.data.length; i++) {
+                        block.W1.data[i] = Math.max(-maxWeight, Math.min(maxWeight, block.W1.data[i]));
+                    }
+                    for (let i = 0; i < block.W2.data.length; i++) {
+                        block.W2.data[i] = Math.max(-maxWeight, Math.min(maxWeight, block.W2.data[i]));
+                    }
+                }
+                
+                for (let i = 0; i < this.dnn.W_out.data.length; i++) {
+                    this.dnn.W_out.data[i] = Math.max(-maxWeight, Math.min(maxWeight, this.dnn.W_out.data[i]));
+                }
+            }
+        }
+
+        class QuadrotorPIDController {
+            constructor(params) {
+                // Position PID gains
+                this.kp_pos = params.kp_pos;
+                this.ki_pos = params.ki_pos;
+                this.kd_pos = params.kd_pos;
+                
+                // Attitude PID gains
+                this.kp_att = params.kp_att;
+                this.ki_att = params.ki_att;
+                this.kd_att = params.kd_att;
+                
+                // Integral terms
+                this.integral_pos = [0, 0, 0];
+                this.integral_att = [0, 0, 0];
+                
+                // Previous errors for derivative
+                this.prev_error_pos = [0, 0, 0];
+                this.prev_error_att = [0, 0, 0];
+                
+                // Integral windup limits
+                this.integral_limit_pos = 5.0;
+                this.integral_limit_att = 2.0;
+                
+                // Feedforward dynamics learning for feedback loss scenarios
+                this.lastState = new Array(6).fill(0);
+                this.lastStateDot = new Array(6).fill(0);
+                this.lastControl = new Array(6).fill(0);
+                this.dynamicsHistory = [];
+                this.maxHistoryLength = 100;
+                
+                // Simple feedforward compensation estimates
+                this.ff_dynamics = new Array(6).fill(0);
+                this.ff_learning_rate = 0.01;
+            }
+
+            step(state, stateDot, desiredState, desiredStateDot, desiredStateDdot, dt, feedbackAvailable = true) {
+                // Store dynamics for learning during feedback availability
+                if (feedbackAvailable && state && stateDot && this.lastState.some(val => val !== 0)) {
+                    this.learnDynamics(state, stateDot, dt);
+                }
+                
+                // Use estimated or measured state depending on feedback availability
+                const currentState = feedbackAvailable && state ? state : this.estimateState(dt);
+                const currentStateDot = feedbackAvailable && stateDot ? stateDot : this.estimateStateDot(dt);
+                
+                // Store current values for potential future use during feedback loss
+                if (feedbackAvailable && state && stateDot) {
+                    this.lastState = [...state];
+                    this.lastStateDot = [...stateDot];
+                }
+                
+                // Position errors
+                const pos_error = [
+                    desiredState[0] - currentState[0],
+                    desiredState[1] - currentState[1], 
+                    desiredState[2] - currentState[2]
+                ];
+
+                // Attitude errors
+                const att_error = [
+                    desiredState[3] - currentState[3],
+                    desiredState[4] - currentState[4],
+                    desiredState[5] - currentState[5]
+                ];
+
+                // Debug output when feedback is lost (uncomment for debugging)
+                // if (!feedbackAvailable) {
+                //     console.log('PID using estimated state:', currentState.map(x => x.toFixed(3)));
+                // }
+
+                // Update integrals with windup protection (reduce during feedback loss)
+                const integralFactor = feedbackAvailable ? 1.0 : 0.3;
+                for (let i = 0; i < 3; i++) {
+                    this.integral_pos[i] += pos_error[i] * dt * integralFactor;
+                    this.integral_pos[i] = Math.max(-this.integral_limit_pos, 
+                        Math.min(this.integral_limit_pos, this.integral_pos[i]));
+                    
+                    this.integral_att[i] += att_error[i] * dt * integralFactor;
+                    this.integral_att[i] = Math.max(-this.integral_limit_att,
+                        Math.min(this.integral_limit_att, this.integral_att[i]));
+                }
+
+                // Compute derivatives
+                const deriv_pos = [
+                    (pos_error[0] - this.prev_error_pos[0]) / dt,
+                    (pos_error[1] - this.prev_error_pos[1]) / dt,
+                    (pos_error[2] - this.prev_error_pos[2]) / dt
+                ];
+
+                const deriv_att = [
+                    (att_error[0] - this.prev_error_att[0]) / dt,
+                    (att_error[1] - this.prev_error_att[1]) / dt,
+                    (att_error[2] - this.prev_error_att[2]) / dt
+                ];
+
+                // PID control law with feedforward compensation
+                const u = [
+                    // Position control with feedforward
+                    this.kp_pos * pos_error[0] + this.ki_pos * this.integral_pos[0] + this.kd_pos * deriv_pos[0] + 
+                    desiredStateDdot[0] + (feedbackAvailable ? 0 : this.ff_dynamics[0]),
+                    
+                    this.kp_pos * pos_error[1] + this.ki_pos * this.integral_pos[1] + this.kd_pos * deriv_pos[1] + 
+                    desiredStateDdot[1] + (feedbackAvailable ? 0 : this.ff_dynamics[1]),
+                    
+                    this.kp_pos * pos_error[2] + this.ki_pos * this.integral_pos[2] + this.kd_pos * deriv_pos[2] + 
+                    desiredStateDdot[2] + (feedbackAvailable ? 0 : this.ff_dynamics[2]),
+                    
+                    // Attitude control with feedforward
+                    this.kp_att * att_error[0] + this.ki_att * this.integral_att[0] + this.kd_att * deriv_att[0] + 
+                    desiredStateDdot[3] + (feedbackAvailable ? 0 : this.ff_dynamics[3]),
+                    
+                    this.kp_att * att_error[1] + this.ki_att * this.integral_att[1] + this.kd_att * deriv_att[1] + 
+                    desiredStateDdot[4] + (feedbackAvailable ? 0 : this.ff_dynamics[4]),
+                    
+                    this.kp_att * att_error[2] + this.ki_att * this.integral_att[2] + this.kd_att * deriv_att[2] + 
+                    desiredStateDdot[5] + (feedbackAvailable ? 0 : this.ff_dynamics[5])
+                ];
+
+                // Store previous errors and control
+                this.prev_error_pos = [...pos_error];
+                this.prev_error_att = [...att_error];
+                this.lastControl = [...u];
+
+                // For compatibility with adaptive controller interface
+                const adaptationRate = 0; // PID doesn't adapt
+                const predictionError = 0; // PID doesn't predict
+
+                return [u, [0, 0, 0, 0, 0, 0], adaptationRate, predictionError];
+            }
+
+            // Learn system dynamics during normal operation
+            learnDynamics(state, stateDot, dt) {
+                // Compute observed acceleration
+                const observed_accel = this.lastStateDot.map((vel, i) => (stateDot[i] - vel) / dt);
+                
+                // Expected acceleration from last control input
+                const expected_accel = this.lastControl.slice();
+                
+                // Learn the difference (unmodeled dynamics)
+                const dynamics_error = observed_accel.map((obs, i) => obs - expected_accel[i]);
+                
+                // Update feedforward dynamics estimate
+                for (let i = 0; i < 6; i++) {
+                    this.ff_dynamics[i] += this.ff_learning_rate * dynamics_error[i];
+                    // Bound the feedforward term
+                    this.ff_dynamics[i] = Math.max(-2.0, Math.min(2.0, this.ff_dynamics[i]));
+                }
+                
+                // Store dynamics history for averaging
+                this.dynamicsHistory.push([...dynamics_error]);
+                if (this.dynamicsHistory.length > this.maxHistoryLength) {
+                    this.dynamicsHistory.shift();
+                }
+            }
+
+            // Estimate state during feedback loss using learned dynamics
+            estimateState(dt) {
+                // Simple forward propagation using last known state and learned dynamics
+                const estimated_accel = this.lastControl.map((ctrl, i) => ctrl + this.ff_dynamics[i]);
+                
+                const estimatedStateDot = this.lastStateDot.map((vel, i) => vel + dt * estimated_accel[i]);
+                const estimatedState = this.lastState.map((pos, i) => pos + dt * estimatedStateDot[i]);
+                
+                // Update last known state with estimation
+                this.lastState = estimatedState;
+                this.lastStateDot = estimatedStateDot;
+                
+                return estimatedState;
+            }
+
+            // Estimate state derivatives during feedback loss
+            estimateStateDot(dt) {
+                return this.lastStateDot;
+            }
+        }
+
+        function generate3DTrajectory(t) {
+            const x_d = 2.0 * Math.sin(0.5 * t);
+            const y_d = 1.5 * Math.cos(0.7 * t);
+            const z_d = 1.0 + 0.8 * Math.sin(0.3 * t);
+            const phi_d = 0.2 * Math.sin(0.4 * t);
+            const theta_d = 0.15 * Math.cos(0.6 * t);
+            const psi_d = 0.3 * Math.sin(0.2 * t);
+
+            const x_dot_d = 1.0 * Math.cos(0.5 * t);
+            const y_dot_d = -1.05 * Math.sin(0.7 * t);
+            const z_dot_d = 0.24 * Math.cos(0.3 * t);
+            const phi_dot_d = 0.08 * Math.cos(0.4 * t);
+            const theta_dot_d = -0.09 * Math.sin(0.6 * t);
+            const psi_dot_d = 0.06 * Math.cos(0.2 * t);
+
+            const x_ddot_d = -0.5 * Math.sin(0.5 * t);
+            const y_ddot_d = -0.735 * Math.cos(0.7 * t);
+            const z_ddot_d = -0.072 * Math.sin(0.3 * t);
+            const phi_ddot_d = -0.032 * Math.sin(0.4 * t);
+            const theta_ddot_d = -0.054 * Math.cos(0.6 * t);
+            const psi_ddot_d = -0.012 * Math.sin(0.2 * t);
+
+            return [
+                [x_d, y_d, z_d, phi_d, theta_d, psi_d],
+                [x_dot_d, y_dot_d, z_dot_d, phi_dot_d, theta_dot_d, psi_dot_d],
+                [x_ddot_d, y_ddot_d, z_ddot_d, phi_ddot_d, theta_ddot_d, psi_ddot_d]
+            ];
+        }
+
+        class Simulator {
+            constructor() {
+                this.isRunning = false;
+                this.time = 0;
+                this.dt = 0.02;
+                this.maxTime = 30;
+                this.selectedController = 'composite';
+                
+                this.trajectoryData = { actual: [], desired: [] };
+                this.errorData = { position: [], orientation: [], time: [] };
+                this.controlData = { effort: [], time: [] };
+                this.adaptationData = { adaptationRate: [], predictionError: [], time: [] };
+
+                // Initial conditions
+                this.initialState = [0.1, -0.1, 0.05, 0.02, -0.02, 0.01];
+                this.initialStateDot = [0, 0, 0, 0, 0, 0];
+
+                // Intermittent feedback properties
+                this.feedbackAvailable = true;
+                this.feedbackMode = 'automatic'; // 'automatic' or 'manual'
+                this.lastFeedbackLossTime = 0;
+                this.feedbackLostAt = 0;
+                this.feedbackLossScheduled = false;
+                this.nextFeedbackLossTime = 0;
+
+                this.setupParameterListeners();
+                this.setupCanvases();
+                this.setupControllerSelection();
+                this.setupInitialConditionHandlers();
+                this.createMissingParameters();
+                
+                // Initialize 3D visualizer
+                this.visualizer = null;
+                setTimeout(() => {
+                    this.visualizer = new QuadrotorVisualizer();
+                }, 100); // Small delay to ensure DOM is ready
+                
+                this.reset();
+            }
+
+            setupControllerSelection() {
+                document.querySelectorAll('.controller-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        // Remove active class from all buttons
+                        document.querySelectorAll('.controller-btn').forEach(b => b.classList.remove('active'));
+                        
+                        // Add active class to clicked button
+                        e.target.classList.add('active');
+                        
+                        // Update selected controller
+                        this.selectedController = e.target.dataset.controller;
+                        
+                        // Show/hide parameter sections
+                        this.updateParameterVisibility();
+                        
+                        // Reset simulation if running
+                        if (this.isRunning) {
+                            this.stop();
+                            this.reset();
+                        }
+                    });
+                });
+            }
+
+            updateParameterVisibility() {
+                const adaptiveParams = document.querySelectorAll('.adaptive-params');
+                const pidParams = document.querySelectorAll('.pid-params');
+                
+                if (this.selectedController === 'pid') {
+                    // Show PID parameters, hide adaptive parameters
+                    adaptiveParams.forEach(section => section.style.display = 'none');
+                    pidParams.forEach(section => section.style.display = 'block');
+                } else {
+                    // Show adaptive parameters, hide PID parameters
+                    adaptiveParams.forEach(section => section.style.display = 'block');
+                    pidParams.forEach(section => section.style.display = 'none');
+                }
+            }
+
+            setupInitialConditionHandlers() {
+                // New Initial Conditions button
+                document.getElementById('newConditionsBtn').addEventListener('click', () => {
+                    this.generateRandomInitialConditions();
+                    this.reset();
+                });
+
+                // Load Scenario button
+                document.getElementById('scenarioBtn').addEventListener('click', () => {
+                    document.getElementById('scenarioModal').classList.add('show');
+                });
+
+                // Modal cancel button
+                document.getElementById('modalCancel').addEventListener('click', () => {
+                    document.getElementById('scenarioModal').classList.remove('show');
+                });
+
+                // Close modal when clicking outside
+                document.getElementById('scenarioModal').addEventListener('click', (e) => {
+                    if (e.target.id === 'scenarioModal') {
+                        document.getElementById('scenarioModal').classList.remove('show');
+                    }
+                });
+
+                // Scenario selection
+                document.querySelectorAll('.scenario-option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        const scenario = option.dataset.scenario;
+                        this.loadScenario(scenario);
+                        document.getElementById('scenarioModal').classList.remove('show');
+                        this.reset();
+                    });
+                });
+            }
+
+            generateRandomInitialConditions() {
+                // Random position within reasonable bounds
+                this.initialState[0] = (Math.random() - 0.5) * 4; // x: -2 to 2
+                this.initialState[1] = (Math.random() - 0.5) * 4; // y: -2 to 2
+                this.initialState[2] = Math.random() * 2 + 0.1;   // z: 0.1 to 2.1
+                
+                // Random orientation
+                this.initialState[3] = (Math.random() - 0.5) * 0.8; // φ: -0.4 to 0.4 rad
+                this.initialState[4] = (Math.random() - 0.5) * 0.8; // θ: -0.4 to 0.4 rad
+                this.initialState[5] = (Math.random() - 0.5) * 1.0; // ψ: -0.5 to 0.5 rad
+                
+                // Random initial velocities
+                this.initialStateDot[0] = (Math.random() - 0.5) * 2; // ẋ: -1 to 1
+                this.initialStateDot[1] = (Math.random() - 0.5) * 2; // ẏ: -1 to 1
+                this.initialStateDot[2] = (Math.random() - 0.5) * 1; // ż: -0.5 to 0.5
+                this.initialStateDot[3] = (Math.random() - 0.5) * 1; // φ̇: -0.5 to 0.5
+                this.initialStateDot[4] = (Math.random() - 0.5) * 1; // θ̇: -0.5 to 0.5
+                this.initialStateDot[5] = (Math.random() - 0.5) * 1; // ψ̇: -0.5 to 0.5
+            }
+
+            loadScenario(scenario) {
+                switch (scenario) {
+                    case 'hover':
+                        this.initialState = [0.05, -0.05, 0.02, 0.01, -0.01, 0.005];
+                        this.initialStateDot = [0, 0, 0, 0, 0, 0];
+                        break;
+                        
+                    case 'displaced':
+                        this.initialState = [3.0, -2.5, 1.5, 0.3, -0.4, 0.6];
+                        this.initialStateDot = [0, 0, 0, 0, 0, 0];
+                        break;
+                        
+                    case 'moving':
+                        this.initialState = [0.5, -0.3, 0.8, 0.1, -0.1, 0.2];
+                        this.initialStateDot = [1.5, -1.2, 0.8, 0.3, -0.2, 0.4];
+                        break;
+                        
+                    case 'inverted':
+                        this.initialState = [0.2, -0.1, 0.5, 1.2, -1.0, 0.3];
+                        this.initialStateDot = [0, 0, 0, 0, 0, 0];
+                        break;
+                        
+                    case 'spinning':
+                        this.initialState = [0.3, -0.2, 0.4, 0.2, -0.1, 0.15];
+                        this.initialStateDot = [0, 0, 0, 2.5, -2.0, 3.0];
+                        break;
+                        
+                    case 'random':
+                        this.generateRandomInitialConditions();
+                        break;
+                        
+                    default:
+                        this.initialState = [0.1, -0.1, 0.05, 0.02, -0.02, 0.01];
+                        this.initialStateDot = [0, 0, 0, 0, 0, 0];
+                }
+            }
+
+            updateInitialConditionsDisplay() {
+                const [x, y, z, phi, theta, psi] = this.initialState;
+                const [xDot, yDot, zDot, phiDot, thetaDot, psiDot] = this.initialStateDot;
+                
+                document.getElementById('initialPosition').textContent = 
+                    `x: ${x.toFixed(2)}, y: ${y.toFixed(2)}, z: ${z.toFixed(2)}`;
+                    
+                document.getElementById('initialOrientation').textContent = 
+                    `φ: ${phi.toFixed(2)}, θ: ${theta.toFixed(2)}, ψ: ${psi.toFixed(2)}`;
+                    
+                document.getElementById('initialVelocity').textContent = 
+                    `ẋ: ${xDot.toFixed(2)}, ẏ: ${yDot.toFixed(2)}, ż: ${zDot.toFixed(2)}`;
+                    
+                document.getElementById('initialAngularRate').textContent = 
+                    `φ̇: ${phiDot.toFixed(2)}, θ̇: ${thetaDot.toFixed(2)}, ψ̇: ${psiDot.toFixed(2)}`;
+            }
+
+            setupParameterListeners() {
+                const adaptiveParams = ['hiddenDim', 'numBlocks', 'alpha1', 'alpha2', 'alpha3', 'kr', 'kf', 'gammaBase', 'beta0', 'kappa0', 'windStrength', 'dragCoeff', 'maxForce', 'maxTorque'];
+                const pidParams = ['kp_pos', 'ki_pos', 'kd_pos', 'kp_att', 'ki_att', 'kd_att', 'windStrength_pid', 'dragCoeff_pid', 'maxForce_pid', 'maxTorque_pid'];
+                const feedbackParams = ['feedbackLossRate', 'feedbackLossDuration', 'feedbackRecoveryTime'];
+                const allParams = [...adaptiveParams, ...pidParams, ...feedbackParams];
+                
+                allParams.forEach(param => {
+                    const slider = document.getElementById(param);
+                    if (!slider) return; // Skip if element doesn't exist
+                    
+                    const valueDisplay = document.getElementById(param + 'Value');
+                    
+                    slider.addEventListener('input', (e) => {
+                        let value = parseFloat(e.target.value);
+                        
+                        if (param === 'gammaBase') {
+                            valueDisplay.textContent = value.toFixed(1) + 'e-5';
+                        } else if (['windStrength', 'windStrength_pid', 'dragCoeff', 'dragCoeff_pid', 'ki_pos', 'ki_att', 'kd_pos', 'kd_att', 'maxTorque', 'maxTorque_pid', 'feedbackLossDuration', 'feedbackRecoveryTime'].includes(param)) {
+                            valueDisplay.textContent = value.toFixed(1);
+                        } else if (['feedbackLossRate'].includes(param)) {
+                            valueDisplay.textContent = value.toFixed(0);
+                        } else {
+                            valueDisplay.textContent = value.toFixed(0);
+                        }
+                        
+                        if (this.isRunning) {
+                            this.updateController();
+                        }
+                    });
+                });
+
+                // Setup checkbox listeners
+                const checkbox = document.getElementById('enableFeedbackLoss');
+                if (checkbox) {
+                    checkbox.addEventListener('change', () => {
+                        if (!checkbox.checked) {
+                            this.feedbackAvailable = true;
+                            this.feedbackLossScheduled = false;
+                        }
+                    });
+                }
+
+                // Setup feedback mode selection
+                const feedbackModeSelect = document.getElementById('feedbackMode');
+                if (feedbackModeSelect) {
+                    feedbackModeSelect.addEventListener('change', (e) => {
+                        this.feedbackMode = e.target.value;
+                        this.updateFeedbackModeUI();
+                        
+                        // Reset feedback state when switching modes
+                        this.feedbackAvailable = true;
+                        this.feedbackLossScheduled = false;
+                    });
+                }
+
+                // Setup manual control buttons
+                const forceLossBtn = document.getElementById('forceFeedbackLoss');
+                const restoreBtn = document.getElementById('restoreFeedback');
+                
+                if (forceLossBtn) {
+                    forceLossBtn.addEventListener('click', () => {
+                        if (this.feedbackMode === 'manual') {
+                            this.feedbackAvailable = false;
+                            this.feedbackLossScheduled = false; // Clear automatic scheduling
+                            console.log(`Manual feedback loss triggered at t=${this.time.toFixed(2)}s`);
+                        }
+                    });
+                }
+                
+                if (restoreBtn) {
+                    restoreBtn.addEventListener('click', () => {
+                        if (this.feedbackMode === 'manual') {
+                            this.feedbackAvailable = true;
+                            this.feedbackLossScheduled = false; // Clear automatic scheduling
+                            console.log(`Manual feedback restored at t=${this.time.toFixed(2)}s`);
+                        }
+                    });
+                }
+
+                // Initialize UI state
+                this.updateFeedbackModeUI();
+            }
+
+            updateFeedbackModeUI() {
+                const manualSection = document.getElementById('manualControlSection');
+                const automaticSection = document.getElementById('automaticControlSection');
+                const automaticSettings = document.getElementById('automaticSettings');
+                
+                if (this.feedbackMode === 'manual') {
+                    if (manualSection) manualSection.style.display = 'block';
+                    if (automaticSection) automaticSection.style.display = 'none';
+                    if (automaticSettings) automaticSettings.style.display = 'none';
+                } else {
+                    if (manualSection) manualSection.style.display = 'none';
+                    if (automaticSection) automaticSection.style.display = 'block';
+                    if (automaticSettings) automaticSettings.style.display = 'block';
+                }
+            }
+
+            scheduleFeedbackLoss() {
+                // Only operate in automatic mode
+                if (this.feedbackMode !== 'automatic') {
+                    return;
+                }
+
+                const enableFeedbackLoss = document.getElementById('enableFeedbackLoss').checked;
+                if (!enableFeedbackLoss) {
+                    this.feedbackAvailable = true;
+                    return;
+                }
+
+                const feedbackLossRate = parseFloat(document.getElementById('feedbackLossRate').value) / 100; // Convert percentage to decimal
+                const feedbackLossDuration = parseFloat(document.getElementById('feedbackLossDuration').value);
+                const feedbackRecoveryTime = parseFloat(document.getElementById('feedbackRecoveryTime').value);
+
+                // Check if feedback should be lost
+                if (this.feedbackAvailable && !this.feedbackLossScheduled) {
+                    // Random chance for feedback loss based on rate
+                    if (Math.random() < feedbackLossRate * this.dt) {
+                        this.feedbackAvailable = false;
+                        this.feedbackLostAt = this.time;
+                        this.feedbackLossScheduled = true;
+                        console.log(`Feedback lost at t=${this.time.toFixed(2)}s`);
+                    }
+                }
+
+                // Check if feedback should be recovered
+                if (!this.feedbackAvailable && this.feedbackLossScheduled) {
+                    const timeSinceLoss = this.time - this.feedbackLostAt;
+                    if (timeSinceLoss >= feedbackLossDuration) {
+                        // Start recovery process
+                        if (timeSinceLoss >= feedbackLossDuration + feedbackRecoveryTime) {
+                            this.feedbackAvailable = true;
+                            this.feedbackLossScheduled = false;
+                            console.log(`Feedback recovered at t=${this.time.toFixed(2)}s`);
+                        }
+                    }
+                }
+            }
+
+            updateFeedbackStatus() {
+                const feedbackStatusElement = document.getElementById('feedbackStatus');
+                const enableFeedbackLoss = document.getElementById('enableFeedbackLoss').checked;
+                
+                // Handle status display based on mode
+                if (this.feedbackMode === 'manual') {
+                    if (this.feedbackAvailable) {
+                        feedbackStatusElement.textContent = 'AVAILABLE (Manual)';
+                        feedbackStatusElement.parentElement.className = 'metric feedback-active';
+                    } else {
+                        feedbackStatusElement.textContent = `LOST (${this.selectedController.toUpperCase()} EST.)`;
+                        feedbackStatusElement.parentElement.className = 'metric feedback-lost';
+                    }
+                    return;
+                }
+                
+                // Automatic mode handling
+                if (!enableFeedbackLoss) {
+                    feedbackStatusElement.textContent = 'DISABLED';
+                    feedbackStatusElement.parentElement.className = 'metric feedback-active';
+                    return;
+                }
+
+                if (this.feedbackAvailable) {
+                    feedbackStatusElement.textContent = 'AVAILABLE';
+                    feedbackStatusElement.parentElement.className = 'metric feedback-active';
+                } else {
+                    const timeSinceLoss = this.time - this.feedbackLostAt;
+                    const feedbackLossDuration = parseFloat(document.getElementById('feedbackLossDuration').value);
+                    const feedbackRecoveryTime = parseFloat(document.getElementById('feedbackRecoveryTime').value);
+                    
+                    if (timeSinceLoss < feedbackLossDuration) {
+                        feedbackStatusElement.textContent = `LOST (${this.selectedController.toUpperCase()} EST.)`;
+                        feedbackStatusElement.parentElement.className = 'metric feedback-lost';
+                    } else if (timeSinceLoss < feedbackLossDuration + feedbackRecoveryTime) {
+                        feedbackStatusElement.textContent = 'RECOVERING';
+                        feedbackStatusElement.parentElement.className = 'metric feedback-lost';
+                    }
+                }
+            }
+
+            createMissingParameters() {
+                // Create all missing parameter controls
+                const parameterSections = [
+                    {
+                        sectionSelector: '.section h3',
+                        sectionName: 'Neural Network',
+                        params: [
+                            { id: 'hiddenDim', label: 'Hidden Dim', min: 16, max: 128, value: 32, step: 8 },
+                            { id: 'numBlocks', label: 'Num Blocks', min: 1, max: 8, value: 3, step: 1 },
+                        ]
+                    },
+                    {
+                        sectionSelector: '.section h3',
+                        sectionName: 'Control Gains',
+                        params: [
+                            { id: 'alpha1', label: 'Alpha 1', min: 0.1, max: 5, value: 1, step: 0.1 },
+                            { id: 'alpha2', label: 'Alpha 2', min: 0.1, max: 5, value: 1, step: 0.1 },
+                            { id: 'alpha3', label: 'Alpha 3', min: 0.1, max: 5, value: 1, step: 0.1 },
+                            { id: 'kr', label: 'Kr', min: 0.1, max: 10, value: 2, step: 0.1 },
+                            { id: 'kf', label: 'Kf', min: 0.1, max: 10, value: 1, step: 0.1 },
+                        ]
+                    },
+                    {
+                        sectionSelector: '.section h3',
+                        sectionName: 'Adaptation Gains',
+                        params: [
+                            { id: 'gammaBase', label: 'Gamma Base', min: 0.1, max: 10, value: 1, step: 0.1 },
+                            { id: 'beta0', label: 'Beta 0', min: 0.1, max: 5, value: 1, step: 0.1 },
+                            { id: 'kappa0', label: 'Kappa 0', min: 0.1, max: 5, value: 1, step: 0.1 },
+                        ]
+                    },
+                    {
+                        sectionSelector: '.section h3',
+                        sectionName: 'Position PID Gains',
+                        params: [
+                            { id: 'kp_pos', label: 'Kp Position', min: 1, max: 50, value: 20, step: 1 },
+                            { id: 'ki_pos', label: 'Ki Position', min: 0, max: 10, value: 2, step: 0.1 },
+                            { id: 'kd_pos', label: 'Kd Position', min: 0, max: 20, value: 8, step: 0.1 },
+                        ]
+                    },
+                    {
+                        sectionSelector: '.section h3',
+                        sectionName: 'Orientation PID Gains',
+                        params: [
+                            { id: 'kp_att', label: 'Kp Attitude', min: 1, max: 50, value: 15, step: 1 },
+                            { id: 'ki_att', label: 'Ki Attitude', min: 0, max: 10, value: 1, step: 0.1 },
+                            { id: 'kd_att', label: 'Kd Attitude', min: 0, max: 20, value: 5, step: 0.1 },
+                        ]
+                    },
+                    {
+                        sectionSelector: '.section h3',
+                        sectionName: 'Environment',
+                        params: [
+                            { id: 'windStrength', label: 'Wind Strength', min: 0, max: 2, value: 0.5, step: 0.1 },
+                            { id: 'dragCoeff', label: 'Drag Coefficient', min: 0.1, max: 1, value: 0.25, step: 0.05 },
+                            { id: 'maxForce', label: 'Max Force (N)', min: 20, max: 100, value: 50, step: 5 },
+                            { id: 'maxTorque', label: 'Max Torque (Nm)', min: 1, max: 10, value: 5, step: 0.1 },
+                            { id: 'windStrength_pid', label: 'Wind Strength', min: 0, max: 2, value: 0.5, step: 0.1 },
+                            { id: 'dragCoeff_pid', label: 'Drag Coefficient', min: 0.1, max: 1, value: 0.25, step: 0.05 },
+                            { id: 'maxForce_pid', label: 'Max Force (N)', min: 20, max: 100, value: 50, step: 5 },
+                            { id: 'maxTorque_pid', label: 'Max Torque (Nm)', min: 1, max: 10, value: 5, step: 0.1 },
+                        ]
+                    }
+                ];
+
+                parameterSections.forEach(section => {
+                    const headers = Array.from(document.querySelectorAll(section.sectionSelector));
+                    const sectionHeader = headers.find(h => h.textContent.trim() === section.sectionName);
+                    
+                    if (sectionHeader) {
+                        const parameterGroup = sectionHeader.parentElement.querySelector('.parameter-group');
+                        
+                        if (parameterGroup) {
+                            section.params.forEach(param => {
+                                if (!document.getElementById(param.id)) {
+                                    const parameterDiv = document.createElement('div');
+                                    parameterDiv.className = 'parameter';
+                                    
+                                    parameterDiv.innerHTML = `
+                                        <label for="${param.id}">${param.label}: <span id="${param.id}Value">${param.value}</span></label>
+                                        <input type="range" id="${param.id}" min="${param.min}" max="${param.max}" value="${param.value}" step="${param.step}">
+                                    `;
+                                    
+                                    parameterGroup.appendChild(parameterDiv);
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+
+            getParameters() {
+                if (this.selectedController === 'pid') {
+                    return {
+                        kp_pos: parseFloat(document.getElementById('kp_pos').value),
+                        ki_pos: parseFloat(document.getElementById('ki_pos').value),
+                        kd_pos: parseFloat(document.getElementById('kd_pos').value),
+                        kp_att: parseFloat(document.getElementById('kp_att').value),
+                        ki_att: parseFloat(document.getElementById('ki_att').value),
+                        kd_att: parseFloat(document.getElementById('kd_att').value),
+                        windStrength: parseFloat(document.getElementById('windStrength_pid').value),
+                        dragCoeff: parseFloat(document.getElementById('dragCoeff_pid').value),
+                        maxForce: parseFloat(document.getElementById('maxForce_pid').value),
+                        maxTorque: parseFloat(document.getElementById('maxTorque_pid').value)
+                    };
+                } else {
+                    return {
+                        hiddenDim: parseInt(document.getElementById('hiddenDim').value),
+                        numBlocks: parseInt(document.getElementById('numBlocks').value),
+                        alpha1: parseFloat(document.getElementById('alpha1').value),
+                        alpha2: parseFloat(document.getElementById('alpha2').value),
+                        alpha3: parseFloat(document.getElementById('alpha3').value),
+                        kr: parseFloat(document.getElementById('kr').value),
+                        kf: parseFloat(document.getElementById('kf').value),
+                        gammaBase: parseFloat(document.getElementById('gammaBase').value),
+                        beta0: parseFloat(document.getElementById('beta0').value),
+                        kappa0: parseFloat(document.getElementById('kappa0').value),
+                        windStrength: parseFloat(document.getElementById('windStrength').value),
+                        dragCoeff: parseFloat(document.getElementById('dragCoeff').value),
+                        maxForce: parseFloat(document.getElementById('maxForce').value),
+                        maxTorque: parseFloat(document.getElementById('maxTorque').value)
+                    };
+                }
+            }
+
+            updateController() {
+                const params = this.getParameters();
+                
+                if (this.selectedController === 'pid') {
+                    this.controller = new QuadrotorPIDController(params);
+                } else {
+                    this.controller = new QuadrotorAdaptiveController(params);
+                }
+                
+                this.dynamics.setWindStrength(params.windStrength);
+                this.dynamics.setDragCoeff(params.dragCoeff);
+                this.dynamics.setSaturationLimits(params.maxForce, params.maxTorque);
+            }
+
+            setupCanvases() {
+                // Only setup 2D canvases - 3D is handled by QuadrotorVisualizer
+                this.canvasError = document.getElementById('positionErrorChart');
+                this.canvasControl = document.getElementById('controlEffortChart');
+                
+                this.ctxError = this.canvasError.getContext('2d');
+                this.ctxControl = this.canvasControl.getContext('2d');
+            }
+
+            reset() {
+                this.time = 0;
+                this.trajectoryData = { actual: [], desired: [] };
+                this.errorData = { position: [], orientation: [], time: [] };
+                this.controlData = { effort: [], time: [] };
+                this.adaptationData = { adaptationRate: [], predictionError: [], time: [] };
+                
+                // Reset feedback loss properties
+                this.feedbackAvailable = true;
+                this.lastFeedbackLossTime = 0;
+                this.feedbackLostAt = 0;
+                this.feedbackLossScheduled = false;
+                this.nextFeedbackLossTime = 0;
+                
+                const params = this.getParameters();
+                
+                if (this.selectedController === 'pid') {
+                    this.controller = new QuadrotorPIDController(params);
+                } else {
+                    this.controller = new QuadrotorAdaptiveController(params);
+                }
+                
+                this.dynamics = new QuadrotorDynamics();
+                this.dynamics.setWindStrength(params.windStrength);
+                this.dynamics.setDragCoeff(params.dragCoeff);
+                
+                // Use stored initial conditions
+                this.state = [...this.initialState];
+                this.stateDot = [...this.initialStateDot];
+                
+                this.updateInitialConditionsDisplay();
+                this.updateParameterVisibility();
+                this.updateMetrics();
+                this.clearCanvases();
+                
+                // Reset visualizer to initial state
+                if (this.visualizer) {
+                    this.visualizer.updateQuadrotorPosition(this.state);
+                    this.visualizer.updateTrajectory([]);
+                    currentAnimationFrame = 0;
+                    isAnimating = false;
+                    document.getElementById('playAnimation').textContent = '▶️ Play';
+                }
+            }
+
+            start() {
+                if (this.isRunning) return;
+                
+                this.isRunning = true;
+                document.getElementById('startBtn').textContent = 'Stop Simulation';
+                document.getElementById('status').textContent = `Simulation Running (${this.selectedController === 'composite' ? 'Composite' : 'Tracking'})`;
+                document.getElementById('status').className = 'status running';
+                
+                this.animationFrame = requestAnimationFrame(() => this.simulate());
+            }
+
+            stop() {
+                this.isRunning = false;
+                document.getElementById('startBtn').textContent = 'Start Simulation';
+                document.getElementById('status').textContent = 'Simulation Stopped';
+                document.getElementById('status').className = 'status stopped';
+                
+                if (this.animationFrame) {
+                    cancelAnimationFrame(this.animationFrame);
+                }
+            }
+
+            simulate() {
+                if (!this.isRunning || this.time >= this.maxTime) {
+                    this.stop();
+                    return;
+                }
+
+                try {
+                    // Manage intermittent feedback
+                    this.scheduleFeedbackLoss();
+                    this.updateFeedbackStatus();
+
+                    const [desiredState, desiredStateDot, desiredStateDdot] = generate3DTrajectory(this.time);
+
+                    let u, phiHat, adaptRate, predError;
+
+                    // During feedback loss, don't provide true state to controller - it must estimate
+                    const observedState = this.feedbackAvailable ? this.state : null;
+                    const observedStateDot = this.feedbackAvailable ? this.stateDot : null;
+
+                    if (this.selectedController === 'pid') {
+                        [u, phiHat, adaptRate, predError] = this.controller.step(
+                            observedState, observedStateDot, desiredState, desiredStateDot, desiredStateDdot, this.dt, this.feedbackAvailable);
+                    } else {
+                        const useComposite = this.selectedController === 'composite';
+                        [u, phiHat, adaptRate, predError] = this.controller.step(
+                            observedState, observedStateDot, desiredState, desiredStateDot, desiredStateDdot, this.dt, useComposite, this.feedbackAvailable);
+                    }
+
+                    [this.state, this.stateDot] = this.dynamics.step(
+                        this.state, this.stateDot, u, this.dt, this.time);
+
+                    this.trajectoryData.actual.push([...this.state]);
+                    this.trajectoryData.desired.push([...desiredState]);
+
+                    // Position error (x, y, z)
+                    const posError = Math.sqrt(
+                        (this.state[0] - desiredState[0]) ** 2 +
+                        (this.state[1] - desiredState[1]) ** 2 +
+                        (this.state[2] - desiredState[2]) ** 2
+                    );
+
+                    // Orientation error (phi, theta, psi)
+                    const oriError = Math.sqrt(
+                        (this.state[3] - desiredState[3]) ** 2 +
+                        (this.state[4] - desiredState[4]) ** 2 +
+                        (this.state[5] - desiredState[5]) ** 2
+                    );
+
+                    this.errorData.position.push(posError);
+                    this.errorData.orientation.push(oriError);
+                    this.errorData.time.push(this.time);
+
+                    const controlNorm = Math.sqrt(u.reduce((sum, ui) => sum + ui * ui, 0));
+                    this.controlData.effort.push(controlNorm);
+                    this.controlData.time.push(this.time);
+
+                    this.adaptationData.adaptationRate.push(adaptRate);
+                    this.adaptationData.predictionError.push(predError);
+                    this.adaptationData.time.push(this.time);
+
+                    this.updateMetrics();
+                    
+                    // Update 3D visualizer
+                    if (this.visualizer) {
+                        this.visualizer.updateQuadrotorPosition(this.state);
+                        this.visualizer.updateTargetPosition(desiredState);
+                        this.visualizer.updateTrajectory(this.trajectoryData.actual);
+                        this.visualizer.setFeedbackLossEffect(!this.feedbackAvailable);
+                    }
+                    
+                    if (Math.floor(this.time / this.dt) % 5 === 0) {
+                        this.updatePlots();
+                    }
+
+                    this.time += this.dt;
+                    this.animationFrame = requestAnimationFrame(() => this.simulate());
+
+                } catch (error) {
+                    console.error('Simulation error:', error);
+                    this.stop();
+                }
+            }
+
+            updateMetrics() {
+                const recentLength = Math.min(50, this.errorData.position.length);
+                if (recentLength === 0) {
+                    document.getElementById('positionError').textContent = '0.000';
+                    document.getElementById('orientationError').textContent = '0.000';
+                    document.getElementById('controlEffortValue').textContent = '0.000';
+                    document.getElementById('adaptationRate').textContent = '0.000';
+                    document.getElementById('predictionError').textContent = '0.000';
+                    return;
+                }
+
+                const recentStart = Math.max(0, this.errorData.position.length - recentLength);
+                
+                const avgPosError = this.errorData.position.slice(recentStart)
+                    .reduce((sum, err) => sum + err, 0) / recentLength;
+                
+                const avgOriError = this.errorData.orientation.slice(recentStart)
+                    .reduce((sum, err) => sum + err, 0) / recentLength;
+
+                const avgControlEffort = this.controlData.effort.slice(recentStart)
+                    .reduce((sum, effort) => sum + effort, 0) / recentLength;
+
+                const avgAdaptationRate = this.adaptationData.adaptationRate.slice(recentStart)
+                    .reduce((sum, rate) => sum + rate, 0) / recentLength;
+                
+                const avgPredictionError = this.adaptationData.predictionError.slice(recentStart)
+                    .reduce((sum, err) => sum + err, 0) / recentLength;
+
+                document.getElementById('positionError').textContent = avgPosError.toFixed(3);
+                document.getElementById('orientationError').textContent = avgOriError.toFixed(3);
+                document.getElementById('controlEffortValue').textContent = avgControlEffort.toFixed(3);
+                document.getElementById('adaptationRate').textContent = avgAdaptationRate.toFixed(3);
+                document.getElementById('predictionError').textContent = avgPredictionError.toFixed(3);
+            }
+
+            clearCanvases() {
+                // Only clear 2D canvases - 3D is handled by QuadrotorVisualizer
+                this.ctxError.clearRect(0, 0, this.canvasError.width, this.canvasError.height);
+                this.ctxControl.clearRect(0, 0, this.canvasControl.width, this.canvasControl.height);
+            }
+
+            updatePlots() {
+                this.plot3DTrajectory();
+                this.plotPositionError();
+                this.plotControlEffort();
+            }
+
+            plot3DTrajectory() {
+                // 3D trajectory is now handled by the QuadrotorVisualizer
+                // This method exists for compatibility with the plotting system
+                if (this.visualizer && this.trajectoryData.actual.length > 0) {
+                    this.visualizer.updateTrajectory(this.trajectoryData.actual);
+                }
+            }
+
+            plotPositionError() {
+                const canvas = this.canvasError;
+                const ctx = this.ctxError;
+                
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (this.errorData.time.length === 0) return;
+
+                const margin = 50;
+                const width = canvas.width - 2 * margin;
+                const height = canvas.height - 2 * margin - 30;
+
+                const timeRange = [0, Math.max(...this.errorData.time)];
+                const errorRange = [0, Math.max(...this.errorData.position) * 1.1];
+
+                function projectError(time, error) {
+                    const x = margin + (time - timeRange[0]) / (timeRange[1] - timeRange[0]) * width;
+                    const y = margin + height - (error - errorRange[0]) / (errorRange[1] - errorRange[0]) * height;
+                    return [x, y];
+                }
+
+                // Draw grid
+                ctx.strokeStyle = 'rgba(75, 85, 99, 0.2)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([2, 2]);
+                
+                // Vertical grid lines (time)
+                const timeSteps = 6;
+                for (let i = 0; i <= timeSteps; i++) {
+                    const x = margin + (i / timeSteps) * width;
+                    ctx.beginPath();
+                    ctx.moveTo(x, margin);
+                    ctx.lineTo(x, margin + height);
+                    ctx.stroke();
+                }
+                
+                // Horizontal grid lines (error)
+                const errorSteps = 5;
+                for (let i = 0; i <= errorSteps; i++) {
+                    const y = margin + (i / errorSteps) * height;
+                    ctx.beginPath();
+                    ctx.moveTo(margin, y);
+                    ctx.lineTo(margin + width, y);
+                    ctx.stroke();
+                }
+
+                ctx.setLineDash([]);
+
+                // Draw main axes
+                ctx.strokeStyle = 'rgba(55, 65, 81, 0.6)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(margin, margin);
+                ctx.lineTo(margin, margin + height);
+                ctx.lineTo(margin + width, margin + height);
+                ctx.stroke();
+
+                // Add axis labels and tick marks
+                ctx.fillStyle = '#9ca3af';
+                ctx.font = '10px JetBrains Mono';
+                
+                // X-axis (time) labels
+                ctx.textAlign = 'center';
+                for (let i = 0; i <= timeSteps; i++) {
+                    const x = margin + (i / timeSteps) * width;
+                    const timeValue = (i / timeSteps) * timeRange[1];
+                    
+                    // Tick mark
+                    ctx.strokeStyle = 'rgba(55, 65, 81, 0.4)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, margin + height);
+                    ctx.lineTo(x, margin + height + 5);
+                    ctx.stroke();
+                    
+                    // Label
+                    ctx.fillText(timeValue.toFixed(1), x, margin + height + 17);
+                }
+                
+                // Y-axis (error) labels
+                ctx.textAlign = 'right';
+                for (let i = 0; i <= errorSteps; i++) {
+                    const y = margin + height - (i / errorSteps) * height;
+                    const errorValue = (i / errorSteps) * errorRange[1];
+                    
+                    // Tick mark
+                    ctx.strokeStyle = 'rgba(55, 65, 81, 0.4)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(margin - 5, y);
+                    ctx.lineTo(margin, y);
+                    ctx.stroke();
+                    
+                    // Label
+                    ctx.fillText(errorValue.toFixed(3), margin - 8, y + 3);
+                }
+
+                // Draw zero line for reference
+                if (errorRange[0] <= 0 && errorRange[1] >= 0) {
+                    const zeroY = margin + height;
+                    ctx.strokeStyle = 'rgba(156, 163, 175, 0.4)';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.moveTo(margin, zeroY);
+                    ctx.lineTo(margin + width, zeroY);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                // Plot error data
+                const errorColor = this.selectedController === 'composite' ? '#4f46e5' : 
+                                 this.selectedController === 'tracking' ? '#7c3aed' : '#dc2626';
+
+                // Add glow effect
+                ctx.shadowColor = errorColor;
+                ctx.shadowBlur = 3;
+                ctx.strokeStyle = errorColor;
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                
+                for (let i = 0; i < this.errorData.position.length; i++) {
+                    const [x, y] = projectError(this.errorData.time[i], this.errorData.position[i]);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Add data points for better visibility
+                ctx.fillStyle = errorColor;
+                for (let i = 0; i < this.errorData.position.length; i += 5) { // Every 5th point
+                    const [x, y] = projectError(this.errorData.time[i], this.errorData.position[i]);
+                    ctx.beginPath();
+                    ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+
+                // Axis titles
+                ctx.fillStyle = '#374151';
+                ctx.font = 'bold 12px Inter';
+                ctx.textAlign = 'center';
+                
+                // X-axis title
+                ctx.fillText('Time [s]', canvas.width / 2, canvas.height - 8);
+                
+                // Y-axis title (rotated)
+                ctx.save();
+                ctx.translate(15, canvas.height / 2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.fillText('Position Error [m]', 0, 0);
+                ctx.restore();
+
+                // Chart title
+                ctx.fillStyle = '#6b7280';
+                ctx.font = 'bold 13px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Position Tracking Error', canvas.width / 2, 18);
+
+                // Add statistics overlay
+                if (this.errorData.position.length > 0) {
+                    const recent = this.errorData.position.slice(-50);
+                    const currentError = recent[recent.length - 1];
+                    const maxError = Math.max(...this.errorData.position);
+                    const avgError = recent.reduce((a, b) => a + b, 0) / recent.length;
+                    const rmsError = Math.sqrt(recent.reduce((sum, val) => sum + val * val, 0) / recent.length);
+                    
+                    const statsX = canvas.width - 120;
+                    const statsY = margin + 20;
+                    
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                    ctx.fillRect(statsX - 8, statsY - 10, 110, 70);
+                    
+                    ctx.strokeStyle = 'rgba(55, 65, 81, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(statsX - 8, statsY - 10, 110, 70);
+                    
+                    ctx.fillStyle = '#4f46e5';
+                    ctx.font = 'bold 10px Inter';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('Error Stats', statsX, statsY);
+                    
+                    ctx.fillStyle = '#374151';
+                    ctx.font = '9px JetBrains Mono';
+                    ctx.fillText(`Now: ${currentError.toFixed(4)} m`, statsX, statsY + 15);
+                    ctx.fillText(`RMS: ${rmsError.toFixed(4)} m`, statsX, statsY + 28);
+                    ctx.fillText(`Avg: ${avgError.toFixed(4)} m`, statsX, statsY + 41);
+                    ctx.fillText(`Max: ${maxError.toFixed(4)} m`, statsX, statsY + 54);
+                }
+            }
+
+            plotControlEffort() {
+                const canvas = this.canvasControl;
+                const ctx = this.ctxControl;
+                
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (this.controlData.time.length === 0) return;
+
+                const margin = 50;
+                const width = canvas.width - 2 * margin;
+                const height = canvas.height - 2 * margin - 25;
+
+                const timeRange = [0, Math.max(...this.controlData.time)];
+                const controlRange = [0, Math.max(...this.controlData.effort) * 1.1];
+
+                function projectControl(time, control) {
+                    const x = margin + (time - timeRange[0]) / (timeRange[1] - timeRange[0]) * width;
+                    const y = margin + height - (control - controlRange[0]) / (controlRange[1] - controlRange[0]) * height;
+                    return [x, y];
+                }
+
+                // Draw grid
+                ctx.strokeStyle = 'rgba(75, 85, 99, 0.2)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([2, 2]);
+                
+                // Vertical grid lines (time)
+                const timeSteps = 6;
+                for (let i = 0; i <= timeSteps; i++) {
+                    const x = margin + (i / timeSteps) * width;
+                    ctx.beginPath();
+                    ctx.moveTo(x, margin);
+                    ctx.lineTo(x, margin + height);
+                    ctx.stroke();
+                }
+                
+                // Horizontal grid lines (control effort)
+                const controlSteps = 5;
+                for (let i = 0; i <= controlSteps; i++) {
+                    const y = margin + (i / controlSteps) * height;
+                    ctx.beginPath();
+                    ctx.moveTo(margin, y);
+                    ctx.lineTo(margin + width, y);
+                    ctx.stroke();
+                }
+
+                ctx.setLineDash([]);
+
+                // Draw main axes
+                ctx.strokeStyle = 'rgba(55, 65, 81, 0.6)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(margin, margin);
+                ctx.lineTo(margin, margin + height);
+                ctx.lineTo(margin + width, margin + height);
+                ctx.stroke();
+
+                // Add axis labels and tick marks
+                ctx.fillStyle = '#9ca3af';
+                ctx.font = '10px JetBrains Mono';
+                
+                // X-axis (time) labels
+                ctx.textAlign = 'center';
+                for (let i = 0; i <= timeSteps; i++) {
+                    const x = margin + (i / timeSteps) * width;
+                    const timeValue = (i / timeSteps) * timeRange[1];
+                    
+                    // Tick mark
+                    ctx.strokeStyle = 'rgba(55, 65, 81, 0.4)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, margin + height);
+                    ctx.lineTo(x, margin + height + 5);
+                    ctx.stroke();
+                    
+                    // Label
+                    ctx.fillText(timeValue.toFixed(1), x, margin + height + 17);
+                }
+                
+                // Y-axis (control effort) labels
+                ctx.textAlign = 'right';
+                for (let i = 0; i <= controlSteps; i++) {
+                    const y = margin + height - (i / controlSteps) * height;
+                    const controlValue = (i / controlSteps) * controlRange[1];
+                    
+                    // Tick mark
+                    ctx.strokeStyle = 'rgba(55, 65, 81, 0.4)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(margin - 5, y);
+                    ctx.lineTo(margin, y);
+                    ctx.stroke();
+                    
+                    // Label
+                    ctx.fillText(controlValue.toFixed(2), margin - 8, y + 3);
+                }
+
+                // Plot control effort data
+                const controlColor = this.selectedController === 'composite' ? '#7c3aed' : 
+                                   this.selectedController === 'tracking' ? '#4f46e5' : '#dc2626';
+
+                // Add glow effect
+                ctx.shadowColor = controlColor;
+                ctx.shadowBlur = 3;
+                ctx.strokeStyle = controlColor;
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                
+                for (let i = 0; i < this.controlData.effort.length; i++) {
+                    const [x, y] = projectControl(this.controlData.time[i], this.controlData.effort[i]);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Add data points for better visibility
+                ctx.fillStyle = controlColor;
+                for (let i = 0; i < this.controlData.effort.length; i += 5) { // Every 5th point
+                    const [x, y] = projectControl(this.controlData.time[i], this.controlData.effort[i]);
+                    ctx.beginPath();
+                    ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+
+                // Axis titles
+                ctx.fillStyle = '#374151';
+                ctx.font = 'bold 12px Inter';
+                ctx.textAlign = 'center';
+                
+                // X-axis title
+                ctx.fillText('Time [s]', canvas.width / 2, canvas.height - 8);
+                
+                // Y-axis title (rotated)
+                ctx.save();
+                ctx.translate(15, canvas.height / 2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.fillText('Control Effort [N·m]', 0, 0);
+                ctx.restore();
+
+                // Chart title
+                ctx.fillStyle = '#6b7280';
+                ctx.font = 'bold 13px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Control Input Magnitude', canvas.width / 2, 18);
+
+                // Add statistics overlay
+                if (this.controlData.effort.length > 0) {
+                    const recent = this.controlData.effort.slice(-50);
+                    const currentEffort = recent[recent.length - 1];
+                    const maxEffort = Math.max(...this.controlData.effort);
+                    const avgEffort = recent.reduce((a, b) => a + b, 0) / recent.length;
+                    const rmsEffort = Math.sqrt(recent.reduce((sum, val) => sum + val * val, 0) / recent.length);
+                    
+                    const statsX = canvas.width - 120;
+                    const statsY = margin + 20;
+                    
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                    ctx.fillRect(statsX - 8, statsY - 10, 110, 70);
+                    
+                    ctx.strokeStyle = 'rgba(55, 65, 81, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(statsX - 8, statsY - 10, 110, 70);
+                    
+                    ctx.fillStyle = '#7c3aed';
+                    ctx.font = 'bold 10px Inter';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('Control Stats', statsX, statsY);
+                    
+                    ctx.fillStyle = '#374151';
+                    ctx.font = '9px JetBrains Mono';
+                    ctx.fillText(`Now: ${currentEffort.toFixed(3)} N·m`, statsX, statsY + 15);
+                    ctx.fillText(`RMS: ${rmsEffort.toFixed(3)} N·m`, statsX, statsY + 28);
+                    ctx.fillText(`Avg: ${avgEffort.toFixed(3)} N·m`, statsX, statsY + 41);
+                    ctx.fillText(`Max: ${maxEffort.toFixed(3)} N·m`, statsX, statsY + 54);
+                }
+            }
+        }
+
+        let simulator;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            simulator = new Simulator();
+
+            document.getElementById('startBtn').addEventListener('click', () => {
+                if (simulator.isRunning) {
+                    simulator.stop();
+                } else {
+                    simulator.start();
+                }
+            });
+
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                simulator.stop();
+                simulator.reset();
+            });
+
+            window.addEventListener('resize', () => {
+                setTimeout(() => {
+                    simulator.updatePlots();
+                }, 100);
+            });
+
+            // Prevent modal from closing when clicking on content
+            document.querySelector('.scenario-content').addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        });
+    </script>
+</body>
+</html>

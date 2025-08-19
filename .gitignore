@@ -1,0 +1,23 @@
+.next
+node_modules
+.DS_Store
+.env
+
+# Local env variants
+.env.*
+
+# Vercel & editor folders
+.vercel
+.vscode
+
+# Python virtual env (not part of Next.js app)
+.venv/
+
+# TypeScript build cache
+tsconfig.tsbuildinfo
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Alpha-Beta Chess Engine | Interactive Tutorial</title>
+    <meta name="description" content="Explore how neural networks enhance classical chess algorithms through this interactive demonstration of neural Alpha-Beta pruning.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .back-btn:hover {
+            background: rgba(59, 130, 246, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        .tutorial-header {
+            background: linear-gradient(135deg, #f97316 0%, #dc2626 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Back to Main Site Button -->
+    <a href="index.html" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        Back to Main Site
+    </a>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+        <!-- Tutorial Header -->
+        <div class="tutorial-header">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">Neural Alpha-Beta Chess Engine</h1>
+            <p class="text-lg md:text-xl opacity-90 mb-6">Experience how neural networks can enhance classical game-playing algorithms like Alpha-Beta pruning in chess through this interactive demonstration.</p>
+            <div class="flex flex-wrap gap-4 text-sm">
+                <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full">Game AI</span>
+                <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full">Decision Trees</span>
+                <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full">Neural Networks</span>
+                <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full">Interactive Learning</span>
+            </div>
+        </div>
+
+        <!-- React App Container -->
+        <div id="neural-chess-app"></div>
+    </div>
+
+    <!-- Load and render the JSX component -->
+    <script type="text/babel" src="neural_alpha_beta_chess_interactive.jsx"></script>
+</body>
+</html>
