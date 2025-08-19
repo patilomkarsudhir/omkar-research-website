@@ -1,6 +1,9 @@
 import Section from "./components/Section";
 import HeroMetricsClient from "./components/HeroMetricsClient";
 import Link from "next/link";
+import LinkedInIcon from "@mui/icons-material/LinkedIn";
+import GitHubIcon from "@mui/icons-material/GitHub";
+import SchoolIcon from "@mui/icons-material/School";
 
 // Data URI thumbnails (SVG) so no extra asset files are needed
 const demos = [
@@ -35,8 +38,39 @@ export default function Page() {
 		<div className="space-y-10">
 			<Section title="About Me">
 				<div className="flex flex-col sm:flex-row items-center gap-8">
-					<div className="w-48 h-48 rounded-full bg-gray-300 dark:bg-gray-700 flex-shrink-0 border-4 border-white/10 shadow-md overflow-hidden">
-						<img src="/Profile Pic.jpg" alt="Omkar Patil" className="w-full h-full object-cover" />
+					<div className="flex flex-col items-center">
+						<div className="w-48 h-48 rounded-full bg-gray-300 dark:bg-gray-700 flex-shrink-0 border-4 border-white/10 shadow-md overflow-hidden">
+							<img src="/Profile Pic.jpg" alt="Omkar Patil" className="w-full h-full object-cover" />
+						</div>
+						<div className="mt-3 flex items-center gap-4 text-[var(--muted)]">
+							<a
+								href="https://www.linkedin.com/in/omkar-patil-024"
+								target="_blank"
+								rel="noopener noreferrer"
+								aria-label="LinkedIn"
+								className="hover:text-[var(--accent)] transition-colors"
+							>
+								<LinkedInIcon fontSize="small" />
+							</a>
+							<a
+								href="https://github.com/patilomkarsudhir"
+								target="_blank"
+								rel="noopener noreferrer"
+								aria-label="GitHub"
+								className="hover:text-[var(--accent)] transition-colors"
+							>
+								<GitHubIcon fontSize="small" />
+							</a>
+							<a
+								href="https://scholar.google.com/citations?hl=en&user=EtkfNQMAAAAJ"
+								target="_blank"
+								rel="noopener noreferrer"
+								aria-label="Google Scholar"
+								className="hover:text-[var(--accent)] transition-colors"
+							>
+								<SchoolIcon fontSize="small" />
+							</a>
+						</div>
 					</div>
 					<p className="text-[var(--muted)]">
 						I’m a Postdoctoral Research Associate at the University of Florida with a PhD specializing in cutting-edge control systems, robotics, and deep learning-based methods. My work bridges advanced control theory, adaptive algorithms, and machine learning to design robust, real-time solutions for uncertain nonlinear systems and multi-agent environments. My research has led to breakthroughs in solving longstanding open problems in adaptive control and stability analysis, notably extending Lyapunov-based techniques to deep neural networks. I’ve developed innovative methods, ranging from Lyapunov-derived adaptive laws and safety-focused control barrier functions to physics-informed online learning algorithms, that have been implemented in real-world robotic platforms and validated through extensive experimentation. I’m always eager to connect with fellow researchers, industry professionals, and anyone interested in the intersection of control theory, robotics, AI, and machine learning. Let’s explore how innovative control strategies can transform robotics, automation, and beyond.
