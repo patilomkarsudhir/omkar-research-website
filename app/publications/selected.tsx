@@ -1,4 +1,19 @@
-import selected from "../../data/selected.json";
+import rawSelected from "../../data/selected.json";
+
+type Publication = {
+  title: string;
+  authors: string;
+  venue: string;
+  year?: number;
+  blurb?: string;
+  links?: {
+    pdf?: string;
+    code?: string;
+    video?: string;
+  };
+};
+
+const selected = rawSelected as Publication[];
 
 export default function SelectedPubs() {
   return (
