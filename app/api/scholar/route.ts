@@ -1,6 +1,8 @@
 export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
 
 // Cache duration for both upstream fetch and CDN response (in seconds)
 const REVALIDATE_SECONDS = 3600; // 1 hour
@@ -12,7 +14,7 @@ function withUA(url: string) {
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
       "Accept-Language": "en-US,en;q=0.9",
-      "Accept-Encoding": "gzip, deflate, br",
+  // Let the runtime set encoding automatically
       "DNT": "1",
       "Connection": "keep-alive",
       "Upgrade-Insecure-Requests": "1",
@@ -65,6 +67,17 @@ function parsePubs($: cheerio.CheerioAPI) {
   return pubs;
 }
 
+async function loadCachedData() {
+  try {
+    const filePath = path.join(process.cwd(), "data", "scholar-cache.json");
+    const raw = await fs.readFile(filePath, "utf-8");
+    const json = JSON.parse(raw);
+    return json;
+  } catch (e) {
+    return null;
+  }
+}
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const rawUser =
@@ -82,6 +95,14 @@ export async function GET(req: Request) {
     const res = await withUA(url);
     
     if (!res.ok) {
+      // Fallback to cached data instead of surfacing 5xx to clients
+      const cached = await loadCachedData();
+      if (cached) {
+        return NextResponse.json(
+          { ...cached, source: "cache", stale: true },
+          { headers: { "Cache-Control": `s-maxage=${REVALIDATE_SECONDS}` } }
+        );
+      }
       return NextResponse.json({ error: `Fetch failed: ${res.status}` }, { status: 502 });
     }
     
@@ -95,10 +116,17 @@ export async function GET(req: Request) {
     const hasPubRows = $("#gsc_a_t .gsc_a_tr").length > 0;
     
     if ((!hasMetricsTable && Object.keys(metrics).length === 0) && !hasPubRows) {
+      const cached = await loadCachedData();
+      if (cached) {
+        return NextResponse.json(
+          { ...cached, source: "cache", stale: true },
+          { headers: { "Cache-Control": `s-maxage=${REVALIDATE_SECONDS}` } }
+        );
+      }
       return NextResponse.json({ error: "Parsing failed (blocked or markup changed)" }, { status: 503 });
     }
     
-    const data = { metrics, publications };
+    const data = { metrics, publications, source: "live", stale: false };
     return NextResponse.json(data, {
       headers: {
         // Cache at CDN to reduce origin scrapes; clients may receive stale data while we revalidate
@@ -107,6 +135,13 @@ export async function GET(req: Request) {
     });
   } catch (error) {
     console.error("Error in scholar route:", error);
+    const cached = await loadCachedData();
+    if (cached) {
+      return NextResponse.json(
+        { ...cached, source: "cache", stale: true },
+        { headers: { "Cache-Control": `s-maxage=${REVALIDATE_SECONDS}` } }
+      );
+    }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
