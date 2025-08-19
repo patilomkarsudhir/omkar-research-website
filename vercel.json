@@ -2,11 +2,12 @@
   "version": 2,
   "builds": [
     {
-      "src": "next.config.mjs",
+      "src": "package.json",
       "use": "@vercel/next"
     }
   ],
   "env": {
-    "SCHOLAR_USER": "EtkfNQMAAAAJ"
+    "SCHOLAR_USER": "EtkfNQMAAAAJ",
+    "NEXT_PUBLIC_SCHOLAR_USER": "EtkfNQMAAAAJ"
   }
 }
