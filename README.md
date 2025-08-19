@@ -1,4 +1,4 @@
-# Remade Research Site
+# Research Site
 
 - Next.js App Router + Tailwind
 - Live Google Scholar sync (server route + client UI)
