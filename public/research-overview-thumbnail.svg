@@ -1,0 +1,50 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.05" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  
+  <!-- Geometric pattern -->
+  <circle cx="100" cy="100" r="80" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="1100" cy="530" r="60" fill="rgba(255,255,255,0.08)"/>
+  <rect x="950" y="50" width="100" height="100" rx="20" fill="rgba(255,255,255,0.06)"/>
+  
+  <!-- Main content card -->
+  <rect x="150" y="100" width="900" height="430" rx="25" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  
+  <!-- Profile section -->
+  <circle cx="300" cy="250" r="60" fill="rgba(255,255,255,0.2)"/>
+  <text x="300" y="260" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="48" font-weight="bold">OP</text>
+  
+  <!-- Title and content -->
+  <text x="420" y="200" fill="white" font-family="Arial, sans-serif" font-size="48" font-weight="bold">Omkar Patil</text>
+  <text x="420" y="240" fill="rgba(255,255,255,0.9)" font-family="Arial, sans-serif" font-size="24">Control Systems • AI • Robotics Research</text>
+  
+  <!-- Research areas -->
+  <rect x="420" y="280" width="200" height="35" rx="18" fill="rgba(72, 187, 120, 0.3)" stroke="rgba(72, 187, 120, 0.6)" stroke-width="1"/>
+  <text x="520" y="302" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="14" font-weight="600">Adaptive Control</text>
+  
+  <rect x="640" y="280" width="180" height="35" rx="18" fill="rgba(102, 126, 234, 0.3)" stroke="rgba(102, 126, 234, 0.6)" stroke-width="1"/>
+  <text x="730" y="302" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="14" font-weight="600">Neural Networks</text>
+  
+  <rect x="840" y="280" width="160" height="35" rx="18" fill="rgba(244, 114, 182, 0.3)" stroke="rgba(244, 114, 182, 0.6)" stroke-width="1"/>
+  <text x="920" y="302" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="14" font-weight="600">Safety Control</text>
+  
+  <!-- Features -->
+  <text x="420" y="360" fill="rgba(255,255,255,0.8)" font-family="Arial, sans-serif" font-size="18">🚁 Interactive Quadrotor Simulations</text>
+  <text x="420" y="390" fill="rgba(255,255,255,0.8)" font-family="Arial, sans-serif" font-size="18">🧠 Neural ODE Demonstrations</text>
+  <text x="420" y="420" fill="rgba(255,255,255,0.8)" font-family="Arial, sans-serif" font-size="18">🛡️ Control Barrier Functions Lab</text>
+  <text x="420" y="450" fill="rgba(255,255,255,0.8)" font-family="Arial, sans-serif" font-size="18">♟️ AI Chess Engine Tutorials</text>
+  
+  <!-- Bottom tagline -->
+  <text x="600" y="550" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-family="Arial, sans-serif" font-size="16" font-style="italic">Innovative Control Strategies • Real-time Simulations • Interactive Research</text>
+</svg>

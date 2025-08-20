@@ -4,6 +4,48 @@ import Link from "next/link";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import SchoolIcon from "@mui/icons-material/School";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+	title: "Omkar Patil - Control Systems & AI Research",
+	description: "Postdoctoral Research Associate at University of Florida specializing in adaptive control, robotics, and deep learning. Expert in Lyapunov-based techniques, control barrier functions, and neural network adaptation for nonlinear systems.",
+	keywords: ["control systems", "adaptive control", "robotics", "deep learning", "neural networks", "Lyapunov control", "control barrier functions", "research", "AI", "machine learning"],
+	authors: [{ name: "Omkar Sudhir Patil" }],
+	creator: "Omkar Sudhir Patil",
+	openGraph: {
+		title: "Omkar Patil - Control Systems & AI Research",
+		description: "Innovative control strategies for robotics and automation. Interactive demos, research publications, and cutting-edge solutions in adaptive control and machine learning.",
+		url: "https://omkarsudhirpatil.com",
+		siteName: "Omkar Patil Research",
+		images: [
+			{
+				url: "/research-overview-thumbnail.svg",
+				width: 1200,
+				height: 630,
+				alt: "Omkar Patil - Control Systems & AI Research Overview",
+			},
+		],
+		locale: "en_US",
+		type: "website",
+	},
+	twitter: {
+		card: "summary_large_image",
+		title: "Omkar Patil - Control Systems & AI Research",
+		description: "Innovative control strategies for robotics and automation. Interactive demos and cutting-edge research.",
+		images: ["/research-overview-thumbnail.svg"],
+	},
+	robots: {
+		index: true,
+		follow: true,
+		googleBot: {
+			index: true,
+			follow: true,
+			"max-video-preview": -1,
+			"max-image-preview": "large",
+			"max-snippet": -1,
+		},
+	},
+};
 
 // Data URI thumbnails (SVG) so no extra asset files are needed
 const demos = [
