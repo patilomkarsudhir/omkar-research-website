@@ -1818,18 +1818,23 @@
             setupEventListeners() {
                 // Animation controls
                 document.getElementById('playAnimation').addEventListener('click', () => {
-                    isAnimating = !isAnimating;
-                    document.getElementById('playAnimation').textContent = isAnimating ? '⏸️ Pause' : '▶️ Play';
+                    if (simulator.isRunning) {
+                        simulator.stop();
+                        document.getElementById('playAnimation').textContent = '▶️ Play';
+                    } else {
+                        simulator.start();
+                        document.getElementById('playAnimation').textContent = '⏸️ Pause';
+                    }
                 });
 
                 document.getElementById('pauseAnimation').addEventListener('click', () => {
-                    isAnimating = false;
+                    simulator.stop();
                     document.getElementById('playAnimation').textContent = '▶️ Play';
                 });
 
                 document.getElementById('resetAnimation').addEventListener('click', () => {
-                    isAnimating = false;
-                    currentAnimationFrame = 0;
+                    simulator.stop();
+                    simulator.reset();
                     document.getElementById('playAnimation').textContent = '▶️ Play';
                 });
 
@@ -1948,6 +1953,7 @@
                 const gyro_theta = (this.Izz - this.Ixx) * phi_dot * psi_dot / this.Iyy;
                 const gyro_psi = (this.Ixx - this.Iyy) * phi_dot * theta_dot / this.Izz;
 
+               
                 // Wind disturbances
                 const stateSum = state.reduce((a, b) => a + b, 0);
                 const wind_x = this.wind_strength * Math.sin(0.1 * time) * Math.cos(0.3 * stateSum);
