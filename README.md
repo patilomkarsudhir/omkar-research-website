@@ -1,5 +1,6 @@
 # Research Site
 
+- omkarsudhirpatil.com
 - Next.js App Router + Tailwind
 - Live Google Scholar sync (server route + client UI)
 - Interactive Demos
