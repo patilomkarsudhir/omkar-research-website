@@ -2976,7 +2976,7 @@
             return controls;
         }
 
-        // ============= ENERGY-BASED HERDING SIMULATION =============
+        // ============= HERDING SIMULATION FUNCTIONS =============
         
         function createHerdingAgents() {
             const canvas = document.getElementById('multiagent-canvas');
@@ -2993,29 +2993,6 @@
             multiAgentDemo.targetPosition = { 
                 x: centerX + 120, 
                 y: centerY 
-            };
-            
-            // Initialize energy function parameters
-            multiAgentDemo.energyParams = {
-                globalMinimum: 0,           // Target energy level
-                currentEnergy: 0,           // Current system energy
-                energyRate: 0,              // Rate of energy change
-                cohesionWeight: 2.0,        // Weight for sheep cohesion
-                targetWeight: 3.0,          // Weight for target attraction
-                separationWeight: 1.5,      // Weight for inter-sheep separation
-                containmentWeight: 4.0,     // Weight for containment in target
-                timeHorizon: 60.0,          // Planning horizon for time-varying CBFs
-                convergenceThreshold: 0.1   // Energy threshold for convergence
-            };
-            
-            // Initialize time-varying CBF parameters
-            multiAgentDemo.cbfParams = {
-                baseRadius: 30,             // Base safety radius
-                adaptiveRadius: 30,         // Current adaptive radius
-                aggressiveness: 0.5,        // How aggressive dogs can be (0-1)
-                timeVaryingAlpha: 1.0,      // Time-varying CBF class-K function parameter
-                containmentMode: false,     // Whether we're in containment phase
-                lastEnergyDecrease: 0       // Time since last energy decrease
             };
             
             // Create sheep agents - start randomly distributed on left side
@@ -3833,63 +3810,61 @@
                     `
                 },
                 'herding': {
-                    title: 'Energy-Based Herding with Time-Varying CBFs:',
+                    title: 'Shepherding Control with CBF:',
                     content: `
                         <p><strong>Problem Statement:</strong></p>
                         <p style="font-size: 0.95rem; color: #e2e8f0; margin: 10px 0; line-height: 1.4;">
-                            <em>Energy-based shepherding</em> addresses the challenge of using a unified mathematical framework 
-                            to control herding agents without discrete mode switching. Instead of complex behavioral rules, 
-                            we employ a global energy function that encodes the herding objective and time-varying CBFs that 
-                            adapt safety constraints based on herding progress. This approach provides theoretical guarantees 
-                            while eliminating the complexity of managing multiple modes and transition conditions.
+                            <em>Shepherding control</em> addresses the challenge of using a small number of control agents (dogs) to guide 
+                            a larger group of passive agents (sheep) toward a target location. This bio-inspired problem combines predator-prey 
+                            dynamics with collective behavior, modeling how shepherds, border collies, or autonomous shepherding robots can 
+                            effectively herd livestock or crowds. The key challenge is that dogs cannot directly control sheep—they can only 
+                            influence them through repulsive forces, requiring intelligent positioning and movement strategies.
                         </p>
                         
-                        <p><strong>Global Energy Function:</strong></p>
-                        $$V(\\mathbf{x}) = \\sum_{i=1}^{N_s} \\left[ w_1 \\max(0, \\|\\mathbf{x}_i^s - \\mathbf{x}_{target}\\| - r_{target}) + w_2 \\|\\mathbf{x}_i^s - \\mathbf{c}_s\\|^2 + w_3 \\sum_{j \\neq i} e^{-\\|\\mathbf{x}_i^s - \\mathbf{x}_j^s\\|/\\sigma} \\right]$$
-                        
+                        <p><strong>Sheep Dynamics (Repulsion-Attraction Model):</strong></p>
+                        $$u_i^{sheep} = \\underbrace{\\sum_{d \\in Dogs} \\frac{\\beta_r}{\\|x_i - x_d\\|^2} \\frac{x_i - x_d}{\\|x_i - x_d\\|}}_{\\text{Dog Repulsion}} + \\underbrace{\\frac{\\beta_a}{|\\mathcal{N}_i|} \\sum_{j \\in \\mathcal{N}_i} (x_j - x_i)}_{\\text{Sheep Attraction}}$$
                         <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                            Energy combines target attraction, group cohesion, and inter-sheep separation for sheep positions $\\mathbf{x}_i^s$.
+                            Sheep are repelled by dogs with strength $\\beta_r$ and attracted to neighbors with strength $\\beta_a$.
                         </p>
                         
-                        <p><strong>Energy Gradient (Natural Motion Direction):</strong></p>
-                        $$\\nabla_{\\mathbf{x}_i^s} V = w_1 \\frac{\\mathbf{x}_i^s - \\mathbf{x}_{target}}{\\|\\mathbf{x}_i^s - \\mathbf{x}_{target}\\|} + 2w_2 (\\mathbf{x}_i^s - \\mathbf{c}_s) + w_3 \\sum_{j \\neq i} \\frac{e^{-d_{ij}/\\sigma}}{\\sigma d_{ij}} (\\mathbf{x}_i^s - \\mathbf{x}_j^s)$$
-                        
-                        <p><strong>Time-Varying CBF for Adaptive Safety:</strong></p>
-                        $$h_{ij}(t) = \\|\\mathbf{x}_i^d(t) - \\mathbf{x}_j^s(t)\\|^2 - r_{safe}^2(t)$$
-                        $$r_{safe}(t) = r_0 \\left(1 + \\beta(\\eta(t)) \\cdot \\text{fear}_j(t)\\right)$$
-                        
-                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                            Safety radius adapts based on containment ratio $\\eta(t)$ and individual sheep fear level.
+                        <p><strong>Dog Shepherding Strategy:</strong></p>
+                        <p style="font-size: 0.9rem; color: #e2e8f0; margin: 5px 0;">
+                            Dogs use adaptive collect/drive algorithm based on sheep distribution:
                         </p>
-                        
-                        <p><strong>Adaptive Class-K Function:</strong></p>
-                        $$\\alpha(t) = \\alpha_0 \\cdot \\begin{cases} 
-                        \\gamma_{aggressive} & \\text{if } \\dot{V} < -\\epsilon \\text{ and } \\eta(t) < 0.7 \\\\
-                        \\gamma_{moderate} & \\text{if } \\eta(t) \\in [0.3, 0.7] \\\\
-                        \\gamma_{conservative} & \\text{if } \\dot{V} \\geq -\\epsilon \\text{ or } \\eta(t) > 0.7
+                        $$\\text{Mode} = \\begin{cases}
+                        \\text{COLLECT} & \\text{if } \\sigma_{sheep} > \\sigma_{threshold} \\text{ or } \\|C_{sheep} - x_{target}\\| > d_{target} \\\\
+                        \\text{DRIVE} & \\text{otherwise}
                         \\end{cases}$$
                         
-                        <p><strong>Energy-Based Dog Control Law:</strong></p>
-                        $$\\mathbf{u}_i^d = -k_E \\nabla_{\\mathbf{x}_i^d} V(\\mathbf{x}) + \\mathbf{u}_{formation} + \\mathbf{u}_{cbf}$$
-                        
+                        <p><strong>Collect Mode (Gathering Scattered Sheep):</strong></p>
+                        $$x_d^{des} = x_{farthest} + r_{influence} \\frac{x_{farthest} - C_{sheep}}{\\|x_{farthest} - C_{sheep}\\|}$$
                         <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                            Dogs minimize global energy while maintaining formation and respecting safety constraints.
+                            Dog positions behind farthest sheep from flock center $C_{sheep}$ to push it back.
                         </p>
                         
-                        <p><strong>Sheep Response with Fear Dynamics:</strong></p>
-                        $$\\mathbf{u}_i^s = -k_s \\nabla_{\\mathbf{x}_i^s} V + \\sum_{j=1}^{N_d} \\frac{k_{fear} e^{-d_{ij}/\\sigma_f}}{d_{ij}} (\\mathbf{x}_i^s - \\mathbf{x}_j^d)$$
-                        $$\\dot{f}_i = k_f \\sum_{j=1}^{N_d} e^{-d_{ij}/\\sigma_f} - \\lambda_f f_i$$
+                        <p><strong>Drive Mode (Pushing Toward Target):</strong></p>
+                        $$x_d^{des} = C_{sheep} - r_{drive} \\frac{x_{target} - C_{sheep}}{\\|x_{target} - C_{sheep}\\|}$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            Dog positions behind flock center, opposite to target direction.
+                        </p>
+                        
+                        <p><strong>Sheep Center of Mass:</strong></p>
+                        $$C_{sheep} = \\frac{1}{N_{sheep}} \\sum_{i=1}^{N_{sheep}} x_i^{sheep}$$
+                        
+                        <p><strong>Flock Spread Metric:</strong></p>
+                        $$\\sigma_{sheep} = \\frac{1}{N_{sheep}} \\sum_{i=1}^{N_{sheep}} \\|x_i^{sheep} - C_{sheep}\\|$$
+                        
+                        <p><strong>Multi-CBF Safety Constraints:</strong></p>
+                        $$h_{ij}^{sheep} = \\|x_i - x_j\\|^2 - d_{sheep}^2 \\geq 0 \\quad \\text{(sheep-sheep)}$$
+                        $$h_{id}^{avoid} = \\|x_i - x_d\\|^2 - d_{min}^2 \\geq 0 \\quad \\text{(sheep-dog)}$$
+                        $$h_{dd}^{coord} = \\|x_{d1} - x_{d2}\\|^2 - d_{dog}^2 \\geq 0 \\quad \\text{(dog-dog)}$$
                         
                         <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.2);">
-                            <strong>Key Theoretical Advantages:</strong><br>
-                            • <strong>Lyapunov Stability:</strong> Energy function guarantees convergence to target<br>
-                            • <strong>No Mode Switching:</strong> Unified framework eliminates transition complexity<br>
-                            • <strong>Adaptive Safety:</strong> CBF parameters evolve with herding progress<br>
-                            • <strong>Scalable:</strong> Energy formulation naturally handles varying numbers of agents<br>
-                            • <strong>Robust:</strong> Theoretical guarantees despite uncertain sheep responses
-                        </p>
-                    `
-                },
+                            <strong>Bio-Inspired Features:</strong><br>
+                            • Adaptive strategy switching based on flock state<br>
+                            • Emergent herding behavior from local interactions<br>
+                            • Scalable to multiple dogs and large flocks<br>
+                            • Mimics real shepherd dog behavior patterns
                         </p>
                     `
                 }
