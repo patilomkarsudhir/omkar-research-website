@@ -639,9 +639,9 @@
             <div class="demo-card">
                 <h3>Multi-Agent Collision Avoidance</h3>
                 <p style="color: #94a3b8; margin: 10px 0; font-size: 0.9rem;">
-                    Explore various multi-agent formations and observe how CBF ensures collision avoidance. 
-                    Try different formation types to see how agents navigate complex scenarios while maintaining safety.
-                    <strong>Use the dropdown to select different formation challenges.</strong>
+                    Explore various multi-agent formations and bio-inspired scenarios using Control Barrier Functions for safety. 
+                    Try different formation types and shepherding scenarios to see how agents navigate complex scenarios while maintaining safety.
+                    <strong>Use the dropdown to select different formation challenges and herding simulations.</strong>
                 </p>
                 <div class="demo-canvas" id="multiagent-canvas" style="height: 400px;">
                     <div class="grid-background"></div>
@@ -669,11 +669,10 @@
                                 <option value="formation-control">Distributed Formation</option>
                                 <option value="flocking">Flocking with Consensus</option>
                             </optgroup>
+                            <optgroup label="Bio-Inspired Scenarios">
+                                <option value="herding">Shepherding (Dogs & Sheep)</option>
+                            </optgroup>
                         </select>
-                    </div>
-                    <div class="control-group">
-                        <label>Number of Agents: <span id="num-agents-value">4</span></label>
-                        <input type="range" id="num-agents" min="2" max="8" step="1" value="4">
                     </div>
                     <div class="control-group">
                         <label>Safety Distance: <span id="safety-distance-value">30</span></label>
@@ -682,6 +681,38 @@
                     <div class="control-group">
                         <label>CBF Gain (α): <span id="cbf-gain-value">2.0</span></label>
                         <input type="range" id="cbf-gain" min="0.5" max="5" step="0.5" value="2.0">
+                    </div>
+                </div>
+                
+                <!-- Herding Controls -->
+                <div class="controls" id="herding-controls" style="display: none;">
+                    <div class="control-group">
+                        <label>Number of Sheep: <span id="num-sheep-value">6</span></label>
+                        <input type="range" id="num-sheep" min="3" max="12" step="1" value="6">
+                    </div>
+                    <div class="control-group">
+                        <label>Number of Dogs: <span id="num-dogs-value">2</span></label>
+                        <input type="range" id="num-dogs" min="1" max="8" step="1" value="2">
+                    </div>
+                    <div class="control-group">
+                        <label>Dog Speed: <span id="dog-speed-value">5.0</span></label>
+                        <input type="range" id="dog-speed" min="2.0" max="40.0" step="0.5" value="5.0">
+                    </div>
+                    <div class="control-group">
+                        <label>Dog Influence Radius: <span id="dog-influence-value">65</span></label>
+                        <input type="range" id="dog-influence" min="40" max="100" step="5" value="65">
+                    </div>
+                    <div class="control-group">
+                        <label>Sheep Cohesion Strength: <span id="sheep-cohesion-value">1.5</span></label>
+                        <input type="range" id="sheep-cohesion" min="0.5" max="3.0" step="0.1" value="1.5">
+                    </div>
+                    <div class="control-group">
+                        <label>Sheep Speed: <span id="sheep-speed-value">3.5</span></label>
+                        <input type="range" id="sheep-speed" min="1.0" max="8.0" step="0.1" value="3.5">
+                    </div>
+                    <div class="control-group">
+                        <label>Target Zone Radius: <span id="target-radius-value">45</span></label>
+                        <input type="range" id="target-radius" min="25" max="80" step="5" value="45">
                     </div>
                 </div>
                 
@@ -824,7 +855,6 @@
         // Multi-Agent Demo State
         let multiAgentDemo = {
             agents: [],
-            numAgents: 4,
             safetyDistance: 30,
             cbfGain: 2.0,
             activeConstraints: 0,
@@ -847,7 +877,26 @@
             desiredOffsets: [],
             // Formation control
             desiredDistances: [],
-            formationCenter: { x: 0, y: 0 }
+            formationCenter: { x: 0, y: 0 },
+            // Herding scenario parameters
+            numSheep: 6,
+            numDogs: 2,
+            dogSpeed: 5.0,           // Increased from 3.0 for faster herding
+            dogInfluenceRadius: 60,
+            sheepCohesionStrength: 1.5,
+            targetRadius: 45,
+            targetPosition: { x: 0, y: 0 },
+            sheepAgents: [],
+            dogAgents: [],
+            herdingMode: 'collect', // 'collect' or 'drive'
+            collectRadius: 55, // Reduced from 70 for faster collection detection
+            sheepInteractionRadius: 45, // Reduced from 55 for more local reactions
+            dogRepulsionStrength: 6.0,    // Increased from 4.0 for stronger dog influence
+            sheepAttractionStrength: 1.2, // Increased from 1.0 for better flocking
+            maxSheepSpeed: 3.5,          // Increased from 2.2 for faster sheep movement
+            maxDogAcceleration: 8.0,     // Increased from 5.0 for more responsive dogs
+            fearDecayRate: 0.025,        // Increased from 0.015 for faster fear decay
+            modeSwithingThreshold: 0.8   // hysteresis for mode switching
         };
 
         // Function to switch between demo tabs
@@ -1629,18 +1678,21 @@
                 // Control listeners
                 document.getElementById('formation-type').addEventListener('change', (e) => {
                     multiAgentDemo.formationType = e.target.value;
-                    // Show/hide consensus controls for graph-based methods
+                    // Show/hide appropriate controls for different methods
                     const consensusControls = document.getElementById('consensus-controls');
+                    const herdingControls = document.getElementById('herding-controls');
                     const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(e.target.value);
+                    const isHerdingMethod = e.target.value === 'herding';
+                    
                     consensusControls.style.display = isConsensusMethod ? 'flex' : 'none';
-                    createAgents();
+                    herdingControls.style.display = isHerdingMethod ? 'flex' : 'none';
+                    
+                    if (isHerdingMethod) {
+                        createHerdingAgents();
+                    } else {
+                        createAgents();
+                    }
                     updateMathematicalContent();
-                });
-                
-                document.getElementById('num-agents').addEventListener('input', (e) => {
-                    multiAgentDemo.numAgents = parseInt(e.target.value);
-                    document.getElementById('num-agents-value').textContent = e.target.value;
-                    createAgents();
                 });
                 
                 document.getElementById('safety-distance').addEventListener('input', (e) => {
@@ -1671,6 +1723,48 @@
                         createAgents();
                     }
                 });
+                
+                // Herding control listeners
+                document.getElementById('num-sheep').addEventListener('input', (e) => {
+                    multiAgentDemo.numSheep = parseInt(e.target.value);
+                    document.getElementById('num-sheep-value').textContent = e.target.value;
+                    if (multiAgentDemo.formationType === 'herding') {
+                        createHerdingAgents();
+                    }
+                });
+                
+                document.getElementById('num-dogs').addEventListener('input', (e) => {
+                    multiAgentDemo.numDogs = parseInt(e.target.value);
+                    document.getElementById('num-dogs-value').textContent = e.target.value;
+                    if (multiAgentDemo.formationType === 'herding') {
+                        createHerdingAgents();
+                    }
+                });
+                
+                document.getElementById('dog-speed').addEventListener('input', (e) => {
+                    multiAgentDemo.dogSpeed = parseFloat(e.target.value);
+                    document.getElementById('dog-speed-value').textContent = e.target.value;
+                });
+                
+                document.getElementById('dog-influence').addEventListener('input', (e) => {
+                    multiAgentDemo.dogInfluenceRadius = parseInt(e.target.value);
+                    document.getElementById('dog-influence-value').textContent = e.target.value;
+                });
+                
+                document.getElementById('sheep-cohesion').addEventListener('input', (e) => {
+                    multiAgentDemo.sheepCohesionStrength = parseFloat(e.target.value);
+                    document.getElementById('sheep-cohesion-value').textContent = e.target.value;
+                });
+                
+                document.getElementById('sheep-speed').addEventListener('input', (e) => {
+                    multiAgentDemo.maxSheepSpeed = parseFloat(e.target.value);
+                    document.getElementById('sheep-speed-value').textContent = e.target.value;
+                });
+                
+                document.getElementById('target-radius').addEventListener('input', (e) => {
+                    multiAgentDemo.targetRadius = parseInt(e.target.value);
+                    document.getElementById('target-radius-value').textContent = e.target.value;
+                });
             }
             
             createAgents();
@@ -1685,7 +1779,7 @@
             const centerY = rect.height / 2;
             
             multiAgentDemo.agents = [];
-            const num = multiAgentDemo.numAgents;
+            const num = 4; // Fixed number for formation/consensus demos
             const radius = Math.min(rect.width, rect.height) / 3;
             const formationType = multiAgentDemo.formationType;
 
@@ -1876,6 +1970,11 @@
                             goalY = centerY + (Math.random() - 0.5) * radius;
                         }
                         break;
+                        
+                    case 'herding':
+                        // Herding scenario - create sheep and dogs separately
+                        // This case is handled differently - we'll call createHerdingAgents instead
+                        return; // Exit early, herding uses different initialization
                         
                     default:
                         // Default to symmetric
@@ -2095,6 +2194,74 @@
             `;
             
             const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(multiAgentDemo.formationType);
+            const isHerdingMethod = multiAgentDemo.formationType === 'herding';
+            
+            // Draw herding-specific elements
+            if (isHerdingMethod) {
+                // Draw target zone
+                svg.innerHTML += `
+                    <circle cx="${multiAgentDemo.targetPosition.x}" cy="${multiAgentDemo.targetPosition.y}" 
+                            r="${multiAgentDemo.targetRadius}" 
+                            fill="none" stroke="#10b981" stroke-width="3" 
+                            stroke-dasharray="10,5" opacity="0.8"/>
+                    <text x="${multiAgentDemo.targetPosition.x}" y="${multiAgentDemo.targetPosition.y - multiAgentDemo.targetRadius - 10}" 
+                          text-anchor="middle" fill="#10b981" font-size="14" font-weight="bold">Target Zone</text>
+                `;
+                
+                // Draw dog influence areas
+                multiAgentDemo.dogAgents.forEach(dog => {
+                    svg.innerHTML += `
+                        <circle cx="${dog.x}" cy="${dog.y}" r="${multiAgentDemo.dogInfluenceRadius}" 
+                                fill="none" stroke="#dc2626" stroke-width="1" 
+                                stroke-dasharray="5,5" opacity="0.2"/>
+                    `;
+                });
+                
+                // Draw herding mode indicator
+                const mode = multiAgentDemo.herdingMode;
+                const modeColor = mode === 'collect' ? '#f59e0b' : 
+                                 mode === 'focus' ? '#3b82f6' : 
+                                 mode === 'groupPush' ? '#8b5cf6' : 
+                                 mode === 'contain' ? '#10b981' : 
+                                 mode === 'maintainAndCollect' ? '#06b6d4' :
+                                 mode === 'cleanup' ? '#84cc16' : '#6b7280';
+                svg.innerHTML += `
+                    <text x="20" y="30" fill="${modeColor}" font-size="16" font-weight="bold">
+                        Mode: ${mode.toUpperCase()}
+                    </text>
+                `;
+                
+                // Draw progress indicator
+                const successfulSheep = multiAgentDemo.sheepCategories ? multiAgentDemo.sheepCategories.atTarget.length : 0;
+                const totalSheep = multiAgentDemo.sheepAgents.length;
+                const progressPercent = Math.round((successfulSheep / totalSheep) * 100);
+                const progressColor = progressPercent === 100 ? '#10b981' : progressPercent >= 50 ? '#f59e0b' : '#ef4444';
+                
+                svg.innerHTML += `
+                    <text x="20" y="50" fill="${progressColor}" font-size="14" font-weight="bold">
+                        Progress: ${successfulSheep}/${totalSheep} sheep (${progressPercent}%)
+                    </text>
+                `;
+                
+                // Draw sheep center of mass
+                if (multiAgentDemo.sheepAgents.length > 0) {
+                    let centerX = 0, centerY = 0;
+                    multiAgentDemo.sheepAgents.forEach(sheep => {
+                        centerX += sheep.x;
+                        centerY += sheep.y;
+                    });
+                    centerX /= multiAgentDemo.sheepAgents.length;
+                    centerY /= multiAgentDemo.sheepAgents.length;
+                    
+                    svg.innerHTML += `
+                        <circle cx="${centerX}" cy="${centerY}" r="6" 
+                                fill="none" stroke="#06b6d4" stroke-width="2" 
+                                stroke-dasharray="3,3" opacity="0.7"/>
+                        <text x="${centerX + 12}" y="${centerY + 4}" 
+                              fill="#06b6d4" font-size="10">Flock Center</text>
+                    `;
+                }
+            }
             
             // Draw communication links for consensus methods
             if (isConsensusMethod && multiAgentDemo.communicationLinks) {
@@ -2156,58 +2323,170 @@
             
             // Draw agents with enhanced visualization
             multiAgentDemo.agents.forEach((agent, index) => {
-                // Safety zone (smaller for consensus methods to reduce clutter)
-                const safetyRadius = isConsensusMethod ? multiAgentDemo.safetyDistance / 3 : multiAgentDemo.safetyDistance / 2;
-                svg.innerHTML += `
-                    <circle cx="${agent.x}" cy="${agent.y}" r="${safetyRadius}" 
-                            fill="none" stroke="${agent.color}" stroke-width="1" 
-                            stroke-dasharray="3,3" opacity="0.3"/>
-                `;
-                
-                // Goal (only for non-consensus methods or specific cases)
-                if (!isConsensusMethod || multiAgentDemo.formationType === 'formation-control') {
+                if (isHerdingMethod) {
+                    // Special herding visualization
+                    if (agent.type === 'sheep') {
+                        // Enhanced sheep visualization
+                        const fearIndicator = agent.fearLevel || 0;
+                        const baseColor = '#f8fafc'; // Very light blue-white
+                        const afraidColor = '#fef3c7'; // Light yellow when afraid
+                        const sheepColor = fearIndicator > 0.3 ? afraidColor : baseColor;
+                        const strokeColor = fearIndicator > 0.4 ? '#f59e0b' : '#64748b';
+                        const strokeWidth = fearIndicator > 0.5 ? 3 : 2;
+                        
+                        // Main sheep body
+                        svg.innerHTML += `
+                            <circle cx="${agent.x}" cy="${agent.y}" r="${agent.radius}" 
+                                    fill="${sheepColor}" stroke="${strokeColor}" stroke-width="${strokeWidth}"/>
+                        `;
+                        
+                        // Sheep eyes (black dots)
+                        svg.innerHTML += `
+                            <circle cx="${agent.x - 3}" cy="${agent.y - 2}" r="1" fill="#1f2937"/>
+                            <circle cx="${agent.x + 3}" cy="${agent.y - 2}" r="1" fill="#1f2937"/>
+                        `;
+                        
+                        // Sheep ears (small arcs)
+                        svg.innerHTML += `
+                            <ellipse cx="${agent.x - 4}" cy="${agent.y - 6}" rx="2" ry="3" 
+                                     fill="${sheepColor}" stroke="${strokeColor}" stroke-width="1"/>
+                            <ellipse cx="${agent.x + 4}" cy="${agent.y - 6}" rx="2" ry="3" 
+                                     fill="${sheepColor}" stroke="${strokeColor}" stroke-width="1"/>
+                        `;
+                        
+                        // Fear indicator with pulsing red halo
+                        if (fearIndicator > 0.2) {
+                            const pulseRadius = agent.radius + 3 + Math.sin(Date.now() * 0.01) * 2;
+                            svg.innerHTML += `
+                                <circle cx="${agent.x}" cy="${agent.y}" r="${pulseRadius}" 
+                                        fill="none" stroke="#ef4444" stroke-width="2" 
+                                        opacity="${fearIndicator * 0.6}"/>
+                            `;
+                        }
+                        
+                        // Sheep label
+                        svg.innerHTML += `
+                            <text x="${agent.x}" y="${agent.y + 18}" text-anchor="middle" 
+                                  fill="#64748b" font-size="10" opacity="0.7">🐑</text>
+                        `;
+                        
+                    } else if (agent.type === 'dog') {
+                        // Enhanced dog visualization
+                        const dogMode = multiAgentDemo.herdingMode;
+                        const collectColor = '#f59e0b'; // Amber for collect mode
+                        const driveColor = '#8b5cf6';   // Purple for drive mode
+                        const modeColor = dogMode === 'collect' ? collectColor : driveColor;
+                        const isActive = Math.hypot(agent.vx, agent.vy) > 0.5;
+                        
+                        // Main dog body with mode-based coloring
+                        svg.innerHTML += `
+                            <circle cx="${agent.x}" cy="${agent.y}" r="${agent.radius}" 
+                                    fill="${agent.color}" stroke="${modeColor}" stroke-width="3"/>
+                        `;
+                        
+                        // Dog eyes (white with black pupils)
+                        svg.innerHTML += `
+                            <circle cx="${agent.x - 3}" cy="${agent.y - 2}" r="2" fill="white"/>
+                            <circle cx="${agent.x + 3}" cy="${agent.y - 2}" r="2" fill="white"/>
+                            <circle cx="${agent.x - 3}" cy="${agent.y - 2}" r="1" fill="#1f2937"/>
+                            <circle cx="${agent.x + 3}" cy="${agent.y - 2}" r="1" fill="#1f2937"/>
+                        `;
+                        
+                        // Dog ears (triangular)
+                        svg.innerHTML += `
+                            <polygon points="${agent.x - 6},${agent.y - 8} ${agent.x - 2},${agent.y - 6} ${agent.x - 4},${agent.y - 4}" 
+                                     fill="${agent.color}" stroke="${modeColor}" stroke-width="1"/>
+                            <polygon points="${agent.x + 6},${agent.y - 8} ${agent.x + 2},${agent.y - 6} ${agent.x + 4},${agent.y - 4}" 
+                                     fill="${agent.color}" stroke="${modeColor}" stroke-width="1"/>
+                        `;
+                        
+                        // Activity indicator (glowing effect when moving)
+                        if (isActive) {
+                            svg.innerHTML += `
+                                <circle cx="${agent.x}" cy="${agent.y}" r="${agent.radius + 4}" 
+                                        fill="none" stroke="${modeColor}" stroke-width="1" 
+                                        opacity="0.5" stroke-dasharray="3,3"/>
+                            `;
+                        }
+                        
+                        // Dog label with mode indication
+                        const modeEmoji = dogMode === 'collect' ? '🔄' : '➡️';
+                        svg.innerHTML += `
+                            <text x="${agent.x}" y="${agent.y + 20}" text-anchor="middle" 
+                                  fill="${modeColor}" font-size="8" font-weight="bold">🐕${modeEmoji}</text>
+                        `;
+                        
+                        // Enhanced velocity vector for dogs
+                        if (agent.vx || agent.vy) {
+                            const velocityScale = 20;
+                            const vx_scaled = agent.vx * velocityScale;
+                            const vy_scaled = agent.vy * velocityScale;
+                            const speed = Math.hypot(agent.vx, agent.vy);
+                            const opacity = Math.min(1.0, 0.5 + speed / 3);
+                            
+                            svg.innerHTML += `
+                                <line x1="${agent.x}" y1="${agent.y}" 
+                                      x2="${agent.x + vx_scaled}" y2="${agent.y + vy_scaled}" 
+                                      stroke="${modeColor}" stroke-width="3" 
+                                      opacity="${opacity}" marker-end="url(#arrowhead)"/>
+                            `;
+                        }
+                    }
+                } else {
+                    // Original agent visualization for non-herding scenarios
+                    // Safety zone (smaller for consensus methods to reduce clutter)
+                    const safetyRadius = isConsensusMethod ? multiAgentDemo.safetyDistance / 3 : multiAgentDemo.safetyDistance / 2;
                     svg.innerHTML += `
-                        <circle cx="${agent.goalX}" cy="${agent.goalY}" r="4" 
-                                fill="none" stroke="${agent.color}" stroke-width="2" 
-                                stroke-dasharray="2,2" opacity="0.6"/>
+                        <circle cx="${agent.x}" cy="${agent.y}" r="${safetyRadius}" 
+                                fill="none" stroke="${agent.color}" stroke-width="1" 
+                                stroke-dasharray="3,3" opacity="0.3"/>
                     `;
-                }
-                
-                // Agent with special styling for leaders
-                const agentRadius = agent.isLeader ? 10 : 8;
-                const strokeWidth = agent.isLeader ? 3 : 2;
-                const strokeColor = agent.isLeader ? "#fbbf24" : "#ffffff";
-                
-                svg.innerHTML += `
-                    <circle cx="${agent.x}" cy="${agent.y}" r="${agentRadius}" 
-                            fill="${agent.color}" stroke="${strokeColor}" stroke-width="${strokeWidth}"/>
-                    <text x="${agent.x}" y="${agent.y + 3}" text-anchor="middle" 
-                          fill="white" font-size="10" font-weight="bold">${agent.isLeader ? 'L' : agent.id + 1}</text>
-                `;
-                
-                // Show velocity vectors for flocking
-                if (multiAgentDemo.formationType === 'flocking' && (agent.vx || agent.vy)) {
-                    const velocityScale = 20; // Much larger arrows
-                    const vx_scaled = agent.vx * velocityScale;
-                    const vy_scaled = agent.vy * velocityScale;
-                    const speed = Math.hypot(agent.vx, agent.vy);
-                    const opacity = Math.min(1, 0.3 + speed / 8); // More visible
+                    
+                    // Goal (only for non-consensus methods or specific cases)
+                    if (!isConsensusMethod || multiAgentDemo.formationType === 'formation-control') {
+                        svg.innerHTML += `
+                            <circle cx="${agent.goalX}" cy="${agent.goalY}" r="4" 
+                                    fill="none" stroke="${agent.color}" stroke-width="2" 
+                                    stroke-dasharray="2,2" opacity="0.6"/>
+                        `;
+                    }
+                    
+                    // Agent with special styling for leaders
+                    const agentRadius = agent.isLeader ? 10 : 8;
+                    const strokeWidth = agent.isLeader ? 3 : 2;
+                    const strokeColor = agent.isLeader ? "#fbbf24" : "#ffffff";
                     
                     svg.innerHTML += `
-                        <line x1="${agent.x}" y1="${agent.y}" 
-                              x2="${agent.x + vx_scaled}" y2="${agent.y + vy_scaled}" 
-                              stroke="#00ffff" stroke-width="3" 
-                              opacity="${opacity}" marker-end="url(#arrowhead)"/>
+                        <circle cx="${agent.x}" cy="${agent.y}" r="${agentRadius}" 
+                                fill="${agent.color}" stroke="${strokeColor}" stroke-width="${strokeWidth}"/>
+                        <text x="${agent.x}" y="${agent.y + 3}" text-anchor="middle" 
+                              fill="white" font-size="10" font-weight="bold">${agent.isLeader ? 'L' : agent.id + 1}</text>
                     `;
-                }
-                
-                // Show communication range for consensus methods (only for leader or first agent)
-                if (isConsensusMethod && (agent.isLeader || index === 0)) {
-                    svg.innerHTML += `
-                        <circle cx="${agent.x}" cy="${agent.y}" r="${multiAgentDemo.communicationRange}" 
-                                fill="none" stroke="#60a5fa" stroke-width="1" 
-                                stroke-dasharray="8,8" opacity="0.15"/>
-                    `;
+                    
+                    // Show velocity vectors for flocking
+                    if (multiAgentDemo.formationType === 'flocking' && (agent.vx || agent.vy)) {
+                        const velocityScale = 20; // Much larger arrows
+                        const vx_scaled = agent.vx * velocityScale;
+                        const vy_scaled = agent.vy * velocityScale;
+                        const speed = Math.hypot(agent.vx, agent.vy);
+                        const opacity = Math.min(1, 0.3 + speed / 8); // More visible
+                        
+                        svg.innerHTML += `
+                            <line x1="${agent.x}" y1="${agent.y}" 
+                                  x2="${agent.x + vx_scaled}" y2="${agent.y + vy_scaled}" 
+                                  stroke="#00ffff" stroke-width="3" 
+                                  opacity="${opacity}" marker-end="url(#arrowhead)"/>
+                        `;
+                    }
+                    
+                    // Show communication range for consensus methods (only for leader or first agent)
+                    if (isConsensusMethod && (agent.isLeader || index === 0)) {
+                        svg.innerHTML += `
+                            <circle cx="${agent.x}" cy="${agent.y}" r="${multiAgentDemo.communicationRange}" 
+                                    fill="none" stroke="#60a5fa" stroke-width="1" 
+                                    stroke-dasharray="8,8" opacity="0.15"/>
+                        `;
+                    }
                 }
             });
             
@@ -2239,9 +2518,52 @@
             
             // Update consensus-specific status
             const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(multiAgentDemo.formationType);
+            const isHerdingMethod = multiAgentDemo.formationType === 'herding';
             const consensusStatus = document.getElementById('consensus-status');
             
-            if (isConsensusMethod) {
+            if (isHerdingMethod) {
+                // Show herding-specific metrics
+                const consensusError = document.getElementById('consensus-error');
+                const consensusLabel = consensusStatus.querySelector('.status-label');
+                
+                consensusStatus.style.display = 'block';
+                
+                if (multiAgentDemo.sheepAgents && multiAgentDemo.sheepAgents.length > 0) {
+                    // Calculate sheep spread
+                    let sheepCenterX = 0, sheepCenterY = 0;
+                    multiAgentDemo.sheepAgents.forEach(sheep => {
+                        sheepCenterX += sheep.x;
+                        sheepCenterY += sheep.y;
+                    });
+                    sheepCenterX /= multiAgentDemo.sheepAgents.length;
+                    sheepCenterY /= multiAgentDemo.sheepAgents.length;
+                    
+                    let spread = 0;
+                    multiAgentDemo.sheepAgents.forEach(sheep => {
+                        spread += Math.hypot(sheep.x - sheepCenterX, sheep.y - sheepCenterY);
+                    });
+                    spread /= multiAgentDemo.sheepAgents.length;
+                    
+                    // Calculate distance to target
+                    const distToTarget = Math.hypot(sheepCenterX - multiAgentDemo.targetPosition.x,
+                                                  sheepCenterY - multiAgentDemo.targetPosition.y);
+                    
+                    // Show most relevant metric based on current mode
+                    if (multiAgentDemo.herdingMode === 'collect') {
+                        consensusError.textContent = Math.round(spread);
+                        consensusLabel.textContent = 'Flock Spread';
+                        consensusError.className = `status-value ${spread < multiAgentDemo.collectRadius * 0.7 ? 'safe' : 'warning'}`;
+                    } else {
+                        consensusError.textContent = Math.round(distToTarget);
+                        consensusLabel.textContent = 'Target Distance';
+                        consensusError.className = `status-value ${distToTarget < multiAgentDemo.targetRadius ? 'safe' : 'warning'}`;
+                    }
+                } else {
+                    consensusError.textContent = '--';
+                    consensusLabel.textContent = 'Herding Status';
+                    consensusError.className = 'status-value';
+                }
+            } else if (isConsensusMethod) {
                 consensusStatus.style.display = 'block';
                 
                 // Calculate consensus error
@@ -2292,7 +2614,7 @@
             let totalActiveConstraints = 0;
             
             // Update communication topology for consensus methods
-            const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(multiAgentDemo.formationType);
+            const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking', 'herding'].includes(multiAgentDemo.formationType);
             if (isConsensusMethod) {
                 updateCommunicationTopology();
             }
@@ -2313,6 +2635,9 @@
                 case 'flocking':
                     agentControls = computeFlockingControls();
                     break;
+                case 'herding':
+                    agentControls = computeHerdingControls();
+                    break;
                 default:
                     // Original simple goal-seeking behavior
                     agentControls = computeBasicGoalControls();
@@ -2323,13 +2648,27 @@
             
             // Update agent positions
             multiAgentDemo.agents.forEach((agent, i) => {
-                if (multiAgentDemo.formationType === 'flocking') {
-                    // For flocking, controls are accelerations
+                if (multiAgentDemo.formationType === 'flocking' || multiAgentDemo.formationType === 'herding') {
+                    // For flocking and herding, controls are accelerations
                     agent.vx += safeControls[i].ux * dt;
                     agent.vy += safeControls[i].uy * dt;
                     
-                    // Limit maximum speed for more dynamic movement
-                    const maxSpeed = 8.0; // Much faster!
+                    // Different speed limits for sheep vs dogs
+                    let maxSpeed;
+                    if (multiAgentDemo.formationType === 'herding') {
+                        if (agent.type === 'sheep') {
+                            // Sheep speed depends on fear level - afraid sheep run faster
+                            const baseSheepSpeed = multiAgentDemo.maxSheepSpeed;
+                            const fearBoost = (agent.fearLevel || 0) * 3.0;
+                            maxSpeed = baseSheepSpeed + fearBoost;
+                        } else {
+                            // Dogs have higher max speed
+                            maxSpeed = multiAgentDemo.dogSpeed * 2.0;
+                        }
+                    } else {
+                        maxSpeed = 8.0; // Flocking speed
+                    }
+                    
                     const speed = Math.hypot(agent.vx, agent.vy);
                     if (speed > maxSpeed) {
                         agent.vx = (agent.vx / speed) * maxSpeed;
@@ -2637,6 +2976,541 @@
             return controls;
         }
 
+        // ============= HERDING SIMULATION FUNCTIONS =============
+        
+        function createHerdingAgents() {
+            const canvas = document.getElementById('multiagent-canvas');
+            const rect = canvas.getBoundingClientRect();
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            // Clear existing agents
+            multiAgentDemo.agents = [];
+            multiAgentDemo.sheepAgents = [];
+            multiAgentDemo.dogAgents = [];
+            
+            // Set target position for herding (where dogs try to drive sheep)
+            multiAgentDemo.targetPosition = { 
+                x: centerX + 120, 
+                y: centerY 
+            };
+            
+            // Create sheep agents - start randomly distributed on left side
+            for (let i = 0; i < multiAgentDemo.numSheep; i++) {
+                const sheepX = 80 + Math.random() * 150; // Left side of canvas
+                const sheepY = 100 + Math.random() * (rect.height - 200);
+                
+                const sheep = {
+                    id: i,
+                    type: 'sheep',
+                    x: sheepX,
+                    y: sheepY,
+                    vx: (Math.random() - 0.5) * 0.5, // Small initial velocities
+                    vy: (Math.random() - 0.5) * 0.5,
+                    color: '#f0f9ff', // Light blue-white for sheep
+                    radius: 8,
+                    fearLevel: 0, // How afraid the sheep is (affects speed)
+                    neighbors: []
+                };
+                
+                multiAgentDemo.agents.push(sheep);
+                multiAgentDemo.sheepAgents.push(sheep);
+            }
+            
+            // Create dog agents - start on the periphery
+            for (let i = 0; i < multiAgentDemo.numDogs; i++) {
+                const angle = (i / multiAgentDemo.numDogs) * 2 * Math.PI;
+                const radius = 100;
+                const dogX = centerX + radius * Math.cos(angle);
+                const dogY = centerY + radius * Math.sin(angle);
+                
+                const dog = {
+                    id: multiAgentDemo.numSheep + i,
+                    type: 'dog',
+                    x: dogX,
+                    y: dogY,
+                    vx: 0,
+                    vy: 0,
+                    color: '#dc2626', // Red for dogs
+                    radius: 10,
+                    mode: 'collect', // 'collect' or 'drive'
+                    target: null, // Current target position for dog
+                    collectPoint: { x: 0, y: 0 } // Point to collect sheep around
+                };
+                
+                multiAgentDemo.agents.push(dog);
+                multiAgentDemo.dogAgents.push(dog);
+            }
+        }
+        
+        function computeHerdingControls() {
+            const sheepControls = computeSheepControls();
+            const dogControls = computeDogControls();
+            
+            // Combine controls in order: sheep first, then dogs
+            return [...sheepControls, ...dogControls];
+        }
+        
+        function computeSheepControls() {
+            const controls = [];
+            const sheepAgents = multiAgentDemo.sheepAgents;
+            const dogAgents = multiAgentDemo.dogAgents;
+            
+            sheepAgents.forEach((sheep, i) => {
+                let ux = 0, uy = 0;
+                
+                // 1. REPULSION FROM DOGS (primary behavior)
+                dogAgents.forEach(dog => {
+                    const dx = sheep.x - dog.x;
+                    const dy = sheep.y - dog.y;
+                    const dist = Math.hypot(dx, dy);
+                    
+                    if (dist < multiAgentDemo.dogInfluenceRadius && dist > 0.1) {
+                        // Exponential repulsion - closer dogs create stronger fear
+                        const normalizedDist = dist / multiAgentDemo.dogInfluenceRadius;
+                        const repulsionStrength = multiAgentDemo.dogRepulsionStrength * 
+                                                Math.exp(-1.5 * normalizedDist) * (2.0 - normalizedDist); // Increased strength
+                        ux += (dx / dist) * repulsionStrength;
+                        uy += (dy / dist) * repulsionStrength;
+                        
+                        // Update fear level with better dynamics - faster response
+                        const fearIncrease = (1.5 - normalizedDist) * 1.2; // Increased fear sensitivity
+                        sheep.fearLevel = Math.min(1.0, sheep.fearLevel + fearIncrease);
+                    }
+                });
+                
+                // 2. COHESION WITH OTHER SHEEP (secondary behavior)
+                let cohesionX = 0, cohesionY = 0, cohesionCount = 0;
+                let avgFearLevel = 0;
+                
+                sheepAgents.forEach((otherSheep, j) => {
+                    if (i !== j) {
+                        const dx = otherSheep.x - sheep.x;
+                        const dy = otherSheep.y - sheep.y;
+                        const dist = Math.hypot(dx, dy);
+                        
+                        if (dist < multiAgentDemo.sheepInteractionRadius) {
+                            cohesionX += otherSheep.x;
+                            cohesionY += otherSheep.y;
+                            avgFearLevel += otherSheep.fearLevel || 0;
+                            cohesionCount++;
+                        }
+                    }
+                });
+                
+                if (cohesionCount > 0) {
+                    const centerX = cohesionX / cohesionCount;
+                    const centerY = cohesionY / cohesionCount;
+                    avgFearLevel /= cohesionCount;
+                    
+                    // Stronger cohesion when afraid (huddling behavior)
+                    const fearBoost = 1.0 + (avgFearLevel * 1.5);
+                    const cohesionStrength = multiAgentDemo.sheepCohesionStrength * fearBoost;
+                    
+                    ux += cohesionStrength * (centerX - sheep.x) * 0.012;
+                    uy += cohesionStrength * (centerY - sheep.y) * 0.012;
+                }
+                
+                // 3. SEPARATION FROM OTHER SHEEP (avoid crowding)
+                sheepAgents.forEach((otherSheep, j) => {
+                    if (i !== j) {
+                        const dx = sheep.x - otherSheep.x;
+                        const dy = sheep.y - otherSheep.y;
+                        const dist = Math.hypot(dx, dy);
+                        
+                        if (dist < multiAgentDemo.safetyDistance && dist > 0.1) {
+                            const separationStrength = (multiAgentDemo.safetyDistance - dist) / multiAgentDemo.safetyDistance;
+                            ux += (dx / dist) * separationStrength * 1.5;
+                            uy += (dy / dist) * separationStrength * 1.5;
+                        }
+                    }
+                });
+                
+                // 4. BOUNDARY AVOIDANCE
+                const canvas = document.getElementById('multiagent-canvas');
+                const rect = canvas.getBoundingClientRect();
+                const margin = 30;
+                
+                if (sheep.x < margin) ux += (margin - sheep.x) * 0.1;
+                if (sheep.x > rect.width - margin) ux -= (sheep.x - (rect.width - margin)) * 0.1;
+                if (sheep.y < margin) uy += (margin - sheep.y) * 0.1;
+                if (sheep.y > rect.height - margin) uy -= (sheep.y - (rect.height - margin)) * 0.1;
+                
+                // 5. TARGET AREA PREFERENCE (prevents wandering away once herded)
+                const targetX = multiAgentDemo.targetPosition.x;
+                const targetY = multiAgentDemo.targetPosition.y;
+                const targetRadius = multiAgentDemo.targetRadius;
+                const distToTarget = Math.hypot(sheep.x - targetX, sheep.y - targetY);
+                
+                // If sheep is close to target, add gentle attraction to keep them there
+                if (distToTarget < targetRadius * 2.0) {
+                    const attractionStrength = Math.max(0, 1.0 - (distToTarget / (targetRadius * 2.0)));
+                    const targetAttraction = 0.3 * attractionStrength; // Gentle attraction
+                    
+                    // Only apply if no dogs are nearby (don't interfere with active herding)
+                    let nearbyDogInfluence = 0;
+                    dogAgents.forEach(dog => {
+                        const dogDist = Math.hypot(sheep.x - dog.x, sheep.y - dog.y);
+                        if (dogDist < multiAgentDemo.dogInfluenceRadius) {
+                            nearbyDogInfluence = Math.max(nearbyDogInfluence, 1.0 - (dogDist / multiAgentDemo.dogInfluenceRadius));
+                        }
+                    });
+                    
+                    if (nearbyDogInfluence < 0.3) { // Only if dogs aren't actively herding this sheep
+                        const targetDirection = Math.atan2(targetY - sheep.y, targetX - sheep.x);
+                        ux += Math.cos(targetDirection) * targetAttraction;
+                        uy += Math.sin(targetDirection) * targetAttraction;
+                    }
+                }
+                
+                // 5. RANDOM MOVEMENT (grazing behavior when not afraid)
+                if (sheep.fearLevel < 0.2) {
+                    ux += (Math.random() - 0.5) * 0.3;
+                    uy += (Math.random() - 0.5) * 0.3;
+                }
+                
+                // Decay fear level over time with adaptive rate
+                const decayRate = multiAgentDemo.fearDecayRate * (1.0 + sheep.fearLevel * 0.5);
+                sheep.fearLevel = Math.max(0, sheep.fearLevel - decayRate);
+                
+                controls.push({ ux, uy });
+            });
+            
+            return controls;
+        }
+        
+        function computeDogControls() {
+            const controls = [];
+            const sheepAgents = multiAgentDemo.sheepAgents;
+            const dogAgents = multiAgentDemo.dogAgents;
+            
+            // Calculate sheep center of mass and spread
+            let sheepCenterX = 0, sheepCenterY = 0;
+            sheepAgents.forEach(sheep => {
+                sheepCenterX += sheep.x;
+                sheepCenterY += sheep.y;
+            });
+            
+            if (sheepAgents.length > 0) {
+                sheepCenterX /= sheepAgents.length;
+                sheepCenterY /= sheepAgents.length;
+            }
+            
+            // Calculate sheep spread (how scattered they are)
+            // PROGRESSIVE HERDING STRATEGY: Work with individual sheep and small groups
+            // Categorize sheep based on their position relative to target
+            
+            const targetX = multiAgentDemo.targetPosition.x;
+            const targetY = multiAgentDemo.targetPosition.y;
+            const targetRadius = multiAgentDemo.targetRadius;
+            
+            const sheepCategories = {
+                atTarget: [],      // Sheep already at target (success!)
+                nearTarget: [],    // Sheep close to target but not quite there
+                scattered: [],     // Sheep far from target
+                priorityTargets: [] // Sorted list of sheep needing herding (closest first)
+            };
+            
+            sheepAgents.forEach((sheep, index) => {
+                const distToTarget = Math.hypot(sheep.x - targetX, sheep.y - targetY);
+                
+                if (distToTarget < targetRadius) {
+                    sheepCategories.atTarget.push({sheep, index, distToTarget});
+                } else if (distToTarget < targetRadius * 1.8) {
+                    sheepCategories.nearTarget.push({sheep, index, distToTarget});
+                    sheepCategories.priorityTargets.push({sheep, index, distToTarget, priority: 'near'});
+                } else {
+                    sheepCategories.scattered.push({sheep, index, distToTarget});
+                    sheepCategories.priorityTargets.push({sheep, index, distToTarget, priority: 'scattered'});
+                }
+            });
+            
+            // Sort priority targets by distance to target (closest first for efficiency)
+            sheepCategories.priorityTargets.sort((a, b) => a.distToTarget - b.distToTarget);
+            
+            // Calculate success metrics
+            const successfulSheep = sheepCategories.atTarget.length;
+            const totalSheep = sheepAgents.length;
+            const progressRatio = successfulSheep / totalSheep;
+            
+            // ADAPTIVE MODE SELECTION: Focus on the most productive approach with containment
+            let optimalMode = 'focus'; // Default to focused herding
+            
+            if (progressRatio >= 0.8) {
+                // 80%+ sheep at target - contain them and clean up remaining stragglers
+                optimalMode = 'contain';
+            } else if (sheepCategories.atTarget.length >= 2 && sheepCategories.nearTarget.length === 0 && sheepCategories.scattered.length > 0) {
+                // Some sheep are contained, but others are scattered - maintain containment while collecting
+                optimalMode = 'maintainAndCollect';
+            } else if (sheepCategories.nearTarget.length >= 2 && sheepCategories.scattered.length <= 2) {
+                // Most sheep are close - push the group
+                optimalMode = 'groupPush';
+            } else if (sheepCategories.closest && sheepCategories.closest.distToTarget < targetRadius * 2.5) {
+                // Focus on the closest sheep for incremental progress
+                optimalMode = 'focus';
+            } else {
+                // Sheep are very scattered - collect first
+                optimalMode = 'collect';
+            }
+            
+            multiAgentDemo.herdingMode = optimalMode;
+            multiAgentDemo.sheepCategories = sheepCategories; // Store for rendering
+            
+            dogAgents.forEach((dog, i) => {
+                let ux = 0, uy = 0;
+                
+                if (multiAgentDemo.herdingMode === 'focus') {
+                    // FOCUS MODE: Dogs work on individual priority sheep, distributed efficiently
+                    if (sheepCategories.priorityTargets.length > 0) {
+                        // Assign each dog to a different sheep using distributed assignment
+                        const targetIndex = i % Math.min(sheepCategories.priorityTargets.length, dogAgents.length);
+                        const targetSheep = sheepCategories.priorityTargets[targetIndex].sheep;
+                        
+                        // Calculate desired push direction (from sheep toward target)
+                        const pushAngle = Math.atan2(targetY - targetSheep.y, targetX - targetSheep.x);
+                        
+                        // Position dog behind sheep (opposite to push direction)
+                        const pushDistance = multiAgentDemo.dogInfluenceRadius * 0.8;
+                        const dogTargetX = targetSheep.x - Math.cos(pushAngle) * pushDistance;
+                        const dogTargetY = targetSheep.y - Math.sin(pushAngle) * pushDistance;
+                        
+                        // Add slight randomness to prevent perfect clustering
+                        const randomOffset = (Math.random() - 0.5) * 30;
+                        const offsetAngle = pushAngle + Math.PI / 2;
+                        const finalX = dogTargetX + Math.cos(offsetAngle) * randomOffset;
+                        const finalY = dogTargetY + Math.sin(offsetAngle) * randomOffset;
+                        
+                        const dx = finalX - dog.x;
+                        const dy = finalY - dog.y;
+                        const dist = Math.hypot(dx, dy);
+                        
+                        if (dist > 3) {
+                            ux = multiAgentDemo.dogSpeed * 1.0 * (dx / dist);
+                            uy = multiAgentDemo.dogSpeed * 1.0 * (dy / dist);
+                        }
+                    }
+                    
+                } else if (multiAgentDemo.herdingMode === 'groupPush') {
+                    // GROUP PUSH MODE: Push multiple near-target sheep as a group
+                    const nearSheep = sheepCategories.nearTarget;
+                    
+                    if (nearSheep.length > 0) {
+                        // Calculate center of near-target sheep
+                        let centerX = 0, centerY = 0;
+                        nearSheep.forEach(item => {
+                            centerX += item.sheep.x;
+                            centerY += item.sheep.y;
+                        });
+                        centerX /= nearSheep.length;
+                        centerY /= nearSheep.length;
+                        
+                        // Position dogs to push this group toward target
+                        const pushAngle = Math.atan2(targetY - centerY, targetX - centerX);
+                        const pushDistance = multiAgentDemo.dogInfluenceRadius * 0.9;
+                        
+                        // Spread dogs in an arc behind the group
+                        const arcSpan = Math.PI * 0.6;
+                        const angleOffset = (i / Math.max(1, dogAgents.length - 1)) * arcSpan - arcSpan/2;
+                        const dogAngle = pushAngle + Math.PI + angleOffset;
+                        
+                        const dogTargetX = centerX + Math.cos(dogAngle) * pushDistance;
+                        const dogTargetY = centerY + Math.sin(dogAngle) * pushDistance;
+                        
+                        const dx = dogTargetX - dog.x;
+                        const dy = dogTargetY - dog.y;
+                        const dist = Math.hypot(dx, dy);
+                        
+                        if (dist > 3) {
+                            ux = multiAgentDemo.dogSpeed * 0.9 * (dx / dist);
+                            uy = multiAgentDemo.dogSpeed * 0.9 * (dy / dist);
+                        }
+                    }
+                    
+                } else if (multiAgentDemo.herdingMode === 'cleanup') {
+                    // CLEANUP MODE: Gently guide remaining stragglers
+                    const remainingSheep = [...sheepCategories.nearTarget, ...sheepCategories.scattered];
+                    
+                    if (remainingSheep.length > 0 && i < remainingSheep.length) {
+                        const targetSheep = remainingSheep[i % remainingSheep.length].sheep;
+                        
+                        // Gentle push toward target
+                        const pushAngle = Math.atan2(targetY - targetSheep.y, targetX - targetSheep.x);
+                        const pushDistance = multiAgentDemo.dogInfluenceRadius * 0.7;
+                        
+                        const dogTargetX = targetSheep.x - Math.cos(pushAngle) * pushDistance;
+                        const dogTargetY = targetSheep.y - Math.sin(pushAngle) * pushDistance;
+                        
+                        const dx = dogTargetX - dog.x;
+                        const dy = dogTargetY - dog.y;
+                        const dist = Math.hypot(dx, dy);
+                        
+                        if (dist > 4) {
+                            ux = multiAgentDemo.dogSpeed * 0.7 * (dx / dist); // Gentle approach
+                            uy = multiAgentDemo.dogSpeed * 0.7 * (dy / dist);
+                        }
+                    }
+                    
+                } else if (multiAgentDemo.herdingMode === 'contain') {
+                    // CONTAIN MODE: Form perimeter around target to keep sheep from escaping
+                    const containmentRadius = targetRadius * 1.6; // Larger than target for containment
+                    const numberOfDogs = dogAgents.length;
+                    
+                    // Position dogs in a circle around the target area
+                    const baseAngle = (i / numberOfDogs) * 2 * Math.PI;
+                    
+                    // Adjust position based on where sheep might escape
+                    let containmentAngle = baseAngle;
+                    if (sheepCategories.atTarget.length > 0) {
+                        // Find the average position of contained sheep to adjust containment
+                        let avgEscapeAngle = 0;
+                        sheepCategories.atTarget.forEach(item => {
+                            const sheepAngle = Math.atan2(item.sheep.y - targetY, item.sheep.x - targetX);
+                            avgEscapeAngle += sheepAngle;
+                        });
+                        avgEscapeAngle /= sheepCategories.atTarget.length;
+                        
+                        // Bias containment toward the average escape direction
+                        containmentAngle = baseAngle + (avgEscapeAngle * 0.3);
+                    }
+                    
+                    const containmentX = targetX + Math.cos(containmentAngle) * containmentRadius;
+                    const containmentY = targetY + Math.sin(containmentAngle) * containmentRadius;
+                    
+                    const dx = containmentX - dog.x;
+                    const dy = containmentY - dog.y;
+                    const dist = Math.hypot(dx, dy);
+                    
+                    if (dist > 8) { // Larger threshold for containment positions
+                        ux = multiAgentDemo.dogSpeed * 0.5 * (dx / dist); // Slow, steady containment
+                        uy = multiAgentDemo.dogSpeed * 0.5 * (dy / dist);
+                    }
+                    
+                    // If any contained sheep are trying to escape, react quickly
+                    sheepCategories.atTarget.forEach(item => {
+                        const sheep = item.sheep;
+                        const distFromTarget = Math.hypot(sheep.x - targetX, sheep.y - targetY);
+                        
+                        if (distFromTarget > targetRadius * 0.9) { // Sheep is near edge of target
+                            const escapeAngle = Math.atan2(sheep.y - targetY, sheep.x - targetX);
+                            const dogAngle = Math.atan2(dog.y - targetY, dog.x - targetX);
+                            const angleDiff = Math.abs(escapeAngle - dogAngle);
+                            
+                            // If this dog is closest to the escaping sheep, intercept
+                            if (angleDiff < Math.PI / 3) { // 60 degree sector
+                                const interceptDistance = targetRadius * 1.2;
+                                const interceptX = sheep.x + Math.cos(escapeAngle) * interceptDistance;
+                                const interceptY = sheep.y + Math.sin(escapeAngle) * interceptDistance;
+                                
+                                const interceptDx = interceptX - dog.x;
+                                const interceptDy = interceptY - dog.y;
+                                const interceptDist = Math.hypot(interceptDx, interceptDy);
+                                
+                                if (interceptDist > 3) {
+                                    ux = multiAgentDemo.dogSpeed * 1.2 * (interceptDx / interceptDist); // Quick response
+                                    uy = multiAgentDemo.dogSpeed * 1.2 * (interceptDy / interceptDist);
+                                }
+                            }
+                        }
+                    });
+                    
+                } else if (multiAgentDemo.herdingMode === 'maintainAndCollect') {
+                    // MAINTAIN AND COLLECT MODE: Some dogs contain, others collect stragglers
+                    const containedSheep = sheepCategories.atTarget;
+                    const priorityTargets = sheepCategories.priorityTargets.filter(item => item.priority === 'scattered');
+                    
+                    if (i < dogAgents.length / 2 && containedSheep.length > 0) {
+                        // First half of dogs maintain containment
+                        const containmentRadius = targetRadius * 1.4;
+                        const containmentAngle = (i / (dogAgents.length / 2)) * 2 * Math.PI;
+                        
+                        const containmentX = targetX + Math.cos(containmentAngle) * containmentRadius;
+                        const containmentY = targetY + Math.sin(containmentAngle) * containmentRadius;
+                        
+                        const dx = containmentX - dog.x;
+                        const dy = containmentY - dog.y;
+                        const dist = Math.hypot(dx, dy);
+                        
+                        if (dist > 6) {
+                            ux = multiAgentDemo.dogSpeed * 0.6 * (dx / dist);
+                            uy = multiAgentDemo.dogSpeed * 0.6 * (dy / dist);
+                        }
+                    } else if (priorityTargets.length > 0) {
+                        // Remaining dogs collect scattered sheep using round-robin assignment
+                        const targetSheep = priorityTargets[(i - Math.floor(dogAgents.length / 2)) % priorityTargets.length].sheep;
+                        
+                        const collectAngle = Math.atan2(targetY - targetSheep.y, targetX - targetSheep.x);
+                        const collectDistance = multiAgentDemo.dogInfluenceRadius * 0.9;
+                        
+                        const dogTargetX = targetSheep.x - Math.cos(collectAngle) * collectDistance;
+                        const dogTargetY = targetSheep.y - Math.sin(collectAngle) * collectDistance;
+                        
+                        const dx = dogTargetX - dog.x;
+                        const dy = dogTargetY - dog.y;
+                        const dist = Math.hypot(dx, dy);
+                        
+                        if (dist > 2) {
+                            ux = multiAgentDemo.dogSpeed * 1.0 * (dx / dist);
+                            uy = multiAgentDemo.dogSpeed * 1.0 * (dy / dist);
+                        }
+                    }
+                    
+                } else if (multiAgentDemo.herdingMode === 'collect') {
+                    // COLLECT MODE: Gather priority sheep with distributed assignment
+                    const priorityTargets = sheepCategories.priorityTargets.filter(item => item.priority === 'scattered');
+                    
+                    if (priorityTargets.length > 0) {
+                        // Each dog targets a different scattered sheep using round-robin
+                        const targetSheep = priorityTargets[i % priorityTargets.length].sheep;
+                        
+                        // Position behind sheep to push toward main group or target
+                        const collectAngle = Math.atan2(targetY - targetSheep.y, targetX - targetSheep.x);
+                        const collectDistance = multiAgentDemo.dogInfluenceRadius * 0.9;
+                        
+                        const dogTargetX = targetSheep.x - Math.cos(collectAngle) * collectDistance;
+                        const dogTargetY = targetSheep.y - Math.sin(collectAngle) * collectDistance;
+                        
+                        const dx = dogTargetX - dog.x;
+                        const dy = dogTargetY - dog.y;
+                        const dist = Math.hypot(dx, dy);
+                        
+                        if (dist > 2) {
+                            ux = multiAgentDemo.dogSpeed * 1.1 * (dx / dist);
+                            uy = multiAgentDemo.dogSpeed * 1.1 * (dy / dist);
+                        }
+                    }
+                }
+                
+                // Avoid other dogs - increased spacing for better coverage
+                dogAgents.forEach((otherDog, j) => {
+                    if (i !== j) {
+                        const dx = dog.x - otherDog.x;
+                        const dy = dog.y - otherDog.y;
+                        const dist = Math.hypot(dx, dy);
+                        
+                        // Increased avoidance radius for better spreading
+                        const avoidanceRadius = 60; // Increased from 40 for better dog spacing
+                        if (dist < avoidanceRadius && dist > 0.1) {
+                            const avoidanceStrength = (avoidanceRadius - dist) / avoidanceRadius;
+                            ux += (dx / dist) * avoidanceStrength * 1.5; // Increased strength
+                            uy += (dy / dist) * avoidanceStrength * 1.5;
+                        }
+                    }
+                });
+                
+                // Limit dog acceleration
+                const maxAccel = multiAgentDemo.maxDogAcceleration;
+                const accelMag = Math.hypot(ux, uy);
+                if (accelMag > maxAccel) {
+                    ux = (ux / accelMag) * maxAccel;
+                    uy = (uy / accelMag) * maxAccel;
+                }
+                
+                controls.push({ ux, uy });
+            });
+            
+            return controls;
+        }
+
         function computeBasicGoalControls() {
             // Original goal-seeking behavior
             const controls = [];
@@ -2719,7 +3593,7 @@
         }
 
         function cycleFormation() {
-            const formations = ['symmetric', 'converge', 'rotate', 'spread', 'line', 'diamond', 'zigzag', 'random', 'orbit', 'consensus', 'leader-follower', 'formation-control', 'flocking'];
+            const formations = ['symmetric', 'converge', 'rotate', 'spread', 'line', 'diamond', 'zigzag', 'random', 'orbit', 'consensus', 'leader-follower', 'formation-control', 'flocking', 'herding'];
             const currentIndex = formations.indexOf(multiAgentDemo.formationType);
             const nextIndex = (currentIndex + 1) % formations.length;
             multiAgentDemo.formationType = formations[nextIndex];
@@ -2727,17 +3601,29 @@
             // Update the dropdown to reflect the change
             document.getElementById('formation-type').value = multiAgentDemo.formationType;
             
-            // Show/hide consensus controls
+            // Show/hide appropriate controls
             const consensusControls = document.getElementById('consensus-controls');
+            const herdingControls = document.getElementById('herding-controls');
             const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(multiAgentDemo.formationType);
-            consensusControls.style.display = isConsensusMethod ? 'flex' : 'none';
+            const isHerdingMethod = multiAgentDemo.formationType === 'herding';
             
-            createAgents();
+            consensusControls.style.display = isConsensusMethod ? 'flex' : 'none';
+            herdingControls.style.display = isHerdingMethod ? 'flex' : 'none';
+            
+            if (isHerdingMethod) {
+                createHerdingAgents();
+            } else {
+                createAgents();
+            }
             renderMultiAgentDemo();
         }
 
         function resetMultiAgentDemo() {
-            createAgents();
+            if (multiAgentDemo.formationType === 'herding') {
+                createHerdingAgents();
+            } else {
+                createAgents();
+            }
             renderMultiAgentDemo();
         }
 
@@ -2745,17 +3631,36 @@
             const canvas = document.getElementById('multiagent-canvas');
             const rect = canvas.getBoundingClientRect();
             
-            multiAgentDemo.agents.forEach(agent => {
-                agent.x = 20 + Math.random() * (rect.width - 40);
-                agent.y = 20 + Math.random() * (rect.height - 40);
-                if (multiAgentDemo.formationType === 'flocking') {
-                    agent.vx = (Math.random() - 0.5) * 12;
-                    agent.vy = (Math.random() - 0.5) * 12;
-                } else {
-                    agent.vx = 0;
-                    agent.vy = 0;
-                }
-            });
+            if (multiAgentDemo.formationType === 'herding') {
+                // Scramble sheep positions
+                multiAgentDemo.sheepAgents.forEach(sheep => {
+                    sheep.x = 50 + Math.random() * (rect.width - 100);
+                    sheep.y = 50 + Math.random() * (rect.height - 100);
+                    sheep.vx = (Math.random() - 0.5) * 2;
+                    sheep.vy = (Math.random() - 0.5) * 2;
+                    sheep.fearLevel = 0;
+                });
+                
+                // Scramble dog positions
+                multiAgentDemo.dogAgents.forEach(dog => {
+                    dog.x = 50 + Math.random() * (rect.width - 100);
+                    dog.y = 50 + Math.random() * (rect.height - 100);
+                    dog.vx = 0;
+                    dog.vy = 0;
+                });
+            } else {
+                multiAgentDemo.agents.forEach(agent => {
+                    agent.x = 20 + Math.random() * (rect.width - 40);
+                    agent.y = 20 + Math.random() * (rect.height - 40);
+                    if (multiAgentDemo.formationType === 'flocking') {
+                        agent.vx = (Math.random() - 0.5) * 12;
+                        agent.vy = (Math.random() - 0.5) * 12;
+                    } else {
+                        agent.vx = 0;
+                        agent.vy = 0;
+                    }
+                });
+            }
             
             renderMultiAgentDemo();
         }
@@ -2902,6 +3807,65 @@
                         
                         <p><strong>CBF for Collision Avoidance:</strong></p>
                         $$h_{ij} = \\|x_i - x_j\\|^2 - d_{safe}^2, \\quad \\dot{h}_{ij} + \\alpha h_{ij} \\geq 0$$
+                    `
+                },
+                'herding': {
+                    title: 'Shepherding Control with CBF:',
+                    content: `
+                        <p><strong>Problem Statement:</strong></p>
+                        <p style="font-size: 0.95rem; color: #e2e8f0; margin: 10px 0; line-height: 1.4;">
+                            <em>Shepherding control</em> addresses the challenge of using a small number of control agents (dogs) to guide 
+                            a larger group of passive agents (sheep) toward a target location. This bio-inspired problem combines predator-prey 
+                            dynamics with collective behavior, modeling how shepherds, border collies, or autonomous shepherding robots can 
+                            effectively herd livestock or crowds. The key challenge is that dogs cannot directly control sheep—they can only 
+                            influence them through repulsive forces, requiring intelligent positioning and movement strategies.
+                        </p>
+                        
+                        <p><strong>Sheep Dynamics (Repulsion-Attraction Model):</strong></p>
+                        $$u_i^{sheep} = \\underbrace{\\sum_{d \\in Dogs} \\frac{\\beta_r}{\\|x_i - x_d\\|^2} \\frac{x_i - x_d}{\\|x_i - x_d\\|}}_{\\text{Dog Repulsion}} + \\underbrace{\\frac{\\beta_a}{|\\mathcal{N}_i|} \\sum_{j \\in \\mathcal{N}_i} (x_j - x_i)}_{\\text{Sheep Attraction}}$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            Sheep are repelled by dogs with strength $\\beta_r$ and attracted to neighbors with strength $\\beta_a$.
+                        </p>
+                        
+                        <p><strong>Dog Shepherding Strategy:</strong></p>
+                        <p style="font-size: 0.9rem; color: #e2e8f0; margin: 5px 0;">
+                            Dogs use adaptive collect/drive algorithm based on sheep distribution:
+                        </p>
+                        $$\\text{Mode} = \\begin{cases}
+                        \\text{COLLECT} & \\text{if } \\sigma_{sheep} > \\sigma_{threshold} \\text{ or } \\|C_{sheep} - x_{target}\\| > d_{target} \\\\
+                        \\text{DRIVE} & \\text{otherwise}
+                        \\end{cases}$$
+                        
+                        <p><strong>Collect Mode (Gathering Scattered Sheep):</strong></p>
+                        $$x_d^{des} = x_{farthest} + r_{influence} \\frac{x_{farthest} - C_{sheep}}{\\|x_{farthest} - C_{sheep}\\|}$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            Dog positions behind farthest sheep from flock center $C_{sheep}$ to push it back.
+                        </p>
+                        
+                        <p><strong>Drive Mode (Pushing Toward Target):</strong></p>
+                        $$x_d^{des} = C_{sheep} - r_{drive} \\frac{x_{target} - C_{sheep}}{\\|x_{target} - C_{sheep}\\|}$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            Dog positions behind flock center, opposite to target direction.
+                        </p>
+                        
+                        <p><strong>Sheep Center of Mass:</strong></p>
+                        $$C_{sheep} = \\frac{1}{N_{sheep}} \\sum_{i=1}^{N_{sheep}} x_i^{sheep}$$
+                        
+                        <p><strong>Flock Spread Metric:</strong></p>
+                        $$\\sigma_{sheep} = \\frac{1}{N_{sheep}} \\sum_{i=1}^{N_{sheep}} \\|x_i^{sheep} - C_{sheep}\\|$$
+                        
+                        <p><strong>Multi-CBF Safety Constraints:</strong></p>
+                        $$h_{ij}^{sheep} = \\|x_i - x_j\\|^2 - d_{sheep}^2 \\geq 0 \\quad \\text{(sheep-sheep)}$$
+                        $$h_{id}^{avoid} = \\|x_i - x_d\\|^2 - d_{min}^2 \\geq 0 \\quad \\text{(sheep-dog)}$$
+                        $$h_{dd}^{coord} = \\|x_{d1} - x_{d2}\\|^2 - d_{dog}^2 \\geq 0 \\quad \\text{(dog-dog)}$$
+                        
+                        <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.2);">
+                            <strong>Bio-Inspired Features:</strong><br>
+                            • Adaptive strategy switching based on flock state<br>
+                            • Emergent herding behavior from local interactions<br>
+                            • Scalable to multiple dogs and large flocks<br>
+                            • Mimics real shepherd dog behavior patterns
+                        </p>
                     `
                 }
             };
