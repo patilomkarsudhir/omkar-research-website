@@ -425,7 +425,8 @@
                         <ul style="color: #94a3b8; line-height: 1.8;">
                             <li><span style="color: #10b981;">●</span> Green Robot - Safe, nominal control active</li>
                             <li><span style="color: #f59e0b;">●</span> Orange Robot - CBF safety filter modifying control</li>
-                            <li><span style="color: #ef4444;">●</span> Red Robot - Constraint violated (shouldn't happen with CBF)</li>
+                            <li><span style="color: #a78bfa;">●</span> Purple Robot - Infeasible constraints, emergency stop</li>
+                            <li><span style="color: #ef4444;">●</span> Red Robot - Constraint violated (collision)</li>
                             <li><span style="color: #ef4444;">●</span> Red Obstacles - Click and drag to reposition</li>
                             <li><span style="color: #10b981;">○</span> Dashed Circle - Safe set boundary</li>
                             <li><span style="color: #60a5fa;">—</span> Blue Trail - Robot trajectory</li>
@@ -578,6 +579,7 @@
             dt: 0.016, // Corresponds to ~60 FPS
             controlModification: 0,
             safetyMargin: 15, // safety clearance around obstacles
+            isInfeasible: false, // track when CBF problem becomes infeasible
             // Enhanced deadlock detection variables
             deadlockTimer: 0,
             lastPosition: { x: 100, y: 150 },
@@ -782,6 +784,8 @@
             let robotColor = '#10b981'; // Green (safe)
             if (minH < 0) {
                 robotColor = '#ef4444'; // Red (collision)
+            } else if (basicDemo.isInfeasible) {
+                robotColor = '#a78bfa'; // Purple (infeasible - emergency stop)
             } else if (basicDemo.controlModification > 10) {
                 robotColor = '#f59e0b'; // Orange (CBF active)
             }
@@ -838,8 +842,20 @@
             document.getElementById('cbf-value-basic').textContent = minCBF.toFixed(2);
             document.getElementById('cbf-value-basic').className = `status-value ${isSafe ? 'safe' : 'unsafe'}`;
             
-            document.getElementById('safety-status-basic').textContent = isSafe ? 'SAFE' : 'COLLISION';
-            document.getElementById('safety-status-basic').className = `status-value ${isSafe ? 'safe' : 'unsafe'}`;
+            // Update safety status to reflect infeasibility
+            let statusText = 'SAFE';
+            let statusClass = 'safe';
+            
+            if (!isSafe) {
+                statusText = 'COLLISION';
+                statusClass = 'unsafe';
+            } else if (basicDemo.isInfeasible) {
+                statusText = 'INFEASIBLE';
+                statusClass = 'infeasible';
+            }
+            
+            document.getElementById('safety-status-basic').textContent = statusText;
+            document.getElementById('safety-status-basic').className = `status-value ${statusClass}`;
             
             document.getElementById('control-modification').textContent = `${Math.round(basicDemo.controlModification)}%`;
             document.getElementById('control-modification').className = `status-value ${basicDemo.controlModification > 50 ? 'warning' : ''}`;
@@ -853,43 +869,92 @@
         function computeCBFControl(robot, obstacles, nominalControl, alpha) {
             let safeControl = {...nominalControl};
             let maxModification = 0;
+            let isInfeasible = false;
             
-            obstacles.forEach(obs => {
-                const dx = robot.x - obs.x;
-                const dy = robot.y - obs.y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
+            // Store original safe control for infeasibility check
+            const originalSafeControl = {...safeControl};
+            
+            // Apply CBF constraints iteratively
+            let iterations = 0;
+            const maxIterations = 5; // Prevent infinite loops
+            
+            while (iterations < maxIterations) {
+                let anyConstraintViolated = false;
+                const previousControl = {...safeControl};
                 
-                if (dist < 0.001) return; // Avoid division by zero
-                
-                // h represents distance to the safety boundary (obstacle + safety margin)
-                const h = dist - (obs.radius + basicDemo.safetyMargin);
-                
-                // Only apply CBF if approaching the safety zone
-                if (h < basicDemo.safetyMargin) {
-                    const grad_h_x = dx / dist;
-                    const grad_h_y = dy / dist;
+                obstacles.forEach(obs => {
+                    const dx = robot.x - obs.x;
+                    const dy = robot.y - obs.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
                     
-                    const u_dot_grad_h = safeControl.x * grad_h_x + safeControl.y * grad_h_y;
+                    if (dist < 0.001) return; // Avoid division by zero
                     
-                    // CBF constraint for single integrator (ẋ=u): ∇h·u ≥ -α·h
-                    const constraint_rhs = -alpha * h;
+                    // h represents distance to the safety boundary (obstacle + safety margin)
+                    const h = dist - (obs.radius + basicDemo.safetyMargin);
                     
-                    if (u_dot_grad_h < constraint_rhs) {
-                        const delta = constraint_rhs - u_dot_grad_h;
-                        safeControl.x += delta * grad_h_x;
-                        safeControl.y += delta * grad_h_y;
+                    // Only apply CBF if approaching the safety zone
+                    if (h < basicDemo.safetyMargin) {
+                        const grad_h_x = dx / dist;
+                        const grad_h_y = dy / dist;
+                        
+                        const u_dot_grad_h = safeControl.x * grad_h_x + safeControl.y * grad_h_y;
+                        
+                        // CBF constraint for single integrator (ẋ=u): ∇h·u ≥ -α·h
+                        const constraint_rhs = -alpha * h;
+                        
+                        if (u_dot_grad_h < constraint_rhs) {
+                            const delta = constraint_rhs - u_dot_grad_h;
+                            safeControl.x += delta * grad_h_x;
+                            safeControl.y += delta * grad_h_y;
+                            anyConstraintViolated = true;
+                        }
                     }
+                });
+                
+                // Check for infeasibility: if control magnitude becomes too large
+                const controlMagnitude = Math.sqrt(safeControl.x**2 + safeControl.y**2);
+                const nominalMagnitude = Math.sqrt(nominalControl.x**2 + nominalControl.y**2);
+                
+                // If safe control is more than 5x the nominal control, likely infeasible
+                if (controlMagnitude > Math.max(nominalMagnitude * 5, 200)) {
+                    isInfeasible = true;
+                    break;
                 }
-            });
-
-            // Calculate the magnitude of the modification for visualization
-            const modMag = Math.sqrt((safeControl.x - nominalControl.x)**2 + (safeControl.y - nominalControl.y)**2);
-            const nomMag = Math.sqrt(nominalControl.x**2 + nominalControl.y**2);
-            if (nomMag > 0.1) {
-                maxModification = 100 * modMag / nomMag;
+                
+                // Check convergence
+                const controlChange = Math.sqrt(
+                    (safeControl.x - previousControl.x)**2 + 
+                    (safeControl.y - previousControl.y)**2
+                );
+                
+                if (!anyConstraintViolated || controlChange < 0.1) {
+                    break;
+                }
+                
+                iterations++;
+            }
+            
+            // Handle infeasibility: stop the robot instead of pushing through
+            if (isInfeasible || iterations >= maxIterations) {
+                // Emergency stop - set control to zero
+                safeControl.x = 0;
+                safeControl.y = 0;
+                maxModification = 100;
+                
+                // Mark as infeasible for status display
+                basicDemo.isInfeasible = true;
+            } else {
+                basicDemo.isInfeasible = false;
+                
+                // Calculate the magnitude of the modification for visualization
+                const modMag = Math.sqrt((safeControl.x - nominalControl.x)**2 + (safeControl.y - nominalControl.y)**2);
+                const nomMag = Math.sqrt(nominalControl.x**2 + nominalControl.y**2);
+                if (nomMag > 0.1) {
+                    maxModification = 100 * modMag / nomMag;
+                }
             }
 
-            return { safeControl, modification: maxModification };
+            return { safeControl, modification: maxModification, isInfeasible };
         }
 
         function detectCBFDeadlock(robot, obstacles, nominalControl, safeControl, alpha) {
@@ -974,15 +1039,15 @@
             }
             
             // Apply CBF safety filter to get safe control
-            const { safeControl, modification } = computeCBFControl(
+            const { safeControl, modification, isInfeasible } = computeCBFControl(
                 robot, 
                 basicDemo.obstacles, 
                 nominalControl, 
                 basicDemo.alpha
             );
             
-            // Enhanced deadlock detection based on CBF theory
-            const isDeadlockCondition = detectCBFDeadlock(robot, basicDemo.obstacles, nominalControl, safeControl, basicDemo.alpha);
+            // Enhanced deadlock detection - but don't apply noise if infeasible
+            const isDeadlockCondition = !isInfeasible && detectCBFDeadlock(robot, basicDemo.obstacles, nominalControl, safeControl, basicDemo.alpha);
             
             // Update deadlock timer based on enhanced detection
             if (isDeadlockCondition) {
@@ -992,8 +1057,8 @@
                 basicDemo.lastPosition = { x: robot.x, y: robot.y };
             }
             
-            // Apply one-time perturbation if deadlock is detected
-            if (basicDemo.deadlockTimer > basicDemo.deadlockThreshold && !basicDemo.perturbationApplied) {
+            // Apply one-time perturbation if deadlock is detected (but NOT if infeasible)
+            if (basicDemo.deadlockTimer > basicDemo.deadlockThreshold && !basicDemo.perturbationApplied && !isInfeasible) {
                 // Generate a single perturbation to push away from saddle point
                 const perpX = -dy / (dist + 0.001); // perpendicular to goal direction
                 const perpY = dx / (dist + 0.001);
@@ -1023,17 +1088,23 @@
                 }
             }
             
-            // Recompute safe control with potential noise
-            const finalResult = computeCBFControl(
-                robot, 
-                basicDemo.obstacles, 
-                nominalControl, 
-                basicDemo.alpha
-            );
+            // Recompute safe control with potential noise (only if not infeasible)
+            let finalResult;
+            if (!isInfeasible && (basicDemo.perturbationApplied || basicDemo.deadlockTimer > 0)) {
+                finalResult = computeCBFControl(
+                    robot, 
+                    basicDemo.obstacles, 
+                    nominalControl, 
+                    basicDemo.alpha
+                );
+            } else {
+                finalResult = { safeControl, modification, isInfeasible };
+            }
             
             basicDemo.nominalControl = nominalControl;
             basicDemo.safeControl = finalResult.safeControl;
             basicDemo.controlModification = finalResult.modification;
+            basicDemo.isInfeasible = finalResult.isInfeasible;
             
             // Update robot state using safe control (single integrator dynamics)
             robot.vx = finalResult.safeControl.x;
