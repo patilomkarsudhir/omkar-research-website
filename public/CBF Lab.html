@@ -472,20 +472,46 @@
                         <div class="math-formula">
                             <p><strong>Safety Set Definition:</strong></p>
                             $$\mathcal{C} = \{x \in \mathbb{R}^n : h(x) \geq 0\}$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                The safe set $\mathcal{C}$ contains all states where the barrier function is non-negative.
+                            </p>
                             
-                            <p><strong>Barrier Function (Squared Distance):</strong></p>
+                            <p><strong>Barrier Function (Squared Distance Formulation):</strong></p>
                             $$h(x) = \|x - x_{obs}\|^2 - r_{safe}^2$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                Using squared distance $\|x - x_{obs}\|^2$ eliminates numerical issues and provides smooth gradients everywhere.
+                            </p>
                             
-                            <p><strong>CBF Constraint:</strong></p>
-                            $$\dot{h}(x) = \nabla h(x) \cdot \dot{x} \geq -\alpha h(x)$$
+                            <p><strong>CBF Safety Constraint:</strong></p>
+                            $$\dot{h}(x) + \alpha h(x) \geq 0$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                This ensures that if $h(x) > 0$ (safe), then $h(x)$ cannot decrease too rapidly toward the unsafe region.
+                            </p>
                             
-                            <p><strong>Gradient:</strong></p>
+                            <p><strong>Lie Derivative Expansion:</strong></p>
+                            $$\dot{h}(x) = \nabla h(x) \cdot f(x) + \nabla h(x) \cdot g(x) u$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                For single integrator: $f(x) = 0$, $g(x) = I$, so $\dot{h} = \nabla h \cdot u$.
+                            </p>
+                            
+                            <p><strong>Gradient (Continuous & Smooth):</strong></p>
                             $$\nabla h(x) = 2(x - x_{obs})$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                Linear in distance, no singularities, computationally efficient.
+                            </p>
                             
-                            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 15px;">
-                                Using squared distance provides continuous gradients and better numerical stability.
-                                Where $\alpha > 0$ is the class-$\mathcal{K}$ function parameter controlling convergence rate,
-                                and $r_{safe}$ includes both obstacle radius and safety margin.
+                            <p><strong>Control Constraint:</strong></p>
+                            $$u \in \{v \in \mathbb{R}^m : \nabla h(x) \cdot v \geq -\alpha h(x)\}$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                Any control satisfying this constraint ensures forward invariance of the safe set.
+                            </p>
+                            
+                            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.2);">
+                                <strong>Key Advantages of Squared Distance CBF:</strong><br>
+                                • Continuous gradients (no division by zero)<br>
+                                • Better numerical conditioning<br>
+                                • Smoother control synthesis<br>
+                                • $\alpha > 0$ controls how aggressively the system stays safe
                             </p>
                         </div>
                     </div>
@@ -549,26 +575,58 @@
                     <div class="info-panel">
                         <h4>High-Order Control Barrier Functions:</h4>
                         <p style="color: #94a3b8; line-height: 1.6; margin-bottom: 15px;">
-                            For double integrator dynamics $\ddot{x} = u$ with position constraint $h_0(x) \geq 0$,
-                            we recursively define barrier functions until control $u$ appears explicitly.
+                            For higher-order dynamics like double integrator $\ddot{x} = u$, we need High-Order CBFs
+                            because control doesn't appear directly in $\dot{h}_0$. We recursively construct barriers.
                         </p>
                         <div class="math-formula">
-                            <p><strong>Original Constraint:</strong></p>
-                            $$h_0(x) = x - x_{obs} \geq 0$$
+                            <p><strong>System Dynamics:</strong></p>
+                            $$\begin{align}
+                            \dot{x} &= v \\
+                            \dot{v} &= u
+                            \end{align}$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                Double integrator with position $x$, velocity $v$, and control $u$.
+                            </p>
                             
-                            <p><strong>First-Order Barrier:</strong></p>
-                            $$h_1(x,\dot{x}) = \dot{h}_0 + \alpha_1 h_0 = \dot{x} + \alpha_1 (x - x_{obs})$$
+                            <p><strong>Zeroth-Order Barrier (Position Constraint):</strong></p>
+                            $$h_0(x) = x - x_{obs}$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                Original safety constraint: stay away from obstacle at $x_{obs}$.
+                            </p>
                             
-                            <p><strong>HOCBF Constraint:</strong></p>
+                            <p><strong>Relative Degree Issue:</strong></p>
+                            $$\dot{h}_0 = \frac{\partial h_0}{\partial x} \dot{x} = 1 \cdot v = v$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                Control $u$ doesn't appear in $\dot{h}_0$! We need higher-order differentiation.
+                            </p>
+                            
+                            <p><strong>First-Order Barrier Construction:</strong></p>
+                            $$h_1(x,v) = \dot{h}_0 + \alpha_1 h_0 = v + \alpha_1(x - x_{obs})$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                Combine velocity with scaled position constraint.
+                            </p>
+                            
+                            <p><strong>HOCBF Safety Constraint:</strong></p>
                             $$\dot{h}_1 + \alpha_2 h_1 \geq 0$$
                             
-                            <p><strong>Control Law:</strong></p>
-                            $$\dot{h}_1 = \ddot{x} + \alpha_1 \dot{x} = u + \alpha_1 \dot{x}$$
-                            $$u \geq -\alpha_1 \dot{x} - \alpha_2 h_1$$
+                            <p><strong>Control Derivation:</strong></p>
+                            $$\begin{align}
+                            \dot{h}_1 &= \frac{\partial h_1}{\partial x} \dot{x} + \frac{\partial h_1}{\partial v} \dot{v} \\
+                            &= \alpha_1 v + 1 \cdot u = u + \alpha_1 v
+                            \end{align}$$
                             
-                            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 15px;">
-                                The parameters $\alpha_1, \alpha_2 > 0$ ensure exponential convergence to the safe set
-                                while maintaining forward invariance for the double integrator system.
+                            <p><strong>Final Control Constraint:</strong></p>
+                            $$u \geq -\alpha_1 v - \alpha_2 h_1$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                Now control $u$ appears explicitly and can enforce safety!
+                            </p>
+                            
+                            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.2);">
+                                <strong>Key Properties:</strong><br>
+                                • $\alpha_1, \alpha_2 > 0$ ensure exponential stability<br>
+                                • Higher relative degree requires recursive barrier construction<br>
+                                • Maintains safety for dynamic systems with momentum<br>
+                                • Enables smooth braking before hitting constraints
                             </p>
                         </div>
                     </div>
@@ -618,6 +676,46 @@
                     <div class="status-item">
                         <div class="status-value safe" id="collisions">0</div>
                         <div class="status-label">Collisions</div>
+                    </div>
+                </div>
+                
+                <div class="info-panel">
+                    <h4>Multi-Agent CBF Mathematics:</h4>
+                    <div class="math-formula">
+                        <p><strong>Inter-Agent Distance Constraint:</strong></p>
+                        $$h_{ij}(x_i, x_j) = \|x_i - x_j\|^2 - d_{safe}^2 \geq 0$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            Agents $i$ and $j$ must maintain squared distance greater than safety threshold.
+                        </p>
+                        
+                        <p><strong>Lie Derivative for Agent $i$:</strong></p>
+                        $$\dot{h}_{ij} = \nabla_{x_i} h_{ij} \cdot \dot{x}_i + \nabla_{x_j} h_{ij} \cdot \dot{x}_j$$
+                        $$= 2(x_i - x_j) \cdot u_i + 2(x_j - x_i) \cdot u_j$$
+                        $$= 2(x_i - x_j) \cdot (u_i - u_j)$$
+                        
+                        <p><strong>Distributed CBF Constraint:</strong></p>
+                        $$\dot{h}_{ij} + \alpha h_{ij} \geq 0$$
+                        $$2(x_i - x_j) \cdot (u_i - u_j) + \alpha h_{ij} \geq 0$$
+                        
+                        <p><strong>Decentralized Implementation:</strong></p>
+                        $$2(x_i - x_j) \cdot u_i \geq -\frac{\alpha}{2} h_{ij} + 2(x_i - x_j) \cdot u_j^{nom}$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            Each agent assumes others follow nominal control $u_j^{nom}$ and takes half responsibility.
+                        </p>
+                        
+                        <p><strong>QP Formulation for Agent $i$:</strong></p>
+                        $$\begin{align}
+                        \min_{u_i} &\quad \|u_i - u_i^{nom}\|^2 \\
+                        \text{s.t.} &\quad 2(x_i - x_j) \cdot u_i \geq -\frac{\alpha}{2} h_{ij}, \; \forall j \neq i
+                        \end{align}$$
+                        
+                        <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.2);">
+                            <strong>Key Features:</strong><br>
+                            • Distributed: each agent computes own control<br>
+                            • Scalable: $O(n)$ constraints per agent for $n$ agents<br>
+                            • Reciprocal: both agents share avoidance responsibility<br>
+                            • Real-time: efficient QP solution for large swarms
+                        </p>
                     </div>
                 </div>
             </div>
