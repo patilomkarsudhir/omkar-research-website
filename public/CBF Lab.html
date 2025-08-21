@@ -638,12 +638,31 @@
         <div id="multi-agent" class="content-section">
             <div class="demo-card">
                 <h3>Multi-Agent Collision Avoidance</h3>
+                <p style="color: #94a3b8; margin: 10px 0; font-size: 0.9rem;">
+                    Explore various multi-agent formations and observe how CBF ensures collision avoidance. 
+                    Try different formation types to see how agents navigate complex scenarios while maintaining safety.
+                    <strong>Use the dropdown to select different formation challenges.</strong>
+                </p>
                 <div class="demo-canvas" id="multiagent-canvas" style="height: 400px;">
                     <div class="grid-background"></div>
                     <svg width="100%" height="100%" id="multiagent-svg"></svg>
                 </div>
                 
                 <div class="controls">
+                    <div class="control-group">
+                        <label>Formation Type:</label>
+                        <select id="formation-type" style="width: 100%; padding: 8px; border-radius: 6px; background: #334155; color: #e2e8f0; border: 1px solid #475569;">
+                            <option value="symmetric">Symmetric (Pass Through)</option>
+                            <option value="converge">Converge (All to Center)</option>
+                            <option value="rotate">Rotate (Clockwise Exchange)</option>
+                            <option value="spread">Spread (Cluster to Circle)</option>
+                            <option value="line">Line (Horizontal to Vertical)</option>
+                            <option value="diamond">Diamond (Cross Pattern)</option>
+                            <option value="zigzag">Zigzag (Weaving Pattern)</option>
+                            <option value="random">Random (Chaotic Targets)</option>
+                            <option value="orbit">Orbit (Inner-Outer Exchange)</option>
+                        </select>
+                    </div>
                     <div class="control-group">
                         <label>Number of Agents: <span id="num-agents-value">4</span></label>
                         <input type="range" id="num-agents" min="2" max="8" step="1" value="4">
@@ -661,6 +680,7 @@
                 <div class="controls">
                     <button class="button" onclick="resetMultiAgentDemo()">Reset Formation</button>
                     <button class="button" onclick="toggleMultiAgentAnimation()">Start/Stop</button>
+                    <button class="button" onclick="cycleFormation()">Next Formation</button>
                     <button class="button danger" onclick="scrambleAgents()">Scramble Agents</button>
                 </div>
                 
@@ -775,7 +795,8 @@
             cbfGain: 2.0,
             activeConstraints: 0,
             collisions: 0,
-            dt: 0.016
+            dt: 0.016,
+            formationType: 'symmetric'
         };
 
         // Function to switch between demo tabs
@@ -1555,6 +1576,11 @@
             if(!canvas.dataset.initialized) {
                 canvas.dataset.initialized = 'true';
                 // Control listeners
+                document.getElementById('formation-type').addEventListener('change', (e) => {
+                    multiAgentDemo.formationType = e.target.value;
+                    createAgents();
+                });
+                
                 document.getElementById('num-agents').addEventListener('input', (e) => {
                     multiAgentDemo.numAgents = parseInt(e.target.value);
                     document.getElementById('num-agents-value').textContent = e.target.value;
@@ -1585,18 +1611,154 @@
             multiAgentDemo.agents = [];
             const num = multiAgentDemo.numAgents;
             const radius = Math.min(rect.width, rect.height) / 3;
+            const formationType = multiAgentDemo.formationType;
 
+            // Create agents based on formation type
             for (let i = 0; i < num; i++) {
                 const angle = (i / num) * 2 * Math.PI;
+                let startX, startY, goalX, goalY;
+                
+                switch(formationType) {
+                    case 'symmetric':
+                        // Original symmetric pass-through formation
+                        startX = centerX + radius * Math.cos(angle);
+                        startY = centerY + radius * Math.sin(angle);
+                        goalX = centerX + radius * Math.cos(angle + Math.PI);
+                        goalY = centerY + radius * Math.sin(angle + Math.PI);
+                        break;
+                        
+                    case 'converge':
+                        // All agents start from circle, converge to center
+                        startX = centerX + radius * Math.cos(angle);
+                        startY = centerY + radius * Math.sin(angle);
+                        goalX = centerX + (Math.random() - 0.5) * 20; // Small random offset at center
+                        goalY = centerY + (Math.random() - 0.5) * 20;
+                        break;
+                        
+                    case 'rotate':
+                        // Agents rotate to next position clockwise
+                        startX = centerX + radius * Math.cos(angle);
+                        startY = centerY + radius * Math.sin(angle);
+                        const nextAngle = ((i + 1) % num / num) * 2 * Math.PI;
+                        goalX = centerX + radius * Math.cos(nextAngle);
+                        goalY = centerY + radius * Math.sin(nextAngle);
+                        break;
+                        
+                    case 'spread':
+                        // Start clustered, spread to circle
+                        startX = centerX + (Math.random() - 0.5) * 40;
+                        startY = centerY + (Math.random() - 0.5) * 40;
+                        goalX = centerX + radius * Math.cos(angle);
+                        goalY = centerY + radius * Math.sin(angle);
+                        break;
+                        
+                    case 'line':
+                        // Line formation - horizontal to vertical
+                        const spacing = Math.min(rect.width, rect.height) / (num + 1);
+                        startX = (i + 1) * spacing;
+                        startY = centerY;
+                        goalX = centerX;
+                        goalY = (i + 1) * spacing;
+                        break;
+                        
+                    case 'diamond':
+                        // Diamond formation exchange
+                        if (num >= 4) {
+                            const positions = [
+                                [centerX, centerY - radius * 0.8], // top
+                                [centerX + radius * 0.8, centerY], // right
+                                [centerX, centerY + radius * 0.8], // bottom
+                                [centerX - radius * 0.8, centerY]  // left
+                            ];
+                            // Add more positions for extra agents
+                            for (let j = 4; j < num; j++) {
+                                const extraAngle = (j - 4) / (num - 4) * 2 * Math.PI;
+                                positions.push([
+                                    centerX + radius * 0.6 * Math.cos(extraAngle),
+                                    centerY + radius * 0.6 * Math.sin(extraAngle)
+                                ]);
+                            }
+                            
+                            startX = positions[i][0];
+                            startY = positions[i][1];
+                            // Goal is opposite position (with wraparound)
+                            const oppositeIndex = (i + Math.floor(num/2)) % num;
+                            goalX = positions[oppositeIndex][0];
+                            goalY = positions[oppositeIndex][1];
+                        } else {
+                            // Fallback to symmetric for < 4 agents
+                            startX = centerX + radius * Math.cos(angle);
+                            startY = centerY + radius * Math.sin(angle);
+                            goalX = centerX + radius * Math.cos(angle + Math.PI);
+                            goalY = centerY + radius * Math.sin(angle + Math.PI);
+                        }
+                        break;
+                        
+                    case 'zigzag':
+                        // Zigzag weaving pattern - agents cross paths in a complex manner
+                        const zigzagMargin = 60;
+                        const zigzagWidth = rect.width - 2 * zigzagMargin;
+                        const zigzagHeight = rect.height - 2 * zigzagMargin;
+                        
+                        if (i % 2 === 0) {
+                            // Even agents: start left, go right with zigzag
+                            startX = zigzagMargin;
+                            startY = zigzagMargin + (i / 2) * (zigzagHeight / Math.ceil(num / 2));
+                            goalX = rect.width - zigzagMargin;
+                            goalY = zigzagMargin + ((i + 1) % Math.ceil(num / 2)) * (zigzagHeight / Math.ceil(num / 2));
+                        } else {
+                            // Odd agents: start right, go left with zigzag
+                            startX = rect.width - zigzagMargin;
+                            startY = zigzagMargin + ((i - 1) / 2) * (zigzagHeight / Math.floor(num / 2));
+                            goalX = zigzagMargin;
+                            goalY = zigzagMargin + (((i - 1) + 1) % Math.floor(num / 2)) * (zigzagHeight / Math.floor(num / 2));
+                        }
+                        break;
+                        
+                    case 'random':
+                        // Random start and goal positions
+                        const randomMargin = 50;
+                        startX = randomMargin + Math.random() * (rect.width - 2 * randomMargin);
+                        startY = randomMargin + Math.random() * (rect.height - 2 * randomMargin);
+                        goalX = randomMargin + Math.random() * (rect.width - 2 * randomMargin);
+                        goalY = randomMargin + Math.random() * (rect.height - 2 * randomMargin);
+                        break;
+                        
+                    case 'orbit':
+                        // Orbital exchange - inner and outer circles
+                        const isOuter = i % 2 === 0;
+                        const innerRadius = radius * 0.5;
+                        const outerRadius = radius;
+                        
+                        if (isOuter) {
+                            startX = centerX + outerRadius * Math.cos(angle);
+                            startY = centerY + outerRadius * Math.sin(angle);
+                            goalX = centerX + innerRadius * Math.cos(angle + Math.PI/num);
+                            goalY = centerY + innerRadius * Math.sin(angle + Math.PI/num);
+                        } else {
+                            startX = centerX + innerRadius * Math.cos(angle);
+                            startY = centerY + innerRadius * Math.sin(angle);
+                            goalX = centerX + outerRadius * Math.cos(angle - Math.PI/num);
+                            goalY = centerY + outerRadius * Math.sin(angle - Math.PI/num);
+                        }
+                        break;
+                        
+                    default:
+                        // Default to symmetric
+                        startX = centerX + radius * Math.cos(angle);
+                        startY = centerY + radius * Math.sin(angle);
+                        goalX = centerX + radius * Math.cos(angle + Math.PI);
+                        goalY = centerY + radius * Math.sin(angle + Math.PI);
+                }
                 
                 multiAgentDemo.agents.push({
                     id: i,
-                    x: centerX + radius * Math.cos(angle),
-                    y: centerY + radius * Math.sin(angle),
+                    x: startX,
+                    y: startY,
                     vx: 0,
                     vy: 0,
-                    goalX: centerX + radius * Math.cos(angle + Math.PI),
-                    goalY: centerY + radius * Math.sin(angle + Math.PI),
+                    goalX: goalX,
+                    goalY: goalY,
                     color: `hsl(${i * 360 / num}, 70%, 60%)`
                 });
             }
@@ -1765,6 +1927,19 @@
                 multiAgentDemo.collisions = 0;
                 animateMultiAgentDemo();
             }
+        }
+
+        function cycleFormation() {
+            const formations = ['symmetric', 'converge', 'rotate', 'spread', 'line', 'diamond', 'zigzag', 'random', 'orbit'];
+            const currentIndex = formations.indexOf(multiAgentDemo.formationType);
+            const nextIndex = (currentIndex + 1) % formations.length;
+            multiAgentDemo.formationType = formations[nextIndex];
+            
+            // Update the dropdown to reflect the change
+            document.getElementById('formation-type').value = multiAgentDemo.formationType;
+            
+            createAgents();
+            renderMultiAgentDemo();
         }
 
         function resetMultiAgentDemo() {
