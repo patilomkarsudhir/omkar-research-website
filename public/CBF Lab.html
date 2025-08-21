@@ -652,15 +652,23 @@
                     <div class="control-group">
                         <label>Formation Type:</label>
                         <select id="formation-type" style="width: 100%; padding: 8px; border-radius: 6px; background: #334155; color: #e2e8f0; border: 1px solid #475569;">
-                            <option value="symmetric">Symmetric (Pass Through)</option>
-                            <option value="converge">Converge (All to Center)</option>
-                            <option value="rotate">Rotate (Clockwise Exchange)</option>
-                            <option value="spread">Spread (Cluster to Circle)</option>
-                            <option value="line">Line (Horizontal to Vertical)</option>
-                            <option value="diamond">Diamond (Cross Pattern)</option>
-                            <option value="zigzag">Zigzag (Weaving Pattern)</option>
-                            <option value="random">Random (Chaotic Targets)</option>
-                            <option value="orbit">Orbit (Inner-Outer Exchange)</option>
+                            <optgroup label="Basic Formations">
+                                <option value="symmetric">Symmetric (Pass Through)</option>
+                                <option value="converge">Converge (All to Center)</option>
+                                <option value="rotate">Rotate (Clockwise Exchange)</option>
+                                <option value="spread">Spread (Cluster to Circle)</option>
+                                <option value="line">Line (Horizontal to Vertical)</option>
+                                <option value="diamond">Diamond (Cross Pattern)</option>
+                                <option value="zigzag">Zigzag (Weaving Pattern)</option>
+                                <option value="random">Random (Chaotic Targets)</option>
+                                <option value="orbit">Orbit (Inner-Outer Exchange)</option>
+                            </optgroup>
+                            <optgroup label="Graph Consensus Methods">
+                                <option value="consensus">Consensus Rendezvous</option>
+                                <option value="leader-follower">Leader-Follower Convoy</option>
+                                <option value="formation-control">Distributed Formation</option>
+                                <option value="flocking">Flocking with Consensus</option>
+                            </optgroup>
                         </select>
                     </div>
                     <div class="control-group">
@@ -674,6 +682,28 @@
                     <div class="control-group">
                         <label>CBF Gain (α): <span id="cbf-gain-value">2.0</span></label>
                         <input type="range" id="cbf-gain" min="0.5" max="5" step="0.5" value="2.0">
+                    </div>
+                </div>
+                
+                <!-- Graph Consensus Controls -->
+                <div class="controls" id="consensus-controls" style="display: none;">
+                    <div class="control-group">
+                        <label>Communication Range: <span id="comm-range-value">80</span></label>
+                        <input type="range" id="comm-range" min="40" max="150" step="10" value="80">
+                    </div>
+                    <div class="control-group">
+                        <label>Consensus Gain: <span id="consensus-gain-value">1.0</span></label>
+                        <input type="range" id="consensus-gain" min="0.1" max="3.0" step="0.1" value="1.0">
+                    </div>
+                    <div class="control-group">
+                        <label>Formation Shape:</label>
+                        <select id="formation-shape" style="width: 100%; padding: 8px; border-radius: 6px; background: #334155; color: #e2e8f0; border: 1px solid #475569;">
+                            <option value="triangle">Triangle</option>
+                            <option value="square">Square</option>
+                            <option value="line">Line</option>
+                            <option value="circle">Circle</option>
+                            <option value="pentagon">Pentagon</option>
+                        </select>
                     </div>
                 </div>
                 
@@ -697,11 +727,15 @@
                         <div class="status-value safe" id="collisions">0</div>
                         <div class="status-label">Collisions</div>
                     </div>
+                    <div class="status-item" id="consensus-status" style="display: none;">
+                        <div class="status-value" id="consensus-error">0.0</div>
+                        <div class="status-label">Consensus Error</div>
+                    </div>
                 </div>
                 
                 <div class="info-panel">
-                    <h4>Multi-Agent CBF Mathematics:</h4>
-                    <div class="math-formula">
+                    <h4 id="math-title">Multi-Agent CBF Mathematics:</h4>
+                    <div class="math-formula" id="math-content">
                         <p><strong>Inter-Agent Distance Constraint:</strong></p>
                         $$h_{ij}(x_i, x_j) = \|x_i - x_j\|^2 - d_{safe}^2 \geq 0$$
                         <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
@@ -795,8 +829,25 @@
             cbfGain: 2.0,
             activeConstraints: 0,
             collisions: 0,
-            dt: 0.016,
-            formationType: 'symmetric'
+            dt: 0.033, // Faster timestep for more dynamic flocking
+            formationType: 'symmetric',
+            // Graph consensus parameters
+            communicationRange: 80,
+            consensusGain: 1.0,
+            formationShape: 'triangle',
+            // Communication topology
+            adjacencyMatrix: [],
+            laplacianMatrix: [],
+            communicationLinks: [],
+            // Consensus states
+            consensusValue: { x: 0, y: 0 },
+            convergenceError: 0,
+            // Leader-follower specific
+            leaderIndex: 0,
+            desiredOffsets: [],
+            // Formation control
+            desiredDistances: [],
+            formationCenter: { x: 0, y: 0 }
         };
 
         // Function to switch between demo tabs
@@ -1578,7 +1629,12 @@
                 // Control listeners
                 document.getElementById('formation-type').addEventListener('change', (e) => {
                     multiAgentDemo.formationType = e.target.value;
+                    // Show/hide consensus controls for graph-based methods
+                    const consensusControls = document.getElementById('consensus-controls');
+                    const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(e.target.value);
+                    consensusControls.style.display = isConsensusMethod ? 'flex' : 'none';
                     createAgents();
+                    updateMathematicalContent();
                 });
                 
                 document.getElementById('num-agents').addEventListener('input', (e) => {
@@ -1596,10 +1652,30 @@
                     multiAgentDemo.cbfGain = parseFloat(e.target.value);
                     document.getElementById('cbf-gain-value').textContent = e.target.value;
                 });
+                
+                // New consensus control listeners
+                document.getElementById('comm-range').addEventListener('input', (e) => {
+                    multiAgentDemo.communicationRange = parseInt(e.target.value);
+                    document.getElementById('comm-range-value').textContent = e.target.value;
+                    updateCommunicationTopology();
+                });
+                
+                document.getElementById('consensus-gain').addEventListener('input', (e) => {
+                    multiAgentDemo.consensusGain = parseFloat(e.target.value);
+                    document.getElementById('consensus-gain-value').textContent = e.target.value;
+                });
+                
+                document.getElementById('formation-shape').addEventListener('change', (e) => {
+                    multiAgentDemo.formationShape = e.target.value;
+                    if (multiAgentDemo.formationType === 'formation-control' || multiAgentDemo.formationType === 'leader-follower') {
+                        createAgents();
+                    }
+                });
             }
             
             createAgents();
             renderMultiAgentDemo();
+            updateMathematicalContent();
         }
 
         function createAgents() {
@@ -1743,6 +1819,64 @@
                         }
                         break;
                         
+                    // ========== GRAPH CONSENSUS METHODS ==========
+                    case 'consensus':
+                        // Consensus rendezvous - agents start randomly, converge to consensus point
+                        const consensusMargin = 60;
+                        startX = consensusMargin + Math.random() * (rect.width - 2 * consensusMargin);
+                        startY = consensusMargin + Math.random() * (rect.height - 2 * consensusMargin);
+                        // Goal will be computed dynamically as consensus value
+                        goalX = centerX;
+                        goalY = centerY;
+                        break;
+                        
+                    case 'leader-follower':
+                        // Leader-follower with desired formation
+                        if (i === 0) {
+                            // Leader agent
+                            startX = centerX - radius * 0.8;
+                            startY = centerY;
+                            goalX = centerX + radius * 0.8;
+                            goalY = centerY;
+                        } else {
+                            // Follower agents - position relative to formation shape
+                            const followerAngle = ((i - 1) / (num - 1)) * 2 * Math.PI;
+                            const formationRadius = 40;
+                            startX = centerX - radius * 0.8 + formationRadius * Math.cos(followerAngle);
+                            startY = centerY + formationRadius * Math.sin(followerAngle);
+                            // Goals will be computed relative to leader
+                            goalX = startX + radius * 1.6;
+                            goalY = startY;
+                        }
+                        break;
+                        
+                    case 'formation-control':
+                        // Distributed formation control - form desired geometric shape
+                        createFormationPositions(i, num, centerX, centerY, radius);
+                        startX = multiAgentDemo.agents[i]?.startX || centerX + (Math.random() - 0.5) * radius;
+                        startY = multiAgentDemo.agents[i]?.startY || centerY + (Math.random() - 0.5) * radius;
+                        goalX = multiAgentDemo.agents[i]?.goalX || centerX;
+                        goalY = multiAgentDemo.agents[i]?.goalY || centerY;
+                        break;
+                        
+                    case 'flocking':
+                        // Flocking with consensus on heading/speed - scattered start
+                        const flockMargin = 50;
+                        startX = flockMargin + Math.random() * (rect.width - 2 * flockMargin);
+                        startY = flockMargin + Math.random() * (rect.height - 2 * flockMargin);
+                        
+                        // Create some "leader" agents that move toward goals
+                        if (i < Math.ceil(num * 0.2)) { // 20% are leaders
+                            isLeader = true;
+                            goalX = centerX + (Math.random() - 0.5) * radius * 1.5;
+                            goalY = centerY + (Math.random() - 0.5) * radius * 1.5;
+                        } else {
+                            // Followers initially have random goals but will follow leaders
+                            goalX = centerX + (Math.random() - 0.5) * radius;
+                            goalY = centerY + (Math.random() - 0.5) * radius;
+                        }
+                        break;
+                        
                     default:
                         // Default to symmetric
                         startX = centerX + radius * Math.cos(angle);
@@ -1755,11 +1889,191 @@
                     id: i,
                     x: startX,
                     y: startY,
-                    vx: 0,
-                    vy: 0,
+                    vx: multiAgentDemo.formationType === 'flocking' ? (Math.random() - 0.5) * 12 : 0,
+                    vy: multiAgentDemo.formationType === 'flocking' ? (Math.random() - 0.5) * 12 : 0,
                     goalX: goalX,
                     goalY: goalY,
-                    color: `hsl(${i * 360 / num}, 70%, 60%)`
+                    color: `hsl(${i * 360 / num}, 70%, 60%)`,
+                    // Additional properties for consensus methods
+                    isLeader: (multiAgentDemo.formationType === 'leader-follower' && i === 0) || 
+                             (multiAgentDemo.formationType === 'flocking' && isLeader),
+                    neighbors: [],
+                    consensusState: { x: startX, y: startY }
+                });
+            }
+            
+            // Initialize graph topology for consensus methods
+            if (['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(multiAgentDemo.formationType)) {
+                updateCommunicationTopology();
+                initializeConsensusParameters();
+            }
+        }
+
+        // ========== GRAPH TOPOLOGY FUNCTIONS ==========
+        function createFormationPositions(agentIndex, numAgents, centerX, centerY, baseRadius) {
+            const shape = multiAgentDemo.formationShape;
+            let positions = [];
+            
+            switch(shape) {
+                case 'triangle':
+                    if (numAgents >= 3) {
+                        positions = [
+                            { x: centerX, y: centerY - baseRadius * 0.6 },
+                            { x: centerX - baseRadius * 0.6, y: centerY + baseRadius * 0.4 },
+                            { x: centerX + baseRadius * 0.6, y: centerY + baseRadius * 0.4 }
+                        ];
+                    }
+                    break;
+                case 'square':
+                    if (numAgents >= 4) {
+                        positions = [
+                            { x: centerX - baseRadius * 0.5, y: centerY - baseRadius * 0.5 },
+                            { x: centerX + baseRadius * 0.5, y: centerY - baseRadius * 0.5 },
+                            { x: centerX + baseRadius * 0.5, y: centerY + baseRadius * 0.5 },
+                            { x: centerX - baseRadius * 0.5, y: centerY + baseRadius * 0.5 }
+                        ];
+                    }
+                    break;
+                case 'line':
+                    const spacing = baseRadius * 1.2 / Math.max(1, numAgents - 1);
+                    for (let i = 0; i < numAgents; i++) {
+                        positions.push({
+                            x: centerX - baseRadius * 0.6 + i * spacing,
+                            y: centerY
+                        });
+                    }
+                    break;
+                case 'circle':
+                    for (let i = 0; i < numAgents; i++) {
+                        const angle = (i / numAgents) * 2 * Math.PI;
+                        positions.push({
+                            x: centerX + baseRadius * 0.6 * Math.cos(angle),
+                            y: centerY + baseRadius * 0.6 * Math.sin(angle)
+                        });
+                    }
+                    break;
+                case 'pentagon':
+                    if (numAgents >= 5) {
+                        for (let i = 0; i < Math.min(5, numAgents); i++) {
+                            const angle = (i / 5) * 2 * Math.PI - Math.PI / 2;
+                            positions.push({
+                                x: centerX + baseRadius * 0.6 * Math.cos(angle),
+                                y: centerY + baseRadius * 0.6 * Math.sin(angle)
+                            });
+                        }
+                    }
+                    break;
+            }
+            
+            // Fill remaining positions for extra agents
+            while (positions.length < numAgents) {
+                const angle = (positions.length / numAgents) * 2 * Math.PI;
+                positions.push({
+                    x: centerX + baseRadius * 0.8 * Math.cos(angle),
+                    y: centerY + baseRadius * 0.8 * Math.sin(angle)
+                });
+            }
+            
+            // Set start positions (scattered) and goal positions (formation)
+            if (multiAgentDemo.agents[agentIndex]) {
+                multiAgentDemo.agents[agentIndex].startX = centerX + (Math.random() - 0.5) * baseRadius * 1.5;
+                multiAgentDemo.agents[agentIndex].startY = centerY + (Math.random() - 0.5) * baseRadius * 1.5;
+                multiAgentDemo.agents[agentIndex].goalX = positions[agentIndex % positions.length].x;
+                multiAgentDemo.agents[agentIndex].goalY = positions[agentIndex % positions.length].y;
+            }
+        }
+
+        function updateCommunicationTopology() {
+            const agents = multiAgentDemo.agents;
+            const range = multiAgentDemo.communicationRange;
+            const n = agents.length;
+            
+            // Initialize adjacency matrix
+            multiAgentDemo.adjacencyMatrix = Array(n).fill().map(() => Array(n).fill(0));
+            multiAgentDemo.communicationLinks = [];
+            
+            // Build communication graph based on distance
+            for (let i = 0; i < n; i++) {
+                agents[i].neighbors = [];
+                for (let j = 0; j < n; j++) {
+                    if (i !== j) {
+                        const dist = Math.hypot(agents[i].x - agents[j].x, agents[i].y - agents[j].y);
+                        if (dist <= range) {
+                            multiAgentDemo.adjacencyMatrix[i][j] = 1;
+                            agents[i].neighbors.push(j);
+                            if (i < j) { // Avoid duplicate links
+                                multiAgentDemo.communicationLinks.push({
+                                    from: i, to: j, distance: dist
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Compute Laplacian matrix
+            multiAgentDemo.laplacianMatrix = Array(n).fill().map(() => Array(n).fill(0));
+            for (let i = 0; i < n; i++) {
+                let degree = 0;
+                for (let j = 0; j < n; j++) {
+                    if (multiAgentDemo.adjacencyMatrix[i][j] === 1) {
+                        multiAgentDemo.laplacianMatrix[i][j] = -1;
+                        degree++;
+                    }
+                }
+                multiAgentDemo.laplacianMatrix[i][i] = degree;
+            }
+        }
+
+        function initializeConsensusParameters() {
+            const agents = multiAgentDemo.agents;
+            
+            // Initialize consensus value as centroid of all agents
+            let sumX = 0, sumY = 0;
+            agents.forEach(agent => {
+                sumX += agent.x;
+                sumY += agent.y;
+            });
+            multiAgentDemo.consensusValue = {
+                x: sumX / agents.length,
+                y: sumY / agents.length
+            };
+            
+            // Set formation center
+            multiAgentDemo.formationCenter = { ...multiAgentDemo.consensusValue };
+            
+            // Initialize desired offsets for leader-follower
+            if (multiAgentDemo.formationType === 'leader-follower') {
+                multiAgentDemo.desiredOffsets = [];
+                const shape = multiAgentDemo.formationShape;
+                const spacing = 50;
+                
+                agents.forEach((agent, i) => {
+                    if (i === 0) {
+                        multiAgentDemo.desiredOffsets.push({ x: 0, y: 0 }); // Leader offset
+                    } else {
+                        // Position followers based on formation shape
+                        const followerIndex = i - 1;
+                        const totalFollowers = agents.length - 1;
+                        let offsetX, offsetY;
+                        
+                        switch(shape) {
+                            case 'line':
+                                offsetX = -spacing - followerIndex * spacing;
+                                offsetY = 0;
+                                break;
+                            case 'triangle':
+                                if (followerIndex === 0) { offsetX = -spacing; offsetY = -spacing * 0.6; }
+                                else if (followerIndex === 1) { offsetX = -spacing; offsetY = spacing * 0.6; }
+                                else { offsetX = -spacing * (1 + followerIndex * 0.5); offsetY = 0; }
+                                break;
+                            default:
+                                const angle = (followerIndex / totalFollowers) * 2 * Math.PI;
+                                offsetX = -spacing + spacing * 0.8 * Math.cos(angle);
+                                offsetY = spacing * 0.8 * Math.sin(angle);
+                        }
+                        multiAgentDemo.desiredOffsets.push({ x: offsetX, y: offsetY });
+                    }
                 });
             }
         }
@@ -1770,46 +2084,131 @@
             
             svg.innerHTML = '';
             
-            // Draw lines between agents that are close to violating safety
-            multiAgentDemo.agents.forEach((agent, i) => {
-                multiAgentDemo.agents.forEach((other, j) => {
-                    if (i >= j) return;
-                    const dist = Math.hypot(agent.x - other.x, agent.y - other.y);
-                    if (dist < multiAgentDemo.safetyDistance * 1.5) {
-                        const opacity = 1 - (dist - multiAgentDemo.safetyDistance) / (multiAgentDemo.safetyDistance * 0.5);
+            // Add arrowhead marker for velocity vectors
+            svg.innerHTML += `
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="8" 
+                            refX="9" refY="4" orient="auto">
+                        <polygon points="0 0, 10 4, 0 8" fill="#00ffff"/>
+                    </marker>
+                </defs>
+            `;
+            
+            const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(multiAgentDemo.formationType);
+            
+            // Draw communication links for consensus methods
+            if (isConsensusMethod && multiAgentDemo.communicationLinks) {
+                multiAgentDemo.communicationLinks.forEach(link => {
+                    const agent1 = multiAgentDemo.agents[link.from];
+                    const agent2 = multiAgentDemo.agents[link.to];
+                    const opacity = Math.max(0.2, 1 - link.distance / multiAgentDemo.communicationRange);
+                    svg.innerHTML += `
+                        <line x1="${agent1.x}" y1="${agent1.y}" 
+                              x2="${agent2.x}" y2="${agent2.y}" 
+                              stroke="#60a5fa" stroke-width="1" 
+                              stroke-dasharray="3,3" opacity="${opacity}"/>
+                    `;
+                });
+            }
+            
+            // Draw consensus point for applicable methods
+            if (multiAgentDemo.formationType === 'consensus' && multiAgentDemo.consensusValue) {
+                svg.innerHTML += `
+                    <circle cx="${multiAgentDemo.consensusValue.x}" cy="${multiAgentDemo.consensusValue.y}" 
+                            r="6" fill="none" stroke="#a78bfa" stroke-width="2" 
+                            stroke-dasharray="5,5"/>
+                    <text x="${multiAgentDemo.consensusValue.x + 10}" y="${multiAgentDemo.consensusValue.y - 10}" 
+                          fill="#a78bfa" font-size="12">Consensus</text>
+                `;
+            }
+            
+            // Draw formation targets for formation control
+            if (multiAgentDemo.formationType === 'formation-control') {
+                multiAgentDemo.agents.forEach(agent => {
+                    if (agent.goalX && agent.goalY) {
                         svg.innerHTML += `
-                            <line x1="${agent.x}" y1="${agent.y}" 
-                                  x2="${other.x}" y2="${other.y}" 
-                                  stroke="#ef4444" stroke-width="1" 
-                                  opacity="${Math.max(0, opacity * 0.5)}"/>
+                            <circle cx="${agent.goalX}" cy="${agent.goalY}" 
+                                    r="4" fill="none" stroke="#10b981" stroke-width="1" 
+                                    stroke-dasharray="2,2" opacity="0.6"/>
                         `;
                     }
                 });
-            });
+            }
             
-            // Draw agents, their goals, and safety zones
-            multiAgentDemo.agents.forEach(agent => {
-                // Safety zone
+            // Draw safety violation lines (existing functionality)
+            if (!isConsensusMethod) {
+                multiAgentDemo.agents.forEach((agent, i) => {
+                    multiAgentDemo.agents.forEach((other, j) => {
+                        if (i >= j) return;
+                        const dist = Math.hypot(agent.x - other.x, agent.y - other.y);
+                        if (dist < multiAgentDemo.safetyDistance * 1.5) {
+                            const opacity = 1 - (dist - multiAgentDemo.safetyDistance) / (multiAgentDemo.safetyDistance * 0.5);
+                            svg.innerHTML += `
+                                <line x1="${agent.x}" y1="${agent.y}" 
+                                      x2="${other.x}" y2="${other.y}" 
+                                      stroke="#ef4444" stroke-width="1" 
+                                      opacity="${Math.max(0, opacity * 0.5)}"/>
+                            `;
+                        }
+                    });
+                });
+            }
+            
+            // Draw agents with enhanced visualization
+            multiAgentDemo.agents.forEach((agent, index) => {
+                // Safety zone (smaller for consensus methods to reduce clutter)
+                const safetyRadius = isConsensusMethod ? multiAgentDemo.safetyDistance / 3 : multiAgentDemo.safetyDistance / 2;
                 svg.innerHTML += `
-                    <circle cx="${agent.x}" cy="${agent.y}" r="${multiAgentDemo.safetyDistance / 2}" 
+                    <circle cx="${agent.x}" cy="${agent.y}" r="${safetyRadius}" 
                             fill="none" stroke="${agent.color}" stroke-width="1" 
                             stroke-dasharray="3,3" opacity="0.3"/>
                 `;
                 
-                // Goal
+                // Goal (only for non-consensus methods or specific cases)
+                if (!isConsensusMethod || multiAgentDemo.formationType === 'formation-control') {
+                    svg.innerHTML += `
+                        <circle cx="${agent.goalX}" cy="${agent.goalY}" r="4" 
+                                fill="none" stroke="${agent.color}" stroke-width="2" 
+                                stroke-dasharray="2,2" opacity="0.6"/>
+                    `;
+                }
+                
+                // Agent with special styling for leaders
+                const agentRadius = agent.isLeader ? 10 : 8;
+                const strokeWidth = agent.isLeader ? 3 : 2;
+                const strokeColor = agent.isLeader ? "#fbbf24" : "#ffffff";
+                
                 svg.innerHTML += `
-                    <circle cx="${agent.goalX}" cy="${agent.goalY}" r="5" 
-                            fill="none" stroke="${agent.color}" stroke-width="2" 
-                            stroke-dasharray="2,2" opacity="0.6"/>
+                    <circle cx="${agent.x}" cy="${agent.y}" r="${agentRadius}" 
+                            fill="${agent.color}" stroke="${strokeColor}" stroke-width="${strokeWidth}"/>
+                    <text x="${agent.x}" y="${agent.y + 3}" text-anchor="middle" 
+                          fill="white" font-size="10" font-weight="bold">${agent.isLeader ? 'L' : agent.id + 1}</text>
                 `;
                 
-                // Agent
-                svg.innerHTML += `
-                    <circle cx="${agent.x}" cy="${agent.y}" r="8" 
-                            fill="${agent.color}" stroke="#ffffff" stroke-width="2"/>
-                    <text x="${agent.x}" y="${agent.y + 3}" text-anchor="middle" 
-                          fill="white" font-size="10" font-weight="bold">${agent.id + 1}</text>
-                `;
+                // Show velocity vectors for flocking
+                if (multiAgentDemo.formationType === 'flocking' && (agent.vx || agent.vy)) {
+                    const velocityScale = 20; // Much larger arrows
+                    const vx_scaled = agent.vx * velocityScale;
+                    const vy_scaled = agent.vy * velocityScale;
+                    const speed = Math.hypot(agent.vx, agent.vy);
+                    const opacity = Math.min(1, 0.3 + speed / 8); // More visible
+                    
+                    svg.innerHTML += `
+                        <line x1="${agent.x}" y1="${agent.y}" 
+                              x2="${agent.x + vx_scaled}" y2="${agent.y + vy_scaled}" 
+                              stroke="#00ffff" stroke-width="3" 
+                              opacity="${opacity}" marker-end="url(#arrowhead)"/>
+                    `;
+                }
+                
+                // Show communication range for consensus methods (only for leader or first agent)
+                if (isConsensusMethod && (agent.isLeader || index === 0)) {
+                    svg.innerHTML += `
+                        <circle cx="${agent.x}" cy="${agent.y}" r="${multiAgentDemo.communicationRange}" 
+                                fill="none" stroke="#60a5fa" stroke-width="1" 
+                                stroke-dasharray="8,8" opacity="0.15"/>
+                    `;
+                }
             });
             
             updateMultiAgentStatus();
@@ -1837,6 +2236,53 @@
             
             document.getElementById('collisions').textContent = multiAgentDemo.collisions > 0 ? multiAgentDemo.collisions : collisions;
             document.getElementById('collisions').className = `status-value ${collisions === 0 ? 'safe' : 'unsafe'}`;
+            
+            // Update consensus-specific status
+            const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(multiAgentDemo.formationType);
+            const consensusStatus = document.getElementById('consensus-status');
+            
+            if (isConsensusMethod) {
+                consensusStatus.style.display = 'block';
+                
+                // Calculate consensus error
+                let consensusError = 0;
+                if (multiAgentDemo.formationType === 'consensus') {
+                    // For consensus: deviation from consensus point
+                    multiAgentDemo.agents.forEach(agent => {
+                        const dx = agent.x - multiAgentDemo.consensusValue.x;
+                        const dy = agent.y - multiAgentDemo.consensusValue.y;
+                        consensusError += Math.hypot(dx, dy);
+                    });
+                    consensusError /= multiAgentDemo.agents.length;
+                } else if (multiAgentDemo.formationType === 'formation-control') {
+                    // For formation: deviation from desired positions
+                    multiAgentDemo.agents.forEach(agent => {
+                        const dx = agent.x - agent.goalX;
+                        const dy = agent.y - agent.goalY;
+                        consensusError += Math.hypot(dx, dy);
+                    });
+                    consensusError /= multiAgentDemo.agents.length;
+                } else if (multiAgentDemo.formationType === 'leader-follower') {
+                    // For leader-follower: formation error
+                    const leader = multiAgentDemo.agents[0];
+                    multiAgentDemo.agents.forEach((agent, i) => {
+                        if (!agent.isLeader) {
+                            const offset = multiAgentDemo.desiredOffsets[i];
+                            const desiredX = leader.x + offset.x;
+                            const desiredY = leader.y + offset.y;
+                            const dx = agent.x - desiredX;
+                            const dy = agent.y - desiredY;
+                            consensusError += Math.hypot(dx, dy);
+                        }
+                    });
+                    consensusError /= Math.max(1, multiAgentDemo.agents.length - 1);
+                }
+                
+                document.getElementById('consensus-error').textContent = consensusError.toFixed(1);
+                document.getElementById('consensus-error').className = `status-value ${consensusError < 30 ? 'safe' : 'warning'}`;
+            } else {
+                consensusStatus.style.display = 'none';
+            }
         }
 
         function animateMultiAgentDemo() {
@@ -1844,9 +2290,357 @@
             
             const dt = multiAgentDemo.dt;
             let totalActiveConstraints = 0;
-            const agentControls = [];
+            
+            // Update communication topology for consensus methods
+            const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(multiAgentDemo.formationType);
+            if (isConsensusMethod) {
+                updateCommunicationTopology();
+            }
+            
+            // Compute controls based on formation type
+            let agentControls = [];
+            
+            switch(multiAgentDemo.formationType) {
+                case 'consensus':
+                    agentControls = computeConsensusControls();
+                    break;
+                case 'leader-follower':
+                    agentControls = computeLeaderFollowerControls();
+                    break;
+                case 'formation-control':
+                    agentControls = computeFormationControls();
+                    break;
+                case 'flocking':
+                    agentControls = computeFlockingControls();
+                    break;
+                default:
+                    // Original simple goal-seeking behavior
+                    agentControls = computeBasicGoalControls();
+            }
 
-            // First, compute nominal control for all agents
+            // Apply CBF safety filter to all controls
+            const safeControls = applyCBFSafetyFilter(agentControls);
+            
+            // Update agent positions
+            multiAgentDemo.agents.forEach((agent, i) => {
+                if (multiAgentDemo.formationType === 'flocking') {
+                    // For flocking, controls are accelerations
+                    agent.vx += safeControls[i].ux * dt;
+                    agent.vy += safeControls[i].uy * dt;
+                    
+                    // Limit maximum speed for more dynamic movement
+                    const maxSpeed = 8.0; // Much faster!
+                    const speed = Math.hypot(agent.vx, agent.vy);
+                    if (speed > maxSpeed) {
+                        agent.vx = (agent.vx / speed) * maxSpeed;
+                        agent.vy = (agent.vy / speed) * maxSpeed;
+                    }
+                    
+                    agent.x += agent.vx * dt;
+                    agent.y += agent.vy * dt;
+                } else {
+                    // For other methods, controls are velocities
+                    agent.vx = safeControls[i].ux;
+                    agent.vy = safeControls[i].uy;
+                    agent.x += agent.vx * dt;
+                    agent.y += agent.vy * dt;
+                }
+
+                // Keep agents in bounds
+                const canvas = document.getElementById('multiagent-canvas');
+                const rect = canvas.getBoundingClientRect();
+                agent.x = Math.max(8, Math.min(rect.width - 8, agent.x));
+                agent.y = Math.max(8, Math.min(rect.height - 8, agent.y));
+            });
+            
+            multiAgentDemo.activeConstraints = totalActiveConstraints;
+            
+            renderMultiAgentDemo();
+            requestAnimationFrame(animateMultiAgentDemo);
+        }
+
+        // ========== CONSENSUS CONTROL ALGORITHMS ==========
+        function computeConsensusControls() {
+            const agents = multiAgentDemo.agents;
+            const gain = multiAgentDemo.consensusGain;
+            const controls = [];
+            
+            // Update consensus value (centroid of all agents)
+            let sumX = 0, sumY = 0;
+            agents.forEach(agent => {
+                sumX += agent.x;
+                sumY += agent.y;
+            });
+            multiAgentDemo.consensusValue = {
+                x: sumX / agents.length,
+                y: sumY / agents.length
+            };
+            
+            agents.forEach((agent, i) => {
+                let ux = 0, uy = 0;
+                
+                // Consensus protocol: u_i = -k * Σ a_ij(x_i - x_j)
+                agent.neighbors.forEach(j => {
+                    const neighbor = agents[j];
+                    ux -= gain * (agent.x - neighbor.x);
+                    uy -= gain * (agent.y - neighbor.y);
+                });
+                
+                // Add small attraction to consensus point
+                const dx = multiAgentDemo.consensusValue.x - agent.x;
+                const dy = multiAgentDemo.consensusValue.y - agent.y;
+                ux += 0.1 * dx;
+                uy += 0.1 * dy;
+                
+                controls.push({ ux, uy });
+            });
+            
+            return controls;
+        }
+
+        function computeLeaderFollowerControls() {
+            const agents = multiAgentDemo.agents;
+            const controls = [];
+            const leader = agents[0];
+            
+            agents.forEach((agent, i) => {
+                let ux = 0, uy = 0;
+                
+                if (agent.isLeader) {
+                    // Leader follows predefined trajectory or goal
+                    const dx = agent.goalX - agent.x;
+                    const dy = agent.goalY - agent.y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist > 5) {
+                        ux = (dx / dist) * 25;
+                        uy = (dy / dist) * 25;
+                    }
+                } else {
+                    // Follower control: track leader + desired offset + neighbor coordination
+                    const offset = multiAgentDemo.desiredOffsets[i];
+                    const desiredX = leader.x + offset.x;
+                    const desiredY = leader.y + offset.y;
+                    
+                    // PD control to desired position
+                    const kp = 1.5, kd = 0.8;
+                    ux = kp * (desiredX - agent.x) - kd * agent.vx;
+                    uy = kp * (desiredY - agent.y) - kd * agent.vy;
+                    
+                    // Formation coordination with neighbors
+                    agent.neighbors.forEach(j => {
+                        if (j !== 0) { // Don't coordinate with leader directly
+                            const neighbor = agents[j];
+                            const neighborOffset = multiAgentDemo.desiredOffsets[j];
+                            const relativeDesiredX = (desiredX - (leader.x + neighborOffset.x));
+                            const relativeDesiredY = (desiredY - (leader.y + neighborOffset.y));
+                            const actualRelativeX = agent.x - neighbor.x;
+                            const actualRelativeY = agent.y - neighbor.y;
+                            
+                            ux += 0.3 * (relativeDesiredX - actualRelativeX);
+                            uy += 0.3 * (relativeDesiredY - actualRelativeY);
+                        }
+                    });
+                }
+                
+                controls.push({ ux, uy });
+            });
+            
+            return controls;
+        }
+
+        function computeFormationControls() {
+            const agents = multiAgentDemo.agents;
+            const controls = [];
+            
+            agents.forEach((agent, i) => {
+                let ux = 0, uy = 0;
+                
+                // Distance-based formation control
+                const kp = 1.0;
+                
+                // Move toward desired formation position
+                const dx = agent.goalX - agent.x;
+                const dy = agent.goalY - agent.y;
+                ux += kp * dx;
+                uy += kp * dy;
+                
+                // Distance-based coordination with neighbors
+                agent.neighbors.forEach(j => {
+                    const neighbor = agents[j];
+                    const currentDist = Math.hypot(agent.x - neighbor.x, agent.y - neighbor.y);
+                    const desiredDist = Math.hypot(agent.goalX - neighbor.goalX, agent.goalY - neighbor.goalY);
+                    
+                    if (currentDist > 0.1) {
+                        const distError = currentDist - desiredDist;
+                        const forceGain = 0.5;
+                        const fx = forceGain * distError * (agent.x - neighbor.x) / currentDist;
+                        const fy = forceGain * distError * (agent.y - neighbor.y) / currentDist;
+                        
+                        ux -= fx;
+                        uy -= fy;
+                    }
+                });
+                
+                controls.push({ ux, uy });
+            });
+            
+            return controls;
+        }
+
+        function computeFlockingControls() {
+            const agents = multiAgentDemo.agents;
+            const controls = [];
+            
+            // Reynolds flocking parameters - Much more dynamic!
+            const separationRadius = multiAgentDemo.safetyDistance * 3.0;
+            const alignmentRadius = multiAgentDemo.communicationRange * 0.9;
+            const cohesionRadius = multiAgentDemo.communicationRange;
+            
+            const separationWeight = 8.0;  // Stronger separation
+            const alignmentWeight = 4.0;   // Stronger alignment
+            const cohesionWeight = 2.5;    // Stronger cohesion
+            const dampingWeight = 0.1;     // Less damping for more movement
+            const maxSpeed = 8.0;          // Much faster movement
+            
+            agents.forEach((agent, i) => {
+                let separationForceX = 0, separationForceY = 0;
+                let alignmentForceX = 0, alignmentForceY = 0;
+                let cohesionForceX = 0, cohesionForceY = 0;
+                
+                let separationCount = 0;
+                let alignmentCount = 0;
+                let cohesionCount = 0;
+                
+                // Calculate forces from neighbors within communication range
+                agent.neighbors.forEach(j => {
+                    const neighbor = agents[j];
+                    const dx = agent.x - neighbor.x;
+                    const dy = agent.y - neighbor.y;
+                    const dist = Math.hypot(dx, dy);
+                    
+                    if (dist > 0.1 && dist < cohesionRadius) {
+                        // Separation force (avoid crowding) - much stronger when closer
+                        if (dist < separationRadius) {
+                            const force = (separationRadius - dist) / separationRadius;
+                            const weight = force * force * force; // Cubic falloff for dramatic separation
+                            separationForceX += (dx / dist) * weight;
+                            separationForceY += (dy / dist) * weight;
+                            separationCount++;
+                        }
+                        
+                        // Alignment force (match neighbor velocities) - stronger
+                        if (dist < alignmentRadius) {
+                            alignmentForceX += neighbor.vx;
+                            alignmentForceY += neighbor.vy;
+                            alignmentCount++;
+                        }
+                        
+                        // Cohesion force (move toward center of neighbors) - stronger
+                        cohesionForceX += neighbor.x;
+                        cohesionForceY += neighbor.y;
+                        cohesionCount++;
+                    }
+                });
+                
+                // Normalize forces
+                if (separationCount > 0) {
+                    separationForceX /= separationCount;
+                    separationForceY /= separationCount;
+                }
+                
+                if (alignmentCount > 0) {
+                    alignmentForceX = (alignmentForceX / alignmentCount) - agent.vx;
+                    alignmentForceY = (alignmentForceY / alignmentCount) - agent.vy;
+                }
+                
+                if (cohesionCount > 0) {
+                    const centerX = cohesionForceX / cohesionCount;
+                    const centerY = cohesionForceY / cohesionCount;
+                    cohesionForceX = (centerX - agent.x) * 0.05; // Stronger cohesion
+                    cohesionForceY = (centerY - agent.y) * 0.05;
+                } else {
+                    cohesionForceX = 0;
+                    cohesionForceY = 0;
+                }
+                
+                // Calculate control input (acceleration) - much stronger forces
+                let ux = separationWeight * separationForceX + 
+                         alignmentWeight * alignmentForceX + 
+                         cohesionWeight * cohesionForceX;
+                         
+                let uy = separationWeight * separationForceY + 
+                         alignmentWeight * alignmentForceY + 
+                         cohesionWeight * cohesionForceY;
+                
+                // Minimal damping for more dynamic behavior
+                ux -= dampingWeight * agent.vx;
+                uy -= dampingWeight * agent.vy;
+                
+                // Add leader following behavior for non-leader agents
+                if (!agent.isLeader && cohesionCount > 0) {
+                    // Find closest leader
+                    let closestLeader = null;
+                    let closestLeaderDist = Infinity;
+                    
+                    agents.forEach(otherAgent => {
+                        if (otherAgent.isLeader) {
+                            const dist = Math.hypot(agent.x - otherAgent.x, agent.y - otherAgent.y);
+                            if (dist < closestLeaderDist && dist < multiAgentDemo.communicationRange * 1.5) {
+                                closestLeader = otherAgent;
+                                closestLeaderDist = dist;
+                            }
+                        }
+                    });
+                    
+                    if (closestLeader) {
+                        const leaderWeight = 2.0;
+                        ux += leaderWeight * (closestLeader.x - agent.x) * 0.02;
+                        uy += leaderWeight * (closestLeader.y - agent.y) * 0.02;
+                        
+                        // Also try to match leader velocity
+                        ux += leaderWeight * (closestLeader.vx - agent.vx) * 0.3;
+                        uy += leaderWeight * (closestLeader.vy - agent.vy) * 0.3;
+                    }
+                }
+                
+                // Leader agents seek their goals more strongly
+                if (agent.isLeader) {
+                    const leaderGoalWeight = 1.5;
+                    ux += leaderGoalWeight * (agent.goalX - agent.x) * 0.02;
+                    uy += leaderGoalWeight * (agent.goalY - agent.y) * 0.02;
+                    
+                    // Leaders occasionally change goals for dynamic behavior
+                    if (Math.random() < 0.001) {
+                        const canvas = document.getElementById('multiagent-canvas');
+                        const rect = canvas.getBoundingClientRect();
+                        agent.goalX = 100 + Math.random() * (rect.width - 200);
+                        agent.goalY = 100 + Math.random() * (rect.height - 200);
+                    }
+                }
+                
+                // Strong boundary avoidance with circular repulsion
+                const canvas = document.getElementById('multiagent-canvas');
+                const rect = canvas.getBoundingClientRect();
+                const margin = 60;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                // Boundary forces
+                if (agent.x < margin) ux += (margin - agent.x) * 0.3;
+                if (agent.x > rect.width - margin) ux -= (agent.x - (rect.width - margin)) * 0.3;
+                if (agent.y < margin) uy += (margin - agent.y) * 0.3;
+                if (agent.y > rect.height - margin) uy -= (agent.y - (rect.height - margin)) * 0.3;
+                
+                controls.push({ ux, uy });
+            });
+            
+            return controls;
+        }
+
+        function computeBasicGoalControls() {
+            // Original goal-seeking behavior
+            const controls = [];
+            
             multiAgentDemo.agents.forEach(agent => {
                 const dx = agent.goalX - agent.x;
                 const dy = agent.goalY - agent.y;
@@ -1857,13 +2651,18 @@
                     ux = (dx / dist) * 30;
                     uy = (dy / dist) * 30;
                 }
-                agentControls.push({ux, uy});
+                controls.push({ ux, uy });
             });
+            
+            return controls;
+        }
 
-            // Second, compute safe control for all agents
+        function applyCBFSafetyFilter(nominalControls) {
             const safeControls = [];
+            let totalActiveConstraints = 0;
+            
             multiAgentDemo.agents.forEach((agent, i) => {
-                let { ux, uy } = agentControls[i];
+                let { ux, uy } = nominalControls[i];
 
                 // Apply CBF constraints from all other agents
                 multiAgentDemo.agents.forEach((other, j) => {
@@ -1892,33 +2691,23 @@
                          const constraint_rhs = - (multiAgentDemo.cbfGain / 2) * h;
 
                          if (u_dot_grad_h < constraint_rhs) {
-                             const delta = (constraint_rhs - u_dot_grad_h) / (grad_h_x**2 + grad_h_y**2);
-                             ux += delta * grad_h_x;
-                             uy += delta * grad_h_y;
                              totalActiveConstraints++;
+                             
+                             // Project control to satisfy constraint
+                             const grad_norm_sq = grad_h_x * grad_h_x + grad_h_y * grad_h_y;
+                             if (grad_norm_sq > 0.001) {
+                                 const lambda = (constraint_rhs - u_dot_grad_h) / grad_norm_sq;
+                                 ux += lambda * grad_h_x;
+                                 uy += lambda * grad_h_y;
+                             }
                          }
                     }
                 });
                 safeControls.push({ux, uy});
             });
 
-            // Third, update all agents' positions using their new safe controls
-            multiAgentDemo.agents.forEach((agent, i) => {
-                agent.vx = safeControls[i].ux;
-                agent.vy = safeControls[i].uy;
-                agent.x += agent.vx * dt;
-                agent.y += agent.vy * dt;
-
-                const canvas = document.getElementById('multiagent-canvas');
-                const rect = canvas.getBoundingClientRect();
-                agent.x = Math.max(8, Math.min(rect.width - 8, agent.x));
-                agent.y = Math.max(8, Math.min(rect.height - 8, agent.y));
-            });
-            
             multiAgentDemo.activeConstraints = totalActiveConstraints;
-            
-            renderMultiAgentDemo();
-            requestAnimationFrame(animateMultiAgentDemo);
+            return safeControls;
         }
 
         function toggleMultiAgentAnimation() {
@@ -1930,13 +2719,18 @@
         }
 
         function cycleFormation() {
-            const formations = ['symmetric', 'converge', 'rotate', 'spread', 'line', 'diamond', 'zigzag', 'random', 'orbit'];
+            const formations = ['symmetric', 'converge', 'rotate', 'spread', 'line', 'diamond', 'zigzag', 'random', 'orbit', 'consensus', 'leader-follower', 'formation-control', 'flocking'];
             const currentIndex = formations.indexOf(multiAgentDemo.formationType);
             const nextIndex = (currentIndex + 1) % formations.length;
             multiAgentDemo.formationType = formations[nextIndex];
             
             // Update the dropdown to reflect the change
             document.getElementById('formation-type').value = multiAgentDemo.formationType;
+            
+            // Show/hide consensus controls
+            const consensusControls = document.getElementById('consensus-controls');
+            const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(multiAgentDemo.formationType);
+            consensusControls.style.display = isConsensusMethod ? 'flex' : 'none';
             
             createAgents();
             renderMultiAgentDemo();
@@ -1954,11 +2748,202 @@
             multiAgentDemo.agents.forEach(agent => {
                 agent.x = 20 + Math.random() * (rect.width - 40);
                 agent.y = 20 + Math.random() * (rect.height - 40);
-                agent.vx = 0;
-                agent.vy = 0;
+                if (multiAgentDemo.formationType === 'flocking') {
+                    agent.vx = (Math.random() - 0.5) * 12;
+                    agent.vy = (Math.random() - 0.5) * 12;
+                } else {
+                    agent.vx = 0;
+                    agent.vy = 0;
+                }
             });
             
             renderMultiAgentDemo();
+        }
+
+        // ========== DYNAMIC MATHEMATICAL CONTENT ==========
+        function updateMathematicalContent() {
+            const formationType = multiAgentDemo.formationType;
+            const mathTitle = document.getElementById('math-title');
+            const mathContent = document.getElementById('math-content');
+            
+            const mathFormulations = {
+                'consensus': {
+                    title: 'Graph Consensus with CBF Safety:',
+                    content: `
+                        <p><strong>Problem Statement:</strong></p>
+                        <p style="font-size: 0.95rem; color: #e2e8f0; margin: 10px 0; line-height: 1.4;">
+                            <em>Consensus</em> addresses the fundamental problem of distributed coordination: how can multiple agents, 
+                            each with only local information about their neighbors, agree on a common value or reach the same state? 
+                            This is crucial for applications like sensor networks averaging measurements, robot swarms reaching rendezvous points, 
+                            or distributed computing systems agreeing on shared values. The challenge is achieving global agreement through 
+                            purely local interactions, without centralized control.
+                        </p>
+                        
+                        <p><strong>Consensus Protocol:</strong></p>
+                        $$u_i^{nom} = -k_c \\sum_{j \\in \\mathcal{N}_i} a_{ij}(x_i - x_j)$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            Agent $i$ moves toward average of neighbor positions with gain $k_c$.
+                        </p>
+                        
+                        <p><strong>Communication Graph:</strong></p>
+                        $$\\mathcal{N}_i = \\{j : \\|x_i - x_j\\| \\leq r_{comm} \\text{ and } (i,j) \\in \\mathcal{E}\\}$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            Neighbors $\\mathcal{N}_i$ determined by communication range $r_{comm}$.
+                        </p>
+                        
+                        <p><strong>Consensus Convergence:</strong></p>
+                        $$\\lim_{t \\to \\infty} x_i(t) = \\frac{1}{n}\\sum_{j=1}^n x_j(0), \\quad \\forall i$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            All agents converge to centroid of initial positions if graph is connected.
+                        </p>
+                        
+                        <p><strong>CBF Safety Integration:</strong></p>
+                        $$\\begin{align}
+                        \\min_{u_i} &\\quad \\|u_i - u_i^{nom}\\|^2 \\\\
+                        \\text{s.t.} &\\quad 2(x_i - x_j) \\cdot u_i \\geq -\\frac{\\alpha}{2} h_{ij}, \\; \\forall j
+                        \\end{align}$$
+                    `
+                },
+                'leader-follower': {
+                    title: 'Leader-Follower Formation with CBF:',
+                    content: `
+                        <p><strong>Problem Statement:</strong></p>
+                        <p style="font-size: 0.95rem; color: #e2e8f0; margin: 10px 0; line-height: 1.4;">
+                            <em>Leader-follower control</em> solves the problem of coordinated navigation where one or more designated leaders 
+                            follow desired trajectories while followers maintain specific relative positions to leaders and each other. 
+                            This is essential for applications like UAV formations, robot convoys, or autonomous vehicle platoons where a lead 
+                            vehicle knows the route while others must maintain formation. The challenge is ensuring followers track leaders 
+                            while maintaining inter-agent spacing and handling communication constraints.
+                        </p>
+                        
+                        <p><strong>Leader Dynamics:</strong></p>
+                        $$u_L = k_p(x_L^{des} - x_L) - k_d \\dot{x}_L$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            Leader tracks desired trajectory $x_L^{des}$ with PD control.
+                        </p>
+                        
+                        <p><strong>Follower Control Law:</strong></p>
+                        $$u_i = k_p(x_L + \\delta_i - x_i) + k_f \\sum_{j \\in \\mathcal{N}_i} (x_j + \\delta_j - x_i - \\delta_i)$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            Followers track leader position plus desired offset $\\delta_i$ with neighbor coordination.
+                        </p>
+                        
+                        <p><strong>Formation Stability:</strong></p>
+                        $$e_i = x_i - (x_L + \\delta_i), \\quad \\dot{e}_i = u_i - u_L$$
+                        $$\\dot{e}_i = -k_p e_i + k_f \\sum_{j \\in \\mathcal{N}_i} (e_j - e_i)$$
+                        
+                        <p><strong>Multi-CBF Constraints:</strong></p>
+                        $$h_{iL} = \\|x_i - x_L\\|^2 - d_{min}^2 \\geq 0 \\quad \\text{(leader avoidance)}$$
+                        $$h_{ij} = \\|x_i - x_j\\|^2 - d_{safe}^2 \\geq 0 \\quad \\text{(inter-follower)}$$
+                    `
+                },
+                'formation-control': {
+                    title: 'Distributed Formation Control with CBF:',
+                    content: `
+                        <p><strong>Problem Statement:</strong></p>
+                        <p style="font-size: 0.95rem; color: #e2e8f0; margin: 10px 0; line-height: 1.4;">
+                            <em>Formation control</em> addresses the challenge of making multiple agents maintain precise geometric relationships 
+                            (distances, angles, or relative positions) while moving as a coordinated group. Unlike leader-follower approaches, 
+                            this is fully distributed—no single agent is designated as a leader. Applications include satellite constellations 
+                            maintaining relative positions, robot teams forming specific shapes for tasks, or sensor networks maintaining 
+                            optimal coverage patterns. The key challenge is achieving global formation shape through purely local interactions.
+                        </p>
+                        
+                        <p><strong>Distance-Based Formation:</strong></p>
+                        $$e_{ij} = \\|x_i - x_j\\|^2 - d_{ij}^{*2}$$
+                        $$u_i = -\\sum_{j \\in \\mathcal{N}_i} k_{ij} e_{ij} (x_i - x_j)$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            Agents maintain desired inter-distances $d_{ij}^*$ through local control.
+                        </p>
+                        
+                        <p><strong>Bearing-Based Formation:</strong></p>
+                        $$g_{ij} = \\frac{x_j - x_i}{\\|x_j - x_i\\|}, \\quad g_{ij}^* = \\text{desired bearing}$$
+                        $$u_i = \\sum_{j \\in \\mathcal{N}_i} k_{ij} P_\\perp(g_{ij}) (g_{ij}^* - g_{ij})$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            $P_\\perp(g) = I - gg^T$ projects onto perpendicular space.
+                        </p>
+                        
+                        <p><strong>Formation Constraints:</strong></p>
+                        $$h_{ij}^{min} = \\|x_i - x_j\\|^2 - d_{min}^2 \\geq 0$$
+                        $$h_{ij}^{max} = d_{max}^2 - \\|x_i - x_j\\|^2 \\geq 0$$
+                        
+                        <p><strong>Rigid Formation Condition:</strong></p>
+                        $$\\text{rank}(R(p^*)) = 2n - 3 \\text{ for formation } p^* \\in \\mathbb{R}^{2n}$$
+                    `
+                },
+                'flocking': {
+                    title: 'Flocking with Consensus and CBF:',
+                    content: `
+                        <p><strong>Problem Statement:</strong></p>
+                        <p style="font-size: 0.95rem; color: #e2e8f0; margin: 10px 0; line-height: 1.4;">
+                            <em>Flocking</em> models the emergent collective behavior observed in nature (bird flocks, fish schools, animal herds) 
+                            where individuals follow simple local rules to create sophisticated group dynamics. The goal is to achieve cohesive 
+                            group movement while avoiding collisions and maintaining connectivity—without centralized coordination. This behavior 
+                            emerges from three basic rules: separation (avoid crowding), alignment (match neighbor velocities), and cohesion 
+                            (stay close to the group). Applications include drone swarms, autonomous vehicle groups, and distributed robotics.
+                        </p>
+                        
+                        <p><strong>Reynolds Rules:</strong></p>
+                        $$u_i^{sep} = \\sum_{j \\in \\mathcal{N}_i} \\frac{x_i - x_j}{\\|x_i - x_j\\|^2} \\quad \\text{(separation)}$$
+                        $$u_i^{ali} = \\frac{1}{|\\mathcal{N}_i|} \\sum_{j \\in \\mathcal{N}_i} v_j - v_i \\quad \\text{(alignment)}$$
+                        $$u_i^{coh} = \\frac{1}{|\\mathcal{N}_i|} \\sum_{j \\in \\mathcal{N}_i} x_j - x_i \\quad \\text{(cohesion)}$$
+                        
+                        <p><strong>Weighted Flocking Control:</strong></p>
+                        $$u_i^{nom} = w_s u_i^{sep} + w_a u_i^{ali} + w_c u_i^{coh}$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            Weights $w_s, w_a, w_c$ balance separation, alignment, and cohesion.
+                        </p>
+                        
+                        <p><strong>Velocity Consensus:</strong></p>
+                        $$\\lim_{t \\to \\infty} v_i(t) = v_{flock}, \\quad \\forall i$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            Agents reach common velocity $v_{flock}$ while maintaining formation.
+                        </p>
+                        
+                        <p><strong>CBF for Collision Avoidance:</strong></p>
+                        $$h_{ij} = \\|x_i - x_j\\|^2 - d_{safe}^2, \\quad \\dot{h}_{ij} + \\alpha h_{ij} \\geq 0$$
+                    `
+                }
+            };
+            
+            if (mathFormulations[formationType]) {
+                mathTitle.textContent = mathFormulations[formationType].title;
+                mathContent.innerHTML = mathFormulations[formationType].content;
+            } else {
+                // Default CBF mathematics for basic formations
+                mathTitle.textContent = 'Multi-Agent CBF Mathematics:';
+                mathContent.innerHTML = `
+                    <p><strong>Problem Statement:</strong></p>
+                    <p style="font-size: 0.95rem; color: #e2e8f0; margin: 10px 0; line-height: 1.4;">
+                        <em>Multi-agent collision avoidance</em> addresses the fundamental safety challenge in systems where multiple 
+                        autonomous agents operate in shared spaces. The problem is ensuring that agents can pursue their individual 
+                        objectives (reaching goals, following trajectories) while guaranteeing they never collide with each other. 
+                        Traditional approaches often compromise between safety and performance, but Control Barrier Functions (CBFs) 
+                        provide mathematical guarantees of safety while minimally modifying desired behaviors.
+                    </p>
+                    
+                    <p><strong>Inter-Agent Distance Constraint:</strong></p>
+                    $$h_{ij}(x_i, x_j) = \\|x_i - x_j\\|^2 - d_{safe}^2 \\geq 0$$
+                    <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                        Agents $i$ and $j$ must maintain squared distance greater than safety threshold.
+                    </p>
+                    
+                    <p><strong>CBF Constraint:</strong></p>
+                    $$\\dot{h}_{ij} + \\alpha h_{ij} \\geq 0$$
+                    $$2(x_i - x_j) \\cdot (u_i - u_j) + \\alpha h_{ij} \\geq 0$$
+                    
+                    <p><strong>Decentralized Implementation:</strong></p>
+                    $$2(x_i - x_j) \\cdot u_i \\geq -\\frac{\\alpha}{2} h_{ij}$$
+                    <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                        Each agent ensures half of the safety constraint independently, enabling distributed operation.
+                    </p>
+                `;
+            }
+            
+            // Re-render MathJax for the new content
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise([mathContent]).catch((err) => console.log('MathJax error:', err.message));
+            }
         }
 
         // Initialize the first demo on page load
