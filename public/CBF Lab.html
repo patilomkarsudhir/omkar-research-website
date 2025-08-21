@@ -359,6 +359,11 @@
             <div class="demo-grid">
                 <div class="demo-card">
                     <h3>2D Point Robot with Obstacle Avoidance</h3>
+                    <p style="color: #94a3b8; margin: 10px 0; font-size: 0.9rem;">
+                        Watch the robot navigate safely around obstacles using Control Barrier Functions. 
+                        Includes automatic deadlock resolution when the robot gets stuck at saddle points.
+                        <strong>Click on the canvas to set a new goal position.</strong>
+                    </p>
                     <div class="demo-canvas" id="basic-canvas">
                         <div class="grid-background"></div>
                         <svg width="100%" height="100%" id="basic-svg"></svg>
@@ -399,6 +404,10 @@
                         <div class="status-item">
                             <div class="status-value" id="control-modification">0%</div>
                             <div class="status-label">Control Modification</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value" id="deadlock-status">OFF</div>
+                            <div class="status-label">Deadlock Resolution</div>
                         </div>
                     </div>
                 </div>
@@ -561,13 +570,23 @@
 
         // Basic Demo State
         let basicDemo = {
-            robot: { x: 100, y: 150, vx: 0, vy: 0, goalX: 300, goalY: 150 },
+            robot: { x: 100, y: 150, vx: 0, vy: 0, goalX: 300, goalY: 200 },
             obstacles: [{ x: 200, y: 150, radius: 40 }],
             trajectory: [],
             alpha: 1.0,
             speed: 50,
             dt: 0.016, // Corresponds to ~60 FPS
-            controlModification: 0
+            controlModification: 0,
+            safetyMargin: 15, // safety clearance around obstacles
+            // Enhanced deadlock detection variables
+            deadlockTimer: 0,
+            lastPosition: { x: 100, y: 150 },
+            deadlockThreshold: 30, // frames (~0.5 second at 60fps)
+            minProgressThreshold: 1.5, // minimum distance that should be covered
+            // One-time perturbation variables
+            perturbationApplied: false,
+            perturbationStrength: 8, // single push strength
+            perturbationCooldown: 0 // frames to wait before applying another perturbation
         };
 
         // HOCBF Demo State
@@ -638,6 +657,11 @@
                     if (!clickedObstacle) {
                         basicDemo.robot.goalX = x;
                         basicDemo.robot.goalY = y;
+                        // Reset deadlock detection and perturbation when goal changes
+                        basicDemo.deadlockTimer = 0;
+                        basicDemo.lastPosition = { x: basicDemo.robot.x, y: basicDemo.robot.y };
+                        basicDemo.perturbationApplied = false;
+                        basicDemo.perturbationCooldown = 0;
                     }
                 });
                 
@@ -727,8 +751,10 @@
             
             // Draw obstacles and their safe zones
             basicDemo.obstacles.forEach(obs => {
+                // CBF activation zone - shows when CBF constraints become active
+                const cbfActivationRadius = obs.radius + basicDemo.safetyMargin;
                 svg.innerHTML += `
-                    <circle cx="${obs.x}" cy="${obs.y}" r="${obs.radius + 20}" 
+                    <circle cx="${obs.x}" cy="${obs.y}" r="${cbfActivationRadius}" 
                             fill="none" stroke="#10b981" stroke-width="2" 
                             stroke-dasharray="5,5" opacity="0.4"/>
                     <circle cx="${obs.x}" cy="${obs.y}" r="${obs.radius}" 
@@ -749,7 +775,8 @@
             let minH = Infinity;
             basicDemo.obstacles.forEach(obs => {
                 const dist = Math.sqrt((basicDemo.robot.x - obs.x)**2 + (basicDemo.robot.y - obs.y)**2);
-                minH = Math.min(minH, dist - obs.radius);
+                // Use same h calculation as CBF: distance to safety boundary
+                minH = Math.min(minH, dist - (obs.radius + basicDemo.safetyMargin));
             });
             
             let robotColor = '#10b981'; // Green (safe)
@@ -816,6 +843,11 @@
             
             document.getElementById('control-modification').textContent = `${Math.round(basicDemo.controlModification)}%`;
             document.getElementById('control-modification').className = `status-value ${basicDemo.controlModification > 50 ? 'warning' : ''}`;
+            
+            // Update deadlock resolution status
+            const isDeadlockActive = basicDemo.deadlockTimer > basicDemo.deadlockThreshold;
+            document.getElementById('deadlock-status').textContent = isDeadlockActive ? 'ACTIVE' : 'OFF';
+            document.getElementById('deadlock-status').className = `status-value ${isDeadlockActive ? 'warning' : ''}`;
         }
 
         function computeCBFControl(robot, obstacles, nominalControl, alpha) {
@@ -829,10 +861,11 @@
                 
                 if (dist < 0.001) return; // Avoid division by zero
                 
-                const h = dist - obs.radius;
+                // h represents distance to the safety boundary (obstacle + safety margin)
+                const h = dist - (obs.radius + basicDemo.safetyMargin);
                 
-                // Only apply CBF if approaching the obstacle's buffer zone
-                if (h < obs.radius * 2) {
+                // Only apply CBF if approaching the safety zone
+                if (h < basicDemo.safetyMargin) {
                     const grad_h_x = dx / dist;
                     const grad_h_y = dy / dist;
                     
@@ -857,6 +890,70 @@
             }
 
             return { safeControl, modification: maxModification };
+        }
+
+        function detectCBFDeadlock(robot, obstacles, nominalControl, safeControl, alpha) {
+            let minCBF = Infinity;
+            let maxGradientAlignment = 0;
+            let highModification = false;
+            let lowProgress = false;
+            
+            // Check progress (existing logic)
+            const progressDistance = Math.hypot(
+                robot.x - basicDemo.lastPosition.x, 
+                robot.y - basicDemo.lastPosition.y
+            );
+            lowProgress = progressDistance < basicDemo.minProgressThreshold;
+            
+            // Analyze CBF constraints and gradients
+            obstacles.forEach(obs => {
+                const dx = robot.x - obs.x;
+                const dy = robot.y - obs.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist < 0.001) return;
+                
+                // Use same h calculation as CBF: distance to safety boundary
+                const h = dist - (obs.radius + basicDemo.safetyMargin);
+                minCBF = Math.min(minCBF, h);
+                
+                // Check if we're in the critical zone where CBF becomes active
+                if (h < basicDemo.safetyMargin * 0.5) {  // Early detection threshold
+                    const grad_h_x = dx / dist;
+                    const grad_h_y = dy / dist;
+                    
+                    // Check alignment between nominal control and CBF gradient
+                    const nomMag = Math.sqrt(nominalControl.x**2 + nominalControl.y**2);
+                    if (nomMag > 0.1) {
+                        const nomUnitX = nominalControl.x / nomMag;
+                        const nomUnitY = nominalControl.y / nomMag;
+                        
+                        // Dot product: how much nominal control opposes the CBF gradient
+                        const alignment = -(nomUnitX * grad_h_x + nomUnitY * grad_h_y);
+                        maxGradientAlignment = Math.max(maxGradientAlignment, alignment);
+                    }
+                    
+                    // Check control modification magnitude relative to alpha
+                    const u_dot_grad_h = nominalControl.x * grad_h_x + nominalControl.y * grad_h_y;
+                    const constraint_rhs = -alpha * h;
+                    
+                    // If nominal control strongly violates CBF constraint, we're likely in deadlock
+                    if (u_dot_grad_h < constraint_rhs - alpha * obs.radius * 0.1) {
+                        highModification = true;
+                    }
+                }
+            });
+            
+            // Deadlock occurs when:
+            // 1. We're making little progress AND
+            // 2. We're in the critical CBF zone AND
+            // 3. Nominal control is strongly opposing CBF gradient AND
+            // 4. CBF is making significant modifications
+            const isInCriticalZone = minCBF < obstacles[0].radius * 1.2; // Adjust based on obstacle size
+            const strongOpposition = maxGradientAlignment > 0.7; // Nominal control pointing toward obstacle
+            const significantModification = highModification;
+            
+            return lowProgress && isInCriticalZone && (strongOpposition || significantModification);
         }
 
         function animateBasicDemo() {
@@ -884,13 +981,63 @@
                 basicDemo.alpha
             );
             
+            // Enhanced deadlock detection based on CBF theory
+            const isDeadlockCondition = detectCBFDeadlock(robot, basicDemo.obstacles, nominalControl, safeControl, basicDemo.alpha);
+            
+            // Update deadlock timer based on enhanced detection
+            if (isDeadlockCondition) {
+                basicDemo.deadlockTimer++;
+            } else {
+                basicDemo.deadlockTimer = 0;
+                basicDemo.lastPosition = { x: robot.x, y: robot.y };
+            }
+            
+            // Apply one-time perturbation if deadlock is detected
+            if (basicDemo.deadlockTimer > basicDemo.deadlockThreshold && !basicDemo.perturbationApplied) {
+                // Generate a single perturbation to push away from saddle point
+                const perpX = -dy / (dist + 0.001); // perpendicular to goal direction
+                const perpY = dx / (dist + 0.001);
+                
+                const randomBias = (Math.random() - 0.5) * 2; // -1 to 1
+                const perturbationX = (Math.random() - 0.5) * basicDemo.perturbationStrength + perpX * basicDemo.perturbationStrength * randomBias * 0.7;
+                const perturbationY = (Math.random() - 0.5) * basicDemo.perturbationStrength + perpY * basicDemo.perturbationStrength * randomBias * 0.7;
+                
+                // Apply the perturbation once
+                nominalControl.x += perturbationX;
+                nominalControl.y += perturbationY;
+                
+                // Mark perturbation as applied and start cooldown
+                basicDemo.perturbationApplied = true;
+                basicDemo.perturbationCooldown = 60; // frames to wait before allowing another perturbation
+                
+                // Reset deadlock timer since we've taken action
+                basicDemo.deadlockTimer = 0;
+                basicDemo.lastPosition = { x: robot.x, y: robot.y };
+            }
+            
+            // Handle perturbation cooldown
+            if (basicDemo.perturbationCooldown > 0) {
+                basicDemo.perturbationCooldown--;
+                if (basicDemo.perturbationCooldown === 0) {
+                    basicDemo.perturbationApplied = false;
+                }
+            }
+            
+            // Recompute safe control with potential noise
+            const finalResult = computeCBFControl(
+                robot, 
+                basicDemo.obstacles, 
+                nominalControl, 
+                basicDemo.alpha
+            );
+            
             basicDemo.nominalControl = nominalControl;
-            basicDemo.safeControl = safeControl;
-            basicDemo.controlModification = modification;
+            basicDemo.safeControl = finalResult.safeControl;
+            basicDemo.controlModification = finalResult.modification;
             
             // Update robot state using safe control (single integrator dynamics)
-            robot.vx = safeControl.x;
-            robot.vy = safeControl.y;
+            robot.vx = finalResult.safeControl.x;
+            robot.vy = finalResult.safeControl.y;
             robot.x += robot.vx * dt;
             robot.y += robot.vy * dt;
             
@@ -919,6 +1066,11 @@
             basicDemo.robot = { x: 100, y: 150, vx: 0, vy: 0, goalX: 300, goalY: 150 };
             basicDemo.trajectory = [];
             basicDemo.controlModification = 0;
+            // Reset deadlock detection and perturbation
+            basicDemo.deadlockTimer = 0;
+            basicDemo.lastPosition = { x: 100, y: 150 };
+            basicDemo.perturbationApplied = false;
+            basicDemo.perturbationCooldown = 0;
             renderBasicDemo();
         }
 
@@ -931,6 +1083,11 @@
             basicDemo.robot.goalX = obs.x + 100;
             basicDemo.robot.goalY = obs.y;
             basicDemo.trajectory = [];
+            // Reset deadlock detection and perturbation
+            basicDemo.deadlockTimer = 0;
+            basicDemo.lastPosition = { x: basicDemo.robot.x, y: basicDemo.robot.y };
+            basicDemo.perturbationApplied = false;
+            basicDemo.perturbationCooldown = 0;
             renderBasicDemo();
         }
 
