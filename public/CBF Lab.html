@@ -473,16 +473,17 @@
                             <p><strong>Safety Set Definition:</strong></p>
                             $$\mathcal{C} = \{x \in \mathbb{R}^n : h(x) \geq 0\}$$
                             
-                            <p><strong>Barrier Function:</strong></p>
-                            $$h(x) = \|x - x_{obs}\| - r_{safe}$$
+                            <p><strong>Barrier Function (Squared Distance):</strong></p>
+                            $$h(x) = \|x - x_{obs}\|^2 - r_{safe}^2$$
                             
                             <p><strong>CBF Constraint:</strong></p>
                             $$\dot{h}(x) = \nabla h(x) \cdot \dot{x} \geq -\alpha h(x)$$
                             
                             <p><strong>Gradient:</strong></p>
-                            $$\nabla h(x) = \frac{x - x_{obs}}{\|x - x_{obs}\|}$$
+                            $$\nabla h(x) = 2(x - x_{obs})$$
                             
                             <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 15px;">
+                                Using squared distance provides continuous gradients and better numerical stability.
                                 Where $\alpha > 0$ is the class-$\mathcal{K}$ function parameter controlling convergence rate,
                                 and $r_{safe}$ includes both obstacle radius and safety margin.
                             </p>
@@ -719,8 +720,10 @@
                     // Check if clicking on an obstacle to avoid setting goal inside it
                     let clickedObstacle = false;
                     basicDemo.obstacles.forEach(obs => {
-                        const dist = Math.sqrt((x - obs.x)**2 + (y - obs.y)**2);
-                        if (dist < obs.radius) clickedObstacle = true;
+                        const dx = x - obs.x;
+                        const dy = y - obs.y;
+                        const dist_squared = dx*dx + dy*dy;
+                        if (dist_squared < obs.radius * obs.radius) clickedObstacle = true;
                     });
                     
                     if (!clickedObstacle) {
@@ -744,8 +747,10 @@
                     const y = e.clientY - rect.top;
                     
                     basicDemo.obstacles.forEach((obs, i) => {
-                        const dist = Math.sqrt((x - obs.x)**2 + (y - obs.y)**2);
-                        if (dist < obs.radius) {
+                        const dx = x - obs.x;
+                        const dy = y - obs.y;
+                        const dist_squared = dx*dx + dy*dy;
+                        if (dist_squared < obs.radius * obs.radius) {
                             isDragging = true;
                             dragIndex = i;
                         }
@@ -843,9 +848,12 @@
             // Determine robot color based on safety status
             let minH = Infinity;
             basicDemo.obstacles.forEach(obs => {
-                const dist = Math.sqrt((basicDemo.robot.x - obs.x)**2 + (basicDemo.robot.y - obs.y)**2);
-                // Use same h calculation as CBF: distance to safety boundary
-                minH = Math.min(minH, dist - (obs.radius + basicDemo.safetyMargin));
+                const dx = basicDemo.robot.x - obs.x;
+                const dy = basicDemo.robot.y - obs.y;
+                const dist_squared = dx*dx + dy*dy;
+                // Use squared distance h calculation: h = ||x-x_obs||² - (r+margin)²
+                const safety_radius_squared = (obs.radius + basicDemo.safetyMargin) * (obs.radius + basicDemo.safetyMargin);
+                minH = Math.min(minH, dist_squared - safety_radius_squared);
             });
             
             let robotColor = '#10b981'; // Green (safe)
@@ -900,8 +908,12 @@
             let minCBF = Infinity;
             
             basicDemo.obstacles.forEach(obs => {
-                const dist = Math.sqrt((basicDemo.robot.x - obs.x)**2 + (basicDemo.robot.y - obs.y)**2);
-                const cbf = dist - obs.radius;
+                const dx = basicDemo.robot.x - obs.x;
+                const dy = basicDemo.robot.y - obs.y;
+                const dist_squared = dx*dx + dy*dy;
+                // CBF value: h = ||x-x_obs||² - (r+margin)²
+                const safety_radius_squared = (obs.radius + basicDemo.safetyMargin) * (obs.radius + basicDemo.safetyMargin);
+                const cbf = dist_squared - safety_radius_squared;
                 minCBF = Math.min(minCBF, cbf);
             });
             
@@ -952,17 +964,20 @@
                 obstacles.forEach(obs => {
                     const dx = robot.x - obs.x;
                     const dy = robot.y - obs.y;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    const dist_squared = dx*dx + dy*dy;
                     
-                    if (dist < 0.001) return; // Avoid division by zero
+                    if (dist_squared < 0.000001) return; // Avoid division by zero
                     
-                    // h represents distance to the safety boundary (obstacle + safety margin)
-                    const h = dist - (obs.radius + basicDemo.safetyMargin);
+                    // h represents squared distance to the safety boundary: h = ||x-x_obs||² - (r+margin)²
+                    const safety_radius_squared = (obs.radius + basicDemo.safetyMargin) * (obs.radius + basicDemo.safetyMargin);
+                    const h = dist_squared - safety_radius_squared;
                     
-                    // Only apply CBF if approaching the safety zone
-                    if (h < basicDemo.safetyMargin) {
-                        const grad_h_x = dx / dist;
-                        const grad_h_y = dy / dist;
+                    // Only apply CBF if approaching the safety zone (h < threshold)
+                    const threshold_squared = basicDemo.safetyMargin * basicDemo.safetyMargin * 4; // Adjust activation zone
+                    if (h < threshold_squared) {
+                        // Gradient of h = ||x-x_obs||² - r² is ∇h = 2(x-x_obs)
+                        const grad_h_x = 2 * dx;
+                        const grad_h_y = 2 * dy;
                         
                         const u_dot_grad_h = safeControl.x * grad_h_x + safeControl.y * grad_h_y;
                         
@@ -971,8 +986,12 @@
                         
                         if (u_dot_grad_h < constraint_rhs) {
                             const delta = constraint_rhs - u_dot_grad_h;
-                            safeControl.x += delta * grad_h_x;
-                            safeControl.y += delta * grad_h_y;
+                            // Normalize the gradient to avoid large control changes
+                            const grad_norm_squared = grad_h_x * grad_h_x + grad_h_y * grad_h_y;
+                            if (grad_norm_squared > 0.001) {
+                                safeControl.x += delta * grad_h_x / grad_norm_squared;
+                                safeControl.y += delta * grad_h_y / grad_norm_squared;
+                            }
                             anyConstraintViolated = true;
                         }
                     }
@@ -1041,18 +1060,21 @@
             obstacles.forEach(obs => {
                 const dx = robot.x - obs.x;
                 const dy = robot.y - obs.y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
+                const dist_squared = dx*dx + dy*dy;
                 
-                if (dist < 0.001) return;
+                if (dist_squared < 0.000001) return;
                 
-                // Use same h calculation as CBF: distance to safety boundary
-                const h = dist - (obs.radius + basicDemo.safetyMargin);
+                // Use same h calculation as CBF: squared distance to safety boundary
+                const safety_radius_squared = (obs.radius + basicDemo.safetyMargin) * (obs.radius + basicDemo.safetyMargin);
+                const h = dist_squared - safety_radius_squared;
                 minCBF = Math.min(minCBF, h);
                 
                 // Check if we're in the critical zone where CBF becomes active
-                if (h < basicDemo.safetyMargin * 0.5) {  // Early detection threshold
-                    const grad_h_x = dx / dist;
-                    const grad_h_y = dy / dist;
+                const critical_threshold = basicDemo.safetyMargin * basicDemo.safetyMargin * 2.25; // (1.5*margin)²
+                if (h < critical_threshold) {  // Early detection threshold
+                    // Gradient of h = ||x-x_obs||² - r² is ∇h = 2(x-x_obs)
+                    const grad_h_x = 2 * dx;
+                    const grad_h_y = 2 * dy;
                     
                     // Check alignment between nominal control and CBF gradient
                     const nomMag = Math.sqrt(nominalControl.x**2 + nominalControl.y**2);
@@ -1060,9 +1082,16 @@
                         const nomUnitX = nominalControl.x / nomMag;
                         const nomUnitY = nominalControl.y / nomMag;
                         
-                        // Dot product: how much nominal control opposes the CBF gradient
-                        const alignment = -(nomUnitX * grad_h_x + nomUnitY * grad_h_y);
-                        maxGradientAlignment = Math.max(maxGradientAlignment, alignment);
+                        // Normalize gradient for alignment check
+                        const grad_norm = Math.sqrt(grad_h_x * grad_h_x + grad_h_y * grad_h_y);
+                        if (grad_norm > 0.001) {
+                            const grad_unit_x = grad_h_x / grad_norm;
+                            const grad_unit_y = grad_h_y / grad_norm;
+                            
+                            // Dot product: how much nominal control opposes the CBF gradient
+                            const alignment = -(nomUnitX * grad_unit_x + nomUnitY * grad_unit_y);
+                            maxGradientAlignment = Math.max(maxGradientAlignment, alignment);
+                        }
                     }
                     
                     // Check control modification magnitude relative to alpha
@@ -1070,7 +1099,7 @@
                     const constraint_rhs = -alpha * h;
                     
                     // If nominal control strongly violates CBF constraint, we're likely in deadlock
-                    if (u_dot_grad_h < constraint_rhs - alpha * obs.radius * 0.1) {
+                    if (u_dot_grad_h < constraint_rhs - alpha * obs.radius * obs.radius * 0.1) {
                         highModification = true;
                     }
                 }
@@ -1081,7 +1110,7 @@
             // 2. We're in the critical CBF zone AND
             // 3. Nominal control is strongly opposing CBF gradient AND
             // 4. CBF is making significant modifications
-            const isInCriticalZone = minCBF < obstacles[0].radius * 1.2; // Adjust based on obstacle size
+            const isInCriticalZone = minCBF < obstacles[0].radius * obstacles[0].radius * 1.44; // (1.2*radius)²
             const strongOpposition = maxGradientAlignment > 0.7; // Nominal control pointing toward obstacle
             const significantModification = highModification;
             
