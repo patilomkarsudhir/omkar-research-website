@@ -32,6 +32,23 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="canonical" href="https://omkarsudhirpatil.com/CBF%20Lab.html">
     
+    <!-- MathJax for LaTeX rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    
     <style>
         /* Basic styling for the page */
         * {
@@ -247,12 +264,30 @@
 
         .math-formula {
             background: rgba(15, 23, 42, 0.8);
-            padding: 20px;
+            padding: 25px;
             border-radius: 12px;
             border-left: 4px solid #3b82f6;
             margin: 15px 0;
-            font-family: 'Courier New', monospace;
             overflow-x: auto;
+            line-height: 1.8;
+        }
+        
+        .math-formula p {
+            margin: 10px 0;
+            color: #e2e8f0;
+        }
+        
+        .math-formula p:first-child {
+            margin-top: 0;
+        }
+        
+        .math-formula p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* MathJax equation styling */
+        .math-formula .MathJax {
+            font-size: 1.1em !important;
         }
 
         .status-display {
@@ -410,17 +445,8 @@
                             <div class="status-label">Deadlock Resolution</div>
                         </div>
                     </div>
-                </div>
-
-                <div class="demo-card">
-                    <h3>CBF Theory & Visualization</h3>
+                    
                     <div class="info-panel">
-                        <h4>Control Barrier Function Math:</h4>
-                        <div class="math-formula" style="font-size: 0.9rem;">
-                            h(x) = ||x - x_obs|| - r_safe ≥ 0<br>
-                            CBF Constraint: ḣ(x) = ∇h(x)·ẋ ≥ -α·h(x)<br>
-                            where ∇h(x) = (x - x_obs) / ||x - x_obs||
-                        </div>
                         <h4>Interactive Elements:</h4>
                         <ul style="color: #94a3b8; line-height: 1.8;">
                             <li><span style="color: #10b981;">●</span> Green Robot - Safe, nominal control active</li>
@@ -436,6 +462,31 @@
                         <p style="color: #94a3b8; margin-top: 10px;">
                             <strong>Click on canvas to set new goal position!</strong>
                         </p>
+                    </div>
+                </div>
+
+                <div class="demo-card">
+                    <h3>CBF Theory & Visualization</h3>
+                    <div class="info-panel">
+                        <h4>Control Barrier Function Mathematics:</h4>
+                        <div class="math-formula">
+                            <p><strong>Safety Set Definition:</strong></p>
+                            $$\mathcal{C} = \{x \in \mathbb{R}^n : h(x) \geq 0\}$$
+                            
+                            <p><strong>Barrier Function:</strong></p>
+                            $$h(x) = \|x - x_{obs}\| - r_{safe}$$
+                            
+                            <p><strong>CBF Constraint:</strong></p>
+                            $$\dot{h}(x) = \nabla h(x) \cdot \dot{x} \geq -\alpha h(x)$$
+                            
+                            <p><strong>Gradient:</strong></p>
+                            $$\nabla h(x) = \frac{x - x_{obs}}{\|x - x_{obs}\|}$$
+                            
+                            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 15px;">
+                                Where $\alpha > 0$ is the class-$\mathcal{K}$ function parameter controlling convergence rate,
+                                and $r_{safe}$ includes both obstacle radius and safety margin.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -496,17 +547,28 @@
                     <h3>HOCBF Theory</h3>
                     <div class="info-panel">
                         <h4>High-Order Control Barrier Functions:</h4>
-                        <p style="color: #94a3b8; line-height: 1.6;">
-                            For a double integrator system (ẍ = u) with position constraint h₀(x) ≥ 0,
-                            we recursively define new barrier functions until the control u appears.
+                        <p style="color: #94a3b8; line-height: 1.6; margin-bottom: 15px;">
+                            For double integrator dynamics $\ddot{x} = u$ with position constraint $h_0(x) \geq 0$,
+                            we recursively define barrier functions until control $u$ appears explicitly.
                         </p>
-                        <div class="math-formula" style="font-size: 0.9rem;">
-                            h₀(x) = x - x_obs<br>
-                            h₁(x,ẋ) = ḣ₀ + α₁·h₀ = ẋ + α₁·h₀<br>
-                            CBF constraint: ḣ₁ + α₂·h₁ ≥ 0<br>
-                            ḣ₁ = ẍ + α₁·ḣ₀ = u + α₁·ẋ<br>
-                            (u + α₁·ẋ) + α₂·h₁ ≥ 0<br>
-                            u ≥ -α₁·ẋ - α₂·h₁
+                        <div class="math-formula">
+                            <p><strong>Original Constraint:</strong></p>
+                            $$h_0(x) = x - x_{obs} \geq 0$$
+                            
+                            <p><strong>First-Order Barrier:</strong></p>
+                            $$h_1(x,\dot{x}) = \dot{h}_0 + \alpha_1 h_0 = \dot{x} + \alpha_1 (x - x_{obs})$$
+                            
+                            <p><strong>HOCBF Constraint:</strong></p>
+                            $$\dot{h}_1 + \alpha_2 h_1 \geq 0$$
+                            
+                            <p><strong>Control Law:</strong></p>
+                            $$\dot{h}_1 = \ddot{x} + \alpha_1 \dot{x} = u + \alpha_1 \dot{x}$$
+                            $$u \geq -\alpha_1 \dot{x} - \alpha_2 h_1$$
+                            
+                            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 15px;">
+                                The parameters $\alpha_1, \alpha_2 > 0$ ensure exponential convergence to the safe set
+                                while maintaining forward invariance for the double integrator system.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -633,6 +695,11 @@
             if (tabName === 'basic-demo') initBasicDemo();
             if (tabName === 'hocbf-demo') initHOCBFDemo();
             if (tabName === 'multi-agent') initMultiAgentDemo();
+            
+            // Re-render MathJax for the new content
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise([document.getElementById(tabName)]).catch((err) => console.log(err.message));
+            }
         }
 
         // ============= BASIC CBF DEMO =============
@@ -1591,6 +1658,10 @@
         // Initialize the first demo on page load
         document.addEventListener('DOMContentLoaded', () => {
             initBasicDemo();
+            // Initialize MathJax rendering after page load
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise().catch((err) => console.log(err.message));
+            }
         });
     </script>
 </body>
