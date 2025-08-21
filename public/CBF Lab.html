@@ -797,7 +797,11 @@
             
             // Re-render MathJax for the new content
             if (window.MathJax && window.MathJax.typesetPromise) {
-                window.MathJax.typesetPromise([document.getElementById(tabName)]).catch((err) => console.log(err.message));
+                setTimeout(() => {
+                    window.MathJax.typesetPromise([document.getElementById(tabName)]).then(() => {
+                        console.log('MathJax re-rendered for tab:', tabName);
+                    }).catch((err) => console.log('MathJax error on tab switch:', err.message));
+                }, 100);
             }
         }
 
@@ -1785,10 +1789,14 @@
         // Initialize the first demo on page load
         document.addEventListener('DOMContentLoaded', () => {
             initBasicDemo();
-            // Initialize MathJax rendering after page load
-            if (window.MathJax && window.MathJax.typesetPromise) {
-                window.MathJax.typesetPromise().catch((err) => console.log(err.message));
-            }
+            // Initialize MathJax rendering after page load with a delay to ensure DOM is ready
+            setTimeout(() => {
+                if (window.MathJax && window.MathJax.typesetPromise) {
+                    window.MathJax.typesetPromise().then(() => {
+                        console.log('MathJax rendering completed');
+                    }).catch((err) => console.log('MathJax error:', err.message));
+                }
+            }, 500);
         });
     </script>
 </body>
