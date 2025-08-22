@@ -720,10 +720,10 @@
                             🎯 Composite Adaptive
                         </div>
                         <div class="controller-btn" id="trackingBtn" data-controller="tracking">
-                            📍 Tracking Only
+                            📍 Tracking Error-Based Update
                         </div>
                         <div class="controller-btn" id="pidBtn" data-controller="pid">
-                            ⚙️ PID Control
+                            ⚙️ PID with Gravity Compensation
                         </div>
                     </div>
                 </div>
@@ -2145,9 +2145,26 @@
                 // Adaptive gain scheduling
                 const deadZone = 0.1;
                 if (signalNorm > deadZone && feedbackAvailable) {
-                    const gainUpdate = 1.0 + 0.001 * dt * (signalNorm - deadZone);
-                    for (let i = 0; i < this.Gamma_diag.length; i++) {
-                        this.Gamma_diag[i] = Math.min(this.Gamma_diag[i] * gainUpdate, 0.01);
+                    if (useComposite) {
+                        // Enhanced adaptive gain scheduling with beta0 and kappa0 (composite case only)
+                        const gammaScalar = Math.sqrt(this.Gamma_diag.reduce((sum, g) => sum + g*g, 0));
+                        const beta_t = Math.max(0.1, this.beta0 * (1 - gammaScalar / this.kappa0));
+                        
+                        // Jacobian-squared based gain updates
+                        const jacobian = this.dnn.computeJacobian(adaptationSignal);
+                        const J_squared = jacobian.map(j => j * j);
+                        
+                        for (let i = 0; i < this.Gamma_diag.length; i++) {
+                            const Gamma_inv_dot = J_squared[i] - beta_t;
+                            this.Gamma_diag[i] -= dt * this.Gamma_diag[i] * Gamma_inv_dot * this.Gamma_diag[i];
+                            this.Gamma_diag[i] = Math.max(1e-6, Math.min(1e-2, this.Gamma_diag[i]));
+                        }
+                    } else {
+                        // Simple gain update for tracking-only case (unchanged)
+                        const gainUpdate = 1.0 + 0.001 * dt * (signalNorm - deadZone);
+                        for (let i = 0; i < this.Gamma_diag.length; i++) {
+                            this.Gamma_diag[i] = Math.min(this.Gamma_diag[i] * gainUpdate, 0.01);
+                        }
                     }
                 }
 
@@ -2313,8 +2330,9 @@
                     this.kp_pos * pos_error[1] + this.ki_pos * this.integral_pos[1] + this.kd_pos * deriv_pos[1] + 
                     desiredStateDdot[1] + (feedbackAvailable ? 0 : this.ff_dynamics[1]),
                     
+                    // Z-axis with explicit gravity compensation
                     this.kp_pos * pos_error[2] + this.ki_pos * this.integral_pos[2] + this.kd_pos * deriv_pos[2] + 
-                    desiredStateDdot[2] + (feedbackAvailable ? 0 : this.ff_dynamics[2]),
+                    desiredStateDdot[2] + 9.81 + (feedbackAvailable ? 0 : this.ff_dynamics[2]),
                     
                     // Attitude control with feedforward
                     this.kp_att * att_error[0] + this.ki_att * this.integral_att[0] + this.kd_att * deriv_att[0] + 
@@ -2344,8 +2362,18 @@
                 // Compute observed acceleration
                 const observed_accel = this.lastStateDot.map((vel, i) => (stateDot[i] - vel) / dt);
                 
-                // Expected acceleration from last control input
-                const expected_accel = this.lastControl.slice();
+                // Expected acceleration from last control input with proper dynamics
+                // For quadrotor: acceleration = control_input + nominal_dynamics + unknown_dynamics
+                // Nominal dynamics: [0, 0, -g, 0, 0, 0]
+                const expected_accel = this.lastControl.map((ctrl, i) => {
+                    if (i === 2) {
+                        // Z-axis: account for gravity
+                        return ctrl - 9.81; // Control compensates for gravity
+                    } else {
+                        // Other axes: control input maps to acceleration
+                        return ctrl;
+                    }
+                });
                 
                 // Learn the difference (unmodeled dynamics)
                 const dynamics_error = observed_accel.map((obs, i) => obs - expected_accel[i]);
@@ -2366,8 +2394,17 @@
 
             // Estimate state during feedback loss using learned dynamics
             estimateState(dt) {
-                // Simple forward propagation using last known state and learned dynamics
-                const estimated_accel = this.lastControl.map((ctrl, i) => ctrl + this.ff_dynamics[i]);
+                // Proper dynamics-based forward propagation
+                // acceleration = control_input + nominal_dynamics + learned_unknown_dynamics
+                const estimated_accel = this.lastControl.map((ctrl, i) => {
+                    if (i === 2) {
+                        // Z-axis: control - gravity + learned dynamics
+                        return ctrl - 9.81 + this.ff_dynamics[i];
+                    } else {
+                        // Other axes: control + learned dynamics
+                        return ctrl + this.ff_dynamics[i];
+                    }
+                });
                 
                 const estimatedStateDot = this.lastStateDot.map((vel, i) => vel + dt * estimated_accel[i]);
                 const estimatedState = this.lastState.map((pos, i) => pos + dt * estimatedStateDot[i]);
