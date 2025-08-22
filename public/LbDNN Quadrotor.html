@@ -2302,7 +2302,7 @@
                 this.isRunning = false;
                 this.time = 0;
                 this.dt = 0.02;
-                this.maxTime = 30;
+                // No time limit - simulation runs indefinitely with periodic trajectories
                 this.selectedController = 'composite';
                 
                 this.trajectoryData = { actual: [], desired: [] };
@@ -2881,7 +2881,7 @@
             }
 
             simulate() {
-                if (!this.isRunning || this.time >= this.maxTime) {
+                if (!this.isRunning) {
                     this.stop();
                     return;
                 }
