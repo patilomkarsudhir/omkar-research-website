@@ -666,7 +666,6 @@
                             <optgroup label="Graph Consensus Methods">
                                 <option value="consensus">Consensus Rendezvous</option>
                                 <option value="leader-follower">Leader-Follower Convoy</option>
-                                <option value="formation-control">Distributed Formation</option>
                                 <option value="flocking">Flocking with Consensus</option>
                             </optgroup>
                             <optgroup label="Bio-Inspired Scenarios">
@@ -718,10 +717,28 @@
                         <label>Target Zone Radius: <span id="target-radius-value">45</span></label>
                         <input type="range" id="target-radius" min="25" max="80" step="5" value="45">
                     </div>
+                    <div class="control-group">
+                        <label>Time Speed: <span id="time-speed-value">1.0x</span></label>
+                        <input type="range" id="time-speed" min="0.5" max="50" step="0.5" value="1.0">
+                    </div>
                 </div>
                 
                 <!-- Graph Consensus Controls -->
                 <div class="controls" id="consensus-controls" style="display: none;">
+                    <div class="control-group">
+                        <label>Graph Topology:</label>
+                        <select id="graph-topology" style="width: 100%; padding: 8px; border-radius: 6px; background: #334155; color: #e2e8f0; border: 1px solid #475569;">
+                            <option value="proximity">Proximity-Based</option>
+                            <option value="complete">Complete Graph</option>
+                            <option value="ring">Ring Topology</option>
+                            <option value="star">Star Topology</option>
+                            <option value="path">Path/Line Topology</option>
+                            <option value="grid">Grid Topology</option>
+                        </select>
+                        <div id="topology-description" style="font-size: 0.8rem; color: #94a3b8; margin-top: 5px; line-height: 1.3;">
+                            Dynamic topology based on inter-agent distances
+                        </div>
+                    </div>
                     <div class="control-group">
                         <label>Communication Range: <span id="comm-range-value">80</span></label>
                         <input type="range" id="comm-range" min="40" max="150" step="10" value="80">
@@ -765,6 +782,10 @@
                     <div class="status-item" id="consensus-status" style="display: none;">
                         <div class="status-value" id="consensus-error">0.0</div>
                         <div class="status-label">Consensus Error</div>
+                    </div>
+                    <div class="status-item" id="connectivity-status" style="display: none;">
+                        <div class="status-value safe" id="graph-connectivity">CONNECTED</div>
+                        <div class="status-label">Graph Status</div>
                     </div>
                 </div>
                 
@@ -870,6 +891,7 @@
             communicationRange: 80,
             consensusGain: 1.0,
             formationShape: 'triangle',
+            graphTopology: 'proximity', // New parameter for topology selection
             // Communication topology
             adjacencyMatrix: [],
             laplacianMatrix: [],
@@ -901,7 +923,8 @@
             maxSheepSpeed: 3.5,          // Increased from 2.2 for faster sheep movement
             maxDogAcceleration: 8.0,     // Increased from 5.0 for more responsive dogs
             fearDecayRate: 0.025,        // Increased from 0.015 for faster fear decay
-            modeSwithingThreshold: 0.8   // hysteresis for mode switching
+            modeSwithingThreshold: 0.8,  // hysteresis for mode switching
+            timeSpeed: 1.0               // Time scale multiplier for herding simulation (1x = normal speed)
         };
 
         // Function to switch between demo tabs
@@ -1687,7 +1710,7 @@
                     const consensusControls = document.getElementById('consensus-controls');
                     const herdingControls = document.getElementById('herding-controls');
                     const numAgentsControl = document.getElementById('num-agents-control');
-                    const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(e.target.value);
+                    const isConsensusMethod = ['consensus', 'leader-follower', 'flocking'].includes(e.target.value);
                     const isHerdingMethod = e.target.value === 'herding';
                     
                     consensusControls.style.display = isConsensusMethod ? 'flex' : 'none';
@@ -1734,9 +1757,16 @@
                 
                 document.getElementById('formation-shape').addEventListener('change', (e) => {
                     multiAgentDemo.formationShape = e.target.value;
-                    if (multiAgentDemo.formationType === 'formation-control' || multiAgentDemo.formationType === 'leader-follower') {
+                    if (multiAgentDemo.formationType === 'leader-follower') {
                         createAgents();
                     }
+                });
+                
+                document.getElementById('graph-topology').addEventListener('change', (e) => {
+                    multiAgentDemo.graphTopology = e.target.value;
+                    updateTopologyDescription();
+                    updateCommunicationTopology();
+                    renderMultiAgentDemo();
                 });
                 
                 // Herding control listeners
@@ -1780,11 +1810,17 @@
                     multiAgentDemo.targetRadius = parseInt(e.target.value);
                     document.getElementById('target-radius-value').textContent = e.target.value;
                 });
+                
+                document.getElementById('time-speed').addEventListener('input', (e) => {
+                    multiAgentDemo.timeSpeed = parseFloat(e.target.value);
+                    document.getElementById('time-speed-value').textContent = e.target.value + 'x';
+                });
             }
             
             createAgents();
             renderMultiAgentDemo();
             updateMathematicalContent();
+            updateTopologyDescription();
         }
 
         function createAgents() {
@@ -1959,15 +1995,6 @@
                         }
                         break;
                         
-                    case 'formation-control':
-                        // Distributed formation control - form desired geometric shape
-                        createFormationPositions(i, num, centerX, centerY, radius);
-                        startX = multiAgentDemo.agents[i]?.startX || centerX + (Math.random() - 0.5) * radius;
-                        startY = multiAgentDemo.agents[i]?.startY || centerY + (Math.random() - 0.5) * radius;
-                        goalX = multiAgentDemo.agents[i]?.goalX || centerX;
-                        goalY = multiAgentDemo.agents[i]?.goalY || centerY;
-                        break;
-                        
                     case 'flocking':
                         // Flocking with consensus on heading/speed - scattered start
                         const flockMargin = 50;
@@ -2017,112 +2044,191 @@
             }
             
             // Initialize graph topology for consensus methods
-            if (['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(multiAgentDemo.formationType)) {
+            if (['consensus', 'leader-follower', 'flocking'].includes(multiAgentDemo.formationType)) {
                 updateCommunicationTopology();
                 initializeConsensusParameters();
             }
         }
 
         // ========== GRAPH TOPOLOGY FUNCTIONS ==========
-        function createFormationPositions(agentIndex, numAgents, centerX, centerY, baseRadius) {
-            const shape = multiAgentDemo.formationShape;
-            let positions = [];
+        function updateTopologyDescription() {
+            const topology = multiAgentDemo.graphTopology;
+            const descriptions = {
+                'proximity': 'Dynamic topology based on inter-agent distances. May disconnect if agents spread too far apart.',
+                'complete': 'All agents connected to all others. Always connected but high communication cost.',
+                'ring': 'Each agent connected to next and previous neighbors. Guaranteed connectivity.',
+                'star': 'Agent 0 is central hub connected to all others. Single point of failure.',
+                'path': 'Linear chain of connections. Fragile - becomes disconnected if any link breaks.',
+                'grid': '2D grid structure. Robust local connectivity with multiple paths.'
+            };
             
-            switch(shape) {
-                case 'triangle':
-                    if (numAgents >= 3) {
-                        positions = [
-                            { x: centerX, y: centerY - baseRadius * 0.6 },
-                            { x: centerX - baseRadius * 0.6, y: centerY + baseRadius * 0.4 },
-                            { x: centerX + baseRadius * 0.6, y: centerY + baseRadius * 0.4 }
-                        ];
-                    }
-                    break;
-                case 'square':
-                    if (numAgents >= 4) {
-                        positions = [
-                            { x: centerX - baseRadius * 0.5, y: centerY - baseRadius * 0.5 },
-                            { x: centerX + baseRadius * 0.5, y: centerY - baseRadius * 0.5 },
-                            { x: centerX + baseRadius * 0.5, y: centerY + baseRadius * 0.5 },
-                            { x: centerX - baseRadius * 0.5, y: centerY + baseRadius * 0.5 }
-                        ];
-                    }
-                    break;
-                case 'line':
-                    const spacing = baseRadius * 1.2 / Math.max(1, numAgents - 1);
-                    for (let i = 0; i < numAgents; i++) {
-                        positions.push({
-                            x: centerX - baseRadius * 0.6 + i * spacing,
-                            y: centerY
-                        });
-                    }
-                    break;
-                case 'circle':
-                    for (let i = 0; i < numAgents; i++) {
-                        const angle = (i / numAgents) * 2 * Math.PI;
-                        positions.push({
-                            x: centerX + baseRadius * 0.6 * Math.cos(angle),
-                            y: centerY + baseRadius * 0.6 * Math.sin(angle)
-                        });
-                    }
-                    break;
-                case 'pentagon':
-                    if (numAgents >= 5) {
-                        for (let i = 0; i < Math.min(5, numAgents); i++) {
-                            const angle = (i / 5) * 2 * Math.PI - Math.PI / 2;
-                            positions.push({
-                                x: centerX + baseRadius * 0.6 * Math.cos(angle),
-                                y: centerY + baseRadius * 0.6 * Math.sin(angle)
-                            });
-                        }
-                    }
-                    break;
+            const descElement = document.getElementById('topology-description');
+            if (descElement) {
+                descElement.textContent = descriptions[topology] || 'Unknown topology';
             }
+        }
+
+        function checkGraphConnectivity() {
+            const n = multiAgentDemo.agents.length;
+            if (n <= 1) return true;
             
-            // Fill remaining positions for extra agents
-            while (positions.length < numAgents) {
-                const angle = (positions.length / numAgents) * 2 * Math.PI;
-                positions.push({
-                    x: centerX + baseRadius * 0.8 * Math.cos(angle),
-                    y: centerY + baseRadius * 0.8 * Math.sin(angle)
+            const visited = new Array(n).fill(false);
+            const queue = [0];
+            visited[0] = true;
+            let visitedCount = 1;
+            
+            while (queue.length > 0) {
+                const current = queue.shift();
+                multiAgentDemo.agents[current].neighbors.forEach(neighbor => {
+                    if (!visited[neighbor]) {
+                        visited[neighbor] = true;
+                        queue.push(neighbor);
+                        visitedCount++;
+                    }
                 });
             }
             
-            // Set start positions (scattered) and goal positions (formation)
-            if (multiAgentDemo.agents[agentIndex]) {
-                multiAgentDemo.agents[agentIndex].startX = centerX + (Math.random() - 0.5) * baseRadius * 1.5;
-                multiAgentDemo.agents[agentIndex].startY = centerY + (Math.random() - 0.5) * baseRadius * 1.5;
-                multiAgentDemo.agents[agentIndex].goalX = positions[agentIndex % positions.length].x;
-                multiAgentDemo.agents[agentIndex].goalY = positions[agentIndex % positions.length].y;
-            }
+            return visitedCount === n;
         }
 
         function updateCommunicationTopology() {
             const agents = multiAgentDemo.agents;
             const range = multiAgentDemo.communicationRange;
             const n = agents.length;
+            const topology = multiAgentDemo.graphTopology;
             
             // Initialize adjacency matrix
             multiAgentDemo.adjacencyMatrix = Array(n).fill().map(() => Array(n).fill(0));
             multiAgentDemo.communicationLinks = [];
             
-            // Build communication graph based on distance
+            // Build communication graph based on selected topology
             for (let i = 0; i < n; i++) {
                 agents[i].neighbors = [];
-                for (let j = 0; j < n; j++) {
-                    if (i !== j) {
-                        const dist = Math.hypot(agents[i].x - agents[j].x, agents[i].y - agents[j].y);
-                        if (dist <= range) {
-                            multiAgentDemo.adjacencyMatrix[i][j] = 1;
-                            agents[i].neighbors.push(j);
-                            if (i < j) { // Avoid duplicate links
-                                multiAgentDemo.communicationLinks.push({
-                                    from: i, to: j, distance: dist
-                                });
+            }
+            
+            switch(topology) {
+                case 'proximity':
+                    // Original distance-based topology
+                    for (let i = 0; i < n; i++) {
+                        for (let j = 0; j < n; j++) {
+                            if (i !== j) {
+                                const dist = Math.hypot(agents[i].x - agents[j].x, agents[i].y - agents[j].y);
+                                if (dist <= range) {
+                                    multiAgentDemo.adjacencyMatrix[i][j] = 1;
+                                    agents[i].neighbors.push(j);
+                                    if (i < j) {
+                                        multiAgentDemo.communicationLinks.push({
+                                            from: i, to: j, distance: dist
+                                        });
+                                    }
+                                }
                             }
                         }
                     }
-                }
+                    break;
+                
+                case 'complete':
+                    // Complete graph - all agents connected to all others
+                    for (let i = 0; i < n; i++) {
+                        for (let j = 0; j < n; j++) {
+                            if (i !== j) {
+                                multiAgentDemo.adjacencyMatrix[i][j] = 1;
+                                agents[i].neighbors.push(j);
+                                if (i < j) {
+                                    const dist = Math.hypot(agents[i].x - agents[j].x, agents[i].y - agents[j].y);
+                                    multiAgentDemo.communicationLinks.push({
+                                        from: i, to: j, distance: dist
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    break;
+                
+                case 'ring':
+                    // Ring topology - each agent connected to next and previous in a circular manner
+                    for (let i = 0; i < n; i++) {
+                        const next = (i + 1) % n;
+                        const prev = (i - 1 + n) % n;
+                        
+                        multiAgentDemo.adjacencyMatrix[i][next] = 1;
+                        multiAgentDemo.adjacencyMatrix[i][prev] = 1;
+                        agents[i].neighbors.push(next, prev);
+                    }
+                    
+                    // Generate communication links for ring (avoid duplicates)
+                    for (let i = 0; i < n; i++) {
+                        const next = (i + 1) % n;
+                        // Only add each edge once by checking if we haven't added it from the other direction
+                        if (i < next || (i === n - 1 && next === 0)) {
+                            const dist = Math.hypot(agents[i].x - agents[next].x, agents[i].y - agents[next].y);
+                            multiAgentDemo.communicationLinks.push({
+                                from: i, to: next, distance: dist
+                            });
+                        }
+                    }
+                    break;
+                
+                case 'star':
+                    // Star topology - agent 0 is the hub connected to all others
+                    for (let i = 1; i < n; i++) {
+                        multiAgentDemo.adjacencyMatrix[0][i] = 1;
+                        multiAgentDemo.adjacencyMatrix[i][0] = 1;
+                        agents[0].neighbors.push(i);
+                        agents[i].neighbors.push(0);
+                        
+                        const dist = Math.hypot(agents[0].x - agents[i].x, agents[0].y - agents[i].y);
+                        multiAgentDemo.communicationLinks.push({
+                            from: 0, to: i, distance: dist
+                        });
+                    }
+                    break;
+                
+                case 'path':
+                    // Path topology - linear chain of connections
+                    for (let i = 0; i < n - 1; i++) {
+                        multiAgentDemo.adjacencyMatrix[i][i + 1] = 1;
+                        multiAgentDemo.adjacencyMatrix[i + 1][i] = 1;
+                        agents[i].neighbors.push(i + 1);
+                        agents[i + 1].neighbors.push(i);
+                        
+                        const dist = Math.hypot(agents[i].x - agents[i + 1].x, agents[i].y - agents[i + 1].y);
+                        multiAgentDemo.communicationLinks.push({
+                            from: i, to: i + 1, distance: dist
+                        });
+                    }
+                    break;
+                
+                case 'grid':
+                    // 2D grid topology (works best with 4, 6, 9, 12, 16 agents)
+                    const gridSize = Math.ceil(Math.sqrt(n));
+                    for (let i = 0; i < n; i++) {
+                        const row = Math.floor(i / gridSize);
+                        const col = i % gridSize;
+                        
+                        // Connect to neighbors in grid
+                        const neighbors = [
+                            row > 0 ? (row - 1) * gridSize + col : -1, // up
+                            row < gridSize - 1 && (row + 1) * gridSize + col < n ? (row + 1) * gridSize + col : -1, // down
+                            col > 0 ? row * gridSize + (col - 1) : -1, // left
+                            col < gridSize - 1 && row * gridSize + (col + 1) < n ? row * gridSize + (col + 1) : -1 // right
+                        ];
+                        
+                        neighbors.forEach(neighbor => {
+                            if (neighbor >= 0 && neighbor < n) {
+                                multiAgentDemo.adjacencyMatrix[i][neighbor] = 1;
+                                agents[i].neighbors.push(neighbor);
+                                
+                                if (i < neighbor) {
+                                    const dist = Math.hypot(agents[i].x - agents[neighbor].x, agents[i].y - agents[neighbor].y);
+                                    multiAgentDemo.communicationLinks.push({
+                                        from: i, to: neighbor, distance: dist
+                                    });
+                                }
+                            }
+                        });
+                    }
+                    break;
             }
             
             // Compute Laplacian matrix
@@ -2208,7 +2314,7 @@
                 </defs>
             `;
             
-            const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(multiAgentDemo.formationType);
+            const isConsensusMethod = ['consensus', 'leader-follower', 'flocking'].includes(multiAgentDemo.formationType);
             const isHerdingMethod = multiAgentDemo.formationType === 'herding';
             
             // Draw herding-specific elements
@@ -2237,6 +2343,9 @@
                 const modeColor = mode === 'collect' ? '#f59e0b' : 
                                  mode === 'focus' ? '#3b82f6' : 
                                  mode === 'groupPush' ? '#8b5cf6' : 
+                                 mode === 'boundary' ? '#14b8a6' :  // Teal for boundary mode
+                                 mode === 'corner' ? '#f97316' :    // Orange for corner mode
+                                 mode === 'perimeter' ? '#ec4899' :  // Pink/magenta for perimeter mode
                                  mode === 'contain' ? '#10b981' : 
                                  mode === 'maintainAndCollect' ? '#06b6d4' :
                                  mode === 'cleanup' ? '#84cc16' : '#6b7280';
@@ -2276,6 +2385,165 @@
                               fill="#06b6d4" font-size="10">Flock Center</text>
                     `;
                 }
+                
+                // Draw perimeter strategy visualization
+                if (multiAgentDemo.herdingMode === 'perimeter' && multiAgentDemo.dogAgents.length > 0) {
+                    const activeSheep = [];
+                    if (multiAgentDemo.sheepCategories) {
+                        activeSheep.push(...multiAgentDemo.sheepCategories.nearTarget.map(item => item.sheep));
+                        activeSheep.push(...multiAgentDemo.sheepCategories.scattered.map(item => item.sheep));
+                    }
+                    
+                    if (activeSheep.length > 0) {
+                        // Calculate and draw the perimeter outline
+                        const targetX = multiAgentDemo.targetPosition.x;
+                        const targetY = multiAgentDemo.targetPosition.y;
+                        const timeElapsed = Date.now() / 1000;
+                        const compressionFactor = Math.max(0.6, 1.0 - (timeElapsed * 0.02));
+                        
+                        // Calculate sheep center
+                        let sheepCenterX = 0, sheepCenterY = 0;
+                        activeSheep.forEach(sheep => {
+                            sheepCenterX += sheep.x;
+                            sheepCenterY += sheep.y;
+                        });
+                        sheepCenterX /= activeSheep.length;
+                        sheepCenterY /= activeSheep.length;
+                        
+                        // Calculate perimeter radius
+                        let maxDist = 0;
+                        activeSheep.forEach(sheep => {
+                            const dist = Math.hypot(sheep.x - sheepCenterX, sheep.y - sheepCenterY);
+                            maxDist = Math.max(maxDist, dist);
+                        });
+                        const perimeterRadius = Math.max(maxDist + multiAgentDemo.dogInfluenceRadius * 0.8, 
+                                                       multiAgentDemo.dogInfluenceRadius * 1.2) * compressionFactor;
+                        
+                        // Draw perimeter circle
+                        svg.innerHTML += `
+                            <circle cx="${sheepCenterX}" cy="${sheepCenterY}" r="${perimeterRadius}" 
+                                    fill="none" stroke="#ec4899" stroke-width="3" 
+                                    stroke-dasharray="8,4" opacity="0.8"/>
+                        `;
+                        
+                        // Draw compression direction indicator
+                        const pressureAngle = Math.atan2(targetY - sheepCenterY, targetX - sheepCenterX);
+                        const arrowLength = 40;
+                        const arrowX = sheepCenterX + Math.cos(pressureAngle) * (perimeterRadius + 15);
+                        const arrowY = sheepCenterY + Math.sin(pressureAngle) * (perimeterRadius + 15);
+                        const arrowEndX = arrowX + Math.cos(pressureAngle) * arrowLength;
+                        const arrowEndY = arrowY + Math.sin(pressureAngle) * arrowLength;
+                        
+                        svg.innerHTML += `
+                            <line x1="${arrowX}" y1="${arrowY}" x2="${arrowEndX}" y2="${arrowEndY}" 
+                                  stroke="#ec4899" stroke-width="3" opacity="0.9" marker-end="url(#arrowhead)"/>
+                            <text x="${arrowEndX + 10}" y="${arrowEndY + 5}" 
+                                  fill="#ec4899" font-size="12" font-weight="bold">Compression</text>
+                        `;
+                        
+                        // Draw dog perimeter positions
+                        multiAgentDemo.dogAgents.forEach((dog, i) => {
+                            const angle = (i / multiAgentDemo.dogAgents.length) * 2 * Math.PI;
+                            const targetPosX = sheepCenterX + Math.cos(angle) * perimeterRadius;
+                            const targetPosY = sheepCenterY + Math.sin(angle) * perimeterRadius;
+                            
+                            // Draw line from dog to target position
+                            svg.innerHTML += `
+                                <line x1="${dog.x}" y1="${dog.y}" x2="${targetPosX}" y2="${targetPosY}" 
+                                      stroke="#ec4899" stroke-width="2" opacity="0.5" stroke-dasharray="5,5"/>
+                                <circle cx="${targetPosX}" cy="${targetPosY}" r="4" 
+                                        fill="#ec4899" opacity="0.7"/>
+                            `;
+                        });
+                    }
+                }
+                
+                // Draw boundary utilization visualization
+                if (multiAgentDemo.herdingMode === 'boundary' && multiAgentDemo.boundaryOpportunity) {
+                    const boundary = multiAgentDemo.boundaryOpportunity;
+                    const canvasRect = document.getElementById('multiagent-canvas').getBoundingClientRect();
+                    
+                    // Highlight the active boundary
+                    if (boundary.name === 'left' || boundary.name === 'right') {
+                        const x = boundary.name === 'left' ? 5 : canvasRect.width - 5;
+                        svg.innerHTML += `
+                            <line x1="${x}" y1="0" x2="${x}" y2="${canvasRect.height}" 
+                                  stroke="#14b8a6" stroke-width="5" opacity="0.8"/>
+                            <text x="${x + (boundary.name === 'left' ? 10 : -60)}" y="30" 
+                                  fill="#14b8a6" font-size="14" font-weight="bold">Active Boundary</text>
+                        `;
+                    } else {
+                        const y = boundary.name === 'top' ? 5 : canvasRect.height - 5;
+                        svg.innerHTML += `
+                            <line x1="0" y1="${y}" x2="${canvasRect.width}" y2="${y}" 
+                                  stroke="#14b8a6" stroke-width="5" opacity="0.8"/>
+                            <text x="20" y="${y + (boundary.name === 'top' ? 20 : -10)}" 
+                                  fill="#14b8a6" font-size="14" font-weight="bold">Active Boundary</text>
+                        `;
+                    }
+                    
+                    // Draw boundary utility zone
+                    const utilityZone = 80;
+                    if (boundary.name === 'left') {
+                        svg.innerHTML += `
+                            <rect x="0" y="0" width="${utilityZone}" height="${canvasRect.height}" 
+                                  fill="#14b8a6" opacity="0.1"/>
+                        `;
+                    } else if (boundary.name === 'right') {
+                        svg.innerHTML += `
+                            <rect x="${canvasRect.width - utilityZone}" y="0" width="${utilityZone}" height="${canvasRect.height}" 
+                                  fill="#14b8a6" opacity="0.1"/>
+                        `;
+                    } else if (boundary.name === 'top') {
+                        svg.innerHTML += `
+                            <rect x="0" y="0" width="${canvasRect.width}" height="${utilityZone}" 
+                                  fill="#14b8a6" opacity="0.1"/>
+                        `;
+                    } else if (boundary.name === 'bottom') {
+                        svg.innerHTML += `
+                            <rect x="0" y="${canvasRect.height - utilityZone}" width="${canvasRect.width}" height="${utilityZone}" 
+                                  fill="#14b8a6" opacity="0.1"/>
+                        `;
+                    }
+                }
+                
+                // Draw corner utilization visualization
+                if (multiAgentDemo.herdingMode === 'corner' && multiAgentDemo.cornerOpportunity) {
+                    const corner = multiAgentDemo.cornerOpportunity;
+                    const cornerSize = 15;
+                    
+                    // Highlight the active corner
+                    svg.innerHTML += `
+                        <rect x="${corner.x - cornerSize}" y="${corner.y - cornerSize}" 
+                              width="${cornerSize * 2}" height="${cornerSize * 2}" 
+                              fill="#f97316" stroke="#ea580c" stroke-width="3" opacity="0.8"/>
+                        <circle cx="${corner.x}" cy="${corner.y}" r="${corner.utilityZone}" 
+                                fill="none" stroke="#f97316" stroke-width="3" 
+                                stroke-dasharray="10,5" opacity="0.6"/>
+                        <text x="${corner.x + 20}" y="${corner.y - 20}" 
+                              fill="#f97316" font-size="14" font-weight="bold">Active Corner</text>
+                    `;
+                    
+                    // Draw corner utility zone
+                    svg.innerHTML += `
+                        <circle cx="${corner.x}" cy="${corner.y}" r="${corner.utilityZone}" 
+                                fill="#f97316" opacity="0.1"/>
+                    `;
+                    
+                    // Show sheep in corner zone
+                    if (multiAgentDemo.sheepAgents) {
+                        multiAgentDemo.sheepAgents.forEach(sheep => {
+                            const distToCorner = Math.hypot(sheep.x - corner.x, sheep.y - corner.y);
+                            if (distToCorner < corner.utilityZone) {
+                                svg.innerHTML += `
+                                    <circle cx="${sheep.x}" cy="${sheep.y}" r="12" 
+                                            fill="none" stroke="#f97316" stroke-width="2" 
+                                            stroke-dasharray="3,3" opacity="0.8"/>
+                                `;
+                            }
+                        });
+                    }
+                }
             }
             
             // Draw communication links for consensus methods
@@ -2302,19 +2570,6 @@
                     <text x="${multiAgentDemo.consensusValue.x + 10}" y="${multiAgentDemo.consensusValue.y - 10}" 
                           fill="#a78bfa" font-size="12">Consensus</text>
                 `;
-            }
-            
-            // Draw formation targets for formation control
-            if (multiAgentDemo.formationType === 'formation-control') {
-                multiAgentDemo.agents.forEach(agent => {
-                    if (agent.goalX && agent.goalY) {
-                        svg.innerHTML += `
-                            <circle cx="${agent.goalX}" cy="${agent.goalY}" 
-                                    r="4" fill="none" stroke="#10b981" stroke-width="1" 
-                                    stroke-dasharray="2,2" opacity="0.6"/>
-                        `;
-                    }
-                });
             }
             
             // Draw safety violation lines (existing functionality)
@@ -2382,7 +2637,7 @@
                         // Sheep label
                         svg.innerHTML += `
                             <text x="${agent.x}" y="${agent.y + 18}" text-anchor="middle" 
-                                  fill="#64748b" font-size="10" opacity="0.7">🐑</text>
+                                  fill="#64748b" font-size="20" opacity="0.7">🐑</text>
                         `;
                         
                     } else if (agent.type === 'dog') {
@@ -2428,7 +2683,7 @@
                         const modeEmoji = dogMode === 'collect' ? '🔄' : '➡️';
                         svg.innerHTML += `
                             <text x="${agent.x}" y="${agent.y + 20}" text-anchor="middle" 
-                                  fill="${modeColor}" font-size="8" font-weight="bold">🐕${modeEmoji}</text>
+                                  fill="${modeColor}" font-size="16" font-weight="bold">🐕${modeEmoji}</text>
                         `;
                         
                         // Enhanced velocity vector for dogs
@@ -2457,8 +2712,8 @@
                                 stroke-dasharray="3,3" opacity="0.3"/>
                     `;
                     
-                    // Goal (only for non-consensus methods or specific cases)
-                    if (!isConsensusMethod || multiAgentDemo.formationType === 'formation-control') {
+                    // Goal (only for non-consensus methods)
+                    if (!isConsensusMethod) {
                         svg.innerHTML += `
                             <circle cx="${agent.goalX}" cy="${agent.goalY}" r="4" 
                                     fill="none" stroke="${agent.color}" stroke-width="2" 
@@ -2497,13 +2752,6 @@
                     // Show communication range based on mode
                     if (multiAgentDemo.formationType === 'leader-follower' && agent.isLeader) {
                         // Show communication range only for leaders in leader-follower mode
-                        svg.innerHTML += `
-                            <circle cx="${agent.x}" cy="${agent.y}" r="${multiAgentDemo.communicationRange}" 
-                                    fill="none" stroke="#60a5fa" stroke-width="1" 
-                                    stroke-dasharray="8,8" opacity="0.15"/>
-                        `;
-                    } else if (multiAgentDemo.formationType === 'formation-control' && index === 0) {
-                        // Show communication range for first agent in formation control for reference
                         svg.innerHTML += `
                             <circle cx="${agent.x}" cy="${agent.y}" r="${multiAgentDemo.communicationRange}" 
                                     fill="none" stroke="#60a5fa" stroke-width="1" 
@@ -2549,7 +2797,7 @@
             document.getElementById('collisions').className = `status-value ${collisions === 0 ? 'safe' : 'unsafe'}`;
             
             // Update consensus-specific status
-            const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(multiAgentDemo.formationType);
+            const isConsensusMethod = ['consensus', 'leader-follower', 'flocking'].includes(multiAgentDemo.formationType);
             const isHerdingMethod = multiAgentDemo.formationType === 'herding';
             const consensusStatus = document.getElementById('consensus-status');
             
@@ -2608,14 +2856,6 @@
                         consensusError += Math.hypot(dx, dy);
                     });
                     consensusError /= multiAgentDemo.agents.length;
-                } else if (multiAgentDemo.formationType === 'formation-control') {
-                    // For formation: deviation from desired positions
-                    multiAgentDemo.agents.forEach(agent => {
-                        const dx = agent.x - agent.goalX;
-                        const dy = agent.y - agent.goalY;
-                        consensusError += Math.hypot(dx, dy);
-                    });
-                    consensusError /= multiAgentDemo.agents.length;
                 } else if (multiAgentDemo.formationType === 'leader-follower') {
                     // For leader-follower: formation error
                     const leader = multiAgentDemo.agents[0];
@@ -2637,16 +2877,28 @@
             } else {
                 consensusStatus.style.display = 'none';
             }
+            
+            // Update connectivity status for consensus methods
+            const connectivityStatus = document.getElementById('connectivity-status');
+            if (isConsensusMethod) {
+                connectivityStatus.style.display = 'block';
+                const isConnected = checkGraphConnectivity();
+                const connectivityElement = document.getElementById('graph-connectivity');
+                connectivityElement.textContent = isConnected ? 'CONNECTED' : 'DISCONNECTED';
+                connectivityElement.className = `status-value ${isConnected ? 'safe' : 'unsafe'}`;
+            } else {
+                connectivityStatus.style.display = 'none';
+            }
         }
 
         function animateMultiAgentDemo() {
             if (!animations.multiagent) return;
             
-            const dt = multiAgentDemo.dt;
+            const dt = multiAgentDemo.dt * multiAgentDemo.timeSpeed; // Apply time speed multiplier
             let totalActiveConstraints = 0;
             
             // Update communication topology for consensus methods
-            const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking', 'herding'].includes(multiAgentDemo.formationType);
+            const isConsensusMethod = ['consensus', 'leader-follower', 'flocking', 'herding'].includes(multiAgentDemo.formationType);
             if (isConsensusMethod) {
                 updateCommunicationTopology();
             }
@@ -2660,9 +2912,6 @@
                     break;
                 case 'leader-follower':
                     agentControls = computeLeaderFollowerControls();
-                    break;
-                case 'formation-control':
-                    agentControls = computeFormationControls();
                     break;
                 case 'flocking':
                     agentControls = computeFlockingControls();
@@ -2810,45 +3059,6 @@
                         }
                     });
                 }
-                
-                controls.push({ ux, uy });
-            });
-            
-            return controls;
-        }
-
-        function computeFormationControls() {
-            const agents = multiAgentDemo.agents;
-            const controls = [];
-            
-            agents.forEach((agent, i) => {
-                let ux = 0, uy = 0;
-                
-                // Distance-based formation control
-                const kp = 1.0;
-                
-                // Move toward desired formation position
-                const dx = agent.goalX - agent.x;
-                const dy = agent.goalY - agent.y;
-                ux += kp * dx;
-                uy += kp * dy;
-                
-                // Distance-based coordination with neighbors
-                agent.neighbors.forEach(j => {
-                    const neighbor = agents[j];
-                    const currentDist = Math.hypot(agent.x - neighbor.x, agent.y - neighbor.y);
-                    const desiredDist = Math.hypot(agent.goalX - neighbor.goalX, agent.goalY - neighbor.goalY);
-                    
-                    if (currentDist > 0.1) {
-                        const distError = currentDist - desiredDist;
-                        const forceGain = 0.5;
-                        const fx = forceGain * distError * (agent.x - neighbor.x) / currentDist;
-                        const fy = forceGain * distError * (agent.y - neighbor.y) / currentDist;
-                        
-                        ux -= fx;
-                        uy -= fy;
-                    }
-                });
                 
                 controls.push({ ux, uy });
             });
@@ -3209,6 +3419,414 @@
             return controls;
         }
         
+        // Smart spatial assignment algorithm for dogs to sheep
+        function assignDogsToSheep(dogs, availableSheep) {
+            const assignments = new Array(dogs.length).fill(null);
+            const assignedSheepIndices = new Set();
+            
+            // Create array of all possible dog-sheep pairs with distances
+            const dogSheepPairs = [];
+            dogs.forEach((dog, dogIndex) => {
+                availableSheep.forEach((sheepItem, sheepIndex) => {
+                    if (!assignedSheepIndices.has(sheepIndex)) {
+                        const dist = Math.hypot(dog.x - sheepItem.sheep.x, dog.y - sheepItem.sheep.y);
+                        dogSheepPairs.push({
+                            dogIndex,
+                            sheepIndex,
+                            sheepItem,
+                            distance: dist
+                        });
+                    }
+                });
+            });
+            
+            // Sort pairs by distance (shortest first) for greedy assignment
+            dogSheepPairs.sort((a, b) => a.distance - b.distance);
+            
+            // Assign dogs to sheep greedily, ensuring no conflicts
+            for (const pair of dogSheepPairs) {
+                if (assignments[pair.dogIndex] === null && !assignedSheepIndices.has(pair.sheepIndex)) {
+                    assignments[pair.dogIndex] = pair.sheepItem;
+                    assignedSheepIndices.add(pair.sheepIndex);
+                }
+            }
+            
+            return assignments;
+        }
+
+        // Calculate how efficiently dogs are covering sheep positions
+        function calculateDogCoverageEfficiency(dogs, sheep) {
+            if (dogs.length === 0 || sheep.length === 0) return 0;
+            
+            let totalCoverage = 0;
+            sheep.forEach(sheepAgent => {
+                let closestDogDistance = Infinity;
+                dogs.forEach(dog => {
+                    const dist = Math.hypot(dog.x - sheepAgent.x, dog.y - sheepAgent.y);
+                    closestDogDistance = Math.min(closestDogDistance, dist);
+                });
+                
+                // Coverage is better when dogs are closer (within influence radius)
+                const coverageScore = Math.max(0, 1 - (closestDogDistance / multiAgentDemo.dogInfluenceRadius));
+                totalCoverage += coverageScore;
+            });
+            
+            return totalCoverage / sheep.length; // Average coverage per sheep
+        }
+
+        // Calculate optimal perimeter positions for dogs around sheep
+        function calculatePerimeterPositions(dogs, sheep, targetX, targetY, compressionFactor = 1.0) {
+            if (dogs.length === 0 || sheep.length === 0) return [];
+            
+            // Calculate sheep centroid and bounding information
+            let sheepCenterX = 0, sheepCenterY = 0;
+            let minSheepX = Infinity, maxSheepX = -Infinity;
+            let minSheepY = Infinity, maxSheepY = -Infinity;
+            
+            sheep.forEach(sheepAgent => {
+                sheepCenterX += sheepAgent.x;
+                sheepCenterY += sheepAgent.y;
+                minSheepX = Math.min(minSheepX, sheepAgent.x);
+                maxSheepX = Math.max(maxSheepX, sheepAgent.x);
+                minSheepY = Math.min(minSheepY, sheepAgent.y);
+                maxSheepY = Math.max(maxSheepY, sheepAgent.y);
+            });
+            
+            sheepCenterX /= sheep.length;
+            sheepCenterY /= sheep.length;
+            
+            // Calculate adaptive perimeter radius based on sheep spread
+            const sheepSpreadX = maxSheepX - minSheepX;
+            const sheepSpreadY = maxSheepY - minSheepY;
+            const baseRadius = Math.max(
+                Math.hypot(sheepSpreadX, sheepSpreadY) / 2 + multiAgentDemo.dogInfluenceRadius * 0.8,
+                multiAgentDemo.dogInfluenceRadius * 1.2
+            );
+            
+            // Apply compression factor to gradually reduce perimeter
+            const effectiveRadius = baseRadius * compressionFactor;
+            
+            // Calculate pressure direction (from sheep center toward target)
+            const pressureAngle = Math.atan2(targetY - sheepCenterY, targetX - sheepCenterX);
+            
+            // Generate perimeter positions with bias toward pressure direction
+            const positions = [];
+            const angleStep = (2 * Math.PI) / dogs.length;
+            
+            dogs.forEach((dog, i) => {
+                // Basic angle around perimeter
+                const baseAngle = i * angleStep;
+                
+                // Add bias toward the pressure direction (opposite side gets more compression)
+                const angleDiff = Math.abs(((baseAngle - pressureAngle + Math.PI) % (2 * Math.PI)) - Math.PI);
+                const compressionBias = 1.0 - (angleDiff / Math.PI) * 0.3; // More compression opposite to target
+                const biasedRadius = effectiveRadius * compressionBias;
+                
+                // Calculate position
+                const x = sheepCenterX + Math.cos(baseAngle) * biasedRadius;
+                const y = sheepCenterY + Math.sin(baseAngle) * biasedRadius;
+                
+                positions.push({
+                    x: x,
+                    y: y,
+                    angle: baseAngle,
+                    radius: biasedRadius,
+                    priority: 1.0 - compressionBias // Higher priority for more compressed positions
+                });
+            });
+            
+            return positions;
+        }
+
+        // Detect and fill gaps in the perimeter
+        function detectPerimeterGaps(dogs, perimeterPositions, sheep) {
+            const gaps = [];
+            const gapThreshold = multiAgentDemo.dogInfluenceRadius * 1.5;
+            
+            for (let i = 0; i < dogs.length; i++) {
+                const currentDog = dogs[i];
+                const nextDog = dogs[(i + 1) % dogs.length];
+                const dogDistance = Math.hypot(currentDog.x - nextDog.x, currentDog.y - nextDog.y);
+                
+                if (dogDistance > gapThreshold) {
+                    // Check if any sheep are near this gap
+                    const gapCenterX = (currentDog.x + nextDog.x) / 2;
+                    const gapCenterY = (currentDog.y + nextDog.y) / 2;
+                    
+                    let sheepNearGap = false;
+                    sheep.forEach(sheepAgent => {
+                        const distToGap = Math.hypot(sheepAgent.x - gapCenterX, sheepAgent.y - gapCenterY);
+                        if (distToGap < multiAgentDemo.dogInfluenceRadius * 1.2) {
+                            sheepNearGap = true;
+                        }
+                    });
+                    
+                    if (sheepNearGap) {
+                        gaps.push({
+                            index: i,
+                            position: { x: gapCenterX, y: gapCenterY },
+                            size: dogDistance,
+                            priority: sheepNearGap ? 1.0 : 0.5
+                        });
+                    }
+                }
+            }
+            
+            return gaps;
+        }
+
+        // Analyze boundary utilization opportunities
+        function analyzeBoundaryOpportunities(sheep, target, canvasRect) {
+            const boundary = {
+                left: { x: 0, y1: 0, y2: canvasRect.height, normal: { x: 1, y: 0 } },
+                right: { x: canvasRect.width, y1: 0, y2: canvasRect.height, normal: { x: -1, y: 0 } },
+                top: { x1: 0, x2: canvasRect.width, y: 0, normal: { x: 0, y: 1 } },
+                bottom: { x1: 0, x2: canvasRect.width, y: canvasRect.height, normal: { x: 0, y: -1 } }
+            };
+            
+            // Calculate sheep centroid
+            let sheepCenterX = 0, sheepCenterY = 0;
+            sheep.forEach(s => {
+                sheepCenterX += s.x;
+                sheepCenterY += s.y;
+            });
+            sheepCenterX /= sheep.length;
+            sheepCenterY /= sheep.length;
+            
+            // Analyze each boundary's utility
+            const opportunities = [];
+            const boundaryMargin = 80; // Effective boundary utilization zone
+            
+            Object.entries(boundary).forEach(([name, bounds]) => {
+                let sheepNearBoundary = 0;
+                let avgDistToBoundary = 0;
+                let boundaryToTargetDistance = 0;
+                
+                sheep.forEach(s => {
+                    let distToBoundary;
+                    switch(name) {
+                        case 'left': distToBoundary = s.x; break;
+                        case 'right': distToBoundary = canvasRect.width - s.x; break;
+                        case 'top': distToBoundary = s.y; break;
+                        case 'bottom': distToBoundary = canvasRect.height - s.y; break;
+                    }
+                    
+                    if (distToBoundary < boundaryMargin) {
+                        sheepNearBoundary++;
+                    }
+                    avgDistToBoundary += distToBoundary;
+                });
+                
+                avgDistToBoundary /= sheep.length;
+                
+                // Calculate how well this boundary aligns with herding toward target
+                let boundaryEffectiveness = 0;
+                switch(name) {
+                    case 'left':
+                        boundaryToTargetDistance = Math.abs(target.x - 0);
+                        boundaryEffectiveness = target.x > sheepCenterX ? 1.0 : 0.3;
+                        break;
+                    case 'right':
+                        boundaryToTargetDistance = Math.abs(target.x - canvasRect.width);
+                        boundaryEffectiveness = target.x < sheepCenterX ? 1.0 : 0.3;
+                        break;
+                    case 'top':
+                        boundaryToTargetDistance = Math.abs(target.y - 0);
+                        boundaryEffectiveness = target.y > sheepCenterY ? 1.0 : 0.3;
+                        break;
+                    case 'bottom':
+                        boundaryToTargetDistance = Math.abs(target.y - canvasRect.height);
+                        boundaryEffectiveness = target.y < sheepCenterY ? 1.0 : 0.3;
+                        break;
+                }
+                
+                const utility = (sheepNearBoundary / sheep.length) * boundaryEffectiveness * 
+                               (1.0 - Math.min(1.0, avgDistToBoundary / boundaryMargin));
+                
+                opportunities.push({
+                    name,
+                    bounds,
+                    sheepNearBoundary,
+                    avgDistToBoundary,
+                    utility,
+                    effectiveness: boundaryEffectiveness
+                });
+            });
+            
+            // Sort by utility (best opportunities first)
+            opportunities.sort((a, b) => b.utility - a.utility);
+            
+            return opportunities;
+        }
+
+        // Calculate boundary-assisted herding positions
+        function calculateBoundaryAssistedPositions(dogs, sheep, target, boundaryOpportunity) {
+            if (!boundaryOpportunity || boundaryOpportunity.utility < 0.2) return null;
+            
+            const positions = [];
+            const boundary = boundaryOpportunity.bounds;
+            const boundaryName = boundaryOpportunity.name;
+            
+            // Calculate sheep centroid
+            let sheepCenterX = 0, sheepCenterY = 0;
+            sheep.forEach(s => {
+                sheepCenterX += s.x;
+                sheepCenterY += s.y;
+            });
+            sheepCenterX /= sheep.length;
+            sheepCenterY /= sheep.length;
+            
+            // Different strategies for different boundary orientations
+            if (boundaryName === 'left' || boundaryName === 'right') {
+                // Vertical boundary - dogs form horizontal line
+                const pushSide = boundaryName === 'left' ? 'right' : 'left';
+                const pushDistance = multiAgentDemo.dogInfluenceRadius * 1.1;
+                
+                dogs.forEach((dog, i) => {
+                    const verticalSpacing = sheep.length > 1 ? 
+                        (Math.max(...sheep.map(s => s.y)) - Math.min(...sheep.map(s => s.y))) / (dogs.length - 1) : 0;
+                    const baseY = Math.min(...sheep.map(s => s.y)) + i * verticalSpacing;
+                    
+                    const dogX = pushSide === 'right' ? 
+                        Math.max(...sheep.map(s => s.x)) + pushDistance :
+                        Math.min(...sheep.map(s => s.x)) - pushDistance;
+                    
+                    positions.push({
+                        x: dogX,
+                        y: baseY,
+                        role: 'boundaryPush',
+                        priority: 1.0
+                    });
+                });
+                
+            } else {
+                // Horizontal boundary - dogs form vertical line
+                const pushSide = boundaryName === 'top' ? 'bottom' : 'top';
+                const pushDistance = multiAgentDemo.dogInfluenceRadius * 1.1;
+                
+                dogs.forEach((dog, i) => {
+                    const horizontalSpacing = sheep.length > 1 ?
+                        (Math.max(...sheep.map(s => s.x)) - Math.min(...sheep.map(s => s.x))) / (dogs.length - 1) : 0;
+                    const baseX = Math.min(...sheep.map(s => s.x)) + i * horizontalSpacing;
+                    
+                    const dogY = pushSide === 'bottom' ?
+                        Math.max(...sheep.map(s => s.y)) + pushDistance :
+                        Math.min(...sheep.map(s => s.y)) - pushDistance;
+                    
+                    positions.push({
+                        x: baseX,
+                        y: dogY,
+                        role: 'boundaryPush',
+                        priority: 1.0
+                    });
+                });
+            }
+            
+            return positions;
+        }
+
+        // Detect corner opportunities for enhanced herding
+        function detectCornerOpportunities(sheep, target, canvasRect) {
+            const corners = [
+                { name: 'topLeft', x: 0, y: 0, utilityZone: 100 },
+                { name: 'topRight', x: canvasRect.width, y: 0, utilityZone: 100 },
+                { name: 'bottomLeft', x: 0, y: canvasRect.height, utilityZone: 100 },
+                { name: 'bottomRight', x: canvasRect.width, y: canvasRect.height, utilityZone: 100 }
+            ];
+            
+            let bestCorner = null;
+            let maxUtility = 0;
+            
+            corners.forEach(corner => {
+                // Count sheep near this corner
+                let sheepInZone = 0;
+                let avgDistToCorner = 0;
+                
+                sheep.forEach(s => {
+                    const distToCorner = Math.hypot(s.x - corner.x, s.y - corner.y);
+                    if (distToCorner < corner.utilityZone) {
+                        sheepInZone++;
+                    }
+                    avgDistToCorner += distToCorner;
+                });
+                
+                avgDistToCorner /= sheep.length;
+                
+                // Calculate corner utility based on sheep density and target alignment
+                const distTargetToCorner = Math.hypot(target.x - corner.x, target.y - corner.y);
+                const targetAlignment = 1.0 / (1.0 + distTargetToCorner / 200); // Closer targets are better
+                
+                const utility = (sheepInZone / sheep.length) * targetAlignment * 
+                               (1.0 - Math.min(1.0, avgDistToCorner / corner.utilityZone));
+                
+                if (utility > maxUtility) {
+                    maxUtility = utility;
+                    bestCorner = { ...corner, utility, sheepInZone };
+                }
+            });
+            
+            return bestCorner && bestCorner.utility > 0.3 ? bestCorner : null;
+        }
+
+        // DYNAMIC SPEED CONTROL: Calculate context-aware speed for dogs
+        function calculateDynamicSpeed(dog, targetSheep, mode, urgencyFactor = 1.0) {
+            // Base speed factors
+            const baseSpeed = 0.8;
+            const maxSpeed = 1.5;
+            const minSpeed = 0.3;
+            
+            // Distance-based speed: closer sheep need gentler approach
+            const distanceToSheep = targetSheep ? Math.hypot(dog.x - targetSheep.x, dog.y - targetSheep.y) : 100;
+            const distanceFactor = Math.max(0.5, Math.min(1.5, distanceToSheep / 50));
+            
+            // Mode-specific speed adjustments
+            let modeFactor = 1.0;
+            switch(mode) {
+                case 'focus':
+                    modeFactor = 1.0; // Standard speed for focused herding
+                    break;
+                case 'groupPush':
+                    modeFactor = 0.9; // Steady group movement
+                    break;
+                case 'perimeter':
+                    modeFactor = 0.8 + (urgencyFactor * 0.4); // Adaptive perimeter speed
+                    break;
+                case 'boundary':
+                    modeFactor = 1.1; // Quick boundary utilization
+                    break;
+                case 'corner':
+                    modeFactor = 1.2; // Fast corner containment
+                    break;
+                case 'cleanup':
+                    modeFactor = 0.7; // Gentle cleanup approach
+                    break;
+                case 'contain':
+                    modeFactor = 0.5; // Steady containment
+                    break;
+                case 'maintainAndCollect':
+                    modeFactor = 0.6; // Patient collection
+                    break;
+                default:
+                    modeFactor = 1.0;
+            }
+            
+            // Urgency-based adjustments
+            const urgencyMultiplier = 0.7 + (urgencyFactor * 0.8); // Range: 0.7 to 1.5
+            
+            // Sheep behavior response: if sheep is fleeing quickly, dog needs to match
+            let sheepResponseFactor = 1.0;
+            if (targetSheep && targetSheep.vx !== undefined && targetSheep.vy !== undefined) {
+                const sheepSpeed = Math.hypot(targetSheep.vx, targetSheep.vy);
+                sheepResponseFactor = Math.max(0.8, Math.min(1.3, 1.0 + sheepSpeed / 20));
+            }
+            
+            // Calculate final dynamic speed
+            let dynamicSpeed = baseSpeed * distanceFactor * modeFactor * urgencyMultiplier * sheepResponseFactor;
+            
+            // Clamp to reasonable bounds
+            return Math.max(minSpeed, Math.min(maxSpeed, dynamicSpeed));
+        }
+
         function computeDogControls() {
             const controls = [];
             const sheepAgents = multiAgentDemo.sheepAgents;
@@ -3258,24 +3876,62 @@
             // Sort priority targets by distance to target (closest first for efficiency)
             sheepCategories.priorityTargets.sort((a, b) => a.distToTarget - b.distToTarget);
             
-            // Calculate success metrics
+            // Calculate success metrics and sheep distribution analysis
             const successfulSheep = sheepCategories.atTarget.length;
             const totalSheep = sheepAgents.length;
             const progressRatio = successfulSheep / totalSheep;
             
-            // ADAPTIVE MODE SELECTION: Focus on the most productive approach with containment
+            // Calculate sheep spread for perimeter strategy assessment
+            let maxSheepDistance = 0;
+            let avgSheepDistance = 0;
+            let sheepSpread = 0;
+            
+            if (sheepAgents.length > 0) {
+                sheepAgents.forEach(sheep => {
+                    const distFromCenter = Math.hypot(sheep.x - sheepCenterX, sheep.y - sheepCenterY);
+                    maxSheepDistance = Math.max(maxSheepDistance, distFromCenter);
+                    avgSheepDistance += distFromCenter;
+                });
+                avgSheepDistance /= sheepAgents.length;
+                sheepSpread = maxSheepDistance;
+            }
+            
+            // Calculate dog distribution efficiency
+            const dogCoverage = calculateDogCoverageEfficiency(dogAgents, sheepAgents);
+            
+            // Analyze boundary utilization opportunities
+            const canvas = document.getElementById('multiagent-canvas');
+            const canvasRect = canvas.getBoundingClientRect();
+            const boundaryOpportunities = analyzeBoundaryOpportunities(sheepAgents, multiAgentDemo.targetPosition, canvasRect);
+            const bestBoundary = boundaryOpportunities.length > 0 ? boundaryOpportunities[0] : null;
+            const cornerOpportunity = detectCornerOpportunities(sheepAgents, multiAgentDemo.targetPosition, canvasRect);
+            
+            // ENHANCED ADAPTIVE MODE SELECTION: Include boundary utilization and perimeter strategy
             let optimalMode = 'focus'; // Default to focused herding
             
             if (progressRatio >= 0.8) {
                 // 80%+ sheep at target - contain them and clean up remaining stragglers
                 optimalMode = 'contain';
+            } else if (cornerOpportunity && cornerOpportunity.utility > 0.5 && dogAgents.length >= 2) {
+                // CORNER STRATEGY: High-value corner opportunity detected
+                optimalMode = 'corner';
+            } else if (bestBoundary && bestBoundary.utility > 0.4 && dogAgents.length >= 2) {
+                // BOUNDARY STRATEGY: Effective boundary utilization opportunity
+                optimalMode = 'boundary';
             } else if (sheepCategories.atTarget.length >= 2 && sheepCategories.nearTarget.length === 0 && sheepCategories.scattered.length > 0) {
                 // Some sheep are contained, but others are scattered - maintain containment while collecting
                 optimalMode = 'maintainAndCollect';
+            } else if (sheepSpread > multiAgentDemo.dogInfluenceRadius * 1.5 && 
+                       sheepAgents.length >= 4 && dogAgents.length >= 3 && 
+                       sheepCategories.scattered.length >= 3 &&
+                       (!bestBoundary || bestBoundary.utility < 0.3)) {
+                // PERIMETER STRATEGY: Large spread sheep with sufficient dogs - only if boundary utility is low
+                optimalMode = 'perimeter';
             } else if (sheepCategories.nearTarget.length >= 2 && sheepCategories.scattered.length <= 2) {
                 // Most sheep are close - push the group
                 optimalMode = 'groupPush';
-            } else if (sheepCategories.closest && sheepCategories.closest.distToTarget < targetRadius * 2.5) {
+            } else if (sheepCategories.priorityTargets.length > 0 && 
+                       sheepCategories.priorityTargets[0].distToTarget < targetRadius * 2.5) {
                 // Focus on the closest sheep for incremental progress
                 optimalMode = 'focus';
             } else {
@@ -3285,38 +3941,43 @@
             
             multiAgentDemo.herdingMode = optimalMode;
             multiAgentDemo.sheepCategories = sheepCategories; // Store for rendering
+            multiAgentDemo.boundaryOpportunity = bestBoundary; // Store for rendering
+            multiAgentDemo.cornerOpportunity = cornerOpportunity; // Store for rendering
             
             dogAgents.forEach((dog, i) => {
                 let ux = 0, uy = 0;
                 
                 if (multiAgentDemo.herdingMode === 'focus') {
-                    // FOCUS MODE: Dogs work on individual priority sheep, distributed efficiently
+                    // FOCUS MODE: Dogs work on individual priority sheep, using smart spatial assignment
                     if (sheepCategories.priorityTargets.length > 0) {
-                        // Assign each dog to a different sheep using distributed assignment
-                        const targetIndex = i % Math.min(sheepCategories.priorityTargets.length, dogAgents.length);
-                        const targetSheep = sheepCategories.priorityTargets[targetIndex].sheep;
+                        // Use smart spatial assignment instead of round-robin
+                        const dogAssignments = assignDogsToSheep(dogAgents, sheepCategories.priorityTargets);
+                        const targetSheep = dogAssignments[i]?.sheep;
                         
-                        // Calculate desired push direction (from sheep toward target)
-                        const pushAngle = Math.atan2(targetY - targetSheep.y, targetX - targetSheep.x);
-                        
-                        // Position dog behind sheep (opposite to push direction)
-                        const pushDistance = multiAgentDemo.dogInfluenceRadius * 0.8;
-                        const dogTargetX = targetSheep.x - Math.cos(pushAngle) * pushDistance;
-                        const dogTargetY = targetSheep.y - Math.sin(pushAngle) * pushDistance;
-                        
-                        // Add slight randomness to prevent perfect clustering
-                        const randomOffset = (Math.random() - 0.5) * 30;
-                        const offsetAngle = pushAngle + Math.PI / 2;
-                        const finalX = dogTargetX + Math.cos(offsetAngle) * randomOffset;
-                        const finalY = dogTargetY + Math.sin(offsetAngle) * randomOffset;
-                        
-                        const dx = finalX - dog.x;
-                        const dy = finalY - dog.y;
-                        const dist = Math.hypot(dx, dy);
-                        
-                        if (dist > 3) {
-                            ux = multiAgentDemo.dogSpeed * 1.0 * (dx / dist);
-                            uy = multiAgentDemo.dogSpeed * 1.0 * (dy / dist);
+                        if (targetSheep) {
+                            // Calculate desired push direction (from sheep toward target)
+                            const pushAngle = Math.atan2(targetY - targetSheep.y, targetX - targetSheep.x);
+                            
+                            // Position dog behind sheep (opposite to push direction)
+                            const pushDistance = multiAgentDemo.dogInfluenceRadius * 0.8;
+                            const dogTargetX = targetSheep.x - Math.cos(pushAngle) * pushDistance;
+                            const dogTargetY = targetSheep.y - Math.sin(pushAngle) * pushDistance;
+                            
+                            // Add slight randomness to prevent perfect clustering
+                            const randomOffset = (Math.random() - 0.5) * 30;
+                            const offsetAngle = pushAngle + Math.PI / 2;
+                            const finalX = dogTargetX + Math.cos(offsetAngle) * randomOffset;
+                            const finalY = dogTargetY + Math.sin(offsetAngle) * randomOffset;
+                            
+                            const dx = finalX - dog.x;
+                            const dy = finalY - dog.y;
+                            const dist = Math.hypot(dx, dy);
+                            
+                            if (dist > 3) {
+                                const dynamicSpeed = calculateDynamicSpeed(dog, targetSheep, 'focus', dogAssignments[i]?.urgency || 1.0);
+                                ux = multiAgentDemo.dogSpeed * dynamicSpeed * (dx / dist);
+                                uy = multiAgentDemo.dogSpeed * dynamicSpeed * (dy / dist);
+                            }
                         }
                     }
                     
@@ -3351,32 +4012,268 @@
                         const dist = Math.hypot(dx, dy);
                         
                         if (dist > 3) {
-                            ux = multiAgentDemo.dogSpeed * 0.9 * (dx / dist);
-                            uy = multiAgentDemo.dogSpeed * 0.9 * (dy / dist);
+                            const groupUrgency = nearSheep.length / Math.max(1, sheepAgents.length); // More sheep = higher urgency
+                            const dynamicSpeed = calculateDynamicSpeed(dog, nearSheep[0]?.sheep, 'groupPush', groupUrgency);
+                            ux = multiAgentDemo.dogSpeed * dynamicSpeed * (dx / dist);
+                            uy = multiAgentDemo.dogSpeed * dynamicSpeed * (dy / dist);
+                        }
+                    }
+                    
+                } else if (multiAgentDemo.herdingMode === 'boundary') {
+                    // BOUNDARY MODE: Use environmental boundaries as natural barriers
+                    const activeSheep = [...sheepCategories.nearTarget, ...sheepCategories.scattered];
+                    const boundaryOpportunity = multiAgentDemo.boundaryOpportunity;
+                    
+                    if (activeSheep.length > 0 && boundaryOpportunity) {
+                        const boundaryPositions = calculateBoundaryAssistedPositions(
+                            dogAgents, 
+                            activeSheep.map(item => item.sheep), 
+                            multiAgentDemo.targetPosition, 
+                            boundaryOpportunity
+                        );
+                        
+                        if (boundaryPositions && boundaryPositions[i]) {
+                            const targetPos = boundaryPositions[i];
+                            const dx = targetPos.x - dog.x;
+                            const dy = targetPos.y - dog.y;
+                            const dist = Math.hypot(dx, dy);
+                            
+                            if (dist > 5) {
+                                const boundaryUrgency = targetPos.priority || 1.0;
+                                const nearestSheep = activeSheep.reduce((closest, item) => {
+                                    const distToSheep = Math.hypot(dog.x - item.sheep.x, dog.y - item.sheep.y);
+                                    return distToSheep < closest.dist ? {sheep: item.sheep, dist: distToSheep} : closest;
+                                }, {sheep: null, dist: Infinity}).sheep;
+                                
+                                const dynamicSpeed = calculateDynamicSpeed(dog, nearestSheep, 'boundary', boundaryUrgency);
+                                ux = multiAgentDemo.dogSpeed * dynamicSpeed * (dx / dist);
+                                uy = multiAgentDemo.dogSpeed * dynamicSpeed * (dy / dist);
+                            } else {
+                                // Hold position and apply boundary pressure
+                                const pressureDirection = boundaryOpportunity.bounds.normal;
+                                ux = pressureDirection.x * 0.5;
+                                uy = pressureDirection.y * 0.5;
+                            }
+                        }
+                        
+                        // Enhanced sheep escape detection near boundaries
+                        activeSheep.forEach(item => {
+                            const sheep = item.sheep;
+                            const distToSheep = Math.hypot(dog.x - sheep.x, dog.y - sheep.y);
+                            
+                            if (distToSheep < multiAgentDemo.dogInfluenceRadius) {
+                                // Check if sheep is moving away from boundary (escape attempt)
+                                const boundaryNormal = boundaryOpportunity.bounds.normal;
+                                const sheepVelDotNormal = sheep.vx * boundaryNormal.x + sheep.vy * boundaryNormal.y;
+                                
+                                if (sheepVelDotNormal > 0.5) { // Moving away from boundary
+                                    const interceptStrength = 2.0;
+                                    ux -= boundaryNormal.x * interceptStrength;
+                                    uy -= boundaryNormal.y * interceptStrength;
+                                }
+                            }
+                        });
+                    }
+                    
+                } else if (multiAgentDemo.herdingMode === 'corner') {
+                    // CORNER MODE: Use corner areas for efficient sheep containment
+                    const activeSheep = [...sheepCategories.nearTarget, ...sheepCategories.scattered];
+                    const cornerOpportunity = multiAgentDemo.cornerOpportunity;
+                    
+                    if (activeSheep.length > 0 && cornerOpportunity) {
+                        // Calculate dogs' optimal positions around the corner
+                        const cornerX = cornerOpportunity.x;
+                        const cornerY = cornerOpportunity.y;
+                        
+                        // Position dogs in a fan formation pushing toward corner
+                        const sheepInZone = activeSheep.filter(item => {
+                            const dist = Math.hypot(item.sheep.x - cornerX, item.sheep.y - cornerY);
+                            return dist < cornerOpportunity.utilityZone;
+                        });
+                        
+                        if (sheepInZone.length > 0) {
+                            // Calculate average position of sheep in corner zone
+                            let avgSheepX = 0, avgSheepY = 0;
+                            sheepInZone.forEach(item => {
+                                avgSheepX += item.sheep.x;
+                                avgSheepY += item.sheep.y;
+                            });
+                            avgSheepX /= sheepInZone.length;
+                            avgSheepY /= sheepInZone.length;
+                            
+                            // Position dog to push sheep toward corner
+                            const pushAngle = Math.atan2(cornerY - avgSheepY, cornerX - avgSheepX);
+                            const dogDistance = multiAgentDemo.dogInfluenceRadius * 1.2;
+                            
+                            // Spread dogs in arc formation
+                            const arcSpan = Math.PI * 0.8;
+                            const angleOffset = (i / Math.max(1, dogAgents.length - 1)) * arcSpan - arcSpan/2;
+                            const dogAngle = pushAngle + Math.PI + angleOffset;
+                            
+                            const dogTargetX = avgSheepX + Math.cos(dogAngle) * dogDistance;
+                            const dogTargetY = avgSheepY + Math.sin(dogAngle) * dogDistance;
+                            
+                            const dx = dogTargetX - dog.x;
+                            const dy = dogTargetY - dog.y;
+                            const dist = Math.hypot(dx, dy);
+                            
+                            if (dist > 4) {
+                                const cornerUrgency = sheepInZone.length / Math.max(1, activeSheep.length);
+                                const nearestSheep = sheepInZone[0]?.sheep;
+                                const dynamicSpeed = calculateDynamicSpeed(dog, nearestSheep, 'corner', cornerUrgency);
+                                ux = multiAgentDemo.dogSpeed * dynamicSpeed * (dx / dist);
+                                uy = multiAgentDemo.dogSpeed * dynamicSpeed * (dy / dist);
+                            } else {
+                                // Apply steady pressure toward corner
+                                const cornerPressureX = (cornerX - avgSheepX) * 0.3;
+                                const cornerPressureY = (cornerY - avgSheepY) * 0.3;
+                                ux = cornerPressureX;
+                                uy = cornerPressureY;
+                            }
+                        }
+                        
+                        // Prevent sheep from escaping the corner zone
+                        activeSheep.forEach(item => {
+                            const sheep = item.sheep;
+                            const distToSheep = Math.hypot(dog.x - sheep.x, dog.y - sheep.y);
+                            const distSheepToCorner = Math.hypot(sheep.x - cornerX, sheep.y - cornerY);
+                            
+                            if (distToSheep < multiAgentDemo.dogInfluenceRadius && 
+                                distSheepToCorner < cornerOpportunity.utilityZone) {
+                                
+                                const escapeDirection = Math.atan2(sheep.y - cornerY, sheep.x - cornerX);
+                                const sheepMovementAngle = Math.atan2(sheep.vy, sheep.vx);
+                                const isEscaping = Math.abs(escapeDirection - sheepMovementAngle) < Math.PI / 3;
+                                
+                                if (isEscaping && Math.hypot(sheep.vx, sheep.vy) > 1.0) {
+                                    const blockStrength = 1.8;
+                                    ux += Math.cos(sheepMovementAngle + Math.PI) * blockStrength;
+                                    uy += Math.sin(sheepMovementAngle + Math.PI) * blockStrength;
+                                }
+                            }
+                        });
+                    }
+                    
+                } else if (multiAgentDemo.herdingMode === 'perimeter') {
+                    // PERIMETER MODE: Form dynamic perimeter around sheep with coordinated compression
+                    const activeSheep = [...sheepCategories.nearTarget, ...sheepCategories.scattered];
+                    
+                    if (activeSheep.length > 0) {
+                        // Calculate adaptive compression factor based on progress and sheep behavior
+                        const timeElapsed = Date.now() / 1000; // Use time for gradual compression
+                        const baseCompressionRate = 0.02; // Slow, steady compression
+                        const progressBonus = progressRatio * 0.3; // Faster compression when making progress
+                        const compressionFactor = Math.max(0.6, 1.0 - (timeElapsed * baseCompressionRate + progressBonus));
+                        
+                        // Calculate optimal perimeter positions
+                        const perimeterPositions = calculatePerimeterPositions(
+                            dogAgents, 
+                            activeSheep.map(item => item.sheep), 
+                            targetX, 
+                            targetY, 
+                            compressionFactor
+                        );
+                        
+                        // Detect gaps in current perimeter
+                        const gaps = detectPerimeterGaps(dogAgents, perimeterPositions, activeSheep.map(item => item.sheep));
+                        
+                        // Assign dogs to optimal positions with gap-filling priority
+                        if (perimeterPositions[i]) {
+                            let targetPosition = perimeterPositions[i];
+                            
+                            // Check if this dog should fill a critical gap
+                            if (gaps.length > 0) {
+                                const closestGap = gaps.reduce((closest, gap) => {
+                                    const distToGap = Math.hypot(dog.x - gap.position.x, dog.y - gap.position.y);
+                                    const distToClosest = closest ? Math.hypot(dog.x - closest.position.x, dog.y - closest.position.y) : Infinity;
+                                    return distToGap < distToClosest ? gap : closest;
+                                }, null);
+                                
+                                if (closestGap && closestGap.priority > 0.7) {
+                                    targetPosition = {
+                                        x: closestGap.position.x,
+                                        y: closestGap.position.y,
+                                        priority: closestGap.priority
+                                    };
+                                }
+                            }
+                            
+                            // Calculate movement toward target position with dynamic speed
+                            const dx = targetPosition.x - dog.x;
+                            const dy = targetPosition.y - dog.y;
+                            const dist = Math.hypot(dx, dy);
+                            
+                            if (dist > 5) {
+                                // Dynamic speed based on position priority and urgency
+                                const urgency = (targetPosition.priority || 1.0);
+                                const nearestSheep = sheepCategories.scattered.reduce((closest, item) => {
+                                    const distToSheep = Math.hypot(dog.x - item.sheep.x, dog.y - item.sheep.y);
+                                    return distToSheep < closest.dist ? {sheep: item.sheep, dist: distToSheep} : closest;
+                                }, {sheep: null, dist: Infinity}).sheep;
+                                
+                                const dynamicSpeed = calculateDynamicSpeed(dog, nearestSheep, 'perimeter', urgency);
+                                ux = multiAgentDemo.dogSpeed * dynamicSpeed * (dx / dist);
+                                uy = multiAgentDemo.dogSpeed * dynamicSpeed * (dy / dist);
+                            } else {
+                                // Hold position and apply pressure toward target
+                                const pressureAngle = Math.atan2(targetY - dog.y, targetX - dog.x);
+                                const pressureStrength = 0.3;
+                                
+                                ux = Math.cos(pressureAngle) * pressureStrength;
+                                uy = Math.sin(pressureAngle) * pressureStrength;
+                            }
+                            
+                            // React to sheep escape attempts
+                            activeSheep.forEach(item => {
+                                const sheep = item.sheep;
+                                const distToSheep = Math.hypot(dog.x - sheep.x, dog.y - sheep.y);
+                                
+                                if (distToSheep < multiAgentDemo.dogInfluenceRadius * 0.9) {
+                                    // Check if sheep is moving away from target (escape attempt)
+                                    const sheepToTarget = Math.atan2(targetY - sheep.y, targetX - sheep.x);
+                                    const sheepDirection = Math.atan2(sheep.vy, sheep.vx);
+                                    const directionDiff = Math.abs(((sheepDirection - sheepToTarget + Math.PI) % (2 * Math.PI)) - Math.PI);
+                                    
+                                    if (directionDiff > Math.PI / 2 && Math.hypot(sheep.vx, sheep.vy) > 1.0) {
+                                        // Sheep is trying to escape - intercept
+                                        const interceptAngle = sheepDirection + Math.PI; // Opposite to sheep movement
+                                        const interceptStrength = 1.5;
+                                        
+                                        ux += Math.cos(interceptAngle) * interceptStrength;
+                                        uy += Math.sin(interceptAngle) * interceptStrength;
+                                    }
+                                }
+                            });
                         }
                     }
                     
                 } else if (multiAgentDemo.herdingMode === 'cleanup') {
-                    // CLEANUP MODE: Gently guide remaining stragglers
+                    // CLEANUP MODE: Gently guide remaining stragglers using smart assignment
                     const remainingSheep = [...sheepCategories.nearTarget, ...sheepCategories.scattered];
                     
-                    if (remainingSheep.length > 0 && i < remainingSheep.length) {
-                        const targetSheep = remainingSheep[i % remainingSheep.length].sheep;
+                    if (remainingSheep.length > 0) {
+                        // Use smart spatial assignment instead of round-robin
+                        const dogAssignments = assignDogsToSheep(dogAgents, remainingSheep);
+                        const targetSheep = dogAssignments[i]?.sheep;
                         
-                        // Gentle push toward target
-                        const pushAngle = Math.atan2(targetY - targetSheep.y, targetX - targetSheep.x);
-                        const pushDistance = multiAgentDemo.dogInfluenceRadius * 0.7;
-                        
-                        const dogTargetX = targetSheep.x - Math.cos(pushAngle) * pushDistance;
-                        const dogTargetY = targetSheep.y - Math.sin(pushAngle) * pushDistance;
-                        
-                        const dx = dogTargetX - dog.x;
-                        const dy = dogTargetY - dog.y;
-                        const dist = Math.hypot(dx, dy);
-                        
-                        if (dist > 4) {
-                            ux = multiAgentDemo.dogSpeed * 0.7 * (dx / dist); // Gentle approach
-                            uy = multiAgentDemo.dogSpeed * 0.7 * (dy / dist);
+                        if (targetSheep) {
+                            // Gentle push toward target
+                            const pushAngle = Math.atan2(targetY - targetSheep.y, targetX - targetSheep.x);
+                            const pushDistance = multiAgentDemo.dogInfluenceRadius * 0.7;
+                            
+                            const dogTargetX = targetSheep.x - Math.cos(pushAngle) * pushDistance;
+                            const dogTargetY = targetSheep.y - Math.sin(pushAngle) * pushDistance;
+                            
+                            const dx = dogTargetX - dog.x;
+                            const dy = dogTargetY - dog.y;
+                            const dist = Math.hypot(dx, dy);
+                            
+                            if (dist > 4) {
+                                const cleanupUrgency = dogAssignments[i]?.urgency || 0.8; // Gentle by default
+                                const dynamicSpeed = calculateDynamicSpeed(dog, targetSheep, 'cleanup', cleanupUrgency);
+                                ux = multiAgentDemo.dogSpeed * dynamicSpeed * (dx / dist);
+                                uy = multiAgentDemo.dogSpeed * dynamicSpeed * (dy / dist);
+                            }
                         }
                     }
                     
@@ -3411,8 +4308,15 @@
                     const dist = Math.hypot(dx, dy);
                     
                     if (dist > 8) { // Larger threshold for containment positions
-                        ux = multiAgentDemo.dogSpeed * 0.5 * (dx / dist); // Slow, steady containment
-                        uy = multiAgentDemo.dogSpeed * 0.5 * (dy / dist);
+                        const containUrgency = sheepCategories.atTarget.length / Math.max(1, sheepAgents.length);
+                        const nearestSheep = sheepCategories.atTarget.reduce((closest, item) => {
+                            const distToSheep = Math.hypot(dog.x - item.sheep.x, dog.y - item.sheep.y);
+                            return distToSheep < closest.dist ? {sheep: item.sheep, dist: distToSheep} : closest;
+                        }, {sheep: null, dist: Infinity}).sheep;
+                        
+                        const dynamicSpeed = calculateDynamicSpeed(dog, nearestSheep, 'contain', containUrgency);
+                        ux = multiAgentDemo.dogSpeed * dynamicSpeed * (dx / dist);
+                        uy = multiAgentDemo.dogSpeed * dynamicSpeed * (dy / dist);
                     }
                     
                     // If any contained sheep are trying to escape, react quickly
@@ -3436,8 +4340,10 @@
                                 const interceptDist = Math.hypot(interceptDx, interceptDy);
                                 
                                 if (interceptDist > 3) {
-                                    ux = multiAgentDemo.dogSpeed * 1.2 * (interceptDx / interceptDist); // Quick response
-                                    uy = multiAgentDemo.dogSpeed * 1.2 * (interceptDy / interceptDist);
+                                    const emergencyUrgency = 2.0; // Very high urgency for escape prevention
+                                    const dynamicSpeed = calculateDynamicSpeed(dog, sheep, 'contain', emergencyUrgency);
+                                    ux = multiAgentDemo.dogSpeed * dynamicSpeed * (interceptDx / interceptDist);
+                                    uy = multiAgentDemo.dogSpeed * dynamicSpeed * (interceptDy / interceptDist);
                                 }
                             }
                         }
@@ -3461,26 +4367,43 @@
                         const dist = Math.hypot(dx, dy);
                         
                         if (dist > 6) {
-                            ux = multiAgentDemo.dogSpeed * 0.6 * (dx / dist);
-                            uy = multiAgentDemo.dogSpeed * 0.6 * (dy / dist);
+                            const maintainUrgency = containedSheep.length / Math.max(1, sheepAgents.length);
+                            const nearestSheep = containedSheep.reduce((closest, item) => {
+                                const distToSheep = Math.hypot(dog.x - item.sheep.x, dog.y - item.sheep.y);
+                                return distToSheep < closest.dist ? {sheep: item.sheep, dist: distToSheep} : closest;
+                            }, {sheep: null, dist: Infinity}).sheep;
+                            
+                            const dynamicSpeed = calculateDynamicSpeed(dog, nearestSheep, 'maintainAndCollect', maintainUrgency);
+                            ux = multiAgentDemo.dogSpeed * dynamicSpeed * (dx / dist);
+                            uy = multiAgentDemo.dogSpeed * dynamicSpeed * (dy / dist);
                         }
                     } else if (priorityTargets.length > 0) {
-                        // Remaining dogs collect scattered sheep using round-robin assignment
-                        const targetSheep = priorityTargets[(i - Math.floor(dogAgents.length / 2)) % priorityTargets.length].sheep;
+                        // Remaining dogs collect scattered sheep using smart spatial assignment
+                        const collectingDogs = dogAgents.slice(Math.floor(dogAgents.length / 2));
+                        const collectingDogIndex = i - Math.floor(dogAgents.length / 2);
                         
-                        const collectAngle = Math.atan2(targetY - targetSheep.y, targetX - targetSheep.x);
-                        const collectDistance = multiAgentDemo.dogInfluenceRadius * 0.9;
-                        
-                        const dogTargetX = targetSheep.x - Math.cos(collectAngle) * collectDistance;
-                        const dogTargetY = targetSheep.y - Math.sin(collectAngle) * collectDistance;
-                        
-                        const dx = dogTargetX - dog.x;
-                        const dy = dogTargetY - dog.y;
-                        const dist = Math.hypot(dx, dy);
-                        
-                        if (dist > 2) {
-                            ux = multiAgentDemo.dogSpeed * 1.0 * (dx / dist);
-                            uy = multiAgentDemo.dogSpeed * 1.0 * (dy / dist);
+                        if (collectingDogIndex >= 0 && collectingDogIndex < collectingDogs.length) {
+                            const collectingAssignments = assignDogsToSheep(collectingDogs, priorityTargets);
+                            const targetSheep = collectingAssignments[collectingDogIndex]?.sheep;
+                            
+                            if (targetSheep) {
+                                const collectAngle = Math.atan2(targetY - targetSheep.y, targetX - targetSheep.x);
+                                const collectDistance = multiAgentDemo.dogInfluenceRadius * 0.9;
+                                
+                                const dogTargetX = targetSheep.x - Math.cos(collectAngle) * collectDistance;
+                                const dogTargetY = targetSheep.y - Math.sin(collectAngle) * collectDistance;
+                                
+                                const dx = dogTargetX - dog.x;
+                                const dy = dogTargetY - dog.y;
+                                const dist = Math.hypot(dx, dy);
+                                
+                                if (dist > 2) {
+                                    const collectUrgency = collectingAssignments[collectingDogIndex]?.urgency || 1.0;
+                                    const dynamicSpeed = calculateDynamicSpeed(dog, targetSheep, 'maintainAndCollect', collectUrgency);
+                                    ux = multiAgentDemo.dogSpeed * dynamicSpeed * (dx / dist);
+                                    uy = multiAgentDemo.dogSpeed * dynamicSpeed * (dy / dist);
+                                }
+                            }
                         }
                     }
                     
@@ -3489,23 +4412,28 @@
                     const priorityTargets = sheepCategories.priorityTargets.filter(item => item.priority === 'scattered');
                     
                     if (priorityTargets.length > 0) {
-                        // Each dog targets a different scattered sheep using round-robin
-                        const targetSheep = priorityTargets[i % priorityTargets.length].sheep;
+                        // Use smart spatial assignment for collecting scattered sheep
+                        const dogAssignments = assignDogsToSheep(dogAgents, priorityTargets);
+                        const targetSheep = dogAssignments[i]?.sheep;
                         
-                        // Position behind sheep to push toward main group or target
-                        const collectAngle = Math.atan2(targetY - targetSheep.y, targetX - targetSheep.x);
-                        const collectDistance = multiAgentDemo.dogInfluenceRadius * 0.9;
-                        
-                        const dogTargetX = targetSheep.x - Math.cos(collectAngle) * collectDistance;
-                        const dogTargetY = targetSheep.y - Math.sin(collectAngle) * collectDistance;
-                        
-                        const dx = dogTargetX - dog.x;
-                        const dy = dogTargetY - dog.y;
-                        const dist = Math.hypot(dx, dy);
-                        
-                        if (dist > 2) {
-                            ux = multiAgentDemo.dogSpeed * 1.1 * (dx / dist);
-                            uy = multiAgentDemo.dogSpeed * 1.1 * (dy / dist);
+                        if (targetSheep) {
+                            // Position behind sheep to push toward main group or target
+                            const collectAngle = Math.atan2(targetY - targetSheep.y, targetX - targetSheep.x);
+                            const collectDistance = multiAgentDemo.dogInfluenceRadius * 0.9;
+                            
+                            const dogTargetX = targetSheep.x - Math.cos(collectAngle) * collectDistance;
+                            const dogTargetY = targetSheep.y - Math.sin(collectAngle) * collectDistance;
+                            
+                            const dx = dogTargetX - dog.x;
+                            const dy = dogTargetY - dog.y;
+                            const dist = Math.hypot(dx, dy);
+                            
+                            if (dist > 2) {
+                                const collectUrgency = dogAssignments[i]?.urgency || 1.0;
+                                const dynamicSpeed = calculateDynamicSpeed(dog, targetSheep, 'collect', collectUrgency);
+                                ux = multiAgentDemo.dogSpeed * dynamicSpeed * (dx / dist);
+                                uy = multiAgentDemo.dogSpeed * dynamicSpeed * (dy / dist);
+                            }
                         }
                     }
                 }
@@ -3623,7 +4551,7 @@
         }
 
         function cycleFormation() {
-            const formations = ['symmetric', 'converge', 'rotate', 'spread', 'line', 'diamond', 'zigzag', 'random', 'orbit', 'consensus', 'leader-follower', 'formation-control', 'flocking', 'herding'];
+            const formations = ['symmetric', 'converge', 'rotate', 'spread', 'line', 'diamond', 'zigzag', 'random', 'orbit', 'consensus', 'leader-follower', 'flocking', 'herding'];
             const currentIndex = formations.indexOf(multiAgentDemo.formationType);
             const nextIndex = (currentIndex + 1) % formations.length;
             multiAgentDemo.formationType = formations[nextIndex];
@@ -3635,7 +4563,7 @@
             const consensusControls = document.getElementById('consensus-controls');
             const herdingControls = document.getElementById('herding-controls');
             const numAgentsControl = document.getElementById('num-agents-control');
-            const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(multiAgentDemo.formationType);
+            const isConsensusMethod = ['consensus', 'leader-follower', 'flocking'].includes(multiAgentDemo.formationType);
             const isHerdingMethod = multiAgentDemo.formationType === 'herding';
             
             consensusControls.style.display = isConsensusMethod ? 'flex' : 'none';
@@ -3774,40 +4702,6 @@
                         $$h_{ij} = \\|x_i - x_j\\|^2 - d_{safe}^2 \\geq 0 \\quad \\text{(inter-follower)}$$
                     `
                 },
-                'formation-control': {
-                    title: 'Distributed Formation Control with CBF:',
-                    content: `
-                        <p><strong>Problem Statement:</strong></p>
-                        <p style="font-size: 0.95rem; color: #e2e8f0; margin: 10px 0; line-height: 1.4;">
-                            <em>Formation control</em> addresses the challenge of making multiple agents maintain precise geometric relationships 
-                            (distances, angles, or relative positions) while moving as a coordinated group. Unlike leader-follower approaches, 
-                            this is fully distributed—no single agent is designated as a leader. Applications include satellite constellations 
-                            maintaining relative positions, robot teams forming specific shapes for tasks, or sensor networks maintaining 
-                            optimal coverage patterns. The key challenge is achieving global formation shape through purely local interactions.
-                        </p>
-                        
-                        <p><strong>Distance-Based Formation:</strong></p>
-                        $$e_{ij} = \\|x_i - x_j\\|^2 - d_{ij}^{*2}$$
-                        $$u_i = -\\sum_{j \\in \\mathcal{N}_i} k_{ij} e_{ij} (x_i - x_j)$$
-                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                            Agents maintain desired inter-distances $d_{ij}^*$ through local control.
-                        </p>
-                        
-                        <p><strong>Bearing-Based Formation:</strong></p>
-                        $$g_{ij} = \\frac{x_j - x_i}{\\|x_j - x_i\\|}, \\quad g_{ij}^* = \\text{desired bearing}$$
-                        $$u_i = \\sum_{j \\in \\mathcal{N}_i} k_{ij} P_\\perp(g_{ij}) (g_{ij}^* - g_{ij})$$
-                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                            $P_\\perp(g) = I - gg^T$ projects onto perpendicular space.
-                        </p>
-                        
-                        <p><strong>Formation Constraints:</strong></p>
-                        $$h_{ij}^{min} = \\|x_i - x_j\\|^2 - d_{min}^2 \\geq 0$$
-                        $$h_{ij}^{max} = d_{max}^2 - \\|x_i - x_j\\|^2 \\geq 0$$
-                        
-                        <p><strong>Rigid Formation Condition:</strong></p>
-                        $$\\text{rank}(R(p^*)) = 2n - 3 \\text{ for formation } p^* \\in \\mathbb{R}^{2n}$$
-                    `
-                },
                 'flocking': {
                     title: 'Flocking with Consensus and CBF:',
                     content: `
@@ -3842,61 +4736,103 @@
                     `
                 },
                 'herding': {
-                    title: 'Shepherding Control with CBF:',
+                    title: 'Advanced Multi-Modal Shepherding with CBF:',
                     content: `
                         <p><strong>Problem Statement:</strong></p>
                         <p style="font-size: 0.95rem; color: #e2e8f0; margin: 10px 0; line-height: 1.4;">
-                            <em>Shepherding control</em> addresses the challenge of using a small number of control agents (dogs) to guide 
-                            a larger group of passive agents (sheep) toward a target location. This bio-inspired problem combines predator-prey 
-                            dynamics with collective behavior, modeling how shepherds, border collies, or autonomous shepherding robots can 
-                            effectively herd livestock or crowds. The key challenge is that dogs cannot directly control sheep—they can only 
-                            influence them through repulsive forces, requiring intelligent positioning and movement strategies.
+                            <em>Advanced shepherding control</em> addresses the complex challenge of using a small number of control agents (dogs) 
+                            to guide a larger group of autonomous agents (sheep) toward a target location through intelligent multi-modal strategies. 
+                            This bio-inspired problem integrates predator-prey dynamics, collective behavior, spatial optimization, and environmental 
+                            utilization. The system employs sophisticated algorithms including smart spatial assignment, boundary utilization, 
+                            perimeter formation, corner containment, and dynamic speed control to achieve efficient herding under diverse conditions.
                         </p>
                         
-                        <p><strong>Sheep Dynamics (Repulsion-Attraction Model):</strong></p>
-                        $$u_i^{sheep} = \\underbrace{\\sum_{d \\in Dogs} \\frac{\\beta_r}{\\|x_i - x_d\\|^2} \\frac{x_i - x_d}{\\|x_i - x_d\\|}}_{\\text{Dog Repulsion}} + \\underbrace{\\frac{\\beta_a}{|\\mathcal{N}_i|} \\sum_{j \\in \\mathcal{N}_i} (x_j - x_i)}_{\\text{Sheep Attraction}}$$
+                        <p><strong>Sheep Behavioral Dynamics (Five-Force Model):</strong></p>
+                        $$\\mathbf{u}_i^{\\text{sheep}} = \\mathbf{F}_{\\text{rep}}^i + \\mathbf{F}_{\\text{coh}}^i + \\mathbf{F}_{\\text{sep}}^i + \\mathbf{F}_{\\text{bound}}^i + \\mathbf{F}_{\\text{target}}^i + \\mathbf{F}_{\\text{noise}}^i$$
+                        
+                        <p><strong>1. Dog Repulsion Force (Exponential Fear Response):</strong></p>
+                        $$\\mathbf{F}_{\\text{rep}}^i = \\sum_{d \\in \\mathcal{D}} \\frac{\\beta_r \\exp(-1.5 \\|\\mathbf{x}_i - \\mathbf{x}_d\\|/r_{\\text{inf}})}{\\|\\mathbf{x}_i - \\mathbf{x}_d\\|^2} \\frac{\\mathbf{x}_i - \\mathbf{x}_d}{\\|\\mathbf{x}_i - \\mathbf{x}_d\\|}$$
                         <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                            Sheep are repelled by dogs with strength $\\beta_r$ and attracted to neighbors with strength $\\beta_a$.
+                            Exponential repulsion with influence radius $r_{\\text{inf}}$ and strength $\\beta_r$. Updates fear level: $\\dot{f}_i = \\max(0, (1.5 - \\|\\mathbf{x}_i - \\mathbf{x}_d\\|/r_{\\text{inf}}) \\cdot 1.2)$.
                         </p>
                         
-                        <p><strong>Dog Shepherding Strategy:</strong></p>
-                        <p style="font-size: 0.9rem; color: #e2e8f0; margin: 5px 0;">
-                            Dogs use adaptive collect/drive algorithm based on sheep distribution:
+                        <p><strong>2. Cohesion Force (Fear-Enhanced Flocking):</strong></p>
+                        $$\\mathbf{F}_{\\text{coh}}^i = \\frac{\\beta_a (1 + \\bar{f}_i \\cdot 1.5)}{|\\mathcal{N}_i|} \\sum_{j \\in \\mathcal{N}_i} (\\mathbf{x}_j - \\mathbf{x}_i) \\cdot 0.012$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            Cohesion strength increases with average neighbor fear level $\\bar{f}_i$ (huddling behavior).
                         </p>
-                        $$\\text{Mode} = \\begin{cases}
-                        \\text{COLLECT} & \\text{if } \\sigma_{sheep} > \\sigma_{threshold} \\text{ or } \\|C_{sheep} - x_{target}\\| > d_{target} \\\\
-                        \\text{DRIVE} & \\text{otherwise}
+                        
+                        <p><strong>3. Target Area Preference (Learned Attraction):</strong></p>
+                        $$\\mathbf{F}_{\\text{target}}^i = \\begin{cases}
+                        0.3 \\cdot \\max(0, 1 - \\|\\mathbf{x}_i - \\mathbf{x}_{\\text{target}}\\|/(2r_{\\text{target}})) \\cdot \\hat{\\mathbf{t}}_i & \\text{if } I_{\\text{dog}}^i < 0.3 \\\\
+                        \\mathbf{0} & \\text{otherwise}
+                        \\end{cases}$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            Gentle target attraction when no active herding. $I_{\\text{dog}}^i$ is nearby dog influence intensity.
+                        </p>
+                        
+                        <p><strong>Sheep Classification System:</strong></p>
+                        $$\\mathcal{S} = \\mathcal{S}_{\\text{target}} \\cup \\mathcal{S}_{\\text{near}} \\cup \\mathcal{S}_{\\text{scattered}}$$
+                        $$\\mathcal{S}_{\\text{target}} = \\{i : \\|\\mathbf{x}_i - \\mathbf{x}_{\\text{target}}\\| < r_{\\text{target}}\\}$$
+                        $$\\mathcal{S}_{\\text{near}} = \\{i : r_{\\text{target}} \\leq \\|\\mathbf{x}_i - \\mathbf{x}_{\\text{target}}\\| < 1.8 r_{\\text{target}}\\}$$
+                        $$\\mathcal{S}_{\\text{scattered}} = \\{i : \\|\\mathbf{x}_i - \\mathbf{x}_{\\text{target}}\\| \\geq 1.8 r_{\\text{target}}\\}$$
+                        
+                        <p><strong>Adaptive Mode Selection Algorithm:</strong></p>
+                        <p style="font-size: 0.9rem; color: #e2e8f0; margin: 5px 0;">
+                            Let $\\rho = |\\mathcal{S}_{\\text{target}}|/|\\mathcal{S}|$ (success ratio), $\\sigma = \\max_i \\|\\mathbf{x}_i - \\mathbf{c}_{\\text{sheep}}\\|$ (spread), $U_{\\text{bound}}$ (boundary utility), $U_{\\text{corner}}$ (corner utility):
+                        </p>
+                        $$\\text{Mode}(\\rho, \\sigma, U_{\\text{bound}}, U_{\\text{corner}}, |\\mathcal{D}|) = \\begin{cases}
+                        \\text{CONTAIN} & \\text{if } \\rho \\geq 0.8 \\\\
+                        \\text{CORNER} & \\text{if } U_{\\text{corner}} > 0.5 \\text{ and } |\\mathcal{D}| \\geq 2 \\\\
+                        \\text{BOUNDARY} & \\text{if } U_{\\text{bound}} > 0.4 \\text{ and } |\\mathcal{D}| \\geq 2 \\\\
+                        \\text{MAINTAIN\_COLLECT} & \\text{if } |\\mathcal{S}_{\\text{target}}| \\geq 2, |\\mathcal{S}_{\\text{near}}| = 0, |\\mathcal{S}_{\\text{scattered}}| > 0 \\\\
+                        \\text{PERIMETER} & \\text{if } \\sigma > 1.5 r_{\\text{inf}}, |\\mathcal{S}| \\geq 4, |\\mathcal{D}| \\geq 3, U_{\\text{bound}} < 0.3 \\\\
+                        \\text{GROUP\_PUSH} & \\text{if } |\\mathcal{S}_{\\text{near}}| \\geq 2, |\\mathcal{S}_{\\text{scattered}}| \\leq 2 \\\\
+                        \\text{FOCUS} & \\text{if priority targets exist and closest distance } < 2.5 r_{\\text{target}} \\\\
+                        \\text{COLLECT} & \\text{otherwise}
                         \\end{cases}$$
                         
-                        <p><strong>Collect Mode (Gathering Scattered Sheep):</strong></p>
-                        $$x_d^{des} = x_{farthest} + r_{influence} \\frac{x_{farthest} - C_{sheep}}{\\|x_{farthest} - C_{sheep}\\|}$$
+                        <p><strong>Smart Spatial Assignment (Hungarian-style Optimization):</strong></p>
+                        $$\\min_{\\pi \\in \\Pi} \\sum_{d=1}^{|\\mathcal{D}|} \\|\\mathbf{x}_d - \\mathbf{x}_{\\pi(d)}^{\\text{sheep}}\\|$$
                         <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                            Dog positions behind farthest sheep from flock center $C_{sheep}$ to push it back.
+                            Greedy assignment minimizes total dog-sheep distances via sorted pair selection.
                         </p>
                         
-                        <p><strong>Drive Mode (Pushing Toward Target):</strong></p>
-                        $$x_d^{des} = C_{sheep} - r_{drive} \\frac{x_{target} - C_{sheep}}{\\|x_{target} - C_{sheep}\\|}$$
+                        <p><strong>Dynamic Speed Control Function:</strong></p>
+                        $$v_d^{\\text{dynamic}} = v_{\\text{base}} \\cdot f_{\\text{dist}} \\cdot f_{\\text{mode}} \\cdot f_{\\text{urgency}} \\cdot f_{\\text{response}}$$
+                        $$f_{\\text{dist}} = \\max(0.5, \\min(1.5, \\|\\mathbf{x}_d - \\mathbf{x}_{\\text{target}}^{\\text{sheep}}\\|/50))$$
+                        $$f_{\\text{urgency}} = 0.7 + 0.8 \\cdot U_{\\text{urgency}}, \\quad f_{\\text{response}} = \\max(0.8, \\min(1.3, 1 + \\|\\mathbf{v}_{\\text{sheep}}\\|/20))$$
+                        
+                        <p><strong>Perimeter Formation Strategy:</strong></p>
+                        $$\\mathbf{x}_d^{\\text{perimeter}} = \\mathbf{c}_{\\text{sheep}} + R(\\theta_d) \\begin{bmatrix} \\cos(\\theta_d) \\\\ \\sin(\\theta_d) \\end{bmatrix}$$
+                        $$R(\\theta_d) = R_{\\text{base}} \\cdot C_{\\text{compress}} \\cdot (1 - 0.3|\\cos(\\theta_d - \\theta_{\\text{pressure}})|)$$
                         <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                            Dog positions behind flock center, opposite to target direction.
+                            Adaptive radius with compression factor $C_{\\text{compress}}$ and bias toward target direction $\\theta_{\\text{pressure}}$.
                         </p>
                         
-                        <p><strong>Sheep Center of Mass:</strong></p>
-                        $$C_{sheep} = \\frac{1}{N_{sheep}} \\sum_{i=1}^{N_{sheep}} x_i^{sheep}$$
+                        <p><strong>Boundary Utilization Analysis:</strong></p>
+                        $$U_{\\text{bound}}^{(k)} = \\frac{N_{\\text{sheep}}^{(k)}}{|\\mathcal{S}|} \\cdot \\frac{1}{1 + d_{\\text{target}}^{(k)}/200} \\cdot \\left(1 - \\frac{\\bar{d}_{\\text{bound}}^{(k)}}{80}\\right)$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            For boundary $k$: sheep density × target alignment × boundary proximity. $d_{\\text{target}}^{(k)}$ is target distance from boundary.
+                        </p>
                         
-                        <p><strong>Flock Spread Metric:</strong></p>
-                        $$\\sigma_{sheep} = \\frac{1}{N_{sheep}} \\sum_{i=1}^{N_{sheep}} \\|x_i^{sheep} - C_{sheep}\\|$$
-                        
-                        <p><strong>Multi-CBF Safety Constraints:</strong></p>
-                        $$h_{ij}^{sheep} = \\|x_i - x_j\\|^2 - d_{sheep}^2 \\geq 0 \\quad \\text{(sheep-sheep)}$$
-                        $$h_{id}^{avoid} = \\|x_i - x_d\\|^2 - d_{min}^2 \\geq 0 \\quad \\text{(sheep-dog)}$$
-                        $$h_{dd}^{coord} = \\|x_{d1} - x_{d2}\\|^2 - d_{dog}^2 \\geq 0 \\quad \\text{(dog-dog)}$$
+                        <p><strong>Multi-CBF Safety Integration:</strong></p>
+                        $$\\begin{align}
+                        \\min_{\\mathbf{u}_d} &\\quad \\|\\mathbf{u}_d - \\mathbf{u}_d^{\\text{nom}}\\|^2 \\\\
+                        \\text{s.t.} &\\quad \\dot{h}_{dd'} + \\alpha_{\\text{dog}} h_{dd'} \\geq 0 \\quad \\forall d' \\neq d \\\\
+                        &\\quad \\dot{h}_{ds} + \\alpha_{\\text{sheep}} h_{ds} \\geq 0 \\quad \\forall s \\in \\mathcal{S} \\\\
+                        &\\quad \\|\\mathbf{u}_d\\| \\leq u_{\\text{max}}
+                        \\end{align}$$
                         
                         <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.2);">
-                            <strong>Bio-Inspired Features:</strong><br>
-                            • Adaptive strategy switching based on flock state<br>
-                            • Emergent herding behavior from local interactions<br>
-                            • Scalable to multiple dogs and large flocks<br>
-                            • Mimics real shepherd dog behavior patterns
+                            <strong>Advanced Features:</strong><br>
+                            • Eight distinct herding modes with automatic switching<br>
+                            • Smart spatial assignment minimizing total movement<br>
+                            • Environmental boundary and corner utilization<br>
+                            • Dynamic speed control based on context and urgency<br>
+                            • Fear-based sheep behavior with exponential responses<br>
+                            • Perimeter compression and gap detection algorithms<br>
+                            • Multi-objective optimization with safety guarantees
                         </p>
                     `
                 }
