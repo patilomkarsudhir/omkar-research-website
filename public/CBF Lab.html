@@ -743,11 +743,11 @@
                         <label>Communication Range: <span id="comm-range-value">80</span></label>
                         <input type="range" id="comm-range" min="40" max="150" step="10" value="80">
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" id="consensus-gain-control">
                         <label>Consensus Gain: <span id="consensus-gain-value">1.0</span></label>
                         <input type="range" id="consensus-gain" min="0.1" max="3.0" step="0.1" value="1.0">
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" id="formation-shape-control">
                         <label>Formation Shape:</label>
                         <select id="formation-shape" style="width: 100%; padding: 8px; border-radius: 6px; background: #334155; color: #e2e8f0; border: 1px solid #475569;">
                             <option value="triangle">Triangle</option>
@@ -756,6 +756,38 @@
                             <option value="circle">Circle</option>
                             <option value="pentagon">Pentagon</option>
                         </select>
+                    </div>
+                    
+                    <!-- Leader-Follower Controls -->
+                    <div class="control-group" id="leader-follower-kp-control">
+                        <label>Position Gain (Kp): <span id="leader-follower-kp-value">1.5</span></label>
+                        <input type="range" id="leader-follower-kp" min="0.5" max="3.0" step="0.1" value="1.5">
+                    </div>
+                    <div class="control-group" id="leader-follower-kd-control">
+                        <label>Damping Gain (Kd): <span id="leader-follower-kd-value">0.8</span></label>
+                        <input type="range" id="leader-follower-kd" min="0.1" max="2.0" step="0.1" value="0.8">
+                    </div>
+                    <div class="control-group" id="formation-coordination-control">
+                        <label>Formation Coordination: <span id="formation-coordination-value">0.3</span></label>
+                        <input type="range" id="formation-coordination" min="0.0" max="1.0" step="0.1" value="0.3">
+                    </div>
+                    
+                    <!-- Flocking Controls -->
+                    <div class="control-group" id="separation-weight-control">
+                        <label>Separation Weight: <span id="separation-weight-value">8.0</span></label>
+                        <input type="range" id="separation-weight" min="1.0" max="15.0" step="0.5" value="8.0">
+                    </div>
+                    <div class="control-group" id="alignment-weight-control">
+                        <label>Alignment Weight: <span id="alignment-weight-value">4.0</span></label>
+                        <input type="range" id="alignment-weight" min="0.5" max="8.0" step="0.5" value="4.0">
+                    </div>
+                    <div class="control-group" id="cohesion-weight-control">
+                        <label>Cohesion Weight: <span id="cohesion-weight-value">2.5</span></label>
+                        <input type="range" id="cohesion-weight" min="0.5" max="5.0" step="0.25" value="2.5">
+                    </div>
+                    <div class="control-group" id="flocking-max-speed-control">
+                        <label>Max Speed: <span id="flocking-max-speed-value">8.0</span></label>
+                        <input type="range" id="flocking-max-speed" min="3.0" max="15.0" step="0.5" value="8.0">
                     </div>
                 </div>
                 
@@ -892,6 +924,15 @@
             consensusGain: 1.0,
             formationShape: 'triangle',
             graphTopology: 'proximity', // New parameter for topology selection
+            // Leader-follower specific parameters
+            leaderFollowerKp: 1.5,
+            leaderFollowerKd: 0.8,
+            formationCoordinationGain: 0.3,
+            // Flocking specific parameters
+            separationWeight: 8.0,
+            alignmentWeight: 4.0,
+            cohesionWeight: 2.5,
+            flockingMaxSpeed: 8.0,
             // Communication topology
             adjacencyMatrix: [],
             laplacianMatrix: [],
@@ -1710,12 +1751,44 @@
                     const consensusControls = document.getElementById('consensus-controls');
                     const herdingControls = document.getElementById('herding-controls');
                     const numAgentsControl = document.getElementById('num-agents-control');
+                    const formationShapeControl = document.getElementById('formation-shape-control');
+                    const consensusGainControl = document.getElementById('consensus-gain-control');
+                    
+                    // Leader-follower controls
+                    const leaderFollowerKpControl = document.getElementById('leader-follower-kp-control');
+                    const leaderFollowerKdControl = document.getElementById('leader-follower-kd-control');
+                    const formationCoordinationControl = document.getElementById('formation-coordination-control');
+                    
+                    // Flocking controls
+                    const separationWeightControl = document.getElementById('separation-weight-control');
+                    const alignmentWeightControl = document.getElementById('alignment-weight-control');
+                    const cohesionWeightControl = document.getElementById('cohesion-weight-control');
+                    const flockingMaxSpeedControl = document.getElementById('flocking-max-speed-control');
+                    
                     const isConsensusMethod = ['consensus', 'leader-follower', 'flocking'].includes(e.target.value);
                     const isHerdingMethod = e.target.value === 'herding';
+                    const isLeaderFollowerMethod = e.target.value === 'leader-follower';
+                    const isConsensusRendezvousMethod = e.target.value === 'consensus';
+                    const isFlockingMethod = e.target.value === 'flocking';
                     
                     consensusControls.style.display = isConsensusMethod ? 'flex' : 'none';
                     herdingControls.style.display = isHerdingMethod ? 'flex' : 'none';
                     numAgentsControl.style.display = isHerdingMethod ? 'none' : 'block';
+                    
+                    // Consensus rendezvous specific controls
+                    consensusGainControl.style.display = isConsensusRendezvousMethod ? 'block' : 'none';
+                    
+                    // Leader-follower specific controls
+                    formationShapeControl.style.display = isLeaderFollowerMethod ? 'block' : 'none';
+                    leaderFollowerKpControl.style.display = isLeaderFollowerMethod ? 'block' : 'none';
+                    leaderFollowerKdControl.style.display = isLeaderFollowerMethod ? 'block' : 'none';
+                    formationCoordinationControl.style.display = isLeaderFollowerMethod ? 'block' : 'none';
+                    
+                    // Flocking specific controls
+                    separationWeightControl.style.display = isFlockingMethod ? 'block' : 'none';
+                    alignmentWeightControl.style.display = isFlockingMethod ? 'block' : 'none';
+                    cohesionWeightControl.style.display = isFlockingMethod ? 'block' : 'none';
+                    flockingMaxSpeedControl.style.display = isFlockingMethod ? 'block' : 'none';
                     
                     if (isHerdingMethod) {
                         createHerdingAgents();
@@ -1814,6 +1887,43 @@
                 document.getElementById('time-speed').addEventListener('input', (e) => {
                     multiAgentDemo.timeSpeed = parseFloat(e.target.value);
                     document.getElementById('time-speed-value').textContent = e.target.value + 'x';
+                });
+                
+                // Leader-follower control listeners
+                document.getElementById('leader-follower-kp').addEventListener('input', (e) => {
+                    multiAgentDemo.leaderFollowerKp = parseFloat(e.target.value);
+                    document.getElementById('leader-follower-kp-value').textContent = e.target.value;
+                });
+                
+                document.getElementById('leader-follower-kd').addEventListener('input', (e) => {
+                    multiAgentDemo.leaderFollowerKd = parseFloat(e.target.value);
+                    document.getElementById('leader-follower-kd-value').textContent = e.target.value;
+                });
+                
+                document.getElementById('formation-coordination').addEventListener('input', (e) => {
+                    multiAgentDemo.formationCoordinationGain = parseFloat(e.target.value);
+                    document.getElementById('formation-coordination-value').textContent = e.target.value;
+                });
+                
+                // Flocking control listeners
+                document.getElementById('separation-weight').addEventListener('input', (e) => {
+                    multiAgentDemo.separationWeight = parseFloat(e.target.value);
+                    document.getElementById('separation-weight-value').textContent = e.target.value;
+                });
+                
+                document.getElementById('alignment-weight').addEventListener('input', (e) => {
+                    multiAgentDemo.alignmentWeight = parseFloat(e.target.value);
+                    document.getElementById('alignment-weight-value').textContent = e.target.value;
+                });
+                
+                document.getElementById('cohesion-weight').addEventListener('input', (e) => {
+                    multiAgentDemo.cohesionWeight = parseFloat(e.target.value);
+                    document.getElementById('cohesion-weight-value').textContent = e.target.value;
+                });
+                
+                document.getElementById('flocking-max-speed').addEventListener('input', (e) => {
+                    multiAgentDemo.flockingMaxSpeed = parseFloat(e.target.value);
+                    document.getElementById('flocking-max-speed-value').textContent = e.target.value;
                 });
             }
             
@@ -2947,7 +3057,8 @@
                             maxSpeed = multiAgentDemo.dogSpeed * 2.0;
                         }
                     } else {
-                        maxSpeed = 8.0; // Flocking speed
+                        // Use slider value for flocking max speed
+                        maxSpeed = multiAgentDemo.flockingMaxSpeed;
                     }
                     
                     const speed = Math.hypot(agent.vx, agent.vy);
@@ -3039,12 +3150,14 @@
                     const desiredX = leader.x + offset.x;
                     const desiredY = leader.y + offset.y;
                     
-                    // PD control to desired position
-                    const kp = 1.5, kd = 0.8;
+                    // PD control to desired position - use slider values
+                    const kp = multiAgentDemo.leaderFollowerKp;
+                    const kd = multiAgentDemo.leaderFollowerKd;
                     ux = kp * (desiredX - agent.x) - kd * agent.vx;
                     uy = kp * (desiredY - agent.y) - kd * agent.vy;
                     
-                    // Formation coordination with neighbors
+                    // Formation coordination with neighbors - use slider value
+                    const coordinationGain = multiAgentDemo.formationCoordinationGain;
                     agent.neighbors.forEach(j => {
                         if (j !== 0) { // Don't coordinate with leader directly
                             const neighbor = agents[j];
@@ -3054,8 +3167,8 @@
                             const actualRelativeX = agent.x - neighbor.x;
                             const actualRelativeY = agent.y - neighbor.y;
                             
-                            ux += 0.3 * (relativeDesiredX - actualRelativeX);
-                            uy += 0.3 * (relativeDesiredY - actualRelativeY);
+                            ux += coordinationGain * (relativeDesiredX - actualRelativeX);
+                            uy += coordinationGain * (relativeDesiredY - actualRelativeY);
                         }
                     });
                 }
@@ -3070,16 +3183,16 @@
             const agents = multiAgentDemo.agents;
             const controls = [];
             
-            // Reynolds flocking parameters - Much more dynamic!
+            // Reynolds flocking parameters - use slider values
             const separationRadius = multiAgentDemo.safetyDistance * 3.0;
             const alignmentRadius = multiAgentDemo.communicationRange * 0.9;
             const cohesionRadius = multiAgentDemo.communicationRange;
             
-            const separationWeight = 8.0;  // Stronger separation
-            const alignmentWeight = 4.0;   // Stronger alignment
-            const cohesionWeight = 2.5;    // Stronger cohesion
-            const dampingWeight = 0.1;     // Less damping for more movement
-            const maxSpeed = 8.0;          // Much faster movement
+            const separationWeight = multiAgentDemo.separationWeight;
+            const alignmentWeight = multiAgentDemo.alignmentWeight;
+            const cohesionWeight = multiAgentDemo.cohesionWeight;
+            const dampingWeight = 0.1;     // Keep this fixed for stability
+            const maxSpeed = multiAgentDemo.flockingMaxSpeed;
             
             agents.forEach((agent, i) => {
                 let separationForceX = 0, separationForceY = 0;
