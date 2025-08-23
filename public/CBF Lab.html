@@ -674,6 +674,10 @@
                             </optgroup>
                         </select>
                     </div>
+                    <div class="control-group" id="num-agents-control">
+                        <label>Number of Agents: <span id="num-agents-value">4</span></label>
+                        <input type="range" id="num-agents" min="2" max="8" step="1" value="4">
+                    </div>
                     <div class="control-group">
                         <label>Safety Distance: <span id="safety-distance-value">30</span></label>
                         <input type="range" id="safety-distance" min="20" max="60" step="5" value="30">
@@ -855,6 +859,7 @@
         // Multi-Agent Demo State
         let multiAgentDemo = {
             agents: [],
+            numAgents: 4, // Number of agents for non-herding scenarios
             safetyDistance: 30,
             cbfGain: 2.0,
             activeConstraints: 0,
@@ -1681,11 +1686,13 @@
                     // Show/hide appropriate controls for different methods
                     const consensusControls = document.getElementById('consensus-controls');
                     const herdingControls = document.getElementById('herding-controls');
+                    const numAgentsControl = document.getElementById('num-agents-control');
                     const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(e.target.value);
                     const isHerdingMethod = e.target.value === 'herding';
                     
                     consensusControls.style.display = isConsensusMethod ? 'flex' : 'none';
                     herdingControls.style.display = isHerdingMethod ? 'flex' : 'none';
+                    numAgentsControl.style.display = isHerdingMethod ? 'none' : 'block';
                     
                     if (isHerdingMethod) {
                         createHerdingAgents();
@@ -1693,6 +1700,14 @@
                         createAgents();
                     }
                     updateMathematicalContent();
+                });
+                
+                document.getElementById('num-agents').addEventListener('input', (e) => {
+                    multiAgentDemo.numAgents = parseInt(e.target.value);
+                    document.getElementById('num-agents-value').textContent = e.target.value;
+                    if (multiAgentDemo.formationType !== 'herding') {
+                        createAgents();
+                    }
                 });
                 
                 document.getElementById('safety-distance').addEventListener('input', (e) => {
@@ -1779,7 +1794,7 @@
             const centerY = rect.height / 2;
             
             multiAgentDemo.agents = [];
-            const num = 4; // Fixed number for formation/consensus demos
+            const num = multiAgentDemo.numAgents; // Use variable number of agents
             const radius = Math.min(rect.width, rect.height) / 3;
             const formationType = multiAgentDemo.formationType;
 
@@ -2479,14 +2494,31 @@
                         `;
                     }
                     
-                    // Show communication range for consensus methods (only for leader or first agent)
-                    if (isConsensusMethod && (agent.isLeader || index === 0)) {
+                    // Show communication range based on mode
+                    if (multiAgentDemo.formationType === 'leader-follower' && agent.isLeader) {
+                        // Show communication range only for leaders in leader-follower mode
                         svg.innerHTML += `
                             <circle cx="${agent.x}" cy="${agent.y}" r="${multiAgentDemo.communicationRange}" 
                                     fill="none" stroke="#60a5fa" stroke-width="1" 
                                     stroke-dasharray="8,8" opacity="0.15"/>
                         `;
+                    } else if (multiAgentDemo.formationType === 'formation-control' && index === 0) {
+                        // Show communication range for first agent in formation control for reference
+                        svg.innerHTML += `
+                            <circle cx="${agent.x}" cy="${agent.y}" r="${multiAgentDemo.communicationRange}" 
+                                    fill="none" stroke="#60a5fa" stroke-width="1" 
+                                    stroke-dasharray="8,8" opacity="0.15"/>
+                        `;
+                    } else if (multiAgentDemo.formationType === 'flocking' && index === 0) {
+                        // Show communication range for first agent in flocking for reference
+                        svg.innerHTML += `
+                            <circle cx="${agent.x}" cy="${agent.y}" r="${multiAgentDemo.communicationRange}" 
+                                    fill="none" stroke="#60a5fa" stroke-width="1" 
+                                    stroke-dasharray="8,8" opacity="0.1"/>
+                        `;
                     }
+                    // Note: No communication range circle shown for pure consensus mode
+                    // as all agents are equal participants in distributed agreement
                 }
             });
             
@@ -2704,7 +2736,7 @@
             const gain = multiAgentDemo.consensusGain;
             const controls = [];
             
-            // Update consensus value (centroid of all agents)
+            // Update consensus value (centroid of all agents) for display purposes only
             let sumX = 0, sumY = 0;
             agents.forEach(agent => {
                 sumX += agent.x;
@@ -2718,18 +2750,16 @@
             agents.forEach((agent, i) => {
                 let ux = 0, uy = 0;
                 
-                // Consensus protocol: u_i = -k * Σ a_ij(x_i - x_j)
+                // Pure consensus protocol: u_i = -k * Σ a_ij(x_i - x_j)
+                // This is the standard distributed consensus algorithm
                 agent.neighbors.forEach(j => {
                     const neighbor = agents[j];
                     ux -= gain * (agent.x - neighbor.x);
                     uy -= gain * (agent.y - neighbor.y);
                 });
                 
-                // Add small attraction to consensus point
-                const dx = multiAgentDemo.consensusValue.x - agent.x;
-                const dy = multiAgentDemo.consensusValue.y - agent.y;
-                ux += 0.1 * dx;
-                uy += 0.1 * dy;
+                // Note: In pure consensus, agents converge to the average of initial positions
+                // through local neighbor interactions only - no global centroid attraction needed
                 
                 controls.push({ ux, uy });
             });
@@ -3604,11 +3634,13 @@
             // Show/hide appropriate controls
             const consensusControls = document.getElementById('consensus-controls');
             const herdingControls = document.getElementById('herding-controls');
+            const numAgentsControl = document.getElementById('num-agents-control');
             const isConsensusMethod = ['consensus', 'leader-follower', 'formation-control', 'flocking'].includes(multiAgentDemo.formationType);
             const isHerdingMethod = multiAgentDemo.formationType === 'herding';
             
             consensusControls.style.display = isConsensusMethod ? 'flex' : 'none';
             herdingControls.style.display = isHerdingMethod ? 'flex' : 'none';
+            numAgentsControl.style.display = isHerdingMethod ? 'none' : 'block';
             
             if (isHerdingMethod) {
                 createHerdingAgents();
