@@ -78,7 +78,16 @@ const demos = [
 export default function Page() {
 	return (
 		<div className="space-y-10">
-			<Section title="About Me" subtitle="Control theorist building Lyapunov‑based learning systems for safe autonomy">
+			{/* Hero Tagline */}
+			<div className="mt-2">
+				<h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight">
+					<span className="bg-gradient-to-r from-[var(--accent)] to-[#b4c6ff] bg-clip-text text-transparent">
+						Control theorist building Lyapunov‑based learning systems for safe autonomy
+					</span>
+				</h1>
+			</div>
+
+			<Section title="About Me">
 				<div className="flex flex-col sm:flex-row items-center gap-8">
 					<div className="flex flex-col items-center">
 						<div className="w-48 h-48 rounded-full bg-gray-300 dark:bg-gray-700 flex-shrink-0 border-4 border-white/10 shadow-md overflow-hidden">
