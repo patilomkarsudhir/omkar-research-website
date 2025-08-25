@@ -11,7 +11,8 @@ import cachedStatic from "../../../data/scholar-cache.json";
 // Cache duration for both upstream fetch and CDN response (in seconds)
 const REVALIDATE_SECONDS = 3600; // 1 hour
 
-function withUA(url: string) {
+function withUA(url: string, opts?: { noStore?: boolean }) {
+  const noStore = !!opts?.noStore;
   return fetch(url, {
     headers: {
       "User-Agent":
@@ -28,8 +29,9 @@ function withUA(url: string) {
       "Sec-Fetch-User": "?1",
       "Cache-Control": "max-age=0"
     },
-    // Next.js fetch cache to avoid hitting Scholar on every request
-    next: { revalidate: REVALIDATE_SECONDS },
+    // Next.js fetch cache to avoid hitting Scholar on every request, unless noStore is set
+    next: noStore ? undefined : { revalidate: REVALIDATE_SECONDS },
+    cache: noStore ? "no-store" : undefined,
   });
 }
 
@@ -92,6 +94,7 @@ export async function GET(req: Request) {
     process.env.SCHOLAR_USER ||
     process.env.NEXT_PUBLIC_SCHOLAR_USER ||
     "";
+  const force = searchParams.get("force") === "1" || searchParams.has("bust");
   // Whitelist allowed characters for Scholar user IDs to avoid SSRF in URL composition
   const user = rawUser.match(/^[A-Za-z0-9_-]+$/) ? rawUser : "";
   if (!user) return NextResponse.json({ error: "Missing user" }, { status: 400 });
@@ -99,7 +102,7 @@ export async function GET(req: Request) {
   const url = `https://scholar.google.com/citations?hl=en&user=${user}&cstart=0&pagesize=100`;
   
   try {
-    const res = await withUA(url);
+    const res = await withUA(url, { noStore: force });
     
     if (!res.ok) {
       // Fallback to cached data instead of surfacing 5xx to clients
@@ -133,11 +136,13 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Parsing failed (blocked or markup changed)" }, { status: 503 });
     }
     
-    const data = { metrics, publications, source: "live", stale: false };
+    const data = { metrics, publications, source: force ? "live-forced" : "live", stale: false };
     return NextResponse.json(data, {
       headers: {
-        // Cache at CDN to reduce origin scrapes; clients may receive stale data while we revalidate
-        "Cache-Control": `s-maxage=${REVALIDATE_SECONDS}, stale-while-revalidate`,
+        // If forced, bypass CDN caches completely; otherwise, cache at CDN to reduce origin scrapes
+        "Cache-Control": force
+          ? "no-store"
+          : `s-maxage=${REVALIDATE_SECONDS}, stale-while-revalidate`,
       },
     });
   } catch (error) {

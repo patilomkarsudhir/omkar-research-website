@@ -9,23 +9,24 @@ export default function ScholarClient({ user }: { user: string }) {
   const [pubs, setPubs] = useState<Pub[]>([]);
   const [q, setQ] = useState("");
   const [year, setYear] = useState<number | "">("");
-  async function sync() {
+  async function sync(force = false) {
     try {
       setLoading(true); setError(null);
-      const res = await fetch(`/api/scholar?user=${encodeURIComponent(user)}`, { cache: "no-store" });
+      const url = `/api/scholar?user=${encodeURIComponent(user)}${force ? `&force=1&bust=${Date.now()}` : ""}`;
+      const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) throw new Error(`Sync failed: ${res.status}`);
       const data = await res.json();
       setMetrics(data.metrics || null);
       setPubs(data.publications || []);
-      localStorage.setItem("scholar_cache", JSON.stringify(data));
+      localStorage.setItem(`scholar_cache:${user}`, JSON.stringify(data));
     } catch (e: any) { setError(e.message || "Failed to sync."); }
     finally { setLoading(false); }
   }
   useEffect(() => {
-    const cached = localStorage.getItem("scholar_cache");
+    const cached = localStorage.getItem(`scholar_cache:${user}`);
     if (cached) { try { const data = JSON.parse(cached); setMetrics(data.metrics || null); setPubs(data.publications || []); } catch {} }
-    sync();
-  }, []);
+    sync(false);
+  }, [user]);
   const years = useMemo(() => Array.from(new Set(pubs.map(p => p.year).filter(Boolean) as number[])).sort((a,b)=>b-a), [pubs]);
   const filtered = useMemo(() => pubs.filter(p => {
     const matchQ = q ? (p.title?.toLowerCase().includes(q.toLowerCase()) || p.authors?.toLowerCase().includes(q.toLowerCase()) || p.venue?.toLowerCase().includes(q.toLowerCase())) : true;
@@ -46,7 +47,7 @@ export default function ScholarClient({ user }: { user: string }) {
             {years.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>
-        <button onClick={sync} disabled={loading} className="px-4 py-2 rounded bg-white/10 border border-white/10 hover:bg-white/20">
+  <button onClick={() => sync(true)} disabled={loading} className="px-4 py-2 rounded bg-white/10 border border-white/10 hover:bg-white/20">
           {loading ? "Syncing…" : "Sync from Google Scholar"}
         </button>
       </div>
