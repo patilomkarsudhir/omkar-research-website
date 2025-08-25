@@ -8,6 +8,9 @@ export default function HeroMetricsClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  // Google Scholar profile URL
+  const scholarUrl = "https://scholar.google.com/citations?user=EtkfNQMAAAAJ";
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -64,10 +67,18 @@ export default function HeroMetricsClient() {
   return (
     <div className="grid grid-cols-3 gap-4">
       {items.map((item) => (
-        <div key={item.label} className="rounded-2xl border border-white/10 p-4 bg-white/5">
+        <a
+          key={item.label}
+          href={scholarUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-2xl border border-white/10 p-4 bg-white/5 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/20"
+          aria-label={`Open Google Scholar profile to see ${item.label}`}
+          title="Open Google Scholar profile"
+        >
           <div className="text-2xl font-semibold">{item.value}</div>
           <div className="text-[var(--muted)]">{item.label}</div>
-        </div>
+        </a>
       ))}
     </div>
   );

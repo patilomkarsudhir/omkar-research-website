@@ -78,7 +78,7 @@ const demos = [
 export default function Page() {
 	return (
 		<div className="space-y-10">
-			<Section title="About Me">
+			<Section title="About Me" subtitle="Control theorist building Lyapunov‑based learning systems for safe autonomy">
 				<div className="flex flex-col sm:flex-row items-center gap-8">
 					<div className="flex flex-col items-center">
 						<div className="w-48 h-48 rounded-full bg-gray-300 dark:bg-gray-700 flex-shrink-0 border-4 border-white/10 shadow-md overflow-hidden">
