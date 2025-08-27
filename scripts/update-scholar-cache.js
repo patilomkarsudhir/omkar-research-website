@@ -98,42 +98,58 @@ function parsePublications($) {
 }
 
 /**
- * Fetch fresh data from Google Scholar
+ * Fetch fresh data from Google Scholar with retry logic
  */
-async function fetchScholarData(userId) {
+async function fetchScholarData(userId, maxRetries = 3) {
   const url = `https://scholar.google.com/citations?hl=en&user=${userId}&cstart=0&pagesize=100`;
   
-  console.log(`Fetching data from: ${url}`);
-  
-  const response = await fetchWithUA(url);
-  
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`Fetching data from: ${url} (attempt ${attempt}/${maxRetries})`);
+      
+      const response = await fetchWithUA(url);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const html = await response.text();
+      const $ = cheerio.load(html);
+      
+      // Parse data
+      const metrics = parseMetrics($);
+      const publications = parsePublications($);
+      
+      // Validate that we got meaningful data
+      const hasMetricsTable = $('#gsc_rsb_st').length > 0;
+      const hasPubRows = $('#gsc_a_t .gsc_a_tr').length > 0;
+      
+      if (!hasMetricsTable && Object.keys(metrics).length === 0 && !hasPubRows) {
+        throw new Error('Failed to parse Scholar data - may be blocked or page structure changed');
+      }
+      
+      console.log(`✓ Found ${Object.keys(metrics).length} metrics and ${publications.length} publications`);
+      
+      return {
+        metrics,
+        publications,
+        source: 'live-script',
+        stale: false,
+        lastUpdated: new Date().toISOString()
+      };
+      
+    } catch (error) {
+      console.error(`❌ Attempt ${attempt} failed: ${error.message}`);
+      
+      if (attempt < maxRetries) {
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // Exponential backoff, max 10s
+        console.log(`⏳ Waiting ${delay}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        throw error; // Re-throw on final attempt
+      }
+    }
   }
-  
-  const html = await response.text();
-  const $ = cheerio.load(html);
-  
-  // Parse data
-  const metrics = parseMetrics($);
-  const publications = parsePublications($);
-  
-  // Validate that we got meaningful data
-  const hasMetricsTable = $('#gsc_rsb_st').length > 0;
-  const hasPubRows = $('#gsc_a_t .gsc_a_tr').length > 0;
-  
-  if (!hasMetricsTable && Object.keys(metrics).length === 0 && !hasPubRows) {
-    throw new Error('Failed to parse Scholar data - may be blocked or page structure changed');
-  }
-  
-  console.log(`✓ Found ${Object.keys(metrics).length} metrics and ${publications.length} publications`);
-  
-  return {
-    metrics,
-    publications,
-    source: 'live-script',
-    stale: false
-  };
 }
 
 /**
@@ -159,8 +175,8 @@ async function updateCacheFile(data) {
  */
 async function main() {
   try {
-    // Get user ID from command line args or use default
-    const userId = process.argv[2] || DEFAULT_USER_ID;
+    // Get user ID from command line args, environment variable, or use default
+    const userId = process.argv[2] || process.env.SCHOLAR_USER || DEFAULT_USER_ID;
     
     if (!userId.match(/^[A-Za-z0-9_-]+$/)) {
       throw new Error('Invalid Scholar user ID format');
@@ -193,11 +209,15 @@ async function main() {
     
     console.log('');
     console.log('✅ Scholar cache updated successfully!');
-    console.log('');
-    console.log('💡 Next steps:');
-    console.log('   1. Review the changes: git diff data/scholar-cache.json');
-    console.log('   2. Commit the changes: git add data/scholar-cache.json && git commit -m "chore: update scholar cache"');
-    console.log('   3. Push to GitHub: git push');
+    
+    // Only show git instructions if not in CI environment
+    if (!process.env.CI) {
+      console.log('');
+      console.log('💡 Next steps:');
+      console.log('   1. Review the changes: git diff data/scholar-cache.json');
+      console.log('   2. Commit the changes: git add data/scholar-cache.json && git commit -m "chore: update scholar cache"');
+      console.log('   3. Push to GitHub: git push');
+    }
     
   } catch (error) {
     console.error('');
@@ -210,6 +230,15 @@ async function main() {
       console.error('   - Wait a few minutes and try again');
       console.error('   - Try using a VPN');
       console.error('   - Run the script less frequently');
+      console.error('');
+      console.error('ℹ️  The existing cache will remain unchanged');
+    }
+    
+    // In CI environment, don't exit with error to avoid breaking the workflow
+    // Just log the error and continue - the cache will remain stale but functional
+    if (process.env.CI) {
+      console.error('⚠️  Running in CI - continuing with existing cache');
+      return;
     }
     
     process.exit(1);

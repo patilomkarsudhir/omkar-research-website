@@ -1,0 +1,68 @@
+name: Update Scholar Cache
+
+on:
+  # Run every 6 hours
+  schedule:
+    - cron: '0 */6 * * *'
+  
+  # Allow manual triggering from GitHub UI
+  workflow_dispatch:
+  
+  # Also run when workflow file is changed (for testing)
+  push:
+    paths:
+      - '.github/workflows/update-scholar-cache.yml'
+
+jobs:
+  update-cache:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Need full history for git operations
+          fetch-depth: 0
+          # Use GitHub token for pushing
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Update scholar cache
+        run: node scripts/update-scholar-cache.js
+        env:
+          # Use the Scholar user ID from repository secrets
+          SCHOLAR_USER: ${{ secrets.SCHOLAR_USER }}
+      
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --exit-code data/scholar-cache.json || echo "changes=true" >> $GITHUB_OUTPUT
+      
+      - name: Commit and push changes
+        if: steps.git-check.outputs.changes == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add data/scholar-cache.json
+          git commit -m "chore: auto-update scholar cache [skip ci]"
+          git push
+      
+      - name: Report success
+        if: steps.git-check.outputs.changes == 'true'
+        run: |
+          echo "✅ Scholar cache updated successfully!"
+          echo "📅 Updated at: $(date)"
+      
+      - name: Report no changes
+        if: steps.git-check.outputs.changes != 'true'
+        run: |
+          echo "📄 No changes detected in scholar cache"
+          echo "📅 Checked at: $(date)"
