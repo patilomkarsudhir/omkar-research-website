@@ -1,0 +1,42 @@
+name: Test Scholar Cache Setup
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+jobs:
+  test-setup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci --only=production
+      
+      - name: Test script exists and runs
+        run: |
+          echo "Testing if update script exists and runs..."
+          ls -la scripts/
+          echo "Running script in test mode..."
+          timeout 30s node scripts/update-scholar-cache.js || echo "Script timed out (expected if blocked)"
+        env:
+          SCHOLAR_USER: EtkfNQMAAAAJ
+          CI: true
+      
+      - name: Check cache file
+        run: |
+          echo "Checking if cache file exists..."
+          ls -la data/ || echo "data directory does not exist"
+          if [ -f "data/scholar-cache.json" ]; then
+            echo "✅ Cache file exists"
+            wc -l data/scholar-cache.json
+          else
+            echo "❌ Cache file does not exist"
+          fi
