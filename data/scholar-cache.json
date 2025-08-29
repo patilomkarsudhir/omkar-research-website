@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 406,
-      "recent": 404
+      "all": 409,
+      "recent": 407
     },
     "h-index": {
       "all": 11,
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 72,
+      "cited": 73,
       "year": 2021
     },
     {
@@ -59,7 +59,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:W7OEmFMy1HYC",
       "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
       "venue": "2022 IEEE 61st Conference on Decision and Control (CDC), 3487-3492, 2022",
-      "cited": 31,
+      "cited": 32,
       "year": 2022
     },
     {
@@ -159,6 +159,14 @@
       "year": 2022
     },
     {
+      "title": "Lyapunov-Based Graph Neural Networks for Adaptive Control of Multi-Agent Systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:QIV2ME_5wuYC",
+      "authors": "BC Fallin, CF Nino, OS Patil, ZI Bell, WE Dixon",
+      "venue": "arXiv preprint arXiv:2503.15360, 2025",
+      "cited": 3,
+      "year": 2025
+    },
+    {
       "title": "Distributed Target Tracking under Partial Feedback using Lyapunov-based Deep Neural Networks",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:4DMP91E08xMC",
       "authors": "CF Nino, OS Patil, SC Edwards, ZI Bell, WE Dixon",
@@ -195,14 +203,6 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:dhFuZR0502QC",
       "authors": "OS Patil, BC Fallin, CF Nino, RG Hart, WE Dixon",
       "venue": "arXiv preprint arXiv:2503.21007, 2025",
-      "cited": 2,
-      "year": 2025
-    },
-    {
-      "title": "Lyapunov-Based Graph Neural Networks for Adaptive Control of Multi-Agent Systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:QIV2ME_5wuYC",
-      "authors": "BC Fallin, CF Nino, OS Patil, ZI Bell, WE Dixon",
-      "venue": "arXiv preprint arXiv:2503.15360, 2025",
       "cited": 2,
       "year": 2025
     },
