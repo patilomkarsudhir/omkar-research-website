@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>True Automatic Differentiation PINN Demo</title>
+    <title> PINN Demo</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         window.MathJax = {
@@ -828,7 +828,7 @@
                 <div class="actions-bar">
                     <button id="generateData" class="btn btn-accent">🎲 Generate New Data</button>
                     <button id="trainNN" class="btn btn-primary">🤖 Train Standard NN</button>
-                    <button id="trainPINN" class="btn btn-success">⚡ Train AD-PINN</button>
+                    <button id="trainPINN" class="btn btn-success">⚡ Train PINN</button>
                     <button id="pauseTraining" class="btn" style="display: none;">⏸️ Pause Training</button>
                     <button id="reset" class="btn btn-secondary">🔄 Reset All</button>
                 </div>
@@ -1139,7 +1139,11 @@
                         </p>
                         <div class="equation-box">\[ f_\theta(t;\omega,\zeta)=\ddot u_\theta(t)+2\zeta\omega\,\dot u_\theta(t)+\omega^2 u_\theta(t). \]</div>
                         <p class="concept-description">
-                            The gradients \(\partial f_\theta/\partial \omega\) and \(\partial f_\theta/\partial \zeta\) have simple analytic forms, enabling stable updates of \(\lambda\) alongside \(\theta\). Similar constructions apply to the small‑angle pendulum parameters \(g/L\) and \(\beta\), and to the Lotka–Volterra rates \(\alpha,\beta,\gamma,\delta\).
+                            For the nonlinear pendulum with unknown \((g/L,\beta)\), the residual incorporates the sine nonlinearity:
+                        </p>
+                        <div class="equation-box">\[ f_\theta(t;g/L,\beta)=\ddot u_\theta(t)+\beta\,\dot u_\theta(t)+\frac{g}{L}\,\sin(u_\theta(t)). \]</div>
+                        <p class="concept-description">
+                            The gradients \(\partial f_\theta/\partial \omega\), \(\partial f_\theta/\partial \zeta\), \(\partial f_\theta/\partial (g/L)\), and \(\partial f_\theta/\partial \beta\) have analytic forms, enabling stable updates of \(\lambda\) alongside \(\theta\). The nonlinear sine term requires automatic differentiation to compute \(\cos(u_\theta(t))\) contributions to parameter gradients. Similar constructions apply to the Lotka–Volterra rates \(\alpha,\beta,\gamma,\delta\).
                         </p>
                     </div>
 
@@ -1154,9 +1158,9 @@
                         <h3 class="concept-title">Models in this demonstration</h3>
                         <p class="concept-description">The three exemplar systems span linear and nonlinear dynamics and single‑ and multi‑state settings:</p>
                         <div class="equation-box">\[ \ddot x + 2\zeta\omega\,\dot x + \omega^2 x = 0 \quad \text{(damped harmonic oscillator)}. \]</div>
-                        <div class="equation-box">\[ \ddot \theta + \beta\,\dot \theta + \tfrac{g}{L}\,\theta = 0 \quad \text{(small‑angle damped pendulum)}. \]</div>
+                        <div class="equation-box">\[ \ddot \theta + \beta\,\dot \theta + \tfrac{g}{L}\,\sin(\theta) = 0 \quad \text{(nonlinear damped pendulum)}. \]</div>
                         <div class="equation-box">\[ \begin{aligned} \dot x &= \alpha x - \beta x y, \\ \dot y &= -\gamma y + \delta x y \end{aligned} \quad \text{(Lotka–Volterra)}. \]</div>
-                        <p class="concept-description">In the single‑state cases, a single network \(u_\theta(t)\) suffices. For multi‑state dynamics, one may use either a multi‑output network or separate surrogates for each state.</p>
+                        <p class="concept-description">The pendulum model demonstrates true nonlinear dynamics where the small-angle approximation \(\sin(\theta) \approx \theta\) is not used, making it suitable for larger amplitude oscillations. In the single‑state cases, a single network \(u_\theta(t)\) suffices. For multi‑state dynamics, one may use either a multi‑output network or separate surrogates for each state.</p>
                     </div>
 
                     <div class="concept-card">
@@ -1307,21 +1311,36 @@
             }
 
             getTruePosition(t) {
-                if (this.beta === 0) {
-                    // Undamped pendulum
-                    return this.theta0 * Math.cos(this.omega * t);
-                } else {
-                    // Damped pendulum (small angle approximation)
-                    const gamma = this.beta / 2; // damping factor
-                    if (gamma < this.omega) {
-                        // Underdamped
-                        const wd = Math.sqrt(this.omega * this.omega - gamma * gamma);
-                        return this.theta0 * Math.exp(-gamma * t) * Math.cos(wd * t);
-                    } else {
-                        // Overdamped/critically damped - simplified
-                        return this.theta0 * Math.exp(-gamma * t) * (1 + this.omega * t);
-                    }
+                // Numerical solution for nonlinear pendulum using RK4
+                // d²θ/dt² + β dθ/dt + (g/L) sin(θ) = 0
+                // Convert to first-order system: dθ/dt = ω, dω/dt = -β*ω - (g/L)*sin(θ)
+                
+                const dt = 0.001; // Small time step for accuracy
+                const steps = Math.floor(t / dt);
+                
+                let theta = this.theta0; // Initial angle
+                let omega = 0;           // Initial angular velocity
+                const g_over_L = this.gravity / this.length;
+                
+                for (let i = 0; i < steps; i++) {
+                    // RK4 method for system of ODEs
+                    const k1_theta = omega;
+                    const k1_omega = -this.beta * omega - g_over_L * Math.sin(theta);
+                    
+                    const k2_theta = omega + dt * k1_omega / 2;
+                    const k2_omega = -this.beta * (omega + dt * k1_omega / 2) - g_over_L * Math.sin(theta + dt * k1_theta / 2);
+                    
+                    const k3_theta = omega + dt * k2_omega / 2;
+                    const k3_omega = -this.beta * (omega + dt * k2_omega / 2) - g_over_L * Math.sin(theta + dt * k2_theta / 2);
+                    
+                    const k4_theta = omega + dt * k3_omega;
+                    const k4_omega = -this.beta * (omega + dt * k3_omega) - g_over_L * Math.sin(theta + dt * k3_theta);
+                    
+                    theta += dt * (k1_theta + 2 * k2_theta + 2 * k3_theta + k4_theta) / 6;
+                    omega += dt * (k1_omega + 2 * k2_omega + 2 * k3_omega + k4_omega) / 6;
                 }
+                
+                return theta;
             }
 
             getPhysicsResidual(derivatives, physicsParams) {
@@ -1343,12 +1362,12 @@
             }
 
             getEquationDisplay() {
-                // LaTeX: d^2θ/dt^2 + β dθ/dt + (g/L) θ = 0
-                return "\\[ \\frac{d^2 \\theta}{dt^2} + \\beta\\, \\frac{d\\theta}{dt} + \\frac{g}{L}\\, \\theta = 0 \\]";
+                // LaTeX: d^2θ/dt^2 + β dθ/dt + (g/L) sin(θ) = 0
+                return "\\[ \\frac{d^2 \\theta}{dt^2} + \\beta\\, \\frac{d\\theta}{dt} + \\frac{g}{L}\\, \\sin(\\theta) = 0 \\]";
             }
 
             getTitle() {
-                return "🪀 Damped Simple Pendulum";
+                return "🪀 Nonlinear Damped Pendulum";
             }
 
             getParameterLabels() {
@@ -1521,6 +1540,10 @@
                 const y = Math.tanh(this.value);
                 return new ADNode(y, "tanh", [this]);
             }
+            sin() {
+                const y = Math.sin(this.value);
+                return new ADNode(y, "sin", [this]);
+            }
 
             // Reverse-mode backprop for data loss
             backward(grad = 1.0) {
@@ -1545,6 +1568,12 @@
                         const [u] = this.parents;
                         const tanhPrime = 1 - this.value * this.value; // sech^2
                         u.backward(grad * tanhPrime);
+                        break;
+                    }
+                    case "sin": {
+                        const [u] = this.parents;
+                        const cosPrime = Math.cos(u.value); // cos(u)
+                        u.backward(grad * cosPrime);
                         break;
                     }
                 }
@@ -1590,6 +1619,18 @@
                             out = {
                                 d1: tanhPrime * U.d1,
                                 d2: tanhSecond * U.d1 * U.d1 + tanhPrime * U.d2,
+                            };
+                            break;
+                        }
+                        case "sin": {
+                            const [u] = node.parents;
+                            const U = ADNode.d1d2(u, seed, memo);
+                            const y = node.value; // sin(u)
+                            const sinPrime = Math.cos(u.value); // cos(u)
+                            const sinSecond = -y; // -sin(u)
+                            out = {
+                                d1: sinPrime * U.d1,
+                                d2: sinSecond * U.d1 * U.d1 + sinPrime * U.d2,
                             };
                             break;
                         }
@@ -1747,6 +1788,11 @@
             resetOptimizer() { super.resetOptimizer(); this.m_physics = [0, 0]; this.v_physics = [0, 0]; }
 
             physicsResidual(t) {
+                // For nonlinear pendulum, we need to compute sin(x) using ADNode operations
+                if (this.physicalSystem && this.physicalSystem.constructor.name === 'PendulumSystem') {
+                    return this.nonlinearPendulumResidual(t);
+                }
+                
                 const derivatives = this.computeDerivatives(t);
                 const physicsParams = { param1: this.param1.value, param2: this.param2.value };
                 
@@ -1758,6 +1804,21 @@
                     const w = physicsParams.param1, z = physicsParams.param2;
                     return d2x_dt2 + 2 * z * w * dx_dt + w * w * x;
                 }
+            }
+
+            nonlinearPendulumResidual(t) {
+                const { output, input } = this.forward(t);
+                const { d1, d2 } = ADNode.d1d2(output, input, new Map());
+                
+                // Nonlinear pendulum equation: d²θ/dt² + β dθ/dt + (g/L) sin(θ) = 0
+                const w2 = this.param1.value; // ω² = g/L
+                const beta = this.param2.value; // damping coefficient
+                
+                // Compute sin(θ) using ADNode
+                const sin_theta = output.sin();
+                
+                // Physics residual: d²θ/dt² + β dθ/dt + (g/L) sin(θ)
+                return d2 + beta * d1 + w2 * sin_theta.value;
             }
 
             physicsLoss(collocation) {
@@ -1775,14 +1836,24 @@
                 const N = collocation.length;
                 
                 for (const t of collocation) {
-                    const derivatives = this.computeDerivatives(t);
                     const r = this.physicsResidual(t);
                     
                     let gradients;
-                    if (this.physicalSystem) {
+                    if (this.physicalSystem && this.physicalSystem.constructor.name === 'PendulumSystem') {
+                        // For nonlinear pendulum, we need special gradient computation
+                        const { output, input } = this.forward(t);
+                        const { d1, d2 } = ADNode.d1d2(output, input, new Map());
+                        const sin_theta = output.sin();
+                        const cos_theta = Math.cos(output.value);
+                        
+                        // ∂f/∂(ω²) = sin(θ), ∂f/∂β = dθ/dt
+                        gradients = [sin_theta.value, d1];
+                    } else if (this.physicalSystem) {
+                        const derivatives = this.computeDerivatives(t);
                         gradients = this.physicalSystem.getPhysicsGradients(derivatives, r, physicsParams);
                     } else {
                         // Default oscillator behavior
+                        const derivatives = this.computeDerivatives(t);
                         const { x, dx_dt } = derivatives;
                         const w = physicsParams.param1, z = physicsParams.param2;
                         gradients = [2 * z * dx_dt + 2 * w * x, 2 * w * dx_dt];
