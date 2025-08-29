@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0f23;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="primaryGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00f2fe;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="glowEffect" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#64ffda;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#64ffda;stop-opacity:0" />
+    </radialGradient>
+    
+    <!-- Neural Network Pattern -->
+    <pattern id="neuralPattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+      <circle cx="20" cy="20" r="2" fill="#64ffda" opacity="0.3"/>
+      <circle cx="80" cy="30" r="2" fill="#64ffda" opacity="0.3"/>
+      <circle cx="50" cy="70" r="2" fill="#64ffda" opacity="0.3"/>
+      <line x1="20" y1="20" x2="50" y2="70" stroke="#64ffda" stroke-width="0.5" opacity="0.2"/>
+      <line x1="80" y1="30" x2="50" y2="70" stroke="#64ffda" stroke-width="0.5" opacity="0.2"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+  
+  <!-- Background Pattern -->
+  <rect width="1200" height="630" fill="url(#neuralPattern)" opacity="0.1"/>
+  
+  <!-- Decorative Elements -->
+  <circle cx="150" cy="150" r="80" fill="url(#glowEffect)"/>
+  <circle cx="1050" cy="480" r="60" fill="url(#glowEffect)"/>
+  
+  <!-- Main Title -->
+  <text x="600" y="120" text-anchor="middle" font-family="Inter, sans-serif" font-size="52" font-weight="700" fill="url(#primaryGradient)">
+    Physics-Informed Neural Networks
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="160" text-anchor="middle" font-family="Inter, sans-serif" font-size="24" font-weight="400" fill="#b8b8d1">
+    Advanced Scientific Machine Learning Demo
+  </text>
+  
+  <!-- Feature Cards -->
+  <!-- Card 1: Nonlinear Pendulum -->
+  <g transform="translate(80, 220)">
+    <rect width="200" height="160" rx="12" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+    <text x="100" y="30" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#64ffda">🪀 Nonlinear Pendulum</text>
+    <text x="100" y="55" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#b8b8d1">d²θ/dt² + β dθ/dt + (g/L)sin(θ) = 0</text>
+    <!-- Pendulum visualization -->
+    <circle cx="100" cy="90" r="3" fill="#667eea"/>
+    <line x1="100" y1="90" x2="130" y2="120" stroke="#64ffda" stroke-width="2"/>
+    <circle cx="130" cy="120" r="4" fill="#00f2fe"/>
+    <path d="M 85 100 Q 100 85 115 100" stroke="#667eea" stroke-width="1" fill="none" opacity="0.5"/>
+  </g>
+  
+  <!-- Card 2: Heat Equation -->
+  <g transform="translate(320, 220)">
+    <rect width="200" height="160" rx="12" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+    <text x="100" y="30" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#64ffda">🔥 Heat Equation PDE</text>
+    <text x="100" y="55" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#b8b8d1">∂u/∂t = α ∂²u/∂x²</text>
+    <!-- Heatmap visualization -->
+    <rect x="60" y="70" width="80" height="60" fill="url(#accentGradient)" opacity="0.6" rx="4"/>
+    <rect x="70" y="80" width="60" height="40" fill="#00f2fe" opacity="0.4" rx="2"/>
+    <rect x="80" y="90" width="40" height="20" fill="#4facfe" opacity="0.8" rx="2"/>
+  </g>
+  
+  <!-- Card 3: Harmonic Oscillator -->
+  <g transform="translate(560, 220)">
+    <rect width="200" height="160" rx="12" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+    <text x="100" y="30" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#64ffda">🌊 Harmonic Oscillator</text>
+    <text x="100" y="55" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#b8b8d1">d²x/dt² + 2ζω dx/dt + ω²x = 0</text>
+    <!-- Wave visualization -->
+    <path d="M 40 110 Q 60 90 80 110 T 120 110 T 160 110" stroke="#667eea" stroke-width="2" fill="none"/>
+    <circle cx="80" cy="110" r="2" fill="#00f2fe"/>
+    <circle cx="120" cy="110" r="2" fill="#00f2fe"/>
+  </g>
+  
+  <!-- Card 4: Predator-Prey -->
+  <g transform="translate(800, 220)">
+    <rect width="200" height="160" rx="12" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+    <text x="100" y="30" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#64ffda">🐰🐺 Lotka-Volterra</text>
+    <text x="100" y="55" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#b8b8d1">dx/dt = αx - βxy</text>
+    <text x="100" y="70" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#b8b8d1">dy/dt = -γy + δxy</text>
+    <!-- Phase space visualization -->
+    <path d="M 60 90 Q 80 100 100 90 Q 120 80 140 90 Q 120 100 100 110 Q 80 100 60 90" stroke="#4facfe" stroke-width="2" fill="none"/>
+    <circle cx="100" cy="100" r="2" fill="#00f2fe"/>
+  </g>
+  
+  <!-- Neural Network Diagram -->
+  <g transform="translate(120, 420)">
+    <text x="0" y="0" font-family="Inter, sans-serif" font-size="18" font-weight="600" fill="#64ffda">Neural Network Architecture</text>
+    
+    <!-- Input layer -->
+    <circle cx="0" cy="30" r="8" fill="#667eea"/>
+    <circle cx="0" cy="60" r="8" fill="#667eea"/>
+    <text x="15" y="35" font-family="Inter, sans-serif" font-size="12" fill="#b8b8d1">x</text>
+    <text x="15" y="65" font-family="Inter, sans-serif" font-size="12" fill="#b8b8d1">t</text>
+    
+    <!-- Hidden layers -->
+    <circle cx="80" cy="20" r="6" fill="#764ba2"/>
+    <circle cx="80" cy="40" r="6" fill="#764ba2"/>
+    <circle cx="80" cy="60" r="6" fill="#764ba2"/>
+    <circle cx="80" cy="80" r="6" fill="#764ba2"/>
+    
+    <circle cx="140" cy="30" r="6" fill="#764ba2"/>
+    <circle cx="140" cy="50" r="6" fill="#764ba2"/>
+    <circle cx="140" cy="70" r="6" fill="#764ba2"/>
+    
+    <!-- Output layer -->
+    <circle cx="200" cy="45" r="8" fill="#00f2fe"/>
+    <text x="215" y="50" font-family="Inter, sans-serif" font-size="12" fill="#b8b8d1">u(x,t)</text>
+    
+    <!-- Connections (sample) -->
+    <line x1="8" y1="30" x2="72" y2="40" stroke="#64ffda" stroke-width="1" opacity="0.6"/>
+    <line x1="8" y1="60" x2="72" y2="60" stroke="#64ffda" stroke-width="1" opacity="0.6"/>
+    <line x1="88" y1="40" x2="132" y2="50" stroke="#64ffda" stroke-width="1" opacity="0.6"/>
+    <line x1="148" y1="50" x2="192" y2="45" stroke="#64ffda" stroke-width="1" opacity="0.6"/>
+  </g>
+  
+  <!-- Physics Loss Diagram -->
+  <g transform="translate(420, 420)">
+    <text x="0" y="0" font-family="Inter, sans-serif" font-size="18" font-weight="600" fill="#64ffda">Physics-Informed Training</text>
+    
+    <!-- Data Loss -->
+    <rect x="0" y="20" width="100" height="30" rx="4" fill="rgba(102, 126, 234, 0.3)" stroke="#667eea"/>
+    <text x="50" y="38" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="#ffffff">Data Loss</text>
+    
+    <!-- Plus sign -->
+    <text x="120" y="40" text-anchor="middle" font-family="Inter, sans-serif" font-size="18" fill="#b8b8d1">+</text>
+    
+    <!-- Physics Loss -->
+    <rect x="140" y="20" width="100" height="30" rx="4" fill="rgba(0, 242, 254, 0.3)" stroke="#00f2fe"/>
+    <text x="190" y="38" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="#ffffff">Physics Loss</text>
+    
+    <!-- Equals -->
+    <text x="260" y="40" text-anchor="middle" font-family="Inter, sans-serif" font-size="18" fill="#b8b8d1">=</text>
+    
+    <!-- Total Loss -->
+    <rect x="280" y="20" width="100" height="30" rx="4" fill="url(#accentGradient)"/>
+    <text x="330" y="38" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="#ffffff">Total Loss</text>
+    
+    <!-- Automatic Differentiation -->
+    <text x="0" y="80" font-family="Inter, sans-serif" font-size="14" fill="#b8b8d1">✨ Exact Automatic Differentiation</text>
+    <text x="0" y="100" font-family="Inter, sans-serif" font-size="12" fill="#8b8ba7">Forward &amp; Reverse Mode AD for Precise Gradients</text>
+  </g>
+  
+  <!-- Interactive Features -->
+  <g transform="translate(800, 440)">
+    <text x="0" y="0" font-family="Inter, sans-serif" font-size="18" font-weight="600" fill="#64ffda">Interactive Features</text>
+    <text x="0" y="25" font-family="Inter, sans-serif" font-size="14" fill="#b8b8d1">🎮 Real-time Parameter Tuning</text>
+    <text x="0" y="45" font-family="Inter, sans-serif" font-size="14" fill="#b8b8d1">📊 Live Training Visualization</text>
+    <text x="0" y="65" font-family="Inter, sans-serif" font-size="14" fill="#b8b8d1">🎬 Time Evolution Animation</text>
+    <text x="0" y="85" font-family="Inter, sans-serif" font-size="14" fill="#b8b8d1">📚 Educational Documentation</text>
+  </g>
+  
+  <!-- Footer -->
+  <text x="600" y="590" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" fill="#8b8ba7">
+    Advanced Scientific Machine Learning • Interactive Browser Demo • omkarpatil.me
+  </text>
+</svg>

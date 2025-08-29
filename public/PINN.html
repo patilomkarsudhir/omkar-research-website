@@ -3,7 +3,107 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title> PINN Demo</title>
+    <title>Physics-Informed Neural Networks (PINNs) - Interactive Demo</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Interactive demonstration of Physics-Informed Neural Networks (PINNs) with automatic differentiation. Explore nonlinear pendulum dynamics, heat equation PDEs, harmonic oscillators, and predator-prey models through advanced scientific machine learning." />
+    <meta name="keywords" content="Physics-Informed Neural Networks, PINNs, Scientific Machine Learning, Automatic Differentiation, Neural ODEs, PDEs, Nonlinear Pendulum, Heat Equation, Machine Learning, Deep Learning, Scientific Computing, Computational Physics" />
+    <meta name="author" content="Omkar Patil" />
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="en" />
+    <meta name="revisit-after" content="7 days" />
+    <meta name="classification" content="Education, Science, Technology" />
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Physics-Informed Neural Networks (PINNs) - Interactive Demo" />
+    <meta property="og:description" content="Explore advanced scientific machine learning with interactive Physics-Informed Neural Networks. Learn how PINNs solve complex physical systems using automatic differentiation and neural networks." />
+    <meta property="og:image" content="./PINNs.svg" />
+    <meta property="og:url" content="https://omkarpatil.me/PINN.html" />
+    <meta property="og:site_name" content="Omkar Patil Research" />
+    <meta property="og:locale" content="en_US" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Physics-Informed Neural Networks (PINNs) - Interactive Demo" />
+    <meta name="twitter:description" content="Interactive demonstration of Physics-Informed Neural Networks with automatic differentiation for scientific machine learning." />
+    <meta name="twitter:image" content="./PINNs.svg" />
+    <meta name="twitter:creator" content="@omkarpatil" />
+    
+    <!-- Structured Data for Rich Snippets -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Physics-Informed Neural Networks Demo",
+      "description": "Interactive demonstration of Physics-Informed Neural Networks (PINNs) with automatic differentiation for scientific machine learning",
+      "url": "https://omkarpatil.me/PINN.html",
+      "author": {
+        "@type": "Person",
+        "name": "Omkar Patil"
+      },
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "keywords": "Physics-Informed Neural Networks, PINNs, Scientific Machine Learning, Automatic Differentiation",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+    
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./PINNs.svg" />
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" as="style" />
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" as="script" />
+    
+    <!-- Additional SEO enhancements -->
+    <meta name="theme-color" content="#667eea" />
+    <meta name="msapplication-TileColor" content="#667eea" />
+    <meta name="msapplication-config" content="browserconfig.xml" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://omkarpatil.me/PINN.html" />
+    
+    <!-- Additional structured data for educational content -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LearningResource",
+      "name": "Physics-Informed Neural Networks Interactive Demo",
+      "description": "Learn Physics-Informed Neural Networks through interactive demonstrations. Explore nonlinear pendulum dynamics, heat equation PDEs, and automatic differentiation in scientific machine learning.",
+      "educationalLevel": "UniversityLevel",
+      "educationalUse": "instruction",
+      "learningResourceType": "InteractiveResource",
+      "teaches": [
+        "Physics-Informed Neural Networks",
+        "Automatic Differentiation",
+        "Scientific Machine Learning",
+        "Partial Differential Equations",
+        "Neural ODEs"
+      ],
+      "audience": {
+        "@type": "EducationalAudience",
+        "educationalRole": "student"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Omkar Patil",
+        "url": "https://omkarpatil.me"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Omkar Patil"
+      },
+      "dateCreated": "2025-08-29",
+      "inLanguage": "en-US",
+      "isAccessibleForFree": true
+    }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         window.MathJax = {
