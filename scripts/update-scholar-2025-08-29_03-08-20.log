@@ -1,0 +1,52 @@
+
+========================================
+ Scholar Cache Update Script
+ Started: Fri 08/29/2025  3:08:20.66
+========================================
+
+Current directory: C:\Users\patilomkarsudhir\OneDrive - University of Florida\Desktop\Website\omkar-site-remade\omkar-research-site-remade
+
+Step 1: Updating Scholar cache...
+----------------------------------------
+Running: npm run update-scholar
+
+> omkar-research-site@0.2.0 update-scholar
+> node scripts/update-scholar-cache.js
+
+🔄 Updating Scholar cache for user: EtkfNQMAAAAJ
+📅 Timestamp: 2025-08-29T07:08:21.643Z
+
+Fetching data from: https://scholar.google.com/citations?hl=en&user=EtkfNQMAAAAJ&cstart=0&pagesize=100
+✓ Found 3 metrics and 38 publications
+
+📊 Data Summary:
+   Citations: 409 (407 recent)
+   h-index: 11 (11 recent)
+   i10-index: 11 (11 recent)
+   Publications: 38
+
+Writing to: C:\Users\patilomkarsudhir\OneDrive - University of Florida\Desktop\Website\omkar-site-remade\omkar-research-site-remade\data\scholar-cache.json
+✓ Cache file updated successfully
+
+✅ Scholar cache updated successfully!
+
+💡 Next steps:
+   1. Review the changes: git diff data/scholar-cache.json
+   2. Commit the changes: git add data/scholar-cache.json && git commit -m "chore: update scholar cache"
+   3. Push to GitHub: git push
+
+[OK] Scholar cache updated successfully
+
+Step 2: Checking for changes...
+----------------------------------------
+No changes detected in scholar-cache.json
+Cache is already up to date.
+========================================
+ Scholar Cache Update Complete
+ Finished: Fri 08/29/2025  3:08:22.28
+========================================
+
+Summary of actions performed:
+[OK] Updated scholar cache with latest data
+
+Your website now has the latest publication data

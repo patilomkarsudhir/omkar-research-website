@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>PINN Thumbnail Generator</title>
+</head>
+<body>
+    <canvas id="thumbnail" width="1200" height="630" style="border: 1px solid #ccc;"></canvas>
+    <br>
+    <button onclick="downloadPNG()">Download PNG</button>
+    
+    <script>
+        const canvas = document.getElementById('thumbnail');
+        const ctx = canvas.getContext('2d');
+        
+        // Create gradient backgrounds
+        const createGradient = (x0, y0, x1, y1, colors) => {
+            const gradient = ctx.createLinearGradient(x0, y0, x1, y1);
+            colors.forEach((color, index) => {
+                gradient.addColorStop(index / (colors.length - 1), color);
+            });
+            return gradient;
+        };
+        
+        // Dark background
+        ctx.fillStyle = createGradient(0, 0, 1200, 630, ['#0f0f23', '#1a1a2e', '#16213e']);
+        ctx.fillRect(0, 0, 1200, 630);
+        
+        // Add some subtle decorative circles
+        ctx.globalAlpha = 0.1;
+        ctx.fillStyle = '#64ffda';
+        ctx.beginPath();
+        ctx.arc(150, 150, 80, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        ctx.beginPath();
+        ctx.arc(1050, 480, 60, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        
+        // Title
+        ctx.font = 'bold 52px Inter, Arial, sans-serif';
+        const titleGradient = createGradient(200, 100, 1000, 140, ['#667eea', '#764ba2']);
+        ctx.fillStyle = titleGradient;
+        ctx.textAlign = 'center';
+        ctx.fillText('Physics-Informed Neural Networks', 600, 120);
+        
+        // Subtitle
+        ctx.font = '24px Inter, Arial, sans-serif';
+        ctx.fillStyle = '#b8b8d1';
+        ctx.fillText('Advanced Scientific Machine Learning Demo', 600, 160);
+        
+        // Feature cards
+        const drawCard = (x, y, title, equation, color) => {
+            // Card background
+            ctx.fillStyle = 'rgba(255,255,255,0.05)';
+            ctx.roundRect(x, y, 200, 160, 12);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // Title
+            ctx.font = 'bold 16px Inter, Arial, sans-serif';
+            ctx.fillStyle = color;
+            ctx.textAlign = 'center';
+            ctx.fillText(title, x + 100, y + 30);
+            
+            // Equation
+            ctx.font = '12px Courier, monospace';
+            ctx.fillStyle = '#b8b8d1';
+            ctx.fillText(equation, x + 100, y + 55);
+        };
+        
+        // Add roundRect if not supported
+        if (!ctx.roundRect) {
+            ctx.roundRect = function(x, y, w, h, r) {
+                this.beginPath();
+                this.moveTo(x + r, y);
+                this.lineTo(x + w - r, y);
+                this.quadraticCurveTo(x + w, y, x + w, y + r);
+                this.lineTo(x + w, y + h - r);
+                this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                this.lineTo(x + r, y + h);
+                this.quadraticCurveTo(x, y + h, x, y + h - r);
+                this.lineTo(x, y + r);
+                this.quadraticCurveTo(x, y, x + r, y);
+            };
+        }
+        
+        // Draw cards
+        drawCard(80, 220, '🪀 Nonlinear Pendulum', 'd²θ/dt² + β dθ/dt + (g/L)sin(θ) = 0', '#64ffda');
+        drawCard(320, 220, '🔥 Heat Equation PDE', '∂u/∂t = α ∂²u/∂x²', '#64ffda');
+        drawCard(560, 220, '🌊 Harmonic Oscillator', 'd²x/dt² + 2ζω dx/dt + ω²x = 0', '#64ffda');
+        drawCard(800, 220, '🐰🐺 Lotka-Volterra', 'dx/dt = αx - βxy', '#64ffda');
+        
+        // Neural network diagram
+        ctx.font = 'bold 18px Inter, Arial, sans-serif';
+        ctx.fillStyle = '#64ffda';
+        ctx.textAlign = 'left';
+        ctx.fillText('Neural Network Architecture', 120, 440);
+        
+        // Network nodes
+        const drawNode = (x, y, r, color) => {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, 2 * Math.PI);
+            ctx.fill();
+        };
+        
+        // Input layer
+        drawNode(120, 470, 8, '#667eea');
+        drawNode(120, 500, 8, '#667eea');
+        
+        // Hidden layers
+        drawNode(200, 460, 6, '#764ba2');
+        drawNode(200, 480, 6, '#764ba2');
+        drawNode(200, 500, 6, '#764ba2');
+        drawNode(200, 520, 6, '#764ba2');
+        
+        drawNode(260, 470, 6, '#764ba2');
+        drawNode(260, 490, 6, '#764ba2');
+        drawNode(260, 510, 6, '#764ba2');
+        
+        // Output layer
+        drawNode(320, 485, 8, '#00f2fe');
+        
+        // Connections
+        ctx.strokeStyle = 'rgba(100, 255, 218, 0.6)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(128, 470);
+        ctx.lineTo(192, 480);
+        ctx.moveTo(128, 500);
+        ctx.lineTo(192, 500);
+        ctx.moveTo(208, 480);
+        ctx.lineTo(252, 490);
+        ctx.moveTo(268, 490);
+        ctx.lineTo(312, 485);
+        ctx.stroke();
+        
+        // Labels
+        ctx.font = '12px Inter, Arial, sans-serif';
+        ctx.fillStyle = '#b8b8d1';
+        ctx.fillText('x', 135, 475);
+        ctx.fillText('t', 135, 505);
+        ctx.fillText('u(x,t)', 335, 490);
+        
+        // Physics training section
+        ctx.font = 'bold 18px Inter, Arial, sans-serif';
+        ctx.fillStyle = '#64ffda';
+        ctx.fillText('Physics-Informed Training', 420, 440);
+        
+        // Training boxes
+        const drawBox = (x, y, w, h, text, color) => {
+            ctx.fillStyle = color;
+            ctx.roundRect(x, y, w, h, 4);
+            ctx.fill();
+            ctx.font = '12px Inter, Arial, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.fillText(text, x + w/2, y + h/2 + 4);
+        };
+        
+        drawBox(420, 460, 100, 30, 'Data Loss', 'rgba(102, 126, 234, 0.8)');
+        drawBox(560, 460, 100, 30, 'Physics Loss', 'rgba(0, 242, 254, 0.8)');
+        drawBox(700, 460, 100, 30, 'Total Loss', '#4facfe');
+        
+        // Plus and equals signs
+        ctx.font = '18px Inter, Arial, sans-serif';
+        ctx.fillStyle = '#b8b8d1';
+        ctx.textAlign = 'center';
+        ctx.fillText('+', 540, 480);
+        ctx.fillText('=', 680, 480);
+        
+        // Interactive features
+        ctx.font = 'bold 18px Inter, Arial, sans-serif';
+        ctx.fillStyle = '#64ffda';
+        ctx.textAlign = 'left';
+        ctx.fillText('Interactive Features', 800, 440);
+        
+        ctx.font = '14px Inter, Arial, sans-serif';
+        ctx.fillStyle = '#b8b8d1';
+        ctx.fillText('🎮 Real-time Parameter Tuning', 800, 465);
+        ctx.fillText('📊 Live Training Visualization', 800, 485);
+        ctx.fillText('🎬 Time Evolution Animation', 800, 505);
+        ctx.fillText('📚 Educational Documentation', 800, 525);
+        
+        // Footer
+        ctx.font = '14px Inter, Arial, sans-serif';
+        ctx.fillStyle = '#8b8ba7';
+        ctx.textAlign = 'center';
+        ctx.fillText('Advanced Scientific Machine Learning • Interactive Browser Demo • omkarpatil.me', 600, 590);
+        
+        function downloadPNG() {
+            const link = document.createElement('a');
+            link.download = 'PINNs.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // Auto-download after a short delay
+        setTimeout(() => {
+            console.log('Thumbnail generated successfully!');
+            // Uncomment the next line to auto-download
+            // downloadPNG();
+        }, 1000);
+    </script>
+</body>
+</html>
