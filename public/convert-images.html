@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Universal Image Format Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #667eea;
+        }
+        .upload-area.dragover {
+            border-color: #667eea;
+            background-color: #f0f4ff;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .upload-btn:hover {
+            opacity: 0.9;
+        }
+        #preview {
+            margin: 20px 0;
+            text-align: center;
+        }
+        #preview img {
+            max-width: 100%;
+            max-height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        #svgOutput {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .download-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .download-btn:hover {
+            opacity: 0.9;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        .format-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .format-option {
+            padding: 10px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            font-weight: 500;
+        }
+        .format-option:hover {
+            border-color: #667eea;
+            background-color: #f0f4ff;
+        }
+        .format-option.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .conversion-settings {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+        }
+        .quality-slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+        .setting-group {
+            margin: 15px 0;
+        }
+        .setting-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+            color: #333;
+        }
+        .format-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>� Universal Image Format Converter</h1>
+        
+        <div class="info">
+            <strong>Instructions:</strong> Convert between any image formats! 
+            Upload any image file and choose your desired output format. Supports PNG, JPG, WebP, AVIF, SVG, GIF, BMP, and more.
+            <br><br>
+            <strong>Features:</strong> Quality control, format optimization, batch conversion ready, and privacy-focused (all processing happens in your browser).
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <p>📁 Drag and drop your image file here, or click to select</p>
+            <p style="font-size: 14px; color: #666;">Supported formats: PNG, JPG, JPEG, GIF, WebP, AVIF, BMP, SVG</p>
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()" aria-label="Choose image file to convert">
+                Choose Image File
+            </button>
+            <input type="file" id="fileInput" accept="image/*" />
+        </div>
+
+        <div id="preview"></div>
+        <div id="dimensions"></div>
+        <div id="announcements" aria-live="polite" style="position: absolute; left: -10000px;"></div>
+        
+        <!-- Format Selection -->
+        <div id="formatSelection" style="display: none;">
+            <h3 style="text-align: center; color: #333; margin-bottom: 20px;">Choose Output Format</h3>
+            <div class="format-selector">
+                <div class="format-option" data-format="png" onclick="selectFormat('png')">
+                    PNG
+                    <div class="format-info">Lossless, transparency support</div>
+                </div>
+                <div class="format-option" data-format="jpeg" onclick="selectFormat('jpeg')">
+                    JPEG
+                    <div class="format-info">Small file size, no transparency</div>
+                </div>
+                <div class="format-option" data-format="webp" onclick="selectFormat('webp')">
+                    WebP
+                    <div class="format-info">Modern, efficient compression</div>
+                </div>
+                <div class="format-option" data-format="avif" onclick="selectFormat('avif')">
+                    AVIF
+                    <div class="format-info">Next-gen format, best compression</div>
+                </div>
+                <div class="format-option selected" data-format="svg" onclick="selectFormat('svg')">
+                    SVG
+                    <div class="format-info">Vector, infinitely scalable</div>
+                </div>
+                <div class="format-option" data-format="gif" onclick="selectFormat('gif')" style="opacity: 0.6; position: relative;" title="Limited browser support for GIF export">
+                    GIF
+                    <div class="format-info">Animation support, limited colors (⚠️ Limited browser support)</div>
+                </div>
+                <div class="format-option" data-format="bmp" onclick="selectFormat('bmp')" style="opacity: 0.6; position: relative;" title="Limited browser support for BMP export">
+                    BMP
+                    <div class="format-info">Uncompressed, large files (⚠️ Limited browser support)</div>
+                </div>
+            </div>
+            
+            <!-- Conversion Settings -->
+            <div class="conversion-settings" id="conversionSettings">
+                <div class="setting-group" id="qualityGroup" style="display: none;">
+                    <label class="setting-label" for="qualitySlider">Quality: <span id="qualityValue">90</span>%</label>
+                    <input type="range" id="qualitySlider" class="quality-slider" min="10" max="100" value="90" oninput="updateQuality(this.value)">
+                </div>
+                
+                <div class="setting-group" id="resizeGroup">
+                    <label class="setting-label">
+                        <input type="checkbox" id="resizeCheckbox" onchange="toggleResize()"> Resize Image
+                    </label>
+                    <div id="resizeOptions" style="display: none; margin-top: 10px;">
+                        <label style="margin-right: 15px;">Width: <input type="number" id="newWidth" min="1" max="8000" style="width: 80px; margin-left: 5px;"></label>
+                        <label>Height: <input type="number" id="newHeight" min="1" max="8000" style="width: 80px; margin-left: 5px;"></label>
+                        <br><label style="margin-top: 10px; display: block;">
+                            <input type="checkbox" id="maintainAspect" checked> Maintain aspect ratio
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <button class="upload-btn" onclick="convertImage()" aria-label="Convert image to selected format">
+                    🔄 Convert Image
+                </button>
+            </div>
+        </div>
+        
+        <div id="outputSection" style="display: none;">
+            <h3 style="text-align: center; color: #333;">Converted Image</h3>
+            <div id="svgOutput" style="display: none;"></div>
+            <div id="imageOutput" style="text-align: center; margin: 20px 0;"></div>
+            
+            <div style="text-align: center;">
+                <button id="downloadBtn" class="download-btn" style="display: none;" onclick="downloadFile()">
+                    📥 Download Converted Image
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration constants
+        const CONFIG = {
+            MAX_FILE_SIZE: 50 * 1024 * 1024,        // 50MB
+            PERFORMANCE_WARNING_SIZE: 10 * 1024 * 1024, // 10MB
+            MAX_DIMENSION: 8000,                     // 8000px
+            DEFAULT_QUALITY: 90,                     // 90%
+            SUPPORTED_FORMATS: ['png', 'jpeg', 'webp', 'svg', 'gif', 'bmp', 'avif'],
+            QUALITY_MIN: 10,
+            QUALITY_MAX: 100,
+            MAX_PREVIEW_HEIGHT: 400,
+            MAX_PREVIEW_WIDTH: 100
+        };
+
+        let currentImageData = null;
+        let originalFileName = '';
+        let selectedFormat = 'svg';
+        let currentConvertedData = null;
+        let originalImage = null;
+
+        // File input handler
+        document.getElementById('fileInput').addEventListener('change', handleFile);
+
+        // Drag and drop handlers
+        const uploadArea = document.getElementById('uploadArea');
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile({ target: { files: files } });
+            }
+        });
+
+        function handleFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Check if it's an image file
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                document.getElementById('announcements').textContent = 'Invalid file type. Please select an image file.';
+                return;
+            }
+
+            // Check file size (limit to 50MB for safety)
+            if (file.size > CONFIG.MAX_FILE_SIZE) {
+                alert(`File too large. Please select an image smaller than ${CONFIG.MAX_FILE_SIZE / (1024 * 1024)}MB.`);
+                document.getElementById('announcements').textContent = 'File too large. Please select a smaller image.';
+                return;
+            }
+
+            // Performance warning for large files
+            if (file.size > CONFIG.PERFORMANCE_WARNING_SIZE) {
+                console.warn(`Large image detected (${(file.size / (1024 * 1024)).toFixed(1)}MB), processing may be slow`);
+                const proceed = confirm(`This is a large file (${(file.size / (1024 * 1024)).toFixed(1)}MB). Processing may be slow. Continue?`);
+                if (!proceed) return;
+            }
+
+            originalFileName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+            
+            try {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImageData = e.target.result;
+                    const img = new Image();
+                    img.onload = function() {
+                        originalImage = img;
+                        displayPreview(img, e.target.result);
+                        showFormatSelection();
+                        updateResizeDefaults(img.width, img.height);
+                        document.getElementById('announcements').textContent = `Image loaded: ${img.width} by ${img.height} pixels. Choose an output format to convert.`;
+                    };
+                    img.onerror = function() {
+                        alert('Failed to load image. This may be due to a corrupted file or unsupported image format.');
+                        document.getElementById('announcements').textContent = 'Failed to load image. Please try a different file.';
+                    };
+                    img.src = e.target.result;
+                };
+                reader.onerror = function(error) {
+                    console.error('FileReader error:', error);
+                    alert('Failed to read file. This may be due to file corruption or insufficient memory.');
+                    document.getElementById('announcements').textContent = 'Failed to read file. Please try again.';
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                console.error('File handling error:', error);
+                let errorMessage = 'An error occurred while loading the file.';
+                if (error.name === 'SecurityError') {
+                    errorMessage = 'Cannot process image due to security restrictions (CORS). Try downloading the image first.';
+                } else if (error.name === 'NotSupportedError') {
+                    errorMessage = 'This image format is not supported by your browser.';
+                } else if (error.message.includes('memory')) {
+                    errorMessage = 'Insufficient memory to process this image. Try a smaller file.';
+                }
+                alert(errorMessage + ' Please try again.');
+                document.getElementById('announcements').textContent = errorMessage;
+            }
+        }
+
+        function displayPreview(img, src) {
+            const preview = document.getElementById('preview');
+            const dimensions = document.getElementById('dimensions');
+            
+            // Sanitize filename for display
+            const sanitizedDisplayName = (originalFileName || 'uploaded-image')
+                .replace(/[<>&"']/g, function(match) {
+                    return {'<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;'}[match];
+                });
+            
+            preview.innerHTML = `<img src="${src}" alt="Preview" style="max-width: 100%; max-height: 300px; border: 1px solid #ddd; border-radius: 5px;" />`;
+            dimensions.innerHTML = `
+                <div style="margin: 10px 0; font-weight: bold; color: #333; text-align: center;">
+                    📐 Dimensions: ${img.width} × ${img.height} pixels | 📁 File: ${sanitizedDisplayName}
+                </div>
+            `;
+        }
+
+        function showFormatSelection() {
+            document.getElementById('formatSelection').style.display = 'block';
+            // Initialize format selection
+            selectFormat(selectedFormat);
+        }
+
+        function selectFormat(format) {
+            selectedFormat = format;
+            
+            // Update UI
+            document.querySelectorAll('.format-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelector(`[data-format="${format}"]`).classList.add('selected');
+            
+            // Show/hide quality slider based on format
+            const qualityGroup = document.getElementById('qualityGroup');
+            if (format === 'jpeg' || format === 'webp' || format === 'avif') {
+                qualityGroup.style.display = 'block';
+            } else {
+                qualityGroup.style.display = 'none';
+            }
+        }
+
+        function updateQuality(value) {
+            document.getElementById('qualityValue').textContent = value;
+        }
+
+        function toggleResize() {
+            const resizeOptions = document.getElementById('resizeOptions');
+            const isChecked = document.getElementById('resizeCheckbox').checked;
+            resizeOptions.style.display = isChecked ? 'block' : 'none';
+        }
+
+        function updateResizeDefaults(width, height) {
+            const widthInput = document.getElementById('newWidth');
+            const heightInput = document.getElementById('newHeight');
+            
+            widthInput.value = width;
+            heightInput.value = height;
+            
+            // Clear existing listeners to prevent duplicates
+            widthInput.oninput = null;
+            heightInput.oninput = null;
+            
+            // Add aspect ratio maintenance
+            const aspectRatio = width / height;
+            
+            function aspectRatioHandler(e) {
+                if (document.getElementById('maintainAspect').checked) {
+                    if (e.target === widthInput) {
+                        heightInput.value = Math.round(widthInput.value / aspectRatio);
+                    } else {
+                        widthInput.value = Math.round(heightInput.value * aspectRatio);
+                    }
+                }
+            }
+            
+            widthInput.oninput = aspectRatioHandler;
+            heightInput.oninput = aspectRatioHandler;
+        }
+
+        function convertImage() {
+            if (!currentImageData || !originalImage) {
+                alert('Please select an image first');
+                return;
+            }
+
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Get resize settings
+                const shouldResize = document.getElementById('resizeCheckbox').checked;
+                const newWidth = shouldResize ? parseInt(document.getElementById('newWidth').value) : originalImage.width;
+                const newHeight = shouldResize ? parseInt(document.getElementById('newHeight').value) : originalImage.height;
+                
+                // Safety check for extreme sizes
+                if (newWidth > CONFIG.MAX_DIMENSION || newHeight > CONFIG.MAX_DIMENSION) {
+                    alert(`Image dimensions too large. Maximum supported size is ${CONFIG.MAX_DIMENSION}x${CONFIG.MAX_DIMENSION} pixels.`);
+                    return;
+                }
+                
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+                
+                // Draw image to canvas
+                ctx.drawImage(originalImage, 0, 0, newWidth, newHeight);
+            
+            // Convert based on selected format
+            if (selectedFormat === 'svg') {
+                // For SVG, use resized canvas data if resizing is enabled
+                const dataUrlForSvg = shouldResize ? canvas.toDataURL('image/png') : currentImageData;
+                generateSVG(dataUrlForSvg, newWidth, newHeight);
+            } else {
+                const quality = document.getElementById('qualitySlider').value / 100;
+                let mimeType = `image/${selectedFormat}`;
+                
+                // Warn about limited browser support for certain formats
+                if (selectedFormat === 'gif' || selectedFormat === 'bmp') {
+                    const proceed = confirm(`Warning: ${selectedFormat.toUpperCase()} export has limited browser support and may fall back to PNG. Continue?`);
+                    if (!proceed) return;
+                }
+                
+                // Handle special cases
+                if (selectedFormat === 'jpeg') {
+                    // Fill background with white for JPEG (no transparency)
+                    const tempCanvas = document.createElement('canvas');
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCanvas.width = newWidth;
+                    tempCanvas.height = newHeight;
+                    tempCtx.fillStyle = 'white';
+                    tempCtx.fillRect(0, 0, newWidth, newHeight);
+                    tempCtx.drawImage(canvas, 0, 0);
+                    
+                    currentConvertedData = tempCanvas.toDataURL(mimeType, quality);
+                } else if (selectedFormat === 'webp' || selectedFormat === 'avif') {
+                    currentConvertedData = canvas.toDataURL(mimeType, quality);
+                } else {
+                    currentConvertedData = canvas.toDataURL(mimeType);
+                }
+                
+                // Check if browser fell back to PNG (common for unsupported formats)
+                const actualMimeType = currentConvertedData.substring(5, currentConvertedData.indexOf(';'));
+                const actualFormat = actualMimeType.replace('image/', '');
+                
+                displayConvertedImage(actualFormat);
+            }
+        } catch (error) {
+            console.error('Conversion error:', error);
+            alert('An error occurred during conversion. Please try a different image or format.');
+        }
+    }
+
+        function generateSVG(dataUrl, width, height) {
+            // Sanitize filename for XML
+            const sanitizedFileName = (originalFileName || 'Converted Image')
+                .replace(/[<>&"']/g, function(match) {
+                    return {'<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;'}[match];
+                });
+            
+            const svgContent = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="${width}"
+   height="${height}"
+   viewBox="0 0 ${width} ${height}"
+   version="1.1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>${sanitizedFileName}</title>
+  <desc>Image converted to SVG format using Universal Image Converter</desc>
+  
+  <!-- Embedded Image -->
+  <image
+     width="${width}"
+     height="${height}"
+     x="0"
+     y="0"
+     href="${dataUrl}"
+     xlink:href="${dataUrl}"
+     preserveAspectRatio="xMidYMid meet" />
+</svg>`;
+
+            currentConvertedData = svgContent;
+            
+            const output = document.getElementById('svgOutput');
+            output.textContent = svgContent;
+            output.style.display = 'block';
+            
+            document.getElementById('outputSection').style.display = 'block';
+            document.getElementById('downloadBtn').style.display = 'inline-block';
+        }
+
+        function displayConvertedImage(actualFormat = null) {
+            const imageOutput = document.getElementById('imageOutput');
+            
+            // Detect actual format from data URL if not provided
+            if (!actualFormat) {
+                actualFormat = currentConvertedData.substring(5, currentConvertedData.indexOf(';')).replace('image/', '');
+            }
+            
+            const displayFormat = actualFormat.toUpperCase();
+            const isFallback = actualFormat !== selectedFormat;
+            
+            imageOutput.innerHTML = `
+                <img src="${currentConvertedData}" alt="Converted Image" style="max-width: 100%; max-height: 400px; border: 1px solid #ddd; border-radius: 5px;" />
+                <div style="margin-top: 10px; color: #666;">✅ Converted to ${displayFormat}${isFallback ? ' (browser fallback)' : ''}</div>
+            `;
+            
+            document.getElementById('outputSection').style.display = 'block';
+            document.getElementById('downloadBtn').style.display = 'inline-block';
+            
+            // Focus management for accessibility
+            document.getElementById('downloadBtn').focus();
+            
+            // Announce completion for screen readers
+            document.getElementById('announcements').textContent = `Image converted to ${displayFormat}${isFallback ? ' using browser fallback' : ''}. Download button is now available.`;
+        }
+
+        function downloadFile() {
+            if (!currentConvertedData) {
+                alert('No converted file to download');
+                return;
+            }
+
+            // Sanitize filename for download
+            const sanitizedName = (originalFileName || 'converted-image')
+                .replace(/[<>:"/\\|?*]/g, '_')
+                .replace(/\s+/g, '_');
+
+            if (selectedFormat === 'svg') {
+                const blob = new Blob([currentConvertedData], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${sanitizedName}.svg`;
+                a.setAttribute('aria-label', 'Download converted SVG file');
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                // Announce download for screen readers
+                document.getElementById('announcements').textContent = 'SVG file download started.';
+            } else {
+                // For better performance with large images, try to use the original canvas if available
+                const lastCanvas = document.querySelector('canvas');
+                if (lastCanvas && typeof lastCanvas.toBlob === 'function') {
+                    // Use toBlob for better memory handling
+                    const actualFormat = currentConvertedData.substring(5, currentConvertedData.indexOf(';')).replace('image/', '');
+                    const extension = actualFormat === 'jpeg' ? 'jpg' : actualFormat;
+                    
+                    lastCanvas.toBlob((blob) => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${sanitizedName}.${extension}`;
+                        a.setAttribute('aria-label', `Download converted ${extension.toUpperCase()} file`);
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        
+                        // Announce download for screen readers
+                        document.getElementById('announcements').textContent = `${extension.toUpperCase()} file download started.`;
+                    }, `image/${actualFormat}`);
+                } else {
+                    // Fallback to data URL method
+                    const actualFormat = currentConvertedData.substring(5, currentConvertedData.indexOf(';')).replace('image/', '');
+                    const extension = actualFormat === 'jpeg' ? 'jpg' : actualFormat;
+                    
+                    const a = document.createElement('a');
+                    a.href = currentConvertedData;
+                    a.download = `${sanitizedName}.${extension}`;
+                    a.setAttribute('aria-label', `Download converted ${extension.toUpperCase()} file`);
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    // Announce download for screen readers
+                    document.getElementById('announcements').textContent = `${extension.toUpperCase()} file download started.`;
+                }
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            console.log('Universal Image Format Converter ready!');
+            
+            // Enhanced browser capability detection
+            const canvas = document.createElement('canvas');
+            canvas.width = 1;
+            canvas.height = 1;
+            
+            const browserSupport = {
+                webp: canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0,
+                avif: canvas.toDataURL('image/avif').indexOf('data:image/avif') === 0,
+                offscreenCanvas: 'OffscreenCanvas' in window
+            };
+            
+            console.log('Browser format support:', browserSupport);
+            
+            // Update UI based on browser support
+            if (!browserSupport.webp) {
+                const webpOption = document.querySelector('[data-format="webp"]');
+                if (webpOption) {
+                    webpOption.style.opacity = '0.6';
+                    webpOption.title = 'WebP not supported in this browser';
+                    const info = webpOption.querySelector('.format-info');
+                    if (info) {
+                        info.textContent = 'Modern, efficient compression (⚠️ Not supported in this browser)';
+                    }
+                }
+            }
+            
+            if (!browserSupport.avif) {
+                const avifOption = document.querySelector('[data-format="avif"]');
+                if (avifOption) {
+                    avifOption.style.opacity = '0.6';
+                    avifOption.title = 'AVIF not supported in this browser';
+                    const info = avifOption.querySelector('.format-info');
+                    if (info) {
+                        info.textContent = 'Next-gen format, best compression (⚠️ Not supported in this browser)';
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
