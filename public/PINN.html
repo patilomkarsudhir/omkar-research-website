@@ -1,0 +1,2281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>True Automatic Differentiation PINN Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]],
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]],
+                processEscapes: true,
+                processEnvironments: true,
+                packages: {'[+]': ['ams']},
+            },
+            options: {
+                skipHtmlTags: ["script", "noscript", "style", "textarea", "pre"],
+            },
+        };
+    </script>
+    <script
+        type="text/javascript"
+        id="MathJax-script"
+        async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"
+    ></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #16213e;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --bg-glass: rgba(255, 255, 255, 0.1);
+            
+            --text-primary: #ffffff;
+            --text-secondary: #b8b8d1;
+            --text-muted: #8b8ba7;
+            --text-accent: #64ffda;
+            
+            --border-primary: rgba(255, 255, 255, 0.12);
+            --border-secondary: rgba(255, 255, 255, 0.08);
+            
+            --shadow-primary: 0 8px 32px rgba(31, 38, 135, 0.37);
+            --shadow-secondary: 0 4px 16px rgba(31, 38, 135, 0.25);
+            --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 1.5rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: var(--spacing-lg);
+            position: relative;
+        }
+
+        /* Header Section */
+        .header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 200px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        .main-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--spacing-sm);
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: clamp(1.1rem, 2vw, 1.3rem);
+            color: var(--text-secondary);
+            font-weight: 400;
+            margin-bottom: var(--spacing-lg);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .version-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-primary);
+            border-radius: 50px;
+            padding: var(--spacing-xs) var(--spacing-md);
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-accent);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        /* Glass Card Design */
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        }
+
+        /* System Selection */
+        .system-selector {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .system-tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .system-tab {
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: var(--bg-glass);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: var(--text-secondary);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .system-tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .system-tab:hover::before,
+        .system-tab.active::before {
+            left: 0;
+        }
+
+        .system-tab:hover,
+        .system-tab.active {
+            color: var(--text-primary);
+            border-color: var(--border-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-secondary);
+        }
+
+        .system-tab .emoji {
+            font-size: 1.2em;
+            margin-right: var(--spacing-xs);
+        }
+
+        /* Main Content Grid */
+        .main-grid {
+            display: grid;
+            /* Single column layout places the controls below the plots */
+            grid-template-columns: 1fr;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        /* Retain media query in case future changes add columns again */
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Simulation Panel */
+        .simulation-panel {
+            padding: var(--spacing-lg);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+
+        .panel-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+    .equation-display {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--text-accent);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .equation-display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(100, 255, 218, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* Visualization Grid */
+        .viz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .viz-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .viz-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-primary);
+            border-color: var(--border-primary);
+        }
+
+        .viz-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .viz-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        /* Actions Bar */
+        .actions-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+            justify-content: center;
+            margin-bottom: var(--spacing-lg);
+        }
+        .actions-bar .btn {
+            min-width: 190px;
+        }
+
+        canvas {
+            border-radius: var(--radius-sm);
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-secondary);
+            width: 100%;
+            height: auto;
+            transition: all 0.3s ease;
+        }
+
+        canvas:hover {
+            border-color: var(--border-primary);
+            box-shadow: var(--shadow-secondary);
+        }
+
+        /* Control Panel */
+        .control-panel {
+            padding: var(--spacing-lg);
+            height: fit-content;
+            /* No sticky/sidebar behavior; sits below plots */
+            position: static;
+            top: auto;
+            margin-top: var(--spacing-lg);
+        }
+
+        .control-section {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .control-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .parameter-grid {
+            display: grid;
+            gap: var(--spacing-md);
+            /* Make controls flow nicely across full width */
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        .parameter-item {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            transition: all 0.3s ease;
+        }
+
+        .parameter-item:hover {
+            border-color: var(--border-primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .parameter-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xs);
+            display: block;
+        }
+
+        .parameter-controls {
+            display: flex;
+            gap: var(--spacing-xs);
+            align-items: center;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            outline: none;
+            border: none;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid var(--text-primary);
+            box-shadow: var(--shadow-secondary);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid var(--text-primary);
+            box-shadow: var(--shadow-secondary);
+        }
+
+        input[type="number"] {
+            width: 80px;
+            padding: var(--spacing-xs);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--text-accent);
+            box-shadow: 0 0 0 2px rgba(100, 255, 218, 0.2);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .btn {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.3s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-secondary);
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-gradient);
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+        }
+
+        .btn-accent {
+            background: var(--accent-gradient);
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+        }
+
+        .btn-success {
+            background: var(--success-gradient);
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Status and Progress */
+        .status-card {
+            margin-bottom: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-primary);
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status-training {
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.2), rgba(255, 193, 7, 0.2));
+            border-color: #ffc107;
+            color: #ffc107;
+        }
+
+        .status-complete {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(67, 233, 123, 0.2));
+            border-color: #4caf50;
+            color: #4caf50;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .metrics-card {
+            padding: var(--spacing-lg);
+        }
+
+        .metrics-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .metrics-grid-inner {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: var(--spacing-sm);
+        }
+
+        .metric-item {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .metric-item:hover {
+            border-color: var(--border-primary);
+            transform: translateY(-2px);
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: var(--spacing-xs);
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-accent);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Educational Section */
+        .education-section {
+            margin-top: var(--spacing-xl);
+        }
+
+        .education-card {
+            padding: var(--spacing-xl);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 1px solid var(--border-primary);
+        }
+
+        .education-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-lg);
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .education-content {
+            display: grid;
+            gap: var(--spacing-lg);
+        }
+
+        .concept-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            transition: all 0.3s ease;
+        }
+
+        .concept-card:hover {
+            border-color: var(--border-primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .concept-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            color: var(--text-accent);
+        }
+
+        .concept-description {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: var(--spacing-md);
+        }
+
+    .equation-box {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+            text-align: center;
+            color: var(--text-accent);
+            font-size: 1rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            display: grid;
+            gap: var(--spacing-sm);
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+            color: var(--text-secondary);
+        }
+
+        .feature-icon {
+            color: var(--text-accent);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+            background: var(--bg-glass);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-secondary);
+            padding: var(--spacing-sm);
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--text-accent);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--spacing-md);
+            }
+            
+            .viz-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .parameter-controls {
+                flex-direction: column;
+                gap: var(--spacing-sm);
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid-inner {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Focus Styles */
+        *:focus {
+            outline: 2px solid var(--text-accent);
+            outline-offset: 2px;
+        }
+
+        /* Selection Styles */
+        ::selection {
+            background: rgba(100, 255, 218, 0.3);
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <h1 class="main-title">Physics-Informed Neural Networks</h1>
+            <p class="subtitle">
+                Advanced multi-system demonstration with exact automatic differentiation 
+                for physical parameter discovery and scientific machine learning
+            </p>
+        </header>
+
+        <!-- System Selection -->
+        <section class="system-selector glass-card">
+            <div style="padding: var(--spacing-lg);">
+                <h2 class="panel-title">
+                    <span>🔬</span>
+                    Select Physical System
+                </h2>
+                <div class="system-tabs">
+                    <div class="system-tab active" data-system="oscillator">
+                        <span class="emoji">🌊</span>
+                        <span>Harmonic Oscillator</span>
+                    </div>
+                    <div class="system-tab" data-system="pendulum">
+                        <span class="emoji">🪀</span>
+                        <span>Damped Pendulum</span>
+                    </div>
+                    <div class="system-tab" data-system="predatorprey">
+                        <span class="emoji">🐰🐺</span>
+                        <span>Lotka-Volterra</span>
+                    </div>
+                </div>
+                <div class="equation-display" id="physicsEquation">
+                    \[ \frac{d^2 x}{dt^2} + 2\zeta\omega\, \frac{dx}{dt} + \omega^2 x = 0 \]
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <div class="main-grid">
+            <!-- Simulation Panel -->
+            <section class="simulation-panel glass-card">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="systemTitle">
+                        <span>🌊</span>
+                        <span>Damped Harmonic Oscillator</span>
+                    </h2>
+                </div>
+                <!-- Actions Bar (moved up for quick access) -->
+                <div class="actions-bar">
+                    <button id="generateData" class="btn btn-accent">🎲 Generate New Data</button>
+                    <button id="trainNN" class="btn btn-primary">🤖 Train Standard NN</button>
+                    <button id="trainPINN" class="btn btn-success">⚡ Train AD-PINN</button>
+                    <button id="pauseTraining" class="btn" style="display: none;">⏸️ Pause Training</button>
+                    <button id="reset" class="btn btn-secondary">🔄 Reset All</button>
+                </div>
+
+                <!-- Visualization Grid -->
+                <div class="viz-grid">
+                    <div class="viz-card">
+                        <h3 class="viz-title">True Solution</h3>
+                        <p class="viz-subtitle">Analytical/Numerical Ground Truth</p>
+                        <canvas id="trueCanvas" width="350" height="250"></canvas>
+                    </div>
+                    <div class="viz-card">
+                        <h3 class="viz-title">Standard Neural Network</h3>
+                        <p class="viz-subtitle">Data-Only Training</p>
+                        <canvas id="nnCanvas" width="350" height="250"></canvas>
+                    </div>
+                    <div class="viz-card">
+                        <h3 class="viz-title">Physics-Informed NN</h3>
+                        <p class="viz-subtitle">Physics + Data Training</p>
+                        <canvas id="pinnCanvas" width="350" height="250"></canvas>
+                    </div>
+                </div>
+
+                <!-- Training Progress -->
+                <div id="status" class="status-card" style="display: none;"></div>
+                <div id="trainingProgress" style="text-align: center; color: var(--text-secondary); margin-bottom: var(--spacing-md);">
+                    Ready to begin training...
+                </div>
+            </section>
+
+            <!-- Control Panel -->
+            <aside class="control-panel glass-card">
+                <!-- System Parameters -->
+                <div class="control-section">
+                    <h3 class="control-section-title">
+                        <span>⚙️</span>
+                        <span>System Parameters</span>
+                    </h3>
+                    <div class="parameter-grid">
+                        <!-- Oscillator Controls -->
+                        <div id="oscillatorControls" class="system-controls">
+                            <div class="parameter-item">
+                                <label class="parameter-label">Mass (m)</label>
+                                <div class="parameter-controls">
+                                    <input type="range" id="massSlider" min="0.5" max="3" step="0.1" value="1" />
+                                    <input type="number" id="massValue" min="0.5" max="3" step="0.1" value="1" />
+                                </div>
+                            </div>
+                            <div class="parameter-item">
+                                <label class="parameter-label">Spring Constant (k)</label>
+                                <div class="parameter-controls">
+                                    <input type="range" id="springSlider" min="0.5" max="5" step="0.1" value="2" />
+                                    <input type="number" id="springValue" min="0.5" max="5" step="0.1" value="2" />
+                                </div>
+                            </div>
+                            <div class="parameter-item">
+                                <label class="parameter-label">Damping (ζ)</label>
+                                <div class="parameter-controls">
+                                    <input type="range" id="zetaSlider" min="0" max="0.5" step="0.01" value="0.1" />
+                                    <input type="number" id="zetaValue" min="0" max="0.5" step="0.01" value="0.1" />
+                                </div>
+                            </div>
+                            <div class="parameter-item">
+                                <label class="parameter-label">Initial Position (x₀)</label>
+                                <div class="parameter-controls">
+                                    <input type="range" id="x0Slider" min="-2" max="2" step="0.1" value="1.5" />
+                                    <input type="number" id="x0Value" min="-2" max="2" step="0.1" value="1.5" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pendulum Controls -->
+                        <div id="pendulumControls" class="system-controls" style="display: none;">
+                            <div class="parameter-item">
+                                <label class="parameter-label">Length (L) [m]</label>
+                                <div class="parameter-controls">
+                                    <input type="range" id="lengthSlider" min="0.5" max="3" step="0.1" value="1" />
+                                    <input type="number" id="lengthValue" min="0.5" max="3" step="0.1" value="1" />
+                                </div>
+                            </div>
+                            <div class="parameter-item">
+                                <label class="parameter-label">Gravity (g) [m/s²]</label>
+                                <div class="parameter-controls">
+                                    <input type="range" id="gravitySlider" min="5" max="15" step="0.1" value="9.81" />
+                                    <input type="number" id="gravityValue" min="5" max="15" step="0.1" value="9.81" />
+                                </div>
+                            </div>
+                            <div class="parameter-item">
+                                <label class="parameter-label">Initial Angle (θ₀) [rad]</label>
+                                <div class="parameter-controls">
+                                    <input type="range" id="theta0Slider" min="-0.5" max="0.5" step="0.01" value="0.3" />
+                                    <input type="number" id="theta0Value" min="-0.5" max="0.5" step="0.01" value="0.3" />
+                                </div>
+                            </div>
+                            <div class="parameter-item">
+                                <label class="parameter-label">Damping (β)</label>
+                                <div class="parameter-controls">
+                                    <input type="range" id="betaSlider" min="0" max="2" step="0.01" value="0.1" />
+                                    <input type="number" id="betaValue" min="0" max="2" step="0.01" value="0.1" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lotka-Volterra Controls -->
+                        <div id="predatorpreyControls" class="system-controls" style="display: none;">
+                            <div class="parameter-item">
+                                <label class="parameter-label">Prey Growth (α)</label>
+                                <div class="parameter-controls">
+                                    <input type="range" id="alphaSlider" min="0.1" max="2" step="0.1" value="0.8" />
+                                    <input type="number" id="alphaValue" min="0.1" max="2" step="0.1" value="0.8" />
+                                </div>
+                            </div>
+                            <div class="parameter-item">
+                                <label class="parameter-label">Predation Rate (β)</label>
+                                <div class="parameter-controls">
+                                    <input type="range" id="betaSlider" min="0.1" max="1" step="0.05" value="0.4" />
+                                    <input type="number" id="betaValue" min="0.1" max="1" step="0.05" value="0.4" />
+                                </div>
+                            </div>
+                            <div class="parameter-item">
+                                <label class="parameter-label">Predator Death (γ)</label>
+                                <div class="parameter-controls">
+                                    <input type="range" id="gammaSlider" min="0.1" max="1" step="0.05" value="0.6" />
+                                    <input type="number" id="gammaValue" min="0.1" max="1" step="0.05" value="0.6" />
+                                </div>
+                            </div>
+                            <div class="parameter-item">
+                                <label class="parameter-label">Predator Efficiency (δ)</label>
+                                <div class="parameter-controls">
+                                    <input type="range" id="deltaSlider" min="0.1" max="1" step="0.05" value="0.3" />
+                                    <input type="number" id="deltaValue" min="0.1" max="1" step="0.05" value="0.3" />
+                                </div>
+                            </div>
+                            <div class="parameter-item">
+                                <label class="parameter-label">Initial Prey (x₀)</label>
+                                <div class="parameter-controls">
+                                    <input type="range" id="x0LVSlider" min="0.5" max="5" step="0.1" value="2.0" />
+                                    <input type="number" id="x0LVValue" min="0.5" max="5" step="0.1" value="2.0" />
+                                </div>
+                            </div>
+                            <div class="parameter-item">
+                                <label class="parameter-label">Initial Predator (y₀)</label>
+                                <div class="parameter-controls">
+                                    <input type="range" id="y0LVSlider" min="0.5" max="3" step="0.1" value="1.0" />
+                                    <input type="number" id="y0LVValue" min="0.5" max="3" step="0.1" value="1.0" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Training Configuration -->
+                <div class="control-section">
+                    <h3 class="control-section-title">
+                        <span>🎛️</span>
+                        <span>Training Configuration</span>
+                    </h3>
+                    <div class="parameter-grid">
+                        <div class="parameter-item">
+                            <label class="parameter-label">Training Data Points</label>
+                            <div class="parameter-controls">
+                                <input type="range" id="dataSlider" min="5" max="30" step="1" value="15" />
+                                <input type="number" id="dataValue" min="5" max="30" step="1" value="15" />
+                            </div>
+                        </div>
+                        <div class="parameter-item">
+                            <label class="parameter-label">Learning Rate</label>
+                            <div class="parameter-controls">
+                                <input type="range" id="lrSlider" min="0.001" max="0.1" step="0.001" value="0.01" />
+                                <input type="number" id="lrValue" min="0.001" max="0.1" step="0.001" value="0.01" />
+                            </div>
+                        </div>
+                        <div class="parameter-item">
+                            <label class="parameter-label">Training Epochs</label>
+                            <div class="parameter-controls">
+                                <input type="range" id="epochsSlider" min="100" max="3000" step="100" value="1000" />
+                                <input type="number" id="epochsValue" min="100" max="3000" step="100" value="1000" />
+                            </div>
+                        </div>
+                        <div class="parameter-item">
+                            <label class="parameter-label">Physics Weight (λ)</label>
+                            <div class="parameter-controls">
+                                <input type="range" id="physicsWeightSlider" min="0.1" max="10" step="0.1" value="1.0" />
+                                <input type="number" id="physicsWeightValue" min="0.1" max="10" step="0.1" value="1.0" />
+                            </div>
+                        </div>
+                        <div class="parameter-item">
+                            <label class="parameter-label">Hidden Neurons</label>
+                            <div class="parameter-controls">
+                                <input type="range" id="hiddenSizeSlider" min="5" max="20" step="1" value="10" />
+                                <input type="number" id="hiddenSizeValue" min="5" max="20" step="1" value="10" />
+                            </div>
+                        </div>
+                        <div class="parameter-item">
+                            <label class="parameter-label">Collocation Points</label>
+                            <div class="parameter-controls">
+                                <input type="range" id="collocationSlider" min="20" max="100" step="10" value="50" />
+                                <input type="number" id="collocationValue" min="20" max="100" step="10" value="50" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                
+            </aside>
+        </div>
+
+        <!-- Metrics Dashboard -->
+        <section class="metrics-grid">
+            <!-- Training Progress -->
+            <div class="metrics-card glass-card">
+                <h3 class="metrics-title">
+                    <span>📊</span>
+                    <span>Training Progress</span>
+                </h3>
+                <div class="chart-container">
+                    <canvas id="lossChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="metrics-card glass-card">
+                <h3 class="metrics-title">
+                    <span>📈</span>
+                    <span>Performance Analysis</span>
+                </h3>
+                <div class="metrics-grid-inner">
+                    <div class="metric-item">
+                        <div class="metric-label">Standard NN MSE</div>
+                        <div class="metric-value" id="nnMse">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">PINN MSE</div>
+                        <div class="metric-value" id="pinnMse">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">NN Physics Error</div>
+                        <div class="metric-value" id="nnPhysicsError">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">PINN Physics Error</div>
+                        <div class="metric-value" id="pinnPhysicsError">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Parameter Discovery -->
+            <div class="metrics-card glass-card">
+                <h3 class="metrics-title">
+                    <span>🔬</span>
+                    <span>Parameter Discovery</span>
+                </h3>
+                <div class="metrics-grid-inner">
+                    <div class="metric-item">
+                        <div class="metric-label" id="trueParam1Label">True Parameter 1</div>
+                        <div class="metric-value" id="trueParam1">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label" id="pinnParam1Label">PINN Parameter 1</div>
+                        <div class="metric-value" id="pinnParam1">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label" id="trueParam2Label">True Parameter 2</div>
+                        <div class="metric-value" id="trueParam2">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label" id="pinnParam2Label">PINN Parameter 2</div>
+                        <div class="metric-value" id="pinnParam2">--</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Educational Content -->
+        <section class="education-section">
+            <div class="education-card glass-card">
+                <h2 class="education-title">Understanding Physics‑Informed Neural Networks</h2>
+
+                <div class="education-content">
+                    <div class="concept-card">
+                        <h3 class="concept-title">Mathematical formulation</h3>
+                        <p class="concept-description">
+                            Let \(\mathcal{D}=\{(t_i,y_i)\}_{i=1}^N\) be (possibly scarce) observations of a state variable and let the governing law be expressed as a differential operator \(\mathcal{F}[u](t;\lambda)=0\), with unknown parameters \(\lambda\). A neural ansatz \(u_\theta(t)\) approximates the state, and the residual at a collocation point \(s_j\) is defined by
+                        </p>
+                        <div class="equation-box">\[ R_\theta(s_j;\lambda) = \mathcal{F}[u_\theta](s_j;\lambda). \]</div>
+                        <p class="concept-description">
+                            Training solves a regularized, multi-objective least-squares problem that balances data fidelity, physics residuals, and constraints (e.g., initial/boundary conditions):
+                        </p>
+                        <div class="equation-box">\[
+                            \mathcal{L}(\theta,\lambda) 
+                            = \underbrace{\frac{1}{N}\sum_{i=1}^N \lVert u_\theta(t_i)-y_i \rVert^2}_{\text{data}}
+                            + \alpha\, \underbrace{\frac{1}{M}\sum_{j=1}^M \lVert R_\theta(s_j;\lambda) \rVert^2}_{\text{physics}}
+                            + \underbrace{\beta\, \mathcal{B}[u_\theta]}_{\text{IC/BC penalties}}.\]
+                        </div>
+                    </div>
+
+                    <div class="concept-card">
+                        <h3 class="concept-title">Automatic differentiation and training</h3>
+                        <p class="concept-description">
+                            Derivatives required by \(\mathcal{F}\) are computed exactly via automatic differentiation. In this demo, first- and second-order time derivatives \(\dot u_\theta,\, \ddot u_\theta\) are obtained by an order‑2 forward‑mode AD recurrence, while gradients of \(\mathcal{L}\) with respect to network weights are accumulated by reverse‑mode backpropagation. Parameters \(\lambda\) enter the residual analytically, yielding closed‑form physics gradients \(\partial \mathcal{L}/\partial \lambda\) without finite differences. Optimization uses Adam with light gradient clipping.
+                        </p>
+                    </div>
+
+                    <div class="concept-card">
+                        <h3 class="concept-title">Parameter identification</h3>
+                        <p class="concept-description">
+                            When \(\lambda\) is unknown, PINNs perform system identification by minimizing physics residuals. For the damped oscillator with unknown \((\omega,\zeta)\), the residual is
+                        </p>
+                        <div class="equation-box">\[ f_\theta(t;\omega,\zeta)=\ddot u_\theta(t)+2\zeta\omega\,\dot u_\theta(t)+\omega^2 u_\theta(t). \]</div>
+                        <p class="concept-description">
+                            The gradients \(\partial f_\theta/\partial \omega\) and \(\partial f_\theta/\partial \zeta\) have simple analytic forms, enabling stable updates of \(\lambda\) alongside \(\theta\). Similar constructions apply to the small‑angle pendulum parameters \(g/L\) and \(\beta\), and to the Lotka–Volterra rates \(\alpha,\beta,\gamma,\delta\).
+                        </p>
+                    </div>
+
+                    <div class="concept-card">
+                        <h3 class="concept-title">Collocation and constraints</h3>
+                        <p class="concept-description">
+                            Collocation points \(\{s_j\}\) probe the operator across the domain; sampling can be uniform, stratified, or adaptive. Initial and boundary conditions can be enforced softly via the penalty \(\mathcal{B}[u_\theta]\) or hard‑coded through constrained ansatzes. Proper scaling of \((\alpha,\beta)\), non‑dimensionalization, and normalization of states and time are often crucial for stable training.
+                        </p>
+                    </div>
+
+                    <div class="concept-card">
+                        <h3 class="concept-title">Models in this demonstration</h3>
+                        <p class="concept-description">The three exemplar systems span linear and nonlinear dynamics and single‑ and multi‑state settings:</p>
+                        <div class="equation-box">\[ \ddot x + 2\zeta\omega\,\dot x + \omega^2 x = 0 \quad \text{(damped harmonic oscillator)}. \]</div>
+                        <div class="equation-box">\[ \ddot \theta + \beta\,\dot \theta + \tfrac{g}{L}\,\theta = 0 \quad \text{(small‑angle damped pendulum)}. \]</div>
+                        <div class="equation-box">\[ \begin{aligned} \dot x &= \alpha x - \beta x y, \\ \dot y &= -\gamma y + \delta x y \end{aligned} \quad \text{(Lotka–Volterra)}. \]</div>
+                        <p class="concept-description">In the single‑state cases, a single network \(u_\theta(t)\) suffices. For multi‑state dynamics, one may use either a multi‑output network or separate surrogates for each state.</p>
+                    </div>
+
+                    <div class="concept-card">
+                        <h3 class="concept-title">Practical considerations</h3>
+                        <p class="concept-description">
+                            PINN optimization is non‑convex. Useful practices include curriculum strategies for \(\alpha\), balanced batching of data and collocation points, early stopping on a held‑out physics set, gradient clipping, and diagnostics that monitor each loss component. Sensible units and non‑dimensionalization often improve conditioning and identifiability.
+                        </p>
+                    </div>
+
+                    <div class="concept-card">
+                        <h3 class="concept-title">References</h3>
+                        <ul class="feature-list">
+                            <li class="feature-item">
+                                <span class="feature-icon">◆</span>
+                                <span>
+                                    M. Raissi, P. Perdikaris, and G. E. Karniadakis, “Physics‑informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations,” Journal of Computational Physics, 378 (2019), 686–707. 
+                                    <a href="https://doi.org/10.1016/j.jcp.2018.10.045" target="_blank" rel="noopener noreferrer">DOI</a> · 
+                                    <a href="https://arxiv.org/abs/1711.10561" target="_blank" rel="noopener noreferrer">arXiv</a>
+                                </span>
+                            </li>
+                            <li class="feature-item">
+                                <span class="feature-icon">◆</span>
+                                <span>
+                                    M. Raissi and G. E. Karniadakis, “Hidden physics models: Machine learning of nonlinear partial differential equations,” Journal of Computational Physics, 357 (2018), 125–141. 
+                                    <a href="https://doi.org/10.1016/j.jcp.2017.11.039" target="_blank" rel="noopener noreferrer">DOI</a>
+                                </span>
+                            </li>
+                            <li class="feature-item">
+                                <span class="feature-icon">◆</span>
+                                <span>
+                                    G. E. Karniadakis, I. G. Kevrekidis, L. Lu, P. Perdikaris, S. Wang, and L. Yang, “Physics‑informed machine learning,” Nature Reviews Physics, 3 (2021), 422–440. 
+                                    <a href="https://doi.org/10.1038/s42254-021-00314-5" target="_blank" rel="noopener noreferrer">DOI</a>
+                                </span>
+                            </li>
+                            <li class="feature-item">
+                                <span class="feature-icon">◆</span>
+                                <span>
+                                    A. G. Baydin, B. A. Pearlmutter, A. A. Radul, and J. M. Siskind, “Automatic differentiation in machine learning: A survey,” Journal of Machine Learning Research, 18 (2018), 1–43. 
+                                    <a href="https://www.jmlr.org/papers/v18/17-468.html" target="_blank" rel="noopener noreferrer">JMLR</a> · 
+                                    <a href="https://arxiv.org/abs/1502.05767" target="_blank" rel="noopener noreferrer">arXiv</a>
+                                </span>
+                            </li>
+                            <li class="feature-item">
+                                <span class="feature-icon">◆</span>
+                                <span>
+                                    D. P. Kingma and J. Ba, “Adam: A Method for Stochastic Optimization,” in Proc. ICLR (2015). 
+                                    <a href="https://arxiv.org/abs/1412.6980" target="_blank" rel="noopener noreferrer">arXiv</a>
+                                </span>
+                            </li>
+                            <li class="feature-item">
+                                <span class="feature-icon">◆</span>
+                                <span>
+                                    L. Lu, Y. Meng, Z. Mao, and G. E. Karniadakis, “DeepXDE: A deep learning library for solving differential equations,” SIAM Review, 63(1) (2021), 208–228. 
+                                    <a href="https://doi.org/10.1137/19M1274067" target="_blank" rel="noopener noreferrer">DOI</a>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // ===============================
+        // Physical System Abstractions
+        // ===============================
+        class PhysicalSystem {
+            constructor() {
+                this.parameters = {};
+            }
+            
+            // Override in subclasses
+            getTruePosition(t) { throw new Error("Must implement getTruePosition"); }
+            getPhysicsResidual(derivatives, physicsParams) { throw new Error("Must implement getPhysicsResidual"); }
+            getPhysicsGradients(derivatives, residual, physicsParams) { throw new Error("Must implement getPhysicsGradients"); }
+            getInitialPhysicsParams() { throw new Error("Must implement getInitialPhysicsParams"); }
+            getEquationDisplay() { throw new Error("Must implement getEquationDisplay"); }
+            getTitle() { throw new Error("Must implement getTitle"); }
+            getParameterLabels() { throw new Error("Must implement getParameterLabels"); }
+        }
+
+        class OscillatorSystem extends PhysicalSystem {
+            constructor(mass, springConstant, zeta, x0) {
+                super();
+                this.mass = mass;
+                this.springConstant = springConstant;
+                this.zeta = zeta;
+                this.x0 = x0;
+                this.omega = Math.sqrt(springConstant / mass);
+            }
+
+            getTruePosition(t) {
+                if (this.zeta >= 1) return this.x0 * (1 + this.omega * t) * Math.exp(-this.omega * t);
+                const damp = this.omega * Math.sqrt(1 - this.zeta * this.zeta);
+                return this.x0 * Math.exp(-this.zeta * this.omega * t) * Math.cos(damp * t);
+            }
+
+            getPhysicsResidual(derivatives, physicsParams) {
+                const { x, dx_dt, d2x_dt2 } = derivatives;
+                const w = physicsParams.param1, z = physicsParams.param2;
+                return d2x_dt2 + 2 * z * w * dx_dt + w * w * x;
+            }
+
+            getPhysicsGradients(derivatives, residual, physicsParams) {
+                const { x, dx_dt } = derivatives;
+                const w = physicsParams.param1, z = physicsParams.param2;
+                const df_dw = 2 * z * dx_dt + 2 * w * x;
+                const df_dz = 2 * w * dx_dt;
+                return [df_dw, df_dz];
+            }
+
+            getInitialPhysicsParams() {
+                return { param1: 1.4, param2: 0.05 }; // omega, zeta
+            }
+
+            getEquationDisplay() {
+                // LaTeX: d^2x/dt^2 + 2ζω dx/dt + ω^2 x = 0
+                return "\\[ \\frac{d^2 x}{dt^2} + 2\\zeta\\omega\\, \\frac{dx}{dt} + \\omega^2 x = 0 \\]";
+            }
+
+            getTitle() {
+                return "🌊 Damped Harmonic Oscillator";
+            }
+
+            getParameterLabels() {
+                return {
+                    trueParam1: "True ω",
+                    pinnParam1: "AD-PINN Discovered ω",
+                    trueParam2: "True ζ", 
+                    pinnParam2: "AD-PINN Discovered ζ"
+                };
+            }
+
+            getCurrentTrueParams() {
+                return { param1: this.omega, param2: this.zeta };
+            }
+        }
+
+        class PendulumSystem extends PhysicalSystem {
+            constructor(length, gravity, theta0, beta) {
+                super();
+                this.length = length;
+                this.gravity = gravity;
+                this.theta0 = theta0;
+                this.beta = beta; // damping coefficient
+                this.omega = Math.sqrt(gravity / length);
+            }
+
+            getTruePosition(t) {
+                if (this.beta === 0) {
+                    // Undamped pendulum
+                    return this.theta0 * Math.cos(this.omega * t);
+                } else {
+                    // Damped pendulum (small angle approximation)
+                    const gamma = this.beta / 2; // damping factor
+                    if (gamma < this.omega) {
+                        // Underdamped
+                        const wd = Math.sqrt(this.omega * this.omega - gamma * gamma);
+                        return this.theta0 * Math.exp(-gamma * t) * Math.cos(wd * t);
+                    } else {
+                        // Overdamped/critically damped - simplified
+                        return this.theta0 * Math.exp(-gamma * t) * (1 + this.omega * t);
+                    }
+                }
+            }
+
+            getPhysicsResidual(derivatives, physicsParams) {
+                const { x, dx_dt, d2x_dt2 } = derivatives;
+                const w2 = physicsParams.param1; // ω²
+                const beta = physicsParams.param2; // damping
+                return d2x_dt2 + beta * dx_dt + w2 * x;
+            }
+
+            getPhysicsGradients(derivatives, residual, physicsParams) {
+                const { x, dx_dt } = derivatives;
+                const df_dw2 = x; // ∂f/∂(ω²) = x
+                const df_dbeta = dx_dt; // ∂f/∂β = dx/dt
+                return [df_dw2, df_dbeta];
+            }
+
+            getInitialPhysicsParams() {
+                return { param1: 9.0, param2: 0.1 }; // ω², β
+            }
+
+            getEquationDisplay() {
+                // LaTeX: d^2θ/dt^2 + β dθ/dt + (g/L) θ = 0
+                return "\\[ \\frac{d^2 \\theta}{dt^2} + \\beta\\, \\frac{d\\theta}{dt} + \\frac{g}{L}\\, \\theta = 0 \\]";
+            }
+
+            getTitle() {
+                return "🪀 Damped Simple Pendulum";
+            }
+
+            getParameterLabels() {
+                return {
+                    trueParam1: "True g/L",
+                    pinnParam1: "AD-PINN Discovered g/L",
+                    trueParam2: "True β",
+                    pinnParam2: "AD-PINN Discovered β"
+                };
+            }
+
+            getCurrentTrueParams() {
+                return { param1: this.omega * this.omega, param2: this.beta }; // ω², β
+            }
+        }
+
+        class LotkaVolterraSystem extends PhysicalSystem {
+            constructor(alpha, beta, gamma, delta, x0, y0) {
+                super();
+                this.alpha = alpha;     // prey growth rate
+                this.beta = beta;       // predation rate
+                this.gamma = gamma;     // predator death rate
+                this.delta = delta;     // predator efficiency
+                this.x0 = x0;           // initial prey population
+                this.y0 = y0;           // initial predator population
+                this.isSystemOfEquations = true; // This is a system of ODEs
+            }
+
+            // For Lotka-Volterra, we solve the system numerically
+            getTruePosition(t) {
+                // Numerical solution using Runge-Kutta 4th order
+                const dt = 0.01;
+                let x = this.x0, y = this.y0;
+                const steps = Math.floor(t / dt);
+                
+                for (let i = 0; i < steps; i++) {
+                    // RK4 integration
+                    const k1x = this.alpha * x - this.beta * x * y;
+                    const k1y = -this.gamma * y + this.delta * x * y;
+                    
+                    const k2x = this.alpha * (x + dt * k1x / 2) - this.beta * (x + dt * k1x / 2) * (y + dt * k1y / 2);
+                    const k2y = -this.gamma * (y + dt * k1y / 2) + this.delta * (x + dt * k1x / 2) * (y + dt * k1y / 2);
+                    
+                    const k3x = this.alpha * (x + dt * k2x / 2) - this.beta * (x + dt * k2x / 2) * (y + dt * k2y / 2);
+                    const k3y = -this.gamma * (y + dt * k2y / 2) + this.delta * (x + dt * k2x / 2) * (y + dt * k2y / 2);
+                    
+                    const k4x = this.alpha * (x + dt * k3x) - this.beta * (x + dt * k3x) * (y + dt * k3y);
+                    const k4y = -this.gamma * (y + dt * k3y) + this.delta * (x + dt * k3x) * (y + dt * k3y);
+                    
+                    x += dt * (k1x + 2 * k2x + 2 * k3x + k4x) / 6;
+                    y += dt * (k1y + 2 * k2y + 2 * k3y + k4y) / 6;
+                }
+                
+                return x; // Return prey population (primary output)
+            }
+
+            // Get predator population
+            getTruePredatorPosition(t) {
+                const dt = 0.01;
+                let x = this.x0, y = this.y0;
+                const steps = Math.floor(t / dt);
+                
+                for (let i = 0; i < steps; i++) {
+                    const k1x = this.alpha * x - this.beta * x * y;
+                    const k1y = -this.gamma * y + this.delta * x * y;
+                    
+                    const k2x = this.alpha * (x + dt * k1x / 2) - this.beta * (x + dt * k1x / 2) * (y + dt * k1y / 2);
+                    const k2y = -this.gamma * (y + dt * k1y / 2) + this.delta * (x + dt * k1x / 2) * (y + dt * k1y / 2);
+                    
+                    const k3x = this.alpha * (x + dt * k2x / 2) - this.beta * (x + dt * k2x / 2) * (y + dt * k2y / 2);
+                    const k3y = -this.gamma * (y + dt * k2y / 2) + this.delta * (x + dt * k2x / 2) * (y + dt * k2y / 2);
+                    
+                    const k4x = this.alpha * (x + dt * k3x) - this.beta * (x + dt * k3x) * (y + dt * k3y);
+                    const k4y = -this.gamma * (y + dt * k3y) + this.delta * (x + dt * k3x) * (y + dt * k3y);
+                    
+                    x += dt * (k1x + 2 * k2x + 2 * k3x + k4x) / 6;
+                    y += dt * (k1y + 2 * k2y + 2 * k3y + k4y) / 6;
+                }
+                
+                return y; // Return predator population
+            }
+
+            // For system of equations, we need both equations' residuals
+            getPhysicsResidual(derivatives, physicsParams) {
+                const { x, dx_dt } = derivatives;
+                const alpha = physicsParams.param1; // prey growth rate
+                const beta = physicsParams.param2;  // predation rate
+                const gamma = physicsParams.param3; // predator death rate (if available)
+                const delta = physicsParams.param4; // predator efficiency (if available)
+                
+                // For now, we'll focus on the prey equation with a simplified approach
+                // In a full implementation, we'd need two neural networks for x(t) and y(t)
+                // Here we approximate y(t) using the known true solution for demonstration
+                const t = derivatives.t || 0; // time point (if available)
+                const y_approx = this.y0; // Simplified: use initial predator population
+                
+                // Prey equation: dx/dt = αx - βxy
+                return dx_dt - (alpha * x - beta * x * y_approx);
+            }
+
+            getPhysicsGradients(derivatives, residual, physicsParams) {
+                const { x, dx_dt } = derivatives;
+                const alpha = physicsParams.param1;
+                const beta = physicsParams.param2;
+                
+                // Simplified gradients for prey equation only
+                const y_approx = this.y0;
+                const r = dx_dt - (alpha * x - beta * x * y_approx);
+                
+                const dr_dalpha = -x;
+                const dr_dbeta = x * y_approx;
+                
+                return [2 * r * dr_dalpha, 2 * r * dr_dbeta];
+            }
+
+            getInitialPhysicsParams() {
+                return { param1: 0.8, param2: 0.4, param3: 0.6, param4: 0.3 }; // α, β, γ, δ
+            }
+
+            getEquationDisplay() {
+                // LaTeX Lotka-Volterra system
+                return "\\[ \\begin{aligned} \\frac{dx}{dt} &= \\alpha x - \\beta x y \\\\ \\frac{dy}{dt} &= -\\gamma y + \\delta x y \\end{aligned} \\]";
+            }
+
+            getTitle() {
+                return "🐰🐺 Lotka-Volterra Predator-Prey Model";
+            }
+
+            getParameterLabels() {
+                return {
+                    trueParam1: "True α (prey growth)",
+                    pinnParam1: "PINN Discovered α",
+                    trueParam2: "True β (predation)",
+                    pinnParam2: "PINN Discovered β"
+                };
+            }
+
+            getCurrentTrueParams() {
+                return { param1: this.alpha, param2: this.beta };
+            }
+        }
+
+        // ===============================
+        // Minimal AD engine for this demo
+        // ===============================
+        let nodeCounter = 0;
+        class ADNode {
+            constructor(value, operation = "constant", parents = [], name = null) {
+                this.id = nodeCounter++;
+                this.value = value;
+                this.operation = operation;
+                this.parents = parents;
+                this.name = name;
+                this.gradient = 0; // reverse-mode gradient accumulator
+            }
+
+            static variable(value, name = null) { return new ADNode(value, "variable", [], name); }
+            static constant(value) { return new ADNode(value, "constant", []); }
+
+            // Basic ops
+            add(other) {
+                const b = typeof other === "number" ? ADNode.constant(other) : other;
+                return new ADNode(this.value + b.value, "add", [this, b]);
+            }
+            multiply(other) {
+                const b = typeof other === "number" ? ADNode.constant(other) : other;
+                return new ADNode(this.value * b.value, "multiply", [this, b]);
+            }
+            tanh() {
+                const y = Math.tanh(this.value);
+                return new ADNode(y, "tanh", [this]);
+            }
+
+            // Reverse-mode backprop for data loss
+            backward(grad = 1.0) {
+                this.gradient += grad;
+                switch (this.operation) {
+                    case "variable":
+                    case "constant":
+                        break;
+                    case "add": {
+                        const [a, b] = this.parents;
+                        a.backward(grad);
+                        b.backward(grad);
+                        break;
+                    }
+                    case "multiply": {
+                        const [a, b] = this.parents;
+                        a.backward(grad * b.value);
+                        b.backward(grad * a.value);
+                        break;
+                    }
+                    case "tanh": {
+                        const [u] = this.parents;
+                        const tanhPrime = 1 - this.value * this.value; // sech^2
+                        u.backward(grad * tanhPrime);
+                        break;
+                    }
+                }
+            }
+
+            // Exact first and second derivatives w.r.t. a seed variable using a memoized recursion
+            static d1d2(node, seed, memo) {
+                if (memo.has(node.id)) return memo.get(node.id);
+
+                let out;
+                if (node.id === seed.id) {
+                    out = { d1: 1, d2: 0 };
+                } else {
+                    switch (node.operation) {
+                        case "constant":
+                        case "variable":
+                            out = { d1: 0, d2: 0 };
+                            break;
+                        case "add": {
+                            const [a, b] = node.parents;
+                            const A = ADNode.d1d2(a, seed, memo);
+                            const B = ADNode.d1d2(b, seed, memo);
+                            out = { d1: A.d1 + B.d1, d2: A.d2 + B.d2 };
+                            break;
+                        }
+                        case "multiply": {
+                            const [a, b] = node.parents;
+                            const A = ADNode.d1d2(a, seed, memo);
+                            const B = ADNode.d1d2(b, seed, memo);
+                            // (a b)' = a' b + a b', (a b)'' = a'' b + 2 a' b' + a b''
+                            out = {
+                                d1: A.d1 * b.value + a.value * B.d1,
+                                d2: A.d2 * b.value + 2 * A.d1 * B.d1 + a.value * B.d2,
+                            };
+                            break;
+                        }
+                        case "tanh": {
+                            const [u] = node.parents;
+                            const U = ADNode.d1d2(u, seed, memo);
+                            const y = node.value; // tanh(u)
+                            const tanhPrime = 1 - y * y;
+                            const tanhSecond = -2 * y * tanhPrime; // d^2/dx^2 tanh(u)
+                            out = {
+                                d1: tanhPrime * U.d1,
+                                d2: tanhSecond * U.d1 * U.d1 + tanhPrime * U.d2,
+                            };
+                            break;
+                        }
+                        default:
+                            out = { d1: 0, d2: 0 };
+                    }
+                }
+                memo.set(node.id, out);
+                return out;
+            }
+
+            static zeroGrad(node) {
+                const stack = [node];
+                const seen = new Set();
+                while (stack.length) {
+                    const cur = stack.pop();
+                    if (seen.has(cur.id)) continue;
+                    seen.add(cur.id);
+                    cur.gradient = 0;
+                    for (const p of cur.parents) stack.push(p);
+                }
+            }
+        }
+
+        // ===============================
+        // Neural network with AD
+        // ===============================
+        class AutoDiffNN {
+            constructor(hiddenSize = 10) {
+                this.hiddenSize = hiddenSize;
+                this.initializeParameters();
+                this.resetOptimizer();
+            }
+
+            initializeParameters() {
+                const s1 = Math.sqrt(2.0 / (1 + this.hiddenSize));
+                const s2 = Math.sqrt(2.0 / this.hiddenSize);
+
+                this.W1 = []; this.b1 = []; this.W2 = []; this.b2 = ADNode.variable(0, "b2");
+                for (let i = 0; i < this.hiddenSize; i++) {
+                    this.W1.push(ADNode.variable((Math.random() - 0.5) * 2 * s1, `W1_${i}`));
+                    this.b1.push(ADNode.variable(0, `b1_${i}`));
+                    this.W2.push(ADNode.variable((Math.random() - 0.5) * 2 * s2, `W2_${i}`));
+                }
+                this.parameters = [...this.W1, ...this.b1, ...this.W2, this.b2];
+            }
+
+            resetOptimizer() { this.m = Array(this.parameters.length).fill(0); this.v = Array(this.parameters.length).fill(0); this.t = 0; }
+
+            forward(input_value) {
+                const input = ADNode.variable(input_value, "input");
+                const hidden = [];
+                for (let i = 0; i < this.hiddenSize; i++) {
+                    const linear = this.W1[i].multiply(input).add(this.b1[i]);
+                    hidden.push(linear.tanh());
+                }
+                let out = this.b2;
+                for (let i = 0; i < this.hiddenSize; i++) out = out.add(this.W2[i].multiply(hidden[i]));
+                return { output: out, input, intermediates: { hidden } };
+            }
+
+            // Exact first derivative via order-2 forward mode
+            computeFirstDerivative(t) {
+                const { output, input } = this.forward(t);
+                const { d1 } = ADNode.d1d2(output, input, new Map());
+                return d1;
+            }
+            // Exact second derivative via order-2 forward mode
+            computeSecondDerivative(t) {
+                const { output, input } = this.forward(t);
+                const { d2 } = ADNode.d1d2(output, input, new Map());
+                return d2;
+            }
+
+            computeDerivatives(t) {
+                const { output, input } = this.forward(t);
+                const { d1, d2 } = ADNode.d1d2(output, input, new Map());
+                return { x: output.value, dx_dt: d1, d2x_dt2: d2 };
+            }
+
+            computeGradients(inputs, targets) {
+                if (!inputs.length) return Array(this.parameters.length).fill(0);
+                const grads = Array(this.parameters.length).fill(0);
+                const n = inputs.length;
+                for (let i = 0; i < n; i++) {
+                    const { output } = this.forward(inputs[i]);
+                    const err = output.value - targets[i];
+                    const lossGrad = (2 * err) / n; // d/dy (err^2)
+                    ADNode.zeroGrad(output);
+                    output.backward(lossGrad);
+                    for (let j = 0; j < this.parameters.length; j++) grads[j] += this.parameters[j].gradient;
+                }
+                // simple clipping for stability
+                return grads.map((g) => Math.max(-1, Math.min(1, g)));
+            }
+
+            updateParameters(gradients, lr = 0.01, beta1 = 0.9, beta2 = 0.999, eps = 1e-8) {
+                this.t++;
+                for (let i = 0; i < this.parameters.length; i++) {
+                    const g = gradients[i];
+                    this.m[i] = beta1 * this.m[i] + (1 - beta1) * g;
+                    this.v[i] = beta2 * this.v[i] + (1 - beta2) * g * g;
+                    const mhat = this.m[i] / (1 - Math.pow(beta1, this.t));
+                    const vhat = this.v[i] / (1 - Math.pow(beta2, this.t));
+                    const step = (lr * mhat) / (Math.sqrt(vhat) + eps);
+                    const newVal = this.parameters[i].value - step;
+                    this.parameters[i] = ADNode.variable(newVal, this.parameters[i].name);
+                }
+                // refresh handles
+                for (let i = 0; i < this.hiddenSize; i++) {
+                    this.W1[i] = this.parameters[i];
+                    this.b1[i] = this.parameters[this.hiddenSize + i];
+                    this.W2[i] = this.parameters[2 * this.hiddenSize + i];
+                }
+                this.b2 = this.parameters[3 * this.hiddenSize];
+            }
+
+            loss(trainingData) {
+                if (!trainingData.length) return 0;
+                let s = 0;
+                for (const { t, x } of trainingData) {
+                    const { output } = this.forward(t);
+                    const e = output.value - x;
+                    s += e * e;
+                }
+                return s / trainingData.length;
+            }
+
+            predict(t) { return this.forward(t).output.value; }
+        }
+
+        // ===============================
+        // PINN with analytic physics grads
+        // ===============================
+        class TrueAD_PINN extends AutoDiffNN {
+            constructor(hiddenSize, physicsWeight = 1.0, physicalSystem = null) {
+                super(hiddenSize);
+                this.physicsWeight = physicsWeight;
+                this.physicalSystem = physicalSystem;
+                
+                if (physicalSystem) {
+                    const initialParams = physicalSystem.getInitialPhysicsParams();
+                    this.param1 = ADNode.variable(initialParams.param1, "param1");
+                    this.param2 = ADNode.variable(initialParams.param2, "param2");
+                } else {
+                    // Default to oscillator params for backward compatibility
+                    this.param1 = ADNode.variable(1.4, "param1");
+                    this.param2 = ADNode.variable(0.05, "param2");
+                }
+                
+                this.m_physics = [0, 0];
+                this.v_physics = [0, 0];
+            }
+
+            resetOptimizer() { super.resetOptimizer(); this.m_physics = [0, 0]; this.v_physics = [0, 0]; }
+
+            physicsResidual(t) {
+                const derivatives = this.computeDerivatives(t);
+                const physicsParams = { param1: this.param1.value, param2: this.param2.value };
+                
+                if (this.physicalSystem) {
+                    return this.physicalSystem.getPhysicsResidual(derivatives, physicsParams);
+                } else {
+                    // Default oscillator behavior for backward compatibility
+                    const { x, dx_dt, d2x_dt2 } = derivatives;
+                    const w = physicsParams.param1, z = physicsParams.param2;
+                    return d2x_dt2 + 2 * z * w * dx_dt + w * w * x;
+                }
+            }
+
+            physicsLoss(collocation) {
+                if (!collocation.length) return 0;
+                let s = 0;
+                for (const t of collocation) { const r = this.physicsResidual(t); s += r * r; }
+                return s / collocation.length;
+            }
+
+            // Exact gradients of physics loss w.r.t. param1 and param2
+            computePhysicsGradients(collocation) {
+                if (!collocation.length) return [0, 0];
+                let dLdp1 = 0, dLdp2 = 0;
+                const physicsParams = { param1: this.param1.value, param2: this.param2.value };
+                const N = collocation.length;
+                
+                for (const t of collocation) {
+                    const derivatives = this.computeDerivatives(t);
+                    const r = this.physicsResidual(t);
+                    
+                    let gradients;
+                    if (this.physicalSystem) {
+                        gradients = this.physicalSystem.getPhysicsGradients(derivatives, r, physicsParams);
+                    } else {
+                        // Default oscillator behavior
+                        const { x, dx_dt } = derivatives;
+                        const w = physicsParams.param1, z = physicsParams.param2;
+                        gradients = [2 * z * dx_dt + 2 * w * x, 2 * w * dx_dt];
+                    }
+                    
+                    dLdp1 += (2 / N) * r * gradients[0];
+                    dLdp2 += (2 / N) * r * gradients[1];
+                }
+                
+                // Light clipping for stability
+                dLdp1 = Math.max(-0.5, Math.min(0.5, dLdp1));
+                dLdp2 = Math.max(-0.5, Math.min(0.5, dLdp2));
+                return [dLdp1, dLdp2];
+            }
+
+            updatePhysicsParameters([gP1, gP2], lr, beta1 = 0.9, beta2 = 0.999, eps = 1e-8) {
+                const physicsLR = lr * 0.1; // smaller step for stability
+                const grads = [gP1, gP2];
+                for (let i = 0; i < 2; i++) {
+                    this.m_physics[i] = beta1 * this.m_physics[i] + (1 - beta1) * grads[i];
+                    this.v_physics[i] = beta2 * this.v_physics[i] + (1 - beta2) * grads[i] * grads[i];
+                    const mhat = this.m_physics[i] / (1 - Math.pow(beta1, this.t));
+                    const vhat = this.v_physics[i] / (1 - Math.pow(beta2, this.t));
+                    const step = (physicsLR * mhat) / (Math.sqrt(vhat) + eps);
+                    if (i === 0) {
+                        const newParam1 = Math.max(0.1, this.param1.value - step);
+                        this.param1 = ADNode.variable(newParam1, "param1");
+                    } else {
+                        const newParam2 = Math.max(0.001, Math.min(0.999, this.param2.value - step));
+                        this.param2 = ADNode.variable(newParam2, "param2");
+                    }
+                }
+            }
+
+            totalLoss(trainingData, collocation) {
+                return this.loss(trainingData) + this.physicsWeight * this.physicsLoss(collocation);
+            }
+
+            // Legacy property accessors for backward compatibility
+            get omega() { return { value: this.param1.value }; }
+            get zeta() { return { value: this.param2.value }; }
+        }
+
+        // ===============================
+        // Demo UI logic
+        // ===============================
+        class OscillatorDemo {
+            constructor() {
+                // Current system
+                this.currentSystemType = "oscillator";
+                
+                // Oscillator parameters
+                this.mass = 1;
+                this.springConstant = 2;
+                this.zeta = 0.1;
+                this.x0 = 1.5;
+                
+                // Pendulum parameters
+                this.length = 1;
+                this.gravity = 9.81;
+                this.theta0 = 0.3;
+                this.beta = 0.1;
+                
+                // Lotka-Volterra parameters
+                this.alpha = 0.8;      // prey growth rate
+                this.beta = 0.4;       // predation rate  
+                this.gamma = 0.6;      // predator death rate
+                this.delta = 0.3;      // predator efficiency
+                this.x0LV = 2.0;       // initial prey population
+                this.y0LV = 1.0;       // initial predator population
+                
+                // Common parameters
+                this.dataPoints = 15;
+                this.lr = 0.01;
+                this.epochs = 1000;
+                this.physicsWeight = 1.0;
+                this.hiddenSize = 10;
+                this.collocationCount = 50;
+
+                this.currentSystem = this.createCurrentSystem();
+                this.regularNN = new AutoDiffNN(this.hiddenSize);
+                this.pinn = new TrueAD_PINN(this.hiddenSize, this.physicsWeight, this.currentSystem);
+                
+                this.trainingData = [];
+                this.collocationPoints = [];
+                this.isTraining = false;
+                this.pauseRequested = false;
+                this.currentEpoch = 0;
+                this.lossChart = null;
+
+                this.setupEventListeners();
+                this.initializeCharts();
+                this.reset();
+            }
+
+            createCurrentSystem() {
+                if (this.currentSystemType === "oscillator") {
+                    return new OscillatorSystem(this.mass, this.springConstant, this.zeta, this.x0);
+                } else if (this.currentSystemType === "pendulum") {
+                    return new PendulumSystem(this.length, this.gravity, this.theta0, this.beta);
+                } else if (this.currentSystemType === "predatorprey") {
+                    return new LotkaVolterraSystem(this.alpha, this.beta, this.gamma, this.delta, this.x0LV, this.y0LV);
+                }
+                return null;
+            }
+
+            switchSystem(systemType) {
+                if (this.isTraining) return;
+                
+                this.currentSystemType = systemType;
+                this.currentSystem = this.createCurrentSystem();
+                
+                // Update UI
+                document.getElementById("systemTitle").textContent = this.currentSystem.getTitle();
+                const eqEl = document.getElementById("physicsEquation");
+                eqEl.innerHTML = this.currentSystem.getEquationDisplay();
+                if (window.MathJax && MathJax.typesetPromise) {
+                    MathJax.typesetPromise([eqEl]).catch(err => console.error('MathJax typeset failed:', err));
+                }
+                
+                // Show/hide appropriate controls
+                const oscillatorControls = document.getElementById("oscillatorControls");
+                const pendulumControls = document.getElementById("pendulumControls");
+                const predatorpreyControls = document.getElementById("predatorpreyControls");
+                
+                if (systemType === "oscillator") {
+                    oscillatorControls.style.display = "block";
+                    pendulumControls.style.display = "none";
+                    predatorpreyControls.style.display = "none";
+                } else if (systemType === "pendulum") {
+                    oscillatorControls.style.display = "none";
+                    pendulumControls.style.display = "block";
+                    predatorpreyControls.style.display = "none";
+                } else if (systemType === "predatorprey") {
+                    oscillatorControls.style.display = "none";
+                    pendulumControls.style.display = "none";
+                    predatorpreyControls.style.display = "block";
+                }
+                
+                // Update parameter labels
+                const labels = this.currentSystem.getParameterLabels();
+                document.getElementById("trueParam1Label").textContent = labels.trueParam1;
+                document.getElementById("pinnParam1Label").textContent = labels.pinnParam1;
+                document.getElementById("trueParam2Label").textContent = labels.trueParam2;
+                document.getElementById("pinnParam2Label").textContent = labels.pinnParam2;
+                
+                this.reset();
+            }
+
+            setupEventListeners() {
+                // System tabs
+                document.querySelectorAll('.system-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        // Update active state
+                        document.querySelectorAll('.system-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        
+                        // Switch system
+                        const systemType = tab.dataset.system;
+                        this.switchSystem(systemType);
+                    });
+                });
+
+                // Oscillator controls
+                const oscillatorControls = [
+                    { name: "mass", slider: "massSlider", input: "massValue" },
+                    { name: "springConstant", slider: "springSlider", input: "springValue" },
+                    { name: "zeta", slider: "zetaSlider", input: "zetaValue" },
+                    { name: "x0", slider: "x0Slider", input: "x0Value" },
+                ];
+
+                // Pendulum controls
+                const pendulumControls = [
+                    { name: "length", slider: "lengthSlider", input: "lengthValue" },
+                    { name: "gravity", slider: "gravitySlider", input: "gravityValue" },
+                    { name: "theta0", slider: "theta0Slider", input: "theta0Value" },
+                    { name: "beta", slider: "betaSlider", input: "betaValue" },
+                ];
+
+                // Lotka-Volterra controls
+                const predatorpreyControls = [
+                    { name: "alpha", slider: "alphaSlider", input: "alphaValue" },
+                    { name: "beta", slider: "betaSlider", input: "betaValue" },
+                    { name: "gamma", slider: "gammaSlider", input: "gammaValue" },
+                    { name: "delta", slider: "deltaSlider", input: "deltaValue" },
+                    { name: "x0LV", slider: "x0LVSlider", input: "x0LVValue" },
+                    { name: "y0LV", slider: "y0LVSlider", input: "y0LVValue" },
+                ];
+
+                // Common controls
+                const commonControls = [
+                    { name: "dataPoints", slider: "dataSlider", input: "dataValue" },
+                    { name: "lr", slider: "lrSlider", input: "lrValue" },
+                    { name: "epochs", slider: "epochsSlider", input: "epochsValue" },
+                    { name: "physicsWeight", slider: "physicsWeightSlider", input: "physicsWeightValue" },
+                    { name: "hiddenSize", slider: "hiddenSizeSlider", input: "hiddenSizeValue" },
+                    { name: "collocationCount", slider: "collocationSlider", input: "collocationValue" },
+                ];
+
+                [...oscillatorControls, ...pendulumControls, ...predatorpreyControls, ...commonControls].forEach(({ name, slider, input }) => {
+                    const sliderEl = document.getElementById(slider);
+                    const inputEl = document.getElementById(input);
+                    if (!sliderEl || !inputEl) return; // Skip if elements don't exist
+                    
+                    const update = (value) => {
+                        this[name] = parseFloat(value);
+                        sliderEl.value = value; inputEl.value = value;
+                        
+                        if (oscillatorControls.some(c => c.name === name) || pendulumControls.some(c => c.name === name) || predatorpreyControls.some(c => c.name === name)) {
+                            this.reset();
+                        } else if (name === "physicsWeight") {
+                            this.pinn.physicsWeight = this.physicsWeight;
+                        } else if (name === "hiddenSize") {
+                            this.resetNetworks();
+                        } else if (name === "collocationCount" || name === "dataPoints") {
+                            this.generateTrainingData();
+                            this.drawAllCanvases();
+                        }
+                    };
+                    sliderEl.addEventListener("input", (e) => update(e.target.value));
+                    inputEl.addEventListener("change", (e) => update(e.target.value));
+                });
+
+                document.getElementById("generateData").addEventListener("click", () => { this.generateTrainingData(); this.drawAllCanvases(); });
+                document.getElementById("trainNN").addEventListener("click", () => this.train(false));
+                document.getElementById("trainPINN").addEventListener("click", () => this.train(true));
+                document.getElementById("pauseTraining").addEventListener("click", () => this.pauseTraining());
+                document.getElementById("reset").addEventListener("click", () => this.reset());
+            }
+
+            initializeCharts() {
+                const options = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { 
+                        x: { 
+                            type: "linear",
+                            title: { display: true, text: "Epochs" },
+                            beginAtZero: true
+                        }, 
+                        y: { 
+                            type: "logarithmic", 
+                            title: { display: true, text: "Loss" },
+                            min: 1e-8
+                        } 
+                    },
+                    plugins: { legend: { position: "top" } },
+                    animation: { duration: 0 },
+                };
+                this.lossChart = new Chart(document.getElementById("lossChart").getContext("2d"), {
+                    type: "line",
+                    data: { datasets: [] },
+                    options,
+                });
+            }
+
+            truePosition(t) {
+                return this.currentSystem.getTruePosition(t);
+            }
+
+            generateTrainingData() {
+                this.trainingData = []; this.collocationPoints = [];
+                const T = 20;
+                for (let i = 0; i < this.dataPoints; i++) {
+                    const t = (i / (this.dataPoints - 1)) * T;
+                    const x = this.truePosition(t) + (Math.random() - 0.5) * 0.02;
+                    this.trainingData.push({ t, x });
+                }
+                for (let i = 0; i < this.collocationCount; i++) this.collocationPoints.push(Math.random() * T);
+            }
+
+            resetNetworks() {
+                if (this.isTraining) return;
+                this.currentSystem = this.createCurrentSystem();
+                this.regularNN = new AutoDiffNN(this.hiddenSize);
+                this.pinn = new TrueAD_PINN(this.hiddenSize, this.physicsWeight, this.currentSystem);
+                this.updateMetrics(); this.drawAllCanvases();
+            }
+
+            async train(isPINN) {
+                if (this.isTraining) return;
+                this.isTraining = true; this.pauseRequested = false; this.currentEpoch = 0;
+                this.toggleButtons(false); this.showPauseButton(true);
+                this.showStatus(`Training ${isPINN ? "AD-PINN" : "Regular NN"}... Epoch 0/${this.epochs}`, "training");
+
+                const net = isPINN ? this.pinn : this.regularNN; net.resetOptimizer();
+                const history = []; const stepEvery = Math.max(1, Math.floor(this.epochs / 100));
+
+                for (let epoch = 0; epoch < this.epochs && !this.pauseRequested; epoch++) {
+                    this.currentEpoch = epoch; net.t++;
+                    const inputs = this.trainingData.map((d) => d.t);
+                    const targets = this.trainingData.map((d) => d.x);
+
+                    if (isPINN) {
+                        const gNN = net.computeGradients(inputs, targets);
+                        const gPhys = net.computePhysicsGradients(this.collocationPoints);
+                        net.updateParameters(gNN, this.lr);
+                        net.updatePhysicsParameters(gPhys, this.lr);
+                        history.push(Math.max(1e-8, net.totalLoss(this.trainingData, this.collocationPoints)));
+                    } else {
+                        const g = net.computeGradients(inputs, targets);
+                        net.updateParameters(g, this.lr);
+                        history.push(Math.max(1e-8, net.loss(this.trainingData)));
+                    }
+
+                    if (epoch % stepEvery === 0 || epoch === this.epochs - 1) {
+                        this.updateLossChart(history, isPINN);
+                        this.updateMetrics();
+                        this.updateTrainingProgress(epoch + 1, this.epochs, history[history.length - 1]);
+                        this.showStatus(`Training ${isPINN ? "AD-PINN" : "Regular NN"}... Epoch ${epoch + 1}/${this.epochs}`, "training");
+                        await new Promise((r) => setTimeout(r, 1));
+                    }
+                }
+
+                this.isTraining = false; this.showPauseButton(false); this.toggleButtons(true);
+                if (this.pauseRequested) {
+                    this.showStatus(`Training Paused at Epoch ${this.currentEpoch + 1}/${this.epochs}`, "complete");
+                    document.getElementById("trainingProgress").textContent = `Training Paused at Epoch ${this.currentEpoch + 1}/${this.epochs}`;
+                } else {
+                    this.showStatus("Training Complete!", "complete");
+                    const finalLoss = history[history.length - 1];
+                    document.getElementById("trainingProgress").textContent = `Training Complete! Final Loss: ${finalLoss?.toExponential(3) ?? "N/A"}`;
+                }
+                this.updateMetrics(); this.drawAllCanvases();
+            }
+
+            pauseTraining() { this.pauseRequested = true; }
+            showPauseButton(show) { document.getElementById("pauseTraining").style.display = show ? "inline-block" : "none"; }
+            toggleButtons(enabled) { document.querySelectorAll("button, input").forEach((el) => (el.disabled = !enabled)); }
+
+            updateTrainingProgress(cur, total, loss) {
+                const el = document.getElementById("trainingProgress");
+                const pct = Math.round((cur / total) * 100);
+                el.textContent = `Epoch ${cur}/${total} (${pct}%) - Loss: ${isFinite(loss) ? loss.toExponential(3) : "N/A"}`;
+            }
+
+            showStatus(msg, type) {
+                const el = document.getElementById("status");
+                el.textContent = msg; 
+                el.className = `status-card ${type}`; 
+                el.style.display = "block";
+                if (type === "complete") setTimeout(() => (el.style.display = "none"), 3000);
+            }
+
+            updateMetrics() {
+                const T = 20, N = 50;
+                let nnMse = 0, pinnMse = 0, nnPhys = 0, pinnPhys = 0;
+                
+                for (let i = 0; i < N; i++) {
+                    const t = (i / (N - 1)) * T, trueX = this.truePosition(t);
+                    const nnPred = this.regularNN.predict(t);
+                    nnMse += (trueX - nnPred) ** 2;
+                    
+                    // Compute physics residual for regular NN using current system
+                    const nnDerivatives = this.regularNN.computeDerivatives(t);
+                    const trueParams = this.currentSystem.getCurrentTrueParams();
+                    const nnResidual = this.currentSystem.getPhysicsResidual(nnDerivatives, trueParams);
+                    nnPhys += nnResidual * nnResidual;
+
+                    const pinnPred = this.pinn.predict(t);
+                    pinnMse += (trueX - pinnPred) ** 2;
+                    pinnPhys += this.pinn.physicsResidual(t) ** 2;
+                }
+                
+                document.getElementById("nnMse").textContent = (nnMse / N).toExponential(2);
+                document.getElementById("pinnMse").textContent = (pinnMse / N).toExponential(2);
+                document.getElementById("nnPhysicsError").textContent = (nnPhys / N).toExponential(2);
+                document.getElementById("pinnPhysicsError").textContent = (pinnPhys / N).toExponential(2);
+                
+                const trueParams = this.currentSystem.getCurrentTrueParams();
+                document.getElementById("trueParam1").textContent = trueParams.param1.toFixed(3);
+                document.getElementById("trueParam2").textContent = trueParams.param2.toFixed(3);
+                document.getElementById("pinnParam1").textContent = this.pinn.param1.value.toFixed(3);
+                document.getElementById("pinnParam2").textContent = this.pinn.param2.value.toFixed(3);
+            }
+
+            updateLossChart(history, isPINN) {
+                const label = isPINN ? "AD-PINN Loss" : "NN Loss";
+                const color = isPINN ? "#d81b60" : "#3f51b5";
+                let ds = this.lossChart.data.datasets.find((d) => d.label === label);
+                if (!ds) {
+                    ds = { label, data: [], borderColor: color, backgroundColor: color + "33", fill: false, tension: 0.1, pointRadius: 0 };
+                    this.lossChart.data.datasets.push(ds);
+                }
+                // Map history array indices to actual epoch numbers
+                ds.data = history.map((loss, i) => ({ x: i, y: Math.max(1e-8, isFinite(loss) ? loss : 1e-8) }));
+                this.lossChart.update("none");
+            }
+
+            drawOscillator(ctx, net, color, isTrue = false) {
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                const { width, height } = ctx.canvas;
+                const T = 20; 
+                
+                // Dynamic y-range based on current system and data
+                let yRange;
+                if (this.currentSystemType === "predatorprey") {
+                    // For Lotka-Volterra model, find max value in current data range
+                    let maxVal = Math.max(Math.abs(this.x0LV), Math.abs(this.y0LV));
+                    for (let i = 0; i <= 20; i++) {
+                        const t = (i / 20) * T;
+                        const trueVal = Math.abs(this.truePosition(t));
+                        if (isFinite(trueVal)) {
+                            maxVal = Math.max(maxVal, trueVal);
+                        }
+                    }
+                    yRange = Math.max(1, maxVal * 1.2); // 20% padding
+                } else {
+                    // For oscillator and pendulum, use initial position-based scaling
+                    const initialPos = this.currentSystemType === "oscillator" ? this.x0 : this.theta0;
+                    yRange = Math.max(1, Math.abs(initialPos) * 1.5);
+                }
+                
+                const toXY = (t, x) => ({ px: (t / T) * width, py: height / 2 - (x / yRange) * (height / 2) });
+                
+                // Draw center line
+                ctx.strokeStyle = "#e0e0e0"; ctx.lineWidth = 1; ctx.beginPath(); 
+                ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke();
+                
+                // Draw y-axis scale labels
+                ctx.fillStyle = "#666"; ctx.font = "10px Arial";
+                ctx.textAlign = "left";
+                ctx.fillText(`+${yRange.toFixed(1)}`, 5, 15);
+                ctx.fillText("0", 5, height / 2 - 5);
+                ctx.fillText(`-${yRange.toFixed(1)}`, 5, height - 5);
+                
+                // Draw main curve
+                ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.beginPath();
+                let firstValidPoint = true;
+                for (let i = 0; i <= 100; i++) {
+                    const t = (i / 100) * T; 
+                    const x = isTrue ? this.truePosition(t) : net.predict(t);
+                    if (isFinite(x) && Math.abs(x) < yRange * 2) { // Only plot if within reasonable bounds
+                        const { px, py } = toXY(t, x); 
+                        if (firstValidPoint) {
+                            ctx.moveTo(px, py);
+                            firstValidPoint = false;
+                        } else {
+                            ctx.lineTo(px, py);
+                        }
+                    }
+                }
+                ctx.stroke();
+                
+                // Draw training data points
+                if (!isTrue) {
+                    ctx.fillStyle = "#ff9800";
+                    this.trainingData.forEach(({ t, x }) => { 
+                        if (Math.abs(x) < yRange * 2) { // Only plot points within bounds
+                            const { px, py } = toXY(t, x); 
+                            ctx.beginPath(); ctx.arc(px, py, 4, 0, 2 * Math.PI); ctx.fill(); 
+                        }
+                    });
+                }
+            }
+
+            drawAllCanvases() {
+                this.drawOscillator(document.getElementById("trueCanvas").getContext("2d"), null, "#4caf50", true);
+                this.drawOscillator(document.getElementById("nnCanvas").getContext("2d"), this.regularNN, "#3f51b5");
+                this.drawOscillator(document.getElementById("pinnCanvas").getContext("2d"), this.pinn, "#d81b60");
+            }
+
+            reset() {
+                if (this.isTraining) return;
+                this.currentSystem = this.createCurrentSystem();
+                this.regularNN = new AutoDiffNN(this.hiddenSize);
+                this.pinn = new TrueAD_PINN(this.hiddenSize, this.physicsWeight, this.currentSystem);
+                this.generateTrainingData();
+                this.lossChart.data.datasets = []; this.lossChart.update();
+                document.getElementById("trainingProgress").textContent = "Ready to train...";
+                this.updateMetrics(); this.drawAllCanvases();
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            new OscillatorDemo();
+            const eqEl = document.getElementById("physicsEquation");
+            const doTypeset = () => {
+                try {
+                    if (window.MathJax && MathJax.typesetPromise) {
+                        // Typeset entire document to catch any equations present beyond the main header
+                        MathJax.typesetPromise().catch(err => console.error('MathJax typeset failed:', err));
+                    }
+                } catch (e) { console.error(e); }
+            };
+            // If MathJax has initialized, typeset now; otherwise, wait for startup or script load
+            if (window.MathJax && MathJax.startup && MathJax.startup.promise) {
+                MathJax.startup.promise.then(doTypeset);
+            } else {
+                const script = document.getElementById('MathJax-script');
+                if (script) script.addEventListener('load', doTypeset, { once: true });
+            }
+        });
+    </script>
+</body>
+</html>

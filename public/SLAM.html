@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLAM Robotics Interactive Tutorial</title>
+    
+    <!-- MathJax for LaTeX rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    
+    <style>
+        :root {
+            --primary-grad-start: #667eea;
+            --primary-grad-end: #764ba2;
+            --secondary-grad-start: #4facfe;
+            --secondary-grad-end: #00f2fe;
+            --info-grad-start: #374151;
+            --info-grad-end: #4b5563;
+            --card-grad-start: #1f2937;
+            --card-grad-end: #374151;
+            --danger-color: #ff6b6b;
+            --robot-color: #ff4757;
+            --robot-shadow-color: rgba(255, 71, 87, 0.4);
+            --feature-color: #00b894;
+            --explored-color: rgba(0, 184, 148, 0.25);
+            --obstacle-color: #f3f4f6;
+            --loop-closure-color: #fd79a8;
+            --text-dark: #e2e8f0;
+            --text-light: #9ca3af;
+            --bg-light: #1f2937;
+            --bg-medium: #374151;
+            --border-light: #4b5563;
+            --border-medium: #6b7280;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-code: 'Courier New', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: linear-gradient(135deg, #0f1419 0%, #1e293b 100%);
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            background: rgba(31, 41, 55, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-light);
+        }
+
+        .header h1 {
+            font-size: 3em;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--primary-grad-start), var(--primary-grad-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: var(--text-light);
+        }
+
+        .section {
+            background: rgba(31, 41, 55, 0.95);
+            margin-bottom: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            border: 1px solid var(--border-light);
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, var(--secondary-grad-start) 0%, var(--secondary-grad-end) 100%);
+            color: white;
+            padding: 20px 30px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .section-content {
+            padding: 30px;
+        }
+        
+        .demo-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .demo-area {
+            background: var(--bg-light);
+            border: 2px dashed var(--border-light);
+            border-radius: 10px;
+            min-height: 450px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #poseGraphCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Make canvas transparent to clicks */
+        }
+
+        .map-panel {
+            background: var(--bg-light);
+            border: 1px solid var(--border-medium);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .map-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--bg-medium);
+        }
+
+        #mapCanvas {
+            width: 100%;
+            height: 350px;
+            background-color: var(--bg-light);
+            border-radius: 5px;
+            border: 1px solid var(--border-light);
+        }
+
+        /* Robot and Map Elements */
+        .robot {
+            width: 40px;
+            height: 40px;
+            background: var(--robot-color);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s ease;
+            border: 3px solid #fff;
+            box-shadow: 0 4px 15px var(--robot-shadow-color);
+            z-index: 10;
+        }
+
+        .robot::before {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 20px solid #fff;
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .robot::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: #fff;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .sensor-beam {
+            position: absolute;
+            background: rgba(255, 193, 7, 0.3);
+            transform-origin: left center;
+            transition: all 0.3s ease;
+        }
+
+        .obstacle {
+            background: var(--obstacle-color);
+            border-radius: 5px;
+            position: absolute;
+        }
+        
+        .wall-segment {
+            background: var(--obstacle-color);
+            position: absolute;
+            opacity: 0;
+            animation: fadeIn 0.8s ease forwards;
+            transition: all 0.5s ease-in-out;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+        }
+
+        .particle {
+            width: 3px;
+            height: 3px;
+            background: var(--loop-closure-color);
+            border-radius: 50%;
+            position: absolute;
+            opacity: 0.7;
+            transition: all 1s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary-grad-start) 0%, var(--primary-grad-end) 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, var(--info-grad-start) 0%, var(--info-grad-end) 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid var(--danger-color);
+        }
+
+        .sensor-data {
+            font-family: var(--font-code);
+            background: var(--bg-medium);
+            color: var(--feature-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.9em;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            border: 1px solid var(--border-light);
+        }
+
+        /* Algorithm & Application Cards */
+        .algorithm-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .algorithm-card {
+            background: linear-gradient(135deg, var(--card-grad-start) 0%, var(--card-grad-end) 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .algorithm-card:hover {
+            transform: scale(1.05);
+        }
+
+        /* Mathematical Content Styles */
+        .math-explanation {
+            line-height: 1.8;
+        }
+
+        .math-explanation h3 {
+            color: var(--primary-grad-start);
+            margin: 25px 0 15px 0;
+            font-size: 1.3em;
+            border-bottom: 2px solid var(--border-light);
+            padding-bottom: 8px;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, var(--info-grad-start), var(--info-grad-end));
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+            border-left: 4px solid var(--primary-grad-start);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        .math-box .MathJax {
+            font-size: 1.2em !important;
+        }
+
+        .code-block {
+            background: var(--bg-medium);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: var(--font-code);
+            font-size: 0.9em;
+            border-left: 3px solid var(--secondary-grad-start);
+            color: var(--text-dark);
+            overflow-x: auto;
+        }
+
+        .math-explanation ul {
+            margin: 10px 0;
+        }
+
+        .math-explanation li {
+            margin: 5px 0;
+            color: var(--text-light);
+        }
+
+        .math-explanation p {
+            margin: 12px 0;
+            color: var(--text-dark);
+        }
+
+        .info-box ul {
+            margin-bottom: 0;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 SLAM Robotics</h1>
+            <p>Interactive Tutorial: Simultaneous Localization and Mapping</p>
+        </div>
+
+        <!-- Introduction Section -->
+        <div class="section">
+            <div class="section-header">📍 What is SLAM?</div>
+            <div class="section-content">
+                <p>SLAM (Simultaneous Localization and Mapping) is a fundamental problem in robotics where a robot must:</p>
+                <div class="info-box">
+                    <strong>🗺️ Build a map</strong> of an unknown environment while <strong>📍 determining its own location</strong> within that map.
+                </div>
+                <p>Think of it like being dropped in a dark room with a flashlight - you need to figure out where you are AND what the room looks like at the same time!</p>
+            </div>
+        </div>
+
+        <!-- Interactive Demo Section -->
+        <div class="section">
+            <div class="section-header">🎮 Interactive SLAM Demo</div>
+            <div class="section-content">
+                <div class="demo-container">
+                    <div class="demo-area" id="slamDemo">
+                        <canvas id="poseGraphCanvas"></canvas>
+                        <div class="robot" id="robot"></div>
+                        <!-- Obstacles will be generated here -->
+                    </div>
+                    <div class="map-panel">
+                        <div class="map-header">🗺️ Live SLAM Map</div>
+                        <canvas id="mapCanvas"></canvas>
+                    </div>
+                </div>
+
+                <div class="control-panel">
+                    <button class="btn" id="btn-forward">↑ Forward</button>
+                    <button class="btn" id="btn-left">← Turn Left</button>
+                    <button class="btn" id="btn-right">→ Turn Right</button>
+                    <button class="btn" id="btn-scan">🔍 Scan</button>
+                    <button class="btn" id="btn-auto-explore">🤖 Auto Explore</button>
+                    <button class="btn" id="btn-toggle-graph">📊 Toggle Graph</button>
+                    <button class="btn" id="btn-demo-sensors">🎯 Show Sensors</button>
+                    <button class="btn" id="btn-show-particles">✨ Show Particles</button>
+                    <button class="btn" id="btn-reset">🔄 Reset</button>
+                </div>
+                <div class="sensor-data" id="sensorData">Sensor Data: Waiting for scan...</div>
+            </div>
+        </div>
+
+        <!-- Mathematical Framework Section -->
+        <div class="section">
+            <div class="section-header">📐 Mathematical Framework: Understanding the SLAM Algorithm</div>
+            <div class="section-content">
+                <div class="math-explanation">
+                    
+                    <h3>🎯 Problem Formulation</h3>
+                    <p>SLAM addresses the fundamental chicken-and-egg problem in robotics: to build an accurate map, we need to know the robot's location, but to determine the robot's location, we need an accurate map. Mathematically, SLAM seeks to estimate both the robot trajectory $\mathbf{X}_{0:t}$ and the map $\mathbf{M}$ given all observations $\mathbf{Z}_{1:t}$ and control inputs $\mathbf{U}_{1:t}$:</p>
+                    
+                    <div class="math-box">
+                        $$P(\mathbf{X}_{0:t}, \mathbf{M} | \mathbf{Z}_{1:t}, \mathbf{U}_{1:t})$$
+                    </div>
+                    
+                    <p>Where:</p>
+                    <ul style="margin-left: 20px;">
+                        <li>$\mathbf{X}_t = (x_t, y_t, \theta_t)$ represents the robot pose at time $t$ (position and orientation)</li>
+                        <li>$\mathbf{M} = \{m_1, m_2, \ldots, m_n\}$ represents the map containing landmark positions</li>
+                        <li>$\mathbf{Z}_t$ represents sensor observations at time $t$</li>
+                        <li>$\mathbf{U}_t$ represents control inputs (motion commands) at time $t$</li>
+                    </ul>
+
+                    <h3>🚀 Motion Model Implementation</h3>
+                    <p>Our demo implements a simple differential drive motion model. When the robot moves forward, the new position is calculated using trigonometry:</p>
+                    
+                    <div class="math-box">
+                        $$\begin{align}
+                        x_{t+1} &= x_t + \Delta s \cdot \cos(\theta_t) \\
+                        y_{t+1} &= y_t + \Delta s \cdot \sin(\theta_t) \\
+                        \theta_{t+1} &= \theta_t + \Delta\theta
+                        \end{align}$$
+                    </div>
+                    
+                    <p>In the demo code, this is implemented as:</p>
+                    <div class="code-block">
+                        const radians = (this.robotAngle - 90) * Math.PI / 180;<br>
+                        const deltaX = Math.cos(radians) * this.ROBOT_STEP_SIZE;<br>
+                        const deltaY = Math.sin(radians) * this.ROBOT_STEP_SIZE;
+                    </div>
+                    
+                    <p>The motion model includes uncertainty, which in practice would be modeled as Gaussian noise:</p>
+                    <div class="math-box">
+                        $$\mathbf{X}_{t+1} = f(\mathbf{X}_t, \mathbf{U}_t) + \mathbf{w}_t$$
+                        $$\text{where } \mathbf{w}_t \sim \mathcal{N}(0, \mathbf{Q}_t)$$
+                    </div>
+
+                    <h3>📡 Sensor Model and Observations</h3>
+                    <p>The demo uses a simplified LiDAR sensor model that casts rays in multiple directions to detect obstacles. For each sensor beam at angle $\alpha$ relative to the robot's heading:</p>
+                    
+                    <div class="math-box">
+                        $$\begin{align}
+                        x_{\text{beam}} &= x_{\text{robot}} + d \cdot \cos(\theta_{\text{robot}} + \alpha) \\
+                        y_{\text{beam}} &= y_{\text{robot}} + d \cdot \sin(\theta_{\text{robot}} + \alpha)
+                        \end{align}$$
+                    </div>
+                    
+                    <p>The observation model relates sensor measurements to the true state:</p>
+                    <div class="math-box">
+                        $$\mathbf{Z}_t = h(\mathbf{X}_t, \mathbf{M}) + \mathbf{v}_t$$
+                        $$\text{where } \mathbf{v}_t \sim \mathcal{N}(0, \mathbf{R}_t)$$
+                    </div>
+                    
+                    <p>In our implementation, sensor rays are cast at multiple angles (-60° to +60° in 20° increments), and obstacles are detected through collision detection:</p>
+                    <div class="code-block">
+                        for (let angle = -60; angle <= 60; angle += 20) {<br>
+                        &nbsp;&nbsp;const beamAngle = this.robotAngle + angle;<br>
+                        &nbsp;&nbsp;const hit = this.detectObstacleInDirection(beamAngle);<br>
+                        }
+                    </div>
+
+                    <h3>🕸️ Pose Graph SLAM</h3>
+                    <p>Our demo implements a <strong>pose graph SLAM</strong> approach, where the robot's trajectory is represented as a graph of poses connected by constraints. Each node represents a robot pose, and edges represent spatial relationships:</p>
+                    
+                    <div class="info-box">
+                        <strong>📊 Graph Structure:</strong>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li><strong>Nodes:</strong> Robot poses $\mathbf{X}_i = (x_i, y_i, \theta_i)$</li>
+                            <li><strong>Odometry Edges:</strong> Sequential motion constraints between consecutive poses</li>
+                            <li><strong>Loop Closure Edges:</strong> Constraints when the robot revisits a previously mapped area</li>
+                        </ul>
+                    </div>
+                    
+                    <p>The objective is to find the set of poses that minimizes the total error across all constraints:</p>
+                    <div class="math-box">
+                        $$\mathbf{X}^* = \underset{\mathbf{X}}{\arg\min} \sum_{i,j} \|\mathbf{e}_{ij}(\mathbf{X}_i, \mathbf{X}_j)\|^2_{\boldsymbol{\Omega}_{ij}}$$
+                    </div>
+                    
+                    <p>Where $\mathbf{e}_{ij}$ is the error function for the constraint between poses $i$ and $j$, and $\boldsymbol{\Omega}_{ij}$ is the information matrix (inverse of covariance).</p>
+
+                    <h3>🔄 Loop Closure Detection</h3>
+                    <p>Loop closure occurs when the robot recognizes that it has returned to a previously visited location. Our demo implements a simple distance-based loop closure detection:</p>
+                    
+                    <div class="code-block">
+                        const dist = Math.hypot(currentPos.x - prevNode.x, currentPos.y - prevNode.y);<br>
+                        if (dist < this.LOOP_CLOSURE_THRESHOLD) {<br>
+                        &nbsp;&nbsp;return { from: currentNodeIndex, to: i };<br>
+                        }
+                    </div>
+                    
+                    <p>In practice, loop closure detection uses more sophisticated methods:</p>
+                    <ul style="margin-left: 20px;">
+                        <li><strong>Feature matching:</strong> Comparing visual features between locations</li>
+                        <li><strong>Place recognition:</strong> Using bag-of-words or deep learning methods</li>
+                        <li><strong>Geometric verification:</strong> Verifying spatial consistency of matches</li>
+                    </ul>
+
+                    <h3>⚖️ Pose Graph Optimization</h3>
+                    <p>When a loop closure is detected, the entire pose graph must be optimized to correct accumulated drift. Our demo uses an iterative spring-mass optimization:</p>
+                    
+                    <div class="code-block">
+                        this.poseGraph.edges.forEach(edge => {<br>
+                        &nbsp;&nbsp;const dx = otherNode.x - node.x, dy = otherNode.y - node.y;<br>
+                        &nbsp;&nbsp;const distance = Math.hypot(dx, dy);<br>
+                        &nbsp;&nbsp;const diff = distance - edge.length;<br>
+                        &nbsp;&nbsp;const strength = edge.type === 'loop' ? 0.5 : 0.1;<br>
+                        &nbsp;&nbsp;forceX += (dx / distance) * diff * strength;<br>
+                        });
+                    </div>
+                    
+                    <p>This simulates the Gauss-Newton or Levenberg-Marquardt optimization used in real SLAM systems:</p>
+                    <div class="math-box">
+                        $$\Delta\mathbf{x} = -(\mathbf{H} + \lambda\mathbf{I})^{-1} \cdot \mathbf{b}$$
+                    </div>
+                    
+                    <p>Where $\mathbf{H}$ is the Hessian matrix, $\mathbf{b}$ is the gradient, and $\lambda$ is the damping parameter.</p>
+
+                    <h3>🗺️ Map Representation</h3>
+                    <p>Our demo stores discovered walls relative to their discovery poses, allowing the map to be corrected when poses are optimized:</p>
+                    
+                    <div class="code-block">
+                        this.discoveredWalls.push({<br>
+                        &nbsp;&nbsp;poseNodeIndex: currentPoseNode.id,<br>
+                        &nbsp;&nbsp;relativeX: hit.x - currentPoseNode.x,<br>
+                        &nbsp;&nbsp;relativeY: hit.y - currentPoseNode.y<br>
+                        });
+                    </div>
+                    
+                    <p>When poses are optimized, map features are updated accordingly:</p>
+                    <div class="code-block">
+                        const correctedPose = this.poseGraph.nodes[wall.poseNodeIndex];<br>
+                        wall.el.style.left = (correctedPose.x + wall.relativeX) + '%';
+                    </div>
+
+                    <h3>🎲 Particle Filter Representation</h3>
+                    <p>The particle filter demonstration shows how SLAM can represent uncertainty in robot localization. Each particle represents a possible robot state:</p>
+                    
+                    <div class="math-box">
+                        $$\{\mathbf{X}_t^{(i)}, w_t^{(i)}\}_{i=1}^N$$
+                    </div>
+                    
+                    <p>Where $\mathbf{X}_t^{(i)}$ is the $i$-th particle state and $w_t^{(i)}$ is its weight. The particles are updated through:</p>
+                    <ul style="margin-left: 20px;">
+                        <li><strong>Prediction:</strong> $\mathbf{X}_t^{(i)} = f(\mathbf{X}_{t-1}^{(i)}, \mathbf{U}_t) + \text{noise}$</li>
+                        <li><strong>Update:</strong> $w_t^{(i)} \propto P(\mathbf{Z}_t | \mathbf{X}_t^{(i)}, \mathbf{M})$</li>
+                        <li><strong>Resampling:</strong> Draw new particles proportional to weights</li>
+                    </ul>
+
+                    <div class="info-box">
+                        <strong>🧠 Key Insights:</strong> This demo illustrates the core challenge of SLAM - simultaneously estimating robot poses and map features while handling uncertainty and correcting accumulated errors through loop closures. The pose graph approach provides a principled framework for global optimization that scales well to large environments.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const slamTutorial = {
+        // --- Configuration Constants ---
+        ROBOT_STEP_SIZE: 5,
+        ROBOT_TURN_ANGLE: 45,
+        LOOP_CLOSURE_THRESHOLD: 15,
+        MIN_STEPS_BETWEEN_LOOPS: 10,
+        ARENA_BOUNDARY_PADDING: 8,
+        OBSTACLE_PX_TO_PERCENT_RATIO: 4,
+        AUTO_EXPLORE_INTERVAL: 800,
+        AUTO_SCAN_INTERVAL_STEPS: 5,
+        AUTO_SCAN_DISTANCE_THRESHOLD: 15,
+        POSE_GRAPH_OPTIMIZATION_ITERATIONS: 30,
+
+        // --- State Variables ---
+        robotPosition: { x: 50, y: 50 },
+        robotAngle: 0,
+        obstacles: [],
+        discoveredWalls: [],
+        isAutoExploring: false,
+        autoExploreIntervalId: null,
+        explorationStep: 0,
+        lastScanPosition: { x: 50, y: 50 },
+        showPoseGraph: false,
+
+        // Pose Graph Data
+        poseGraph: {
+            nodes: [],
+            edges: []
+        },
+
+        // --- DOM Element Cache ---
+        elements: {},
+
+        // --- Initialization ---
+        init() {
+            this.cacheDOMElements();
+            this.addEventListeners();
+            this.resizeCanvases();
+            this.generateObstacles();
+            this.resetPoseGraph();
+            this.updateSensorData('Ready to explore! Use controls or try Auto Explore.');
+            this.drawMap();
+        },
+
+        cacheDOMElements() {
+            this.elements.demoArea = document.getElementById('slamDemo');
+            this.elements.robot = document.getElementById('robot');
+            this.elements.sensorData = document.getElementById('sensorData');
+            this.elements.autoExploreBtn = document.getElementById('btn-auto-explore');
+            this.elements.graphCanvas = document.getElementById('poseGraphCanvas');
+            this.elements.graphCtx = this.elements.graphCanvas.getContext('2d');
+            this.elements.mapCanvas = document.getElementById('mapCanvas');
+            this.elements.mapCtx = this.elements.mapCanvas.getContext('2d');
+        },
+
+        addEventListeners() {
+            document.getElementById('btn-forward').addEventListener('click', () => this.moveRobot('up'));
+            document.getElementById('btn-left').addEventListener('click', () => this.moveRobot('left'));
+            document.getElementById('btn-right').addEventListener('click', () => this.moveRobot('right'));
+            document.getElementById('btn-scan').addEventListener('click', () => this.scanEnvironment());
+            this.elements.autoExploreBtn.addEventListener('click', () => this.toggleAutoExplore());
+            document.getElementById('btn-reset').addEventListener('click', () => this.resetDemo());
+            document.getElementById('btn-toggle-graph').addEventListener('click', () => this.togglePoseGraph());
+            document.getElementById('btn-demo-sensors').addEventListener('click', () => this.demonstrateSensors());
+            document.getElementById('btn-show-particles').addEventListener('click', () => this.showParticleFilter());
+            
+            window.addEventListener('resize', () => this.resizeCanvases());
+        },
+        
+        resizeCanvases() {
+            const demoRect = this.elements.demoArea.getBoundingClientRect();
+            this.elements.graphCanvas.width = demoRect.width;
+            this.elements.graphCanvas.height = demoRect.height;
+            
+            const mapRect = this.elements.mapCanvas.getBoundingClientRect();
+            this.elements.mapCanvas.width = mapRect.width;
+            this.elements.mapCanvas.height = mapRect.height;
+
+            this.visualizePoseGraph();
+            this.drawMap();
+        },
+
+        // --- Core SLAM Logic ---
+        generateObstacles() {
+            this.obstacles = [
+                { x: 20, y: 30, width: 15, height: 40 },
+                { x: 70, y: 20, width: 25, height: 20 },
+                { x: 40, y: 70, width: 30, height: 15 },
+                { x: 80, y: 60, width: 15, height: 25 }
+            ];
+
+            this.obstacles.forEach(obstacle => {
+                const el = document.createElement('div');
+                el.className = 'obstacle';
+                el.style.left = obstacle.x + '%';
+                el.style.top = obstacle.y + '%';
+                el.style.width = obstacle.width + 'px';
+                el.style.height = obstacle.height + 'px';
+                this.elements.demoArea.appendChild(el);
+            });
+        },
+
+        moveRobot(direction) {
+            let prevPosition = { ...this.robotPosition };
+            switch (direction) {
+                case 'up':
+                    const radians = (this.robotAngle - 90) * Math.PI / 180;
+                    const deltaX = Math.cos(radians) * this.ROBOT_STEP_SIZE;
+                    const deltaY = Math.sin(radians) * this.ROBOT_STEP_SIZE;
+                    this.robotPosition.x = Math.max(5, Math.min(95, this.robotPosition.x + deltaX));
+                    this.robotPosition.y = Math.max(5, Math.min(95, this.robotPosition.y + deltaY));
+                    break;
+                case 'left':
+                    this.robotAngle -= this.ROBOT_TURN_ANGLE;
+                    break;
+                case 'right':
+                    this.robotAngle += this.ROBOT_TURN_ANGLE;
+                    break;
+            }
+
+            this.elements.robot.style.left = this.robotPosition.x + '%';
+            this.elements.robot.style.top = this.robotPosition.y + '%';
+            this.elements.robot.style.transform = `translate(-50%, -50%) rotate(${this.robotAngle}deg)`;
+            
+            this.addPoseNode(prevPosition);
+            this.updateSensorData();
+            this.visualizePoseGraph();
+            this.drawMap();
+        },
+
+        scanEnvironment() {
+            this.clearPreviousVisuals('.sensor-beam');
+            
+            const loopClosure = this.detectLoopClosure();
+            if (loopClosure) {
+                this.performLoopClosure(loopClosure);
+            }
+
+            const currentPoseNode = this.poseGraph.nodes[this.poseGraph.nodes.length - 1];
+
+            for (let angle = -60; angle <= 60; angle += 20) {
+                const beamAngle = this.robotAngle + angle;
+                const hit = this.detectObstacleInDirection(beamAngle);
+                
+                this.createTemporaryElement('div', 'sensor-beam', 2000, el => {
+                    el.style.left = this.robotPosition.x + '%';
+                    el.style.top = this.robotPosition.y + '%';
+                    el.style.width = hit ? `${hit.distance * this.OBSTACLE_PX_TO_PERCENT_RATIO}px` : '80px';
+                    el.style.height = '2px';
+                    el.style.transform = `rotate(${beamAngle}deg)`;
+                });
+
+                if (hit) {
+                    const wallEl = document.createElement('div');
+                    wallEl.className = 'wall-segment';
+                    wallEl.style.left = hit.x + '%';
+                    wallEl.style.top = hit.y + '%';
+                    this.elements.demoArea.appendChild(wallEl);
+                    
+                    // Store wall relative to its discovery pose
+                    this.discoveredWalls.push({
+                        el: wallEl, 
+                        poseNodeIndex: currentPoseNode.id,
+                        relativeX: hit.x - currentPoseNode.x,
+                        relativeY: hit.y - currentPoseNode.y
+                    });
+                }
+            }
+            this.updateSensorData();
+            this.drawMap();
+        },
+
+        detectObstacleInDirection(angle) {
+            const maxDistance = 25;
+            for (let dist = 5; dist < maxDistance; dist += 2) {
+                const checkX = this.robotPosition.x + Math.cos((angle - 90) * Math.PI / 180) * dist;
+                const checkY = this.robotPosition.y + Math.sin((angle - 90) * Math.PI / 180) * dist;
+                
+                if (checkX < 2 || checkX > 98 || checkY < 2 || checkY > 98) {
+                    return { x: Math.max(2, Math.min(98, checkX)), y: Math.max(2, Math.min(98, checkY)), distance: dist };
+                }
+
+                for (let obs of this.obstacles) {
+                    const obsBounds = {
+                        left: obs.x, right: obs.x + obs.width / this.OBSTACLE_PX_TO_PERCENT_RATIO,
+                        top: obs.y, bottom: obs.y + obs.height / this.OBSTACLE_PX_TO_PERCENT_RATIO,
+                    };
+                    if (checkX >= obsBounds.left && checkX <= obsBounds.right && checkY >= obsBounds.top && checkY <= obsBounds.bottom) {
+                        return { x: checkX, y: checkY, distance: dist };
+                    }
+                }
+            }
+            return null;
+        },
+
+        detectLoopClosure() {
+            const currentNodeIndex = this.poseGraph.nodes.length - 1;
+            if (currentNodeIndex < this.MIN_STEPS_BETWEEN_LOOPS) return null;
+            const currentPos = this.poseGraph.nodes[currentNodeIndex];
+
+            for (let i = 0; i < currentNodeIndex - this.MIN_STEPS_BETWEEN_LOOPS; i++) {
+                const prevNode = this.poseGraph.nodes[i];
+                const dist = Math.hypot(currentPos.x - prevNode.x, currentPos.y - prevNode.y);
+                if (dist < this.LOOP_CLOSURE_THRESHOLD) {
+                    return { from: currentNodeIndex, to: i };
+                }
+            }
+            return null;
+        },
+
+        performLoopClosure(loopData) {
+            this.updateSensorData("Loop closure detected! Optimizing pose graph...");
+            const fromNode = this.poseGraph.nodes[loopData.from];
+            const toNode = this.poseGraph.nodes[loopData.to];
+            this.poseGraph.edges.push({ from: loopData.from, to: loopData.to, type: 'loop', length: Math.hypot(fromNode.x - toNode.x, fromNode.y - toNode.y)});
+            this.optimizePoseGraph();
+        },
+        
+        // --- Pose Graph ---
+        resetPoseGraph() {
+            this.poseGraph.nodes = [{ id: 0, x: this.robotPosition.x, y: this.robotPosition.y, isFixed: true }];
+            this.poseGraph.edges = [];
+            this.visualizePoseGraph();
+        },
+
+        addPoseNode(prevPosition) {
+            const newNodeId = this.poseGraph.nodes.length;
+            this.poseGraph.nodes.push({ id: newNodeId, x: this.robotPosition.x, y: this.robotPosition.y });
+            const edgeLength = Math.hypot(this.robotPosition.x - prevPosition.x, this.robotPosition.y - prevPosition.y);
+            this.poseGraph.edges.push({ from: newNodeId - 1, to: newNodeId, type: 'odometry', length: edgeLength });
+        },
+
+        optimizePoseGraph() {
+            for (let i = 0; i < this.POSE_GRAPH_OPTIMIZATION_ITERATIONS; i++) {
+                this.poseGraph.nodes.forEach(node => {
+                    if (node.isFixed) return;
+                    let forceX = 0, forceY = 0;
+                    this.poseGraph.edges.forEach(edge => {
+                        if (edge.from === node.id || edge.to === node.id) {
+                            const otherNode = this.poseGraph.nodes[edge.from === node.id ? edge.to : edge.from];
+                            const dx = otherNode.x - node.x, dy = otherNode.y - node.y;
+                            const distance = Math.hypot(dx, dy);
+                            if (distance < 0.01) return;
+                            const diff = distance - edge.length;
+                            const strength = edge.type === 'loop' ? 0.5 : 0.1;
+                            forceX += (dx / distance) * diff * strength;
+                            forceY += (dy / distance) * diff * strength;
+                        }
+                    });
+                    node.x += forceX;
+                    node.y += forceY;
+                });
+            }
+            
+            const lastNode = this.poseGraph.nodes[this.poseGraph.nodes.length - 1];
+            this.robotPosition.x = lastNode.x;
+            this.robotPosition.y = lastNode.y;
+            this.elements.robot.style.left = this.robotPosition.x + '%';
+            this.elements.robot.style.top = this.robotPosition.y + '%';
+            
+            this.discoveredWalls.forEach(wall => {
+                const correctedPose = this.poseGraph.nodes[wall.poseNodeIndex];
+                wall.el.style.left = (correctedPose.x + wall.relativeX) + '%';
+                wall.el.style.top = (correctedPose.y + wall.relativeY) + '%';
+            });
+
+            this.updateSensorData("Pose graph optimized!");
+            this.visualizePoseGraph();
+            this.drawMap();
+        },
+
+        visualizePoseGraph() {
+            const { graphCtx, graphCanvas } = this.elements;
+            graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+            if (!this.showPoseGraph) return;
+
+            const p2c = (x, y) => ({ x: (x / 100) * graphCanvas.width, y: (y / 100) * graphCanvas.height });
+
+            this.poseGraph.edges.forEach(edge => {
+                const from = p2c(this.poseGraph.nodes[edge.from].x, this.poseGraph.nodes[edge.from].y);
+                const to = p2c(this.poseGraph.nodes[edge.to].x, this.poseGraph.nodes[edge.to].y);
+                graphCtx.beginPath();
+                graphCtx.moveTo(from.x, from.y);
+                graphCtx.lineTo(to.x, to.y);
+                graphCtx.strokeStyle = edge.type === 'loop' ? 'rgba(0, 255, 0, 0.8)' : 'rgba(255, 255, 255, 0.5)';
+                graphCtx.lineWidth = edge.type === 'loop' ? 2 : 1;
+                graphCtx.stroke();
+            });
+
+            this.poseGraph.nodes.forEach(node => {
+                const pos = p2c(node.x, node.y);
+                graphCtx.beginPath();
+                graphCtx.arc(pos.x, pos.y, 3, 0, 2 * Math.PI);
+                graphCtx.fillStyle = node.isFixed ? 'red' : 'cyan';
+                graphCtx.fill();
+            });
+        },
+        
+        togglePoseGraph() {
+            this.showPoseGraph = !this.showPoseGraph;
+            this.visualizePoseGraph();
+        },
+
+        // --- Live Map Drawing ---
+        drawMap() {
+            const { mapCtx, mapCanvas } = this.elements;
+            const computedStyle = getComputedStyle(document.documentElement);
+            mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+            
+            const p2c = (x, y) => ({ x: (x / 100) * mapCanvas.width, y: (y / 100) * mapCanvas.height });
+
+            // Draw walls
+            mapCtx.fillStyle = computedStyle.getPropertyValue('--obstacle-color');
+            this.discoveredWalls.forEach(wall => {
+                const correctedPose = this.poseGraph.nodes[wall.poseNodeIndex];
+                const wallPos = p2c(correctedPose.x + wall.relativeX, correctedPose.y + wall.relativeY);
+                mapCtx.fillRect(wallPos.x, wallPos.y, 3, 3);
+            });
+
+            // Draw path
+            mapCtx.beginPath();
+            this.poseGraph.nodes.forEach((node, index) => {
+                const pos = p2c(node.x, node.y);
+                if (index === 0) mapCtx.moveTo(pos.x, pos.y);
+                else mapCtx.lineTo(pos.x, pos.y);
+            });
+            mapCtx.strokeStyle = 'rgba(100, 100, 200, 0.5)';
+            mapCtx.lineWidth = 1;
+            mapCtx.stroke();
+
+            // Draw robot
+            const robotPos = p2c(this.robotPosition.x, this.robotPosition.y);
+            mapCtx.save();
+            mapCtx.translate(robotPos.x, robotPos.y);
+            mapCtx.rotate(this.robotAngle * Math.PI / 180);
+            mapCtx.fillStyle = computedStyle.getPropertyValue('--robot-color');
+            mapCtx.beginPath();
+            mapCtx.moveTo(0, -5);
+            mapCtx.lineTo(4, 5);
+            mapCtx.lineTo(-4, 5);
+            mapCtx.closePath();
+            mapCtx.fill();
+            mapCtx.restore();
+        },
+
+        // --- Auto Exploration & Utils ---
+        toggleAutoExplore() {
+            this.isAutoExploring = !this.isAutoExploring;
+            if (this.isAutoExploring) {
+                this.explorationStep = 0;
+                this.elements.autoExploreBtn.textContent = '⏹️ Stop Auto';
+                this.elements.autoExploreBtn.style.background = 'linear-gradient(135deg, #e17055 0%, #fd79a8 100%)';
+                this.autoExploreIntervalId = setInterval(() => this.autoExploreStep(), this.AUTO_EXPLORE_INTERVAL);
+                this.updateSensorData('Auto exploration started!');
+            } else {
+                clearInterval(this.autoExploreIntervalId);
+                this.elements.autoExploreBtn.textContent = '🤖 Auto Explore';
+                this.elements.autoExploreBtn.style.background = '';
+                this.updateSensorData('Auto exploration stopped.');
+            }
+        },
+        
+        autoExploreStep() {
+            if (!this.isAutoExploring) return;
+            this.explorationStep++;
+            const rand = Math.random();
+            if (rand < 0.6 && this.canMoveForward()) this.moveRobot('up');
+            else if (rand < 0.8) this.moveRobot('left');
+            else this.moveRobot('right');
+
+            const dist = Math.hypot(this.robotPosition.x - this.lastScanPosition.x, this.robotPosition.y - this.lastScanPosition.y);
+            if (this.explorationStep % this.AUTO_SCAN_INTERVAL_STEPS === 0 || dist > this.AUTO_SCAN_DISTANCE_THRESHOLD) {
+                setTimeout(() => {
+                    if(this.isAutoExploring) {
+                        this.scanEnvironment();
+                        this.lastScanPosition = { ...this.robotPosition };
+                    }
+                }, this.AUTO_EXPLORE_INTERVAL / 2);
+            }
+        },
+
+        canMoveForward() {
+            const radians = (this.robotAngle - 90) * Math.PI / 180;
+            const newX = this.robotPosition.x + Math.cos(radians) * this.ROBOT_STEP_SIZE;
+            const newY = this.robotPosition.y + Math.sin(radians) * this.ROBOT_STEP_SIZE;
+            if (newX < this.ARENA_BOUNDARY_PADDING || newX > 100 - this.ARENA_BOUNDARY_PADDING || newY < this.ARENA_BOUNDARY_PADDING || newY > 100 - this.ARENA_BOUNDARY_PADDING) return false;
+            for (let obs of this.obstacles) {
+                const padding = 5;
+                const obsBounds = { left: obs.x - padding, right: obs.x + obs.width / this.OBSTACLE_PX_TO_PERCENT_RATIO + padding, top: obs.y - padding, bottom: obs.y + obs.height / this.OBSTACLE_PX_TO_PERCENT_RATIO + padding };
+                if (newX >= obsBounds.left && newX <= obsBounds.right && newY >= obsBounds.top && newY <= obsBounds.bottom) return false;
+            }
+            return true;
+        },
+
+        updateSensorData(overrideMessage = null) {
+            if (overrideMessage) {
+                this.elements.sensorData.textContent = overrideMessage;
+                return;
+            }
+            const loopInfo = this.poseGraph.edges.filter(e => e.type === 'loop').length > 0 ? `\n🔄 Loop Closures: ${this.poseGraph.edges.filter(e => e.type === 'loop').length}` : '';
+            this.elements.sensorData.textContent = `Position: (${this.robotPosition.x.toFixed(1)}, ${this.robotPosition.y.toFixed(1)}) | Angle: ${this.robotAngle}°\nWalls Mapped: ${this.discoveredWalls.length} | Poses: ${this.poseGraph.nodes.length}${loopInfo}`;
+        },
+
+        resetDemo() {
+            if (this.isAutoExploring) this.toggleAutoExplore();
+            this.robotPosition = { x: 50, y: 50 };
+            this.robotAngle = 0;
+            this.discoveredWalls = [];
+            this.explorationStep = 0;
+            this.lastScanPosition = { x: 50, y: 50 };
+
+            this.elements.robot.style.left = '50%';
+            this.elements.robot.style.top = '50%';
+            this.elements.robot.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+            
+            this.clearPreviousVisuals('.particle, .wall-segment');
+            this.elements.demoArea.querySelectorAll('.obstacle').forEach(el => el.remove());
+            
+            this.generateObstacles();
+            this.resetPoseGraph();
+            this.updateSensorData('Demo Reset. Ready to explore!');
+            this.drawMap();
+        },
+
+        showParticleFilter() {
+            this.clearPreviousVisuals('.particle');
+            for (let i = 0; i < 50; i++) {
+                const p = this.createTemporaryElement('div', 'particle', 4000, el => {
+                    el.style.left = (this.robotPosition.x + Math.random() * 20 - 10) + '%';
+                    el.style.top = (this.robotPosition.y + Math.random() * 20 - 10) + '%';
+                });
+                setTimeout(() => {
+                    p.style.left = (this.robotPosition.x + Math.random() * 4 - 2) + '%';
+                    p.style.top = (this.robotPosition.y + Math.random() * 4 - 2) + '%';
+                }, 100);
+            }
+        },
+
+        demonstrateSensors() {
+            for (let angle = 0; angle < 360; angle += 30) {
+                this.createTemporaryElement('div', 'sensor-beam', 3000, el => {
+                    el.style.left = this.robotPosition.x + '%';
+                    el.style.top = this.robotPosition.y + '%';
+                    el.style.width = '80px';
+                    el.style.height = '1px';
+                    el.style.transform = `rotate(${angle}deg)`;
+                    el.style.background = 'rgba(255, 193, 7, 0.6)';
+                });
+            }
+        },
+
+        clearPreviousVisuals(selector) {
+            this.elements.demoArea.querySelectorAll(selector).forEach(el => el.remove());
+        },
+
+        createTemporaryElement(tag, className, duration, styleCallback) {
+            const el = document.createElement(tag);
+            el.className = className;
+            if (styleCallback) styleCallback(el);
+            this.elements.demoArea.appendChild(el);
+            setTimeout(() => el.remove(), duration);
+            return el;
+        }
+    };
+
+    // --- Start the Application ---
+    window.addEventListener('load', () => slamTutorial.init());
+
+    </script>
+</body>
+</html>

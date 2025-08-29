@@ -73,6 +73,18 @@ const demos = [
 		color: "from-fuchsia-500/20 to-fuchsia-700/30",
 		thumb: "/chess.jpg",
 	},
+	{
+		name: "Physics-Informed Neural Networks",
+		href: "/PINN.html",
+		color: "from-purple-500/20 to-purple-700/30",
+		thumb: "/PINNs.png",
+	},
+	{
+		name: "Simultaneous Localization and Mapping",
+		href: "/SLAM.html",
+		color: "from-cyan-500/20 to-cyan-700/30",
+		thumb: "/SLAM.png",
+	},
 ];
 
 export default function Page() {
