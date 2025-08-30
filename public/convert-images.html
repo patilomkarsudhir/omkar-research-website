@@ -151,7 +151,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>� Universal Image Format Converter</h1>
+    <h1>Universal Image Format Converter</h1>
         
         <div class="info">
             <strong>Instructions:</strong> Convert between any image formats! 
@@ -308,11 +308,15 @@
             MAX_PREVIEW_WIDTH: 100
         };
 
-        let currentImageData = null;
-        let originalFileName = '';
-        let selectedFormat = 'svg';
-        let currentConvertedData = null;
-        let originalImage = null;
+    let currentImageData = null;
+    let originalFileName = '';
+    let selectedFormat = 'svg';
+    let currentConvertedData = null;
+    let originalImage = null;
+    // Track input metadata to improve downstream decisions (e.g., SVG -> PNG for PDF)
+    let originalMimeType = '';
+    let originalFileExt = '';
+    let sourceIsSvg = false;
 
         // File input handler
         document.getElementById('fileInput').addEventListener('change', handleFile);
@@ -370,7 +374,7 @@
             }
         });
 
-        function handleFile(event) {
+    function handleFile(event) {
             const file = event.target.files[0];
             if (!file) return;
 
@@ -395,6 +399,12 @@
                 if (!proceed) return;
             }
 
+            // Capture source metadata BEFORE stripping extension
+            originalMimeType = file.type || '';
+            originalFileExt = (file.name.split('.').pop() || '').toLowerCase();
+            sourceIsSvg = originalMimeType === 'image/svg+xml' || originalFileExt === 'svg';
+
+            // Use base name (no extension) for display and downloads
             originalFileName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
             
             try {
@@ -545,12 +555,23 @@
                     return;
                 }
                 
-                // For SVG files, use higher resolution canvas for better quality
-                const isDetailedFormat = selectedFormat === 'svg' || originalFileName.toLowerCase().endsWith('.svg');
+                // For SVG sources, use higher resolution canvas for better quality
+                const isDetailedFormat = selectedFormat === 'svg' || sourceIsSvg;
                 const qualityMultiplier = isDetailedFormat ? 2 : 1; // 2x resolution for SVGs
-                
-                canvas.width = newWidth * qualityMultiplier;
-                canvas.height = newHeight * qualityMultiplier;
+
+                // Initial scaled dimensions
+                let targetW = newWidth * qualityMultiplier;
+                let targetH = newHeight * qualityMultiplier;
+
+                // Clamp to MAX_DIMENSION if needed while preserving aspect ratio
+                if (targetW > CONFIG.MAX_DIMENSION || targetH > CONFIG.MAX_DIMENSION) {
+                    const scale = Math.min(CONFIG.MAX_DIMENSION / targetW, CONFIG.MAX_DIMENSION / targetH);
+                    targetW = Math.max(1, Math.floor(targetW * scale));
+                    targetH = Math.max(1, Math.floor(targetH * scale));
+                }
+
+                canvas.width = targetW;
+                canvas.height = targetH;
                 
                 // Enable high-quality rendering for detailed formats
                 if (isDetailedFormat) {
@@ -559,7 +580,7 @@
                 }
                 
                 // Draw image to canvas (scaled up for detailed formats)
-                ctx.drawImage(originalImage, 0, 0, newWidth * qualityMultiplier, newHeight * qualityMultiplier);
+                ctx.drawImage(originalImage, 0, 0, targetW, targetH);
             
             // Convert based on selected format
             if (selectedFormat === 'svg') {
@@ -583,10 +604,10 @@
                     // Fill background with white for JPEG (no transparency)
                     const tempCanvas = document.createElement('canvas');
                     const tempCtx = tempCanvas.getContext('2d');
-                    tempCanvas.width = newWidth * qualityMultiplier;
-                    tempCanvas.height = newHeight * qualityMultiplier;
+                    tempCanvas.width = canvas.width;
+                    tempCanvas.height = canvas.height;
                     tempCtx.fillStyle = 'white';
-                    tempCtx.fillRect(0, 0, newWidth * qualityMultiplier, newHeight * qualityMultiplier);
+                    tempCtx.fillRect(0, 0, canvas.width, canvas.height);
                     tempCtx.drawImage(canvas, 0, 0);
                     
                     currentConvertedData = tempCanvas.toDataURL(mimeType, quality);
@@ -679,12 +700,17 @@
                 const highDpiCanvas = document.createElement('canvas');
                 const highDpiCtx = highDpiCanvas.getContext('2d');
                 
-                // Scale up for higher DPI
+                // Scale up for higher DPI and clamp if exceeding MAX_DIMENSION
                 const originalWidth = canvas.width;
                 const originalHeight = canvas.height;
-                const scaledWidth = originalWidth * qualityMultiplier;
-                const scaledHeight = originalHeight * qualityMultiplier;
-                
+                let scaledWidth = Math.max(1, Math.floor(originalWidth * qualityMultiplier));
+                let scaledHeight = Math.max(1, Math.floor(originalHeight * qualityMultiplier));
+                if (scaledWidth > CONFIG.MAX_DIMENSION || scaledHeight > CONFIG.MAX_DIMENSION) {
+                    const scale = Math.min(CONFIG.MAX_DIMENSION / scaledWidth, CONFIG.MAX_DIMENSION / scaledHeight);
+                    scaledWidth = Math.max(1, Math.floor(scaledWidth * scale));
+                    scaledHeight = Math.max(1, Math.floor(scaledHeight * scale));
+                }
+
                 highDpiCanvas.width = scaledWidth;
                 highDpiCanvas.height = scaledHeight;
                 
@@ -703,8 +729,9 @@
                     format: pageSize === 'custom' ? [pageWidth, pageHeight] : pageSize
                 });
                 
-                // Get image data - use PNG for better quality, especially for SVGs and detailed graphics
-                const imageFormat = selectedFormat === 'svg' || selectedFormat === 'png' ? 'PNG' : 'JPEG';
+                // Decide image encoding for PDF: prefer PNG for SVG sources or when transparency likely
+                const preferPng = sourceIsSvg;
+                const imageFormat = preferPng ? 'PNG' : 'JPEG';
                 const compressionQuality = imageFormat === 'JPEG' ? 0.98 : undefined;
                 const imgData = imageFormat === 'PNG' ? 
                     highDpiCanvas.toDataURL('image/png') : 
