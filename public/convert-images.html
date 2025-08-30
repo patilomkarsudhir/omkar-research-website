@@ -5,6 +5,8 @@
     <title>Universal Image Format Converter</title>
     <!-- jsPDF library for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- svg2pdf.js plugin to render SVG as vectors into jsPDF -->
+    <script src="https://cdn.jsdelivr.net/npm/svg2pdf.js/dist/svg2pdf.umd.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -243,11 +245,13 @@
                         <option value="custom">Custom Size</option>
                     </select>
                     
-                    <label class="setting-label" style="margin-top: 10px;">Orientation:</label>
-                    <select id="pdfOrientation" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px;">
-                        <option value="portrait">Portrait</option>
-                        <option value="landscape">Landscape</option>
-                    </select>
+                    <div id="pdfOrientationGroup">
+                        <label class="setting-label" style="margin-top: 10px;">Orientation:</label>
+                        <select id="pdfOrientation" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="portrait">Portrait</option>
+                            <option value="landscape">Landscape</option>
+                        </select>
+                    </div>
                     
                     <label class="setting-label" style="margin-top: 10px;">Image Fit:</label>
                     <select id="pdfImageFit" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px;">
@@ -317,6 +321,7 @@
     let originalMimeType = '';
     let originalFileExt = '';
     let sourceIsSvg = false;
+    let originalSvgText = null; // If input was SVG, store raw text
 
         // File input handler
         document.getElementById('fileInput').addEventListener('change', handleFile);
@@ -325,6 +330,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const pdfPageSize = document.getElementById('pdfPageSize');
             const customSizeOptions = document.getElementById('customSizeOptions');
+            const pdfOrientationGroup = document.getElementById('pdfOrientationGroup');
             const pdfQuality = document.getElementById('pdfQuality');
             
             pdfPageSize.addEventListener('change', function() {
@@ -334,6 +340,9 @@
                     customSizeOptions.style.display = 'none';
                 }
             });
+            
+            // Initialize orientation group visibility
+            pdfOrientationGroup.style.display = 'block';
             
             // Add quality warning
             pdfQuality.addEventListener('change', function() {
@@ -410,6 +419,29 @@
             try {
                 const reader = new FileReader();
                 reader.onload = function(e) {
+                    // If SVG, also keep raw text alongside data URL
+                    if (sourceIsSvg) {
+                        originalSvgText = e.target.result;
+                        // Create a Blob URL for <img> preview (since Image expects URL/dataURL)
+                        const svgBlob = new Blob([originalSvgText], { type: 'image/svg+xml' });
+                        const svgUrl = URL.createObjectURL(svgBlob);
+                        const img = new Image();
+                        img.onload = function() {
+                            originalImage = img;
+                            currentImageData = svgUrl;
+                            displayPreview(img, svgUrl);
+                            showFormatSelection();
+                            updateResizeDefaults(img.width, img.height);
+                            document.getElementById('announcements').textContent = `Image loaded: ${img.width} by ${img.height} pixels. Choose an output format to convert.`;
+                        };
+                        img.onerror = function() {
+                            alert('Failed to load SVG preview. The SVG may reference external resources.');
+                            document.getElementById('announcements').textContent = 'Failed to load SVG image. Please try a different file.';
+                        };
+                        img.src = svgUrl;
+                        return;
+                    }
+
                     currentImageData = e.target.result;
                     const img = new Image();
                     img.onload = function() {
@@ -430,7 +462,12 @@
                     alert('Failed to read file. This may be due to file corruption or insufficient memory.');
                     document.getElementById('announcements').textContent = 'Failed to read file. Please try again.';
                 };
-                reader.readAsDataURL(file);
+                // For SVG, read as text so we can pass to jsPDF.svg for vector output; otherwise as DataURL
+                if (sourceIsSvg) {
+                    reader.readAsText(file);
+                } else {
+                    reader.readAsDataURL(file);
+                }
             } catch (error) {
                 console.error('File handling error:', error);
                 let errorMessage = 'An error occurred while loading the file.';
@@ -491,6 +528,17 @@
             const pdfGroup = document.getElementById('pdfGroup');
             if (format === 'pdf') {
                 pdfGroup.style.display = 'block';
+                
+                // Initialize orientation group visibility based on current page size
+                const pdfPageSize = document.getElementById('pdfPageSize');
+                const pdfOrientationGroup = document.getElementById('pdfOrientationGroup');
+                if (pdfPageSize && pdfOrientationGroup) {
+                    if (pdfPageSize.value === 'image') {
+                        pdfOrientationGroup.style.display = 'none';
+                    } else {
+                        pdfOrientationGroup.style.display = 'block';
+                    }
+                }
             } else {
                 pdfGroup.style.display = 'none';
             }
@@ -588,7 +636,15 @@
                 const dataUrlForSvg = canvas.toDataURL('image/png');
                 generateSVG(dataUrlForSvg, newWidth, newHeight);
             } else if (selectedFormat === 'pdf') {
-                generatePDF(canvas);
+                // If original was SVG, attempt vector PDF using svg2pdf.js
+                if (sourceIsSvg && originalSvgText) {
+                    generateVectorPDFfromSVG(originalSvgText).catch(err => {
+                        console.warn('Vector PDF generation failed, falling back to raster:', err);
+                        generatePDF(canvas);
+                    });
+                } else {
+                    generatePDF(canvas);
+                }
             } else {
                 const quality = document.getElementById('qualitySlider').value / 100;
                 let mimeType = `image/${selectedFormat}`;
@@ -688,10 +744,11 @@
                         height: parseInt(document.getElementById('customHeight').value) || 297
                     }
                 };
+                // Page size: use standard dimensions
+                let pageWidth, pageHeight;
+                ({ width: pageWidth, height: pageHeight } = pageDimensions[pageSize]);
                 
-                let { width: pageWidth, height: pageHeight } = pageDimensions[pageSize];
-                
-                // Swap dimensions for landscape
+                // Swap dimensions for landscape orientation
                 if (orientation === 'landscape') {
                     [pageWidth, pageHeight] = [pageHeight, pageWidth];
                 }
@@ -745,13 +802,14 @@
                 switch (imageFit) {
                     case 'fit':
                         // Fit image to page while maintaining aspect ratio
+                        const marginFactor = 0.9;
                         if (canvasRatio > pageRatio) {
                             // Image is wider - fit to width
-                            imgWidth = pageWidth * 0.9; // 5% margin on each side
+                            imgWidth = pageWidth * marginFactor;
                             imgHeight = imgWidth / canvasRatio;
                         } else {
                             // Image is taller - fit to height
-                            imgHeight = pageHeight * 0.9; // 5% margin on top/bottom
+                            imgHeight = pageHeight * marginFactor;
                             imgWidth = imgHeight * canvasRatio;
                         }
                         x = (pageWidth - imgWidth) / 2;
@@ -768,9 +826,9 @@
                         
                     case 'center':
                         // Center image at original size (converted to mm)
-                        const pxToMm = 0.264583 / qualityMultiplier; // Adjust for DPI scaling
-                        imgWidth = Math.min(scaledWidth * pxToMm, pageWidth * 0.9);
-                        imgHeight = Math.min(scaledHeight * pxToMm, pageHeight * 0.9);
+                        const pxToMmCenter = 0.264583 / qualityMultiplier; // Adjust for DPI scaling
+                        imgWidth = Math.min(scaledWidth * pxToMmCenter, pageWidth * 0.9);
+                        imgHeight = Math.min(scaledHeight * pxToMmCenter, pageHeight * 0.9);
                         x = (pageWidth - imgWidth) / 2;
                         y = (pageHeight - imgHeight) / 2;
                         break;
@@ -812,6 +870,201 @@
                 console.error('PDF generation error:', error);
                 alert('Error generating PDF. Please ensure jsPDF is loaded and try again.');
             }
+        }
+
+    async function generateVectorPDFfromSVG(svgText) {
+            // Get PDF settings similar to raster path
+            const pageSize = document.getElementById('pdfPageSize').value;
+            const orientation = document.getElementById('pdfOrientation').value;
+            const imageFit = document.getElementById('pdfImageFit').value;
+            
+            // Helper: parse an SVG length (e.g., '210mm', '8.5in', '600px', unitless) to millimeters
+            function parseLengthToMm(val) {
+                if (val == null) return null;
+                const s = String(val).trim();
+                if (!s) return null;
+                if (/[%]$/.test(s)) return null; // percentage is relative; ignore and fallback to viewBox
+                const num = parseFloat(s);
+                if (!isFinite(num)) return null;
+                const lower = s.toLowerCase();
+                const IN_TO_MM = 25.4;
+                if (lower.endsWith('mm')) return num;
+                if (lower.endsWith('cm')) return num * 10;
+                if (lower.endsWith('in')) return num * IN_TO_MM;
+                if (lower.endsWith('pt')) return num * (IN_TO_MM / 72); // 1pt = 1/72 in
+                if (lower.endsWith('pc')) return num * (IN_TO_MM / 6);  // 1pc = 12pt = 1/6 in
+                if (lower.endsWith('px')) return num * (IN_TO_MM / 96); // SVG standard: 1px = 1/96 in
+                // Unitless: treat as px per SVG specification at 96 DPI
+                return num * (IN_TO_MM / 96);
+            }
+
+            // Create an SVG element from text to measure its size FIRST
+            const parser = new DOMParser();
+            const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+            const svgEl = svgDoc.documentElement;
+
+            // Get physical dimensions from width/height attributes (these are the actual intended size)
+            const widthAttr = svgEl.getAttribute('width');
+            const heightAttr = svgEl.getAttribute('height');
+            
+            // Get viewBox for coordinate space (used for aspect ratio if no physical dimensions)
+            const viewBox = svgEl.getAttribute('viewBox');
+            let viewBoxWidth, viewBoxHeight;
+            if (viewBox) {
+                const parts = viewBox.split(/\s+/).map(Number);
+                if (parts.length === 4) {
+                    viewBoxWidth = parts[2];
+                    viewBoxHeight = parts[3];
+                }
+            }
+            
+            // FIXED: Parse physical dimensions with units FIRST, before any parseFloat operations
+            let widthMm = parseLengthToMm(widthAttr);
+            let heightMm = parseLengthToMm(heightAttr);
+            
+            // Determine coordinate space dimensions for aspect ratio and viewBox creation
+            // These represent the coordinate system, not physical size
+            let coordWidth, coordHeight;
+            if (viewBoxWidth && viewBoxHeight) {
+                // Use viewBox coordinate space if available
+                coordWidth = viewBoxWidth;
+                coordHeight = viewBoxHeight;
+            } else if (widthAttr && heightAttr) {
+                // Extract coordinate space from width/height attributes (always as numbers, no units)
+                coordWidth = parseFloat(widthAttr);
+                coordHeight = parseFloat(heightAttr);
+            } else {
+                // Last resort: arbitrary coordinate space
+                coordWidth = 1000;
+                coordHeight = 1000;
+            }
+
+            // Now determine page dimensions in mm - use SVG dimensions for "image" mode
+            const pageDimensions = {
+                a4: { width: 210, height: 297 },
+                letter: { width: 215.9, height: 279.4 },
+                legal: { width: 215.9, height: 355.6 },
+                a3: { width: 297, height: 420 },
+                a5: { width: 148, height: 210 },
+                custom: {
+                    width: parseInt(document.getElementById('customWidth').value) || 210,
+                    height: parseInt(document.getElementById('customHeight').value) || 297
+                }
+            };
+            
+            let { width: pageWidth, height: pageHeight } = pageDimensions[pageSize] || pageDimensions.a4;
+            
+            // Apply orientation: for explicit [w,h] formats we swap dimensions for landscape
+            // and keep jsPDF orientation neutral (portrait). This avoids double-rotation/axis flips.
+            let appliedOrientation = 'portrait';
+            if (orientation === 'landscape') {
+                [pageWidth, pageHeight] = [pageHeight, pageWidth];
+                appliedOrientation = 'portrait';
+            }
+
+            const { jsPDF } = window.jspdf;
+            // Use 'pt' units to avoid clipping issues with svg2pdf.js (see https://github.com/yWorks/svg2pdf.js/issues/244)
+            // Convert mm to pt (1mm = 2.834645669291339 pt)
+            const mmToPt = 2.834645669291339;
+            const pageWidthPt = pageWidth * mmToPt;
+            const pageHeightPt = pageHeight * mmToPt;
+            const pdf = new jsPDF({ orientation: appliedOrientation, unit: 'pt', format: [pageWidthPt, pageHeightPt] });
+
+            // Compute placement based on imageFit (convert to pt units)
+            // For aspect ratio, always use coordinate space dimensions, not physical dimensions
+            const aspectRatio = coordWidth / coordHeight;
+            const pageRatio = pageWidthPt / pageHeightPt;
+            let x = 0, y = 0, drawWidth = pageWidthPt, drawHeight = pageHeightPt;
+            
+            const marginFactor = 0.9;
+            switch (imageFit) {
+                case 'fit':
+                    if (aspectRatio > pageRatio) {
+                        drawWidth = pageWidthPt * marginFactor;
+                        drawHeight = drawWidth / aspectRatio;
+                    } else {
+                        drawHeight = pageHeightPt * marginFactor;
+                        drawWidth = drawHeight * aspectRatio;
+                    }
+                    x = (pageWidthPt - drawWidth) / 2;
+                    y = (pageHeightPt - drawHeight) / 2;
+                    break;
+                case 'fill':
+                    drawWidth = pageWidthPt;
+                    drawHeight = pageHeightPt;
+                    x = 0; y = 0;
+                    break;
+                case 'center':
+                    // Center using 1:1 px-to-pt at 72 DPI (1px = 1pt)
+                    // Use coordinate space dimensions for scaling, not physical dimensions
+                    const pxToPt = 1.0; // At 72 DPI, 1px = 1pt
+                    drawWidth = Math.min(coordWidth * pxToPt, pageWidthPt * 0.9);
+                    drawHeight = Math.min(coordHeight * pxToPt, pageHeightPt * 0.9);
+                    x = (pageWidthPt - drawWidth) / 2;
+                    y = (pageHeightPt - drawHeight) / 2;
+                    break;
+            }
+
+            // Create a temporary container to host the parsed SVG node
+            const tempContainer = document.createElement('div');
+            tempContainer.style.position = 'fixed';
+            tempContainer.style.left = '-99999px';
+            tempContainer.style.top = '0';
+            document.body.appendChild(tempContainer);
+            
+            const imported = document.importNode(svgEl, true);
+            
+            // CRITICAL FIX: Ensure SVG has proper viewBox for scaling (see https://github.com/yWorks/svg2pdf.js/issues/179)
+            // svg2pdf.js requires viewBox to scale properly when width/height options are specified
+            if (!viewBox) {
+                // If no viewBox exists, create one from the coordinate space dimensions
+                imported.setAttribute('viewBox', `0 0 ${coordWidth} ${coordHeight}`);
+            }
+            
+            // Only ensure preserveAspectRatio is set for predictable behavior
+            if (!imported.getAttribute('preserveAspectRatio')) {
+                imported.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+            }
+
+            // IMPORTANT: Remove absolute width/height so scaling is controlled solely by viewBox and pdf.svg width/height
+            if (imported.hasAttribute('width')) imported.removeAttribute('width');
+            if (imported.hasAttribute('height')) imported.removeAttribute('height');
+            if (imported.style) {
+                try {
+                    imported.style.removeProperty('width');
+                    imported.style.removeProperty('height');
+                    imported.style.overflow = 'visible'; // avoid inadvertent clipping
+                } catch { /* ignore */ }
+            }
+            tempContainer.appendChild(imported);
+
+            try {
+                await pdf.svg(imported, { x, y, width: drawWidth, height: drawHeight });
+            } finally {
+                document.body.removeChild(tempContainer);
+            }
+
+            const pdfBlob = pdf.output('blob');
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            currentConvertedData = pdfUrl;
+
+            const imageOutput = document.getElementById('imageOutput');
+            const fileSizeEstimate = Math.round(pdfBlob.size / 1024);
+            imageOutput.innerHTML = `
+                <div style="border: 1px solid #ddd; border-radius: 5px; padding: 20px; margin: 10px 0; text-align: center;">
+                    <div style="font-size: 48px; color: #27ae60; margin-bottom: 10px;">📄</div>
+                    <div style="font-weight: bold; color: #333; margin-bottom: 5px;">Vector PDF Generated (SVG preserved)</div>
+                    <div style="color: #666; font-size: 14px;">
+                        Page: ${pageSize.toUpperCase()} ${orientation}<br>
+                        Dimensions: ${Math.round(pageWidth)}×${Math.round(pageHeight)}mm<br>
+                        Placement: ${imageFit} | Rendering: vector (svg2pdf.js)<br>
+                        Size: ~${fileSizeEstimate} KB
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('outputSection').style.display = 'block';
+            document.getElementById('downloadBtn').style.display = 'inline-block';
         }
 
         function displayConvertedImage(actualFormat = null) {
