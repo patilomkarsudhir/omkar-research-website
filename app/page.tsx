@@ -182,9 +182,9 @@ export default function Page() {
 				</div>
 			</Section>
 			<Section title="Tools and Accessories">
-				<div className="grid gap-4 justify-center grid-cols-[repeat(auto-fit,minmax(180px,1fr))] sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+				<div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(180px,1fr))] sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
 					<Link href="/convert-images.html" className="group" passHref>
-						<div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-orange-500/20 to-orange-700/30 transition shadow-sm hover:shadow-md hover:brightness-110 dark:border-white/5 max-w-[210px] mx-auto h-48">
+						<div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-orange-500/20 to-orange-700/30 transition shadow-sm hover:shadow-md hover:brightness-110 dark:border-white/5 max-w-[210px] h-48">
 							<div className="h-28 sm:h-32 w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20">
 								<svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-orange-600 dark:text-orange-400">
 									<path d="M14 2H6C5.45 2 4.95 2.2 4.59 2.59C4.2 2.95 4 3.45 4 4V20C4 20.55 4.2 21.05 4.59 21.41C4.95 21.8 5.45 22 6 22H18C18.55 22 19.05 21.8 19.41 21.41C19.8 21.05 20 20.55 20 20V8L14 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
