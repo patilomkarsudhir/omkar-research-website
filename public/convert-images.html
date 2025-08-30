@@ -256,6 +256,17 @@
                         <option value="center">Center on page (original size)</option>
                     </select>
                     
+                    <label class="setting-label" style="margin-top: 10px;">Print Quality:</label>
+                    <select id="pdfQuality" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="1">Standard (96 DPI) - Smaller file</option>
+                        <option value="2" selected>High (192 DPI) - Recommended</option>
+                        <option value="3">Very High (288 DPI) - Large file</option>
+                        <option value="4">Ultra (384 DPI) - Huge file, best quality</option>
+                    </select>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                        Higher quality is recommended for detailed plots and scientific figures
+                    </div>
+                    
                     <div id="customSizeOptions" style="display: none; margin-top: 10px;">
                         <label style="margin-right: 15px;">Width (mm): <input type="number" id="customWidth" min="50" max="1000" value="210" style="width: 80px; margin-left: 5px;"></label>
                         <label>Height (mm): <input type="number" id="customHeight" min="50" max="1000" value="297" style="width: 80px; margin-left: 5px;"></label>
@@ -310,12 +321,31 @@
         document.addEventListener('DOMContentLoaded', function() {
             const pdfPageSize = document.getElementById('pdfPageSize');
             const customSizeOptions = document.getElementById('customSizeOptions');
+            const pdfQuality = document.getElementById('pdfQuality');
             
             pdfPageSize.addEventListener('change', function() {
                 if (this.value === 'custom') {
                     customSizeOptions.style.display = 'block';
                 } else {
                     customSizeOptions.style.display = 'none';
+                }
+            });
+            
+            // Add quality warning
+            pdfQuality.addEventListener('change', function() {
+                const qualityLevel = parseInt(this.value);
+                const warningDiv = document.querySelector('.pdf-quality-warning');
+                
+                if (qualityLevel >= 3) {
+                    if (!warningDiv) {
+                        const warning = document.createElement('div');
+                        warning.className = 'pdf-quality-warning';
+                        warning.style.cssText = 'font-size: 12px; color: #e67e22; margin-top: 5px; padding: 5px; background: #fef9e7; border-radius: 3px; border-left: 3px solid #e67e22;';
+                        warning.innerHTML = '⚠️ Very high quality may use significant memory and processing time for large images.';
+                        pdfQuality.parentNode.appendChild(warning);
+                    }
+                } else if (warningDiv) {
+                    warningDiv.remove();
                 }
             });
         });
@@ -515,16 +545,26 @@
                     return;
                 }
                 
-                canvas.width = newWidth;
-                canvas.height = newHeight;
+                // For SVG files, use higher resolution canvas for better quality
+                const isDetailedFormat = selectedFormat === 'svg' || originalFileName.toLowerCase().endsWith('.svg');
+                const qualityMultiplier = isDetailedFormat ? 2 : 1; // 2x resolution for SVGs
                 
-                // Draw image to canvas
-                ctx.drawImage(originalImage, 0, 0, newWidth, newHeight);
+                canvas.width = newWidth * qualityMultiplier;
+                canvas.height = newHeight * qualityMultiplier;
+                
+                // Enable high-quality rendering for detailed formats
+                if (isDetailedFormat) {
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                }
+                
+                // Draw image to canvas (scaled up for detailed formats)
+                ctx.drawImage(originalImage, 0, 0, newWidth * qualityMultiplier, newHeight * qualityMultiplier);
             
             // Convert based on selected format
             if (selectedFormat === 'svg') {
-                // For SVG, use resized canvas data if resizing is enabled
-                const dataUrlForSvg = shouldResize ? canvas.toDataURL('image/png') : currentImageData;
+                // For SVG, use high-quality PNG data
+                const dataUrlForSvg = canvas.toDataURL('image/png');
                 generateSVG(dataUrlForSvg, newWidth, newHeight);
             } else if (selectedFormat === 'pdf') {
                 generatePDF(canvas);
@@ -543,10 +583,10 @@
                     // Fill background with white for JPEG (no transparency)
                     const tempCanvas = document.createElement('canvas');
                     const tempCtx = tempCanvas.getContext('2d');
-                    tempCanvas.width = newWidth;
-                    tempCanvas.height = newHeight;
+                    tempCanvas.width = newWidth * qualityMultiplier;
+                    tempCanvas.height = newHeight * qualityMultiplier;
                     tempCtx.fillStyle = 'white';
-                    tempCtx.fillRect(0, 0, newWidth, newHeight);
+                    tempCtx.fillRect(0, 0, newWidth * qualityMultiplier, newHeight * qualityMultiplier);
                     tempCtx.drawImage(canvas, 0, 0);
                     
                     currentConvertedData = tempCanvas.toDataURL(mimeType, quality);
@@ -613,6 +653,7 @@
                 const pageSize = document.getElementById('pdfPageSize').value;
                 const orientation = document.getElementById('pdfOrientation').value;
                 const imageFit = document.getElementById('pdfImageFit').value;
+                const qualityMultiplier = parseInt(document.getElementById('pdfQuality').value);
                 
                 // Define page dimensions in mm
                 const pageDimensions = {
@@ -634,6 +675,26 @@
                     [pageWidth, pageHeight] = [pageHeight, pageWidth];
                 }
                 
+                // Create high-DPI canvas for better quality
+                const highDpiCanvas = document.createElement('canvas');
+                const highDpiCtx = highDpiCanvas.getContext('2d');
+                
+                // Scale up for higher DPI
+                const originalWidth = canvas.width;
+                const originalHeight = canvas.height;
+                const scaledWidth = originalWidth * qualityMultiplier;
+                const scaledHeight = originalHeight * qualityMultiplier;
+                
+                highDpiCanvas.width = scaledWidth;
+                highDpiCanvas.height = scaledHeight;
+                
+                // Enable high-quality rendering
+                highDpiCtx.imageSmoothingEnabled = true;
+                highDpiCtx.imageSmoothingQuality = 'high';
+                
+                // Draw the original canvas scaled up
+                highDpiCtx.drawImage(canvas, 0, 0, scaledWidth, scaledHeight);
+                
                 // Create PDF document
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF({
@@ -642,12 +703,16 @@
                     format: pageSize === 'custom' ? [pageWidth, pageHeight] : pageSize
                 });
                 
-                // Get image data from canvas
-                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                // Get image data - use PNG for better quality, especially for SVGs and detailed graphics
+                const imageFormat = selectedFormat === 'svg' || selectedFormat === 'png' ? 'PNG' : 'JPEG';
+                const compressionQuality = imageFormat === 'JPEG' ? 0.98 : undefined;
+                const imgData = imageFormat === 'PNG' ? 
+                    highDpiCanvas.toDataURL('image/png') : 
+                    highDpiCanvas.toDataURL('image/jpeg', compressionQuality);
                 
                 // Calculate image dimensions based on fit option
                 let imgWidth, imgHeight, x, y;
-                const canvasRatio = canvas.width / canvas.height;
+                const canvasRatio = scaledWidth / scaledHeight;
                 const pageRatio = pageWidth / pageHeight;
                 
                 switch (imageFit) {
@@ -676,16 +741,16 @@
                         
                     case 'center':
                         // Center image at original size (converted to mm)
-                        const pxToMm = 0.264583; // 96 DPI conversion
-                        imgWidth = Math.min(canvas.width * pxToMm, pageWidth * 0.9);
-                        imgHeight = Math.min(canvas.height * pxToMm, pageHeight * 0.9);
+                        const pxToMm = 0.264583 / qualityMultiplier; // Adjust for DPI scaling
+                        imgWidth = Math.min(scaledWidth * pxToMm, pageWidth * 0.9);
+                        imgHeight = Math.min(scaledHeight * pxToMm, pageHeight * 0.9);
                         x = (pageWidth - imgWidth) / 2;
                         y = (pageHeight - imgHeight) / 2;
                         break;
                 }
                 
                 // Add image to PDF
-                pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+                pdf.addImage(imgData, imageFormat, x, y, imgWidth, imgHeight);
                 
                 // Generate PDF blob
                 const pdfBlob = pdf.output('blob');
@@ -694,16 +759,21 @@
                 // Store for download
                 currentConvertedData = pdfUrl;
                 
+                // Calculate quality info for display
+                const dpiValue = 96 * qualityMultiplier;
+                const fileSizeEstimate = Math.round(pdfBlob.size / 1024);
+                
                 // Display preview
                 const imageOutput = document.getElementById('imageOutput');
                 imageOutput.innerHTML = `
                     <div style="border: 1px solid #ddd; border-radius: 5px; padding: 20px; margin: 10px 0; text-align: center;">
                         <div style="font-size: 48px; color: #e74c3c; margin-bottom: 10px;">📄</div>
-                        <div style="font-weight: bold; color: #333; margin-bottom: 5px;">PDF Generated Successfully</div>
+                        <div style="font-weight: bold; color: #333; margin-bottom: 5px;">High-Quality PDF Generated</div>
                         <div style="color: #666; font-size: 14px;">
                             Page: ${pageSize.toUpperCase()} ${orientation}<br>
                             Dimensions: ${Math.round(pageWidth)}×${Math.round(pageHeight)}mm<br>
-                            Image fit: ${imageFit}
+                            Image fit: ${imageFit} | Quality: ${dpiValue} DPI<br>
+                            Format: ${imageFormat} | Size: ~${fileSizeEstimate} KB
                         </div>
                     </div>
                 `;
