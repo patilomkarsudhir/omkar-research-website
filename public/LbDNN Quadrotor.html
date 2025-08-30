@@ -32,6 +32,23 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="canonical" href="https://omkarsudhirpatil.com/LbDNN%20Quadrotor.html">
     
+    <!-- MathJax for LaTeX Math Rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
     <style>
@@ -170,6 +187,47 @@
             padding: 8px 12px;
             border-radius: 8px;
             border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .checkbox-param {
+            background: rgba(102, 126, 234, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.15);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+
+        .checkbox-param label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .checkbox-param input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+            cursor: pointer;
+        }
+
+        .param-description {
+            font-size: 0.85rem;
+            color: #718096;
+            margin-top: 4px;
+            font-style: italic;
+            line-height: 1.3;
+        }
+
+        .checkbox-param:hover {
+            background: rgba(102, 126, 234, 0.08);
+            border-color: rgba(102, 126, 234, 0.25);
+        }
+
+        .checkbox-param input[type="checkbox"]:checked + span {
+            color: #667eea;
         }
 
         .control-buttons {
@@ -663,6 +721,52 @@
                     </div>
                 </div>
 
+                <div class="section">
+                    <h3>Intermittent Feedback</h3>
+                    <div class="parameter-group">
+                        <div class="parameter">
+                            <label for="feedbackMode">Feedback Mode:</label>
+                            <select id="feedbackMode" style="padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 1rem; width: 100%;">
+                                <option value="automatic">Automatic (Probabilistic)</option>
+                                <option value="manual">Manual (User Control)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Manual Control Buttons -->
+                        <div id="manualControlSection" style="display: none;" class="parameter">
+                            <label>Manual Feedback Control:</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                                <button id="forceFeedbackLoss" class="btn btn-secondary" style="padding: 12px; font-size: 0.9rem;">
+                                    🔴 Lose Feedback
+                                </button>
+                                <button id="restoreFeedback" class="btn btn-primary" style="padding: 12px; font-size: 0.9rem;">
+                                    🟢 Restore Feedback
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Automatic Control Settings -->
+                        <div id="automaticControlSection" class="parameter">
+                            <label for="enableFeedbackLoss">Enable Automatic Loss:</label>
+                            <input type="checkbox" id="enableFeedbackLoss" checked>
+                        </div>
+                        <div id="automaticSettings">
+                            <div class="parameter">
+                                <label for="feedbackLossRate">Feedback Loss Rate (%): <span id="feedbackLossRateValue">10</span></label>
+                                <input type="range" id="feedbackLossRate" min="0" max="50" value="10" step="1">
+                            </div>
+                            <div class="parameter">
+                                <label for="feedbackLossDuration">Loss Duration (s): <span id="feedbackLossDurationValue">0.5</span></label>
+                                <input type="range" id="feedbackLossDuration" min="0.1" max="2.0" value="0.5" step="0.1">
+                            </div>
+                            <div class="parameter">
+                                <label for="feedbackRecoveryTime">Recovery Time (s): <span id="feedbackRecoveryTimeValue">0.2</span></label>
+                                <input type="range" id="feedbackRecoveryTime" min="0.1" max="1.0" value="0.2" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="section adaptive-params">
                     <h3>Neural Network</h3>
                     <div class="parameter-group">
@@ -774,52 +878,6 @@
                 </div>
 
                 <div class="section">
-                    <h3>Intermittent Feedback</h3>
-                    <div class="parameter-group">
-                        <div class="parameter">
-                            <label for="feedbackMode">Feedback Mode:</label>
-                            <select id="feedbackMode" style="padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 1rem; width: 100%;">
-                                <option value="automatic">Automatic (Probabilistic)</option>
-                                <option value="manual">Manual (User Control)</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Manual Control Buttons -->
-                        <div id="manualControlSection" style="display: none;" class="parameter">
-                            <label>Manual Feedback Control:</label>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-                                <button id="forceFeedbackLoss" class="btn btn-secondary" style="padding: 12px; font-size: 0.9rem;">
-                                    🔴 Lose Feedback
-                                </button>
-                                <button id="restoreFeedback" class="btn btn-primary" style="padding: 12px; font-size: 0.9rem;">
-                                    🟢 Restore Feedback
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Automatic Control Settings -->
-                        <div id="automaticControlSection" class="parameter">
-                            <label for="enableFeedbackLoss">Enable Automatic Loss:</label>
-                            <input type="checkbox" id="enableFeedbackLoss" checked>
-                        </div>
-                        <div id="automaticSettings">
-                            <div class="parameter">
-                                <label for="feedbackLossRate">Feedback Loss Rate (%): <span id="feedbackLossRateValue">10</span></label>
-                                <input type="range" id="feedbackLossRate" min="0" max="50" value="10" step="1">
-                            </div>
-                            <div class="parameter">
-                                <label for="feedbackLossDuration">Loss Duration (s): <span id="feedbackLossDurationValue">0.5</span></label>
-                                <input type="range" id="feedbackLossDuration" min="0.1" max="2.0" value="0.5" step="0.1">
-                            </div>
-                            <div class="parameter">
-                                <label for="feedbackRecoveryTime">Recovery Time (s): <span id="feedbackRecoveryTimeValue">0.2</span></label>
-                                <input type="range" id="feedbackRecoveryTime" min="0.1" max="1.0" value="0.2" step="0.1">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section">
                     <h3>Environment</h3>
                     <div class="parameter-group">
                         <div class="parameter">
@@ -841,6 +899,75 @@
                             <label for="maxTorque">Max Torque (Nm)</label>
                             <input type="range" id="maxTorque" min="2" max="15" value="5" step="0.5">
                             <span class="parameter-value" id="maxTorqueValue">5.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section adaptive-params">
+                    <h3>🌪️ Turbulent Nonlinearity</h3>
+                    <div class="parameter-group">
+                        <div class="parameter checkbox-param">
+                            <label for="enableAeroStall">
+                                <input type="checkbox" id="enableAeroStall">
+                                Aerodynamic Stall & Rotor Interference
+                            </label>
+                            <span class="param-description">Nonlinear stall effects and rotor wake interference</span>
+                        </div>
+                        <div class="parameter checkbox-param">
+                            <label for="enableGroundEffect">
+                                <input type="checkbox" id="enableGroundEffect">
+                                Ground Effect
+                            </label>
+                            <span class="param-description">Exponential lift augmentation near ground</span>
+                        </div>
+                        <div class="parameter checkbox-param">
+                            <label for="enableVortexRing">
+                                <input type="checkbox" id="enableVortexRing">
+                                Vortex Ring State
+                            </label>
+                            <span class="param-description">Dangerous helicopter flight regime with lift loss</span>
+                        </div>
+                        <div class="parameter checkbox-param">
+                            <label for="enableStructuralFlex">
+                                <input type="checkbox" id="enableStructuralFlex">
+                                Structural Flexibility
+                            </label>
+                            <span class="param-description">Flexible frame causing position-attitude coupling</span>
+                        </div>
+                        <div class="parameter checkbox-param">
+                            <label for="enableActuatorNonlin">
+                                <input type="checkbox" id="enableActuatorNonlin">
+                                Actuator Nonlinearity
+                            </label>
+                            <span class="param-description">Battery degradation and motor saturation effects</span>
+                        </div>
+                        <div class="parameter checkbox-param">
+                            <label for="enableAtmosphericChaos">
+                                <input type="checkbox" id="enableAtmosphericChaos">
+                                Atmospheric Chaos
+                            </label>
+                            <span class="param-description">Multi-scale turbulence with chaotic gusts</span>
+                        </div>
+                        <div class="parameter checkbox-param">
+                            <label for="enableReynoldsEffects">
+                                <input type="checkbox" id="enableReynoldsEffects">
+                                Reynolds Effects
+                            </label>
+                            <span class="param-description">Velocity-dependent drag coefficient variations</span>
+                        </div>
+                        <div class="parameter checkbox-param">
+                            <label for="enablePropwashCoupling">
+                                <input type="checkbox" id="enablePropwashCoupling">
+                                Propwash Coupling
+                            </label>
+                            <span class="param-description">Propeller downwash attitude-dependent forces</span>
+                        </div>
+                        <div class="parameter checkbox-param">
+                            <label for="enableMagneticInterference">
+                                <input type="checkbox" id="enableMagneticInterference">
+                                Magnetic Interference
+                            </label>
+                            <span class="param-description">Electronic coupling and magnetic field effects</span>
                         </div>
                     </div>
                 </div>
@@ -1793,6 +1920,24 @@
                 this.wind_strength = 0.5;
                 this.maxForce = 50.0;
                 this.maxTorque = 5.0;
+                
+                // Turbulent nonlinearity flags
+                this.enableAeroStall = false;
+                this.enableGroundEffect = false;
+                this.enableVortexRing = false;
+                this.enableStructuralFlex = false;
+                this.enableActuatorNonlin = false;
+                this.enableAtmosphericChaos = false;
+                this.enableReynoldsEffects = false;
+                this.enablePropwashCoupling = false;
+                this.enableMagneticInterference = false;
+                
+                // Additional parameters for nonlinear effects
+                this.rotor_diameter = 0.25;
+                this.kinematic_viscosity = 1.5e-5;
+                this.characteristic_length = 0.1;
+                this.battery_degradation_rate = 0.3;
+                this.turbulence_intensity = 1.0;
             }
 
             setWindStrength(strength) {
@@ -1808,11 +1953,28 @@
                 this.maxTorque = maxTorque;
             }
 
+            // Set turbulent nonlinearity modes
+            setTurbulentModes(modes) {
+                this.enableAeroStall = modes.aeroStall || false;
+                this.enableGroundEffect = modes.groundEffect || false;
+                this.enableVortexRing = modes.vortexRing || false;
+                this.enableStructuralFlex = modes.structuralFlex || false;
+                this.enableActuatorNonlin = modes.actuatorNonlin || false;
+                this.enableAtmosphericChaos = modes.atmosphericChaos || false;
+                this.enableReynoldsEffects = modes.reynoldsEffects || false;
+                this.enablePropwashCoupling = modes.propwashCoupling || false;
+                this.enableMagneticInterference = modes.magneticInterference || false;
+            }
+
             getUnknownDynamics(state, stateDot, time) {
                 const [x, y, z, phi, theta, psi] = state;
                 const [x_dot, y_dot, z_dot, phi_dot, theta_dot, psi_dot] = stateDot;
 
-                // Aerodynamic drag
+                // Start with basic dynamics
+                let total_forces = [0, 0, 0];
+                let total_moments = [0, 0, 0];
+
+                // Standard aerodynamic drag
                 const drag_x = -this.kd_linear * x_dot * Math.abs(x_dot);
                 const drag_y = -this.kd_linear * y_dot * Math.abs(y_dot);
                 const drag_z = -this.kd_linear * z_dot * Math.abs(z_dot);
@@ -1827,20 +1989,139 @@
                 const gyro_theta = (this.Izz - this.Ixx) * phi_dot * psi_dot / this.Iyy;
                 const gyro_psi = (this.Ixx - this.Iyy) * phi_dot * theta_dot / this.Izz;
 
-               
-                // Wind disturbances
+                // Basic wind disturbances
                 const stateSum = state.reduce((a, b) => a + b, 0);
                 const wind_x = this.wind_strength * Math.sin(0.1 * time) * Math.cos(0.3 * stateSum);
                 const wind_y = this.wind_strength * Math.cos(0.15 * time) * Math.sin(0.25 * stateSum);
                 const wind_z = 0.3 * this.wind_strength * Math.sin(0.2 * time);
 
+                // Add basic effects
+                total_forces[0] += (drag_x + wind_x) / this.m;
+                total_forces[1] += (drag_y + wind_y) / this.m;
+                total_forces[2] += (drag_z + wind_z) / this.m;
+                total_moments[0] += gyro_phi + drag_phi;
+                total_moments[1] += gyro_theta + drag_theta;
+                total_moments[2] += gyro_psi + drag_psi;
+
+                // === TURBULENT NONLINEARITY MODES ===
+
+                // 1. Aerodynamic Stall Effects & Rotor Interference
+                if (this.enableAeroStall) {
+                    const velocity_magnitude = Math.sqrt(x_dot * x_dot + y_dot * y_dot + z_dot * z_dot);
+                    const effective_aoa = Math.atan2(z_dot, Math.sqrt(x_dot * x_dot + y_dot * y_dot + 0.001));
+                    const stall_factor = 1.0 - 0.8 * Math.exp(-Math.pow((effective_aoa - 0.3) / 0.15, 2));
+                    const rotor_interference = 0.1 * Math.sin(2 * phi) * Math.cos(3 * theta) * velocity_magnitude;
+                    
+                    total_forces[0] += -0.15 * stall_factor * x_dot * velocity_magnitude / this.m;
+                    total_forces[1] += -0.15 * stall_factor * y_dot * velocity_magnitude / this.m;
+                    total_forces[2] += -0.2 * stall_factor * z_dot * velocity_magnitude / this.m;
+                    total_moments[2] += rotor_interference * 0.1;
+                }
+
+                // 2. Ground Effect with Exponential Proximity
+                if (this.enableGroundEffect) {
+                    const ground_height = Math.max(0.1, z);
+                    const ground_effect = Math.pow(this.rotor_diameter / ground_height, 2) * Math.exp(-ground_height / this.rotor_diameter);
+                    const lift_augmentation = ground_effect * (0.15 * Math.tanh(5 * z_dot));
+                    
+                    total_forces[2] += lift_augmentation;
+                    total_moments[0] += 0.05 * ground_effect * Math.sin(phi);
+                    total_moments[1] += 0.05 * ground_effect * Math.sin(theta);
+                }
+
+                // 3. Vortex Ring State (Helicopter Physics)
+                if (this.enableVortexRing) {
+                    const descent_rate = -z_dot;
+                    const forward_speed = Math.sqrt(x_dot * x_dot + y_dot * y_dot);
+                    const vrs_condition = descent_rate > 2.0 && forward_speed < 1.5;
+                    const vrs_intensity = vrs_condition ? Math.exp(-Math.pow((forward_speed - 0.5) / 0.3, 2)) : 0;
+                    const vrs_force = -vrs_intensity * 8.0 * Math.sin(0.5 * time);
+                    
+                    total_forces[2] += vrs_force / this.m;
+                    total_moments[0] += vrs_intensity * 0.3 * Math.sin(1.5 * time);
+                    total_moments[1] += vrs_intensity * 0.3 * Math.cos(1.8 * time);
+                }
+
+                // 4. Coupled Structural Flexibility
+                if (this.enableStructuralFlex) {
+                    const structural_coupling_x = 0.1 * Math.sin(phi) * (x_dot * x_dot + y_dot * y_dot);
+                    const structural_coupling_y = 0.08 * Math.cos(theta) * z_dot * phi_dot;
+                    const structural_coupling_z = 0.12 * (phi * phi + theta * theta) * Math.sign(psi_dot);
+                    
+                    total_forces[0] += structural_coupling_x / this.m;
+                    total_forces[1] += structural_coupling_y / this.m;
+                    total_moments[2] += structural_coupling_z;
+                }
+
+                // 5. Battery Voltage Drop & Actuator Nonlinearity  
+                if (this.enableActuatorNonlin) {
+                    const battery_factor = 1.0 - this.battery_degradation_rate * Math.tanh(time / 30.0);
+                    const motor_nonlinearity = 0.1 * (1 - battery_factor);
+                    
+                    total_forces[0] += motor_nonlinearity * Math.sin(2 * time) * x_dot / this.m;
+                    total_forces[1] += motor_nonlinearity * Math.cos(2.3 * time) * y_dot / this.m;
+                    total_forces[2] += motor_nonlinearity * Math.sin(1.7 * time) * z_dot / this.m;
+                }
+
+                // 6. Turbulent Wake & Atmospheric Effects
+                if (this.enableAtmosphericChaos) {
+                    const large_eddy = this.turbulence_intensity * Math.sin(0.05 * time) * Math.cos(0.3 * x + 0.2 * y);
+                    const small_eddy = 0.5 * this.turbulence_intensity * Math.sin(2.1 * time + stateSum) * Math.cos(5.7 * time);
+                    const gust_front = this.turbulence_intensity * Math.exp(-Math.pow((time % 20 - 10) / 3, 2));
+                    const atmospheric_chaos = large_eddy + small_eddy + gust_front;
+                    
+                    total_forces[0] += 0.5 * atmospheric_chaos * Math.sin(time) / this.m;
+                    total_forces[1] += 0.5 * atmospheric_chaos * Math.cos(1.3 * time) / this.m;
+                    total_forces[2] += 0.3 * atmospheric_chaos / this.m;
+                    total_moments[2] += 0.1 * atmospheric_chaos;
+                }
+
+                // 7. Reynolds Number-Dependent Drag
+                if (this.enableReynoldsEffects) {
+                    const velocity_magnitude = Math.sqrt(x_dot * x_dot + y_dot * y_dot + z_dot * z_dot);
+                    const reynolds_number = velocity_magnitude * this.characteristic_length / this.kinematic_viscosity;
+                    const drag_coefficient = 0.1 + 0.4 / (1 + Math.exp(-(reynolds_number - 1000) / 200));
+                    const nonlinear_drag_x = -drag_coefficient * x_dot * velocity_magnitude * Math.sign(x_dot);
+                    const nonlinear_drag_y = -drag_coefficient * y_dot * velocity_magnitude * Math.sign(y_dot);
+                    const nonlinear_drag_z = -drag_coefficient * z_dot * velocity_magnitude * Math.sign(z_dot);
+                    
+                    total_forces[0] += nonlinear_drag_x / this.m;
+                    total_forces[1] += nonlinear_drag_y / this.m;
+                    total_forces[2] += nonlinear_drag_z / this.m;
+                }
+
+                // 8. Propwash-Induced Coupling
+                if (this.enablePropwashCoupling) {
+                    const propwash_velocity = 5.0 + 2.0 * Math.abs(z_dot);
+                    const induced_force_x = 0.05 * propwash_velocity * Math.sin(2 * phi) * Math.cos(psi);
+                    const induced_force_y = 0.05 * propwash_velocity * Math.sin(2 * theta) * Math.sin(psi);
+                    const induced_force_z = -0.1 * propwash_velocity * (1 + 0.3 * Math.cos(phi) * Math.cos(theta));
+                    
+                    total_forces[0] += induced_force_x / this.m;
+                    total_forces[1] += induced_force_y / this.m;
+                    total_forces[2] += induced_force_z / this.m;
+                }
+
+                // 9. Magnetic Interference & Electronic Coupling
+                if (this.enableMagneticInterference) {
+                    const magnetic_field_strength = 0.02 * (1 + 0.5 * Math.sin(0.1 * time));
+                    const angular_rate_magnitude = Math.sqrt(phi_dot * phi_dot + theta_dot * theta_dot + psi_dot * psi_dot);
+                    const electronic_coupling_x = magnetic_field_strength * Math.sin(phi) * (x * x + y * y) / 10;
+                    const electronic_coupling_y = magnetic_field_strength * Math.cos(theta) * z * Math.sign(psi_dot);
+                    const electronic_coupling_z = magnetic_field_strength * Math.tanh(angular_rate_magnitude) * 0.1;
+                    
+                    total_forces[0] += electronic_coupling_x / this.m;
+                    total_forces[1] += electronic_coupling_y / this.m;
+                    total_moments[2] += electronic_coupling_z;
+                }
+
                 return [
-                    drag_x / this.m + wind_x / this.m,
-                    drag_y / this.m + wind_y / this.m,
-                    drag_z / this.m + wind_z / this.m,
-                    gyro_phi + drag_phi,
-                    gyro_theta + drag_theta,
-                    gyro_psi + drag_psi
+                    total_forces[0],
+                    total_forces[1], 
+                    total_forces[2],
+                    total_moments[0],
+                    total_moments[1],
+                    total_moments[2]
                 ];
             }
 
@@ -1906,6 +2187,22 @@
             }
 
             step(state, stateDot, desiredState, desiredStateDot, desiredStateDdot, dt, useComposite = true, feedbackAvailable = true) {
+                /*
+                 * INTERMITTENT FEEDBACK CONTROL IMPLEMENTATION
+                 * 
+                 * During feedback available periods [t_{2i}, t_{2i+1}):
+                 * - Use normal composite adaptive control with tracking errors
+                 * - Update DNN weights using adaptation laws: θ̇ = Γ * Jacobian * adaptation_signal
+                 * - Update observer estimates
+                 * - Control law: u = ẍ_d - (α₁+k_r)*r + (α₁²-1)*e - φ̂(x,ẋ)
+                 * 
+                 * During feedback unavailable periods [t_{2i+1}, t_{2i+2}):
+                 * - Use open-loop controller: u = ẍ_d - φ̂(x_d,ẋ_d,θ̂(t_{2i+1}))
+                 * - Completely freeze DNN weights at θ̂(t_{2i+1})
+                 * - Freeze observer estimates
+                 * - Use desired trajectory states for DNN evaluation
+                 */
+                
                 // Store current values for potential future use during feedback loss
                 if (feedbackAvailable && state && stateDot) {
                     this.lastState = [...state];
@@ -1924,40 +2221,64 @@
                 //     console.log('Adaptive using estimated state:', currentState.map(x => x.toFixed(3)));
                 // }
                 
-                // Tracking error
-                const e = currentState.map((s, i) => s - desiredState[i]);
-                const r = currentStateDot.map((sd, i) => sd - desiredStateDot[i] + this.alpha1 * e[i]);
-
-                // DNN forward pass with caching (always use current estimated dynamics)
-                const X = [...currentState, ...currentStateDot];
-                const phi_hat = this.dnn.forward(X, true);
-
-                // Control input with DNN compensation
-                const u = desiredStateDdot.map((dd, i) => 
-                    dd - (this.alpha1 + this.kr) * r[i] + (this.alpha1 * this.alpha1 - 1) * e[i] - phi_hat[i]);
-
-                // Observer update - reduce adaptation rate during feedback loss
-                const adaptationFactor = feedbackAvailable ? 1.0 : 0.1;
-                const r_tilde = r.map((ri, i) => ri - this.r_hat[i]);
-                const r_dot_obs = u.map((ui, i) => 
-                    (ui - desiredStateDdot[i] + this.alpha1 * r[i] + this.f_hat[i] + this.alpha2 * r_tilde[i]) * adaptationFactor);
+                let e, r, phi_hat, u;
                 
-                for (let i = 0; i < 6; i++) {
-                    this.r_hat[i] += r_dot_obs[i] * dt;
+                if (feedbackAvailable) {
+                    // Normal closed-loop control when feedback is available
+                    // Tracking error
+                    e = currentState.map((s, i) => s - desiredState[i]);
+                    r = currentStateDot.map((sd, i) => sd - desiredStateDot[i] + this.alpha1 * e[i]);
+
+                    // DNN forward pass with current state
+                    const X = [...currentState, ...currentStateDot];
+                    phi_hat = this.dnn.forward(X, true);
+
+                    // Control input with DNN compensation (closed-loop)
+                    u = desiredStateDdot.map((dd, i) => 
+                        dd - (this.alpha1 + this.kr) * r[i] + (this.alpha1 * this.alpha1 - 1) * e[i] - phi_hat[i]);
+                } else {
+                    // Open-loop control during feedback loss: u = ẍ_d - Φ(X_d, θ̂_frozen) + gravity_compensation
+                    // Use desired trajectory states for DNN evaluation
+                    const X_d = [...desiredState, ...desiredStateDot];
+                    phi_hat = this.dnn.forward(X_d, false); // Don't cache during feedback loss
+                    
+                    // Gravity compensation term for open-loop control
+                    const g = 9.81; // gravitational acceleration
+                    const gravity_compensation = [0, 0, g, 0, 0, 0]; // [0, 0, g, 0, 0, 0] for quadrotor
+                    
+                    // Open-loop control law with gravity compensation
+                    u = desiredStateDdot.map((dd, i) => dd - phi_hat[i] + gravity_compensation[i]);
+                    
+                    // Set tracking errors to zero during feedback loss (not used for control)
+                    e = new Array(6).fill(0);
+                    r = new Array(6).fill(0);
                 }
 
-                const f_dot_obs = r_tilde.map((rt, i) => 
-                    (this.kf * (rt + this.alpha2 * rt) + rt) * adaptationFactor);
-                
-                for (let i = 0; i < 6; i++) {
-                    this.f_hat[i] += f_dot_obs[i] * dt;
-                }
+                // Observer update - freeze completely during feedback loss
+                if (feedbackAvailable) {
+                    // Only update observer when feedback is available
+                    const r_tilde = r.map((ri, i) => ri - this.r_hat[i]);
+                    const r_dot_obs = u.map((ui, i) => 
+                        (ui - desiredStateDdot[i] + this.alpha1 * r[i] + this.f_hat[i] + this.alpha2 * r_tilde[i]));
+                    
+                    for (let i = 0; i < 6; i++) {
+                        this.r_hat[i] += r_dot_obs[i] * dt;
+                    }
 
-                // Prediction error
+                    const f_dot_obs = r_tilde.map((rt, i) => 
+                        (this.kf * (rt + this.alpha2 * rt) + rt));
+                    
+                    for (let i = 0; i < 6; i++) {
+                        this.f_hat[i] += f_dot_obs[i] * dt;
+                    }
+                }
+                // Observer remains frozen during feedback loss (no updates)
+
+                // Prediction error (computed for tracking but not used during feedback loss)
                 const E = this.f_hat.map((fh, i) => fh - phi_hat[i]);
                 const predictionErrorNorm = Math.sqrt(E.reduce((sum, val) => sum + val * val, 0));
 
-                // Adaptation signal with reduced learning during feedback loss
+                // Adaptation signal (only computed when feedback is available)
                 const adaptationSignal = useComposite ? 
                     r.map((ri, i) => ri + this.alpha3 * E[i]) : r;
 
@@ -1966,8 +2287,8 @@
 
                 let adaptationRate = 0;
 
-                // Jacobian-based adaptation with reduced rate during feedback loss
-                if (signalNorm > 0.001) {
+                // DNN weight updates - completely frozen during feedback loss
+                if (feedbackAvailable && signalNorm > 0.001) {
                     const jacobian = this.dnn.computeJacobian(adaptationSignal);
                     
                     const gradientNorm = Math.sqrt(jacobian.reduce((sum, val) => sum + val * val, 0));
@@ -1979,7 +2300,7 @@
                     }
                     
                     const weightUpdates = clippedJacobian.map((grad, i) => {
-                        return -this.Gamma_diag[i] * grad * this.normalizationFactor * dt * adaptationFactor;
+                        return -this.Gamma_diag[i] * grad * this.normalizationFactor * dt;
                     });
                     
                     adaptationRate = Math.sqrt(weightUpdates.reduce((sum, val) => sum + val * val, 0));
@@ -1987,6 +2308,7 @@
                     this.dnn.updateWeights(weightUpdates, 1.0);
                     this.projectWeights();
                 }
+                // DNN weights remain completely frozen during feedback loss
 
                 // Adaptive gain scheduling
                 const deadZone = 0.1;
@@ -2017,19 +2339,23 @@
                 return [u, phi_hat, adaptationRate, predictionErrorNorm];
             }
 
-            // Estimate state during feedback loss using previous dynamics knowledge
+            // Estimate state during feedback loss using frozen DNN weights and desired trajectory
             estimateState(dt) {
-                // Simple propagation using last known dynamics and current DNN estimate
-                const X = [...this.lastState, ...this.lastStateDot];
-                const phi_hat = this.dnn.forward(X, false);
+                // During feedback loss, we use the open-loop approach
+                // State estimation is primarily for logging/monitoring purposes
+                // The control law itself uses desired states directly
                 
-                // Predict next state using dynamics model
+                // Use last known state and simple forward integration
+                const X_d = [...this.lastDesiredState, ...this.lastDesiredStateDot];
+                const phi_hat = this.dnn.forward(X_d, false); // Use desired state with frozen weights
+                
+                // Predict next state using open-loop dynamics
                 const estimatedStateDot = this.lastStateDot.map((vel, i) => {
                     if (i < 3) {
-                        // Position derivatives (velocities)
+                        // Position derivatives (velocities) - simple integration
                         return this.lastStateDot[i];
                     } else {
-                        // Velocity derivatives include DNN compensation
+                        // Velocity derivatives using frozen DNN estimate
                         return vel + dt * (this.lastDesiredStateDdot[i] - phi_hat[i]);
                     }
                 });
@@ -2527,6 +2853,22 @@
                     });
                 }
 
+                // Setup turbulent nonlinearity checkbox listeners
+                const turbulentCheckboxes = [
+                    'enableAeroStall', 'enableGroundEffect', 'enableVortexRing', 'enableStructuralFlex',
+                    'enableActuatorNonlin', 'enableAtmosphericChaos', 'enableReynoldsEffects', 
+                    'enablePropwashCoupling', 'enableMagneticInterference'
+                ];
+                
+                turbulentCheckboxes.forEach(checkboxId => {
+                    const checkbox = document.getElementById(checkboxId);
+                    if (checkbox) {
+                        checkbox.addEventListener('change', () => {
+                            this.updateTurbulentModes();
+                        });
+                    }
+                });
+
                 // Setup feedback mode selection
                 const feedbackModeSelect = document.getElementById('feedbackMode');
                 if (feedbackModeSelect) {
@@ -2803,6 +3145,25 @@
                 this.dynamics.setWindStrength(params.windStrength);
                 this.dynamics.setDragCoeff(params.dragCoeff);
                 this.dynamics.setSaturationLimits(params.maxForce, params.maxTorque);
+                this.updateTurbulentModes();
+            }
+
+            updateTurbulentModes() {
+                const modes = {
+                    aeroStall: document.getElementById('enableAeroStall')?.checked || false,
+                    groundEffect: document.getElementById('enableGroundEffect')?.checked || false,
+                    vortexRing: document.getElementById('enableVortexRing')?.checked || false,
+                    structuralFlex: document.getElementById('enableStructuralFlex')?.checked || false,
+                    actuatorNonlin: document.getElementById('enableActuatorNonlin')?.checked || false,
+                    atmosphericChaos: document.getElementById('enableAtmosphericChaos')?.checked || false,
+                    reynoldsEffects: document.getElementById('enableReynoldsEffects')?.checked || false,
+                    propwashCoupling: document.getElementById('enablePropwashCoupling')?.checked || false,
+                    magneticInterference: document.getElementById('enableMagneticInterference')?.checked || false
+                };
+                
+                if (this.dynamics) {
+                    this.dynamics.setTurbulentModes(modes);
+                }
             }
 
             setupCanvases() {
@@ -2839,6 +3200,8 @@
                 this.dynamics = new QuadrotorDynamics();
                 this.dynamics.setWindStrength(params.windStrength);
                 this.dynamics.setDragCoeff(params.dragCoeff);
+                this.dynamics.setSaturationLimits(params.maxForce, params.maxTorque);
+                this.updateTurbulentModes();
                 
                 // Use stored initial conditions
                 this.state = [...this.initialState];
@@ -3424,5 +3787,196 @@
             });
         });
     </script>
+
+    <!-- Research-Level Mathematical Description -->
+    <div style="background: linear-gradient(135deg, #f8fafc, #e2e8f0); padding: 40px 20px; margin-top: 50px; border-top: 3px solid #667eea;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <h2 style="text-align: center; color: #2d3748; font-size: 2.5rem; margin-bottom: 30px; font-weight: 700;">
+                📚 Description
+            </h2>
+            
+            <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                <h3 style="color: #4a5568; font-size: 1.8rem; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                    🎯 Problem Statement
+                </h3>
+                <p style="font-size: 1.1rem; line-height: 1.8; color: #2d3748; margin-bottom: 15px;">
+                    Consider a quadrotor UAV operating under <strong>intermittent feedback</strong> conditions where state measurements are periodically unavailable. 
+                    The challenge is to design an adaptive controller that maintains stability and tracking performance during both feedback-available 
+                    and feedback-lost periods while learning unknown system dynamics.
+                </p>
+                <div style="background: #f7fafc; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+                    <strong>Key Innovation:</strong> Lyapunov-based Deep Neural Network (LbDNN) adaptation with mathematically rigorous stability guarantees 
+                    under intermittent feedback loss scenarios.
+                </div>
+            </div>
+
+            <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                <h3 style="color: #4a5568; font-size: 1.8rem; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                    🚁 Nonlinear System Dynamics
+                </h3>
+                <div style="font-family: 'Courier New', monospace; background: #1a202c; color: #e2e8f0; padding: 20px; border-radius: 8px; margin: 15px 0; overflow-x: auto;">
+                    <div style="margin-bottom: 15px;"><strong style="color: #81e6d9;">Second-Order Nonlinear System:</strong></div>
+                    <div style="margin-left: 20px; margin-bottom: 15px; font-size: 1.1rem;">
+                        $$\ddot{x} = f(x,\dot{x}) + g(x,\dot{x})u$$
+                    </div>
+                    <div style="margin-bottom: 10px;"><strong style="color: #fbb6ce;">State Definitions:</strong></div>
+                    <div style="margin-left: 20px; line-height: 1.8;">
+                        • $x, \dot{x} \in \mathbb{R}^{n}$: States with available measurements<br>
+                        • $\ddot{x} \in \mathbb{R}^{n}$: Unknown state-derivative<br>
+                        • $f: \mathbb{R}^{n} \times \mathbb{R}^{n} \rightarrow \mathbb{R}^{n}$: Unknown continuously differentiable drift function<br>
+                        • $g: \mathbb{R}^{n} \times \mathbb{R}^{n} \rightarrow \mathbb{R}^{n \times m}$: Known locally Lipschitz control effectiveness matrix<br>
+                        • $u \in \mathbb{R}^{m}$: Control input
+                    </div>
+                </div>
+                <div style="background: #f0fff4; border: 1px solid #68d391; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                    <strong style="color: #2f855a;">For Quadrotor Application:</strong> The state vector $x = [x, y, z, \phi, \theta, \psi]^T \in \mathbb{R}^6$ 
+                    represents position and orientation, with control inputs $u = [F_x, F_y, F_z, \tau_\phi, \tau_\theta, \tau_\psi]^T \in \mathbb{R}^6$ 
+                    representing forces and torques applied to achieve desired trajectory tracking.
+                </div>
+            </div>
+
+            <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                <h3 style="color: #4a5568; font-size: 1.8rem; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                    � Tracking Error Formulation
+                </h3>
+                <div style="font-family: 'Courier New', monospace; background: #1a202c; color: #e2e8f0; padding: 20px; border-radius: 8px; margin: 15px 0; overflow-x: auto;">
+                    <div style="margin-bottom: 15px;"><strong style="color: #81e6d9;">Tracking Error Definition:</strong></div>
+                    <div style="margin-left: 20px; margin-bottom: 15px; font-size: 1.1rem;">
+                        $$e \triangleq x - x_d(t)$$
+                    </div>
+                    <div style="margin-bottom: 15px;"><strong style="color: #81e6d9;">Auxiliary Error (Sliding Variable):</strong></div>
+                    <div style="margin-left: 20px; margin-bottom: 15px; font-size: 1.1rem;">
+                        $$r \triangleq \dot{e} + \alpha_1 e$$
+                    </div>
+                    <div style="margin-bottom: 15px;"><strong style="color: #81e6d9;">Error Dynamics:</strong></div>
+                    <div style="margin-left: 20px; font-size: 1.1rem;">
+                        $$\dot{r} = f(x,\dot{x}) + g(x,\dot{x})u - \ddot{x}_d(t) + \alpha_1(r - \alpha_1 e)$$
+                    </div>
+                </div>
+                <div style="background: #f7fafc; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+                    <strong>Design Parameter:</strong> $\alpha_1 \in \mathbb{R}_{>0}$ is a constant control gain that determines the convergence rate 
+                    of the tracking error dynamics and affects the sliding surface slope.
+                </div>
+            </div>
+
+            <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                <h3 style="color: #4a5568; font-size: 1.8rem; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                    ⚙️ Control Law Design
+                </h3>
+                <div style="font-family: 'Courier New', monospace; background: #1a202c; color: #e2e8f0; padding: 20px; border-radius: 8px; margin: 15px 0; overflow-x: auto;">
+                    <div style="margin-bottom: 15px;"><strong style="color: #fbb6ce;">Control Input Design:</strong></div>
+                    <div style="margin-left: 20px; margin-bottom: 15px; font-size: 1.1rem;">
+                        $$u = g^+(x,\dot{x})\left(\ddot{x}_d(t) - (\alpha_1 + k_r)r + (\alpha_1^2 - 1)e - \Phi(X,\hat{\theta})\right)$$
+                    </div>
+                    <div style="margin-bottom: 10px;"><strong style="color: #fbb6ce;">Control Parameters:</strong></div>
+                    <div style="margin-left: 20px; line-height: 1.8;">
+                        • $g^+(x,\dot{x})$: Moore-Penrose pseudoinverse of control effectiveness matrix<br>
+                        • $k_r \in \mathbb{R}_{>0}$: Sliding mode gain<br>
+                        • $\Phi(X,\hat{\theta})$: DNN approximation of unknown dynamics<br>
+                        • $X = [x^T, \dot{x}^T]^T \in \mathbb{R}^{2n}$: Augmented state vector
+                    </div>
+                </div>
+                <div style="background: #f0fff4; border: 1px solid #68d391; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                    <strong style="color: #2f855a;">Control Strategy:</strong> The control law combines feedforward compensation (desired acceleration), 
+                    feedback stabilization (sliding mode terms), and adaptive uncertainty compensation (neural network approximation).
+                </div>
+            </div>
+
+            <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                <h3 style="color: #4a5568; font-size: 1.8rem; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                    🔄 Dynamic State-Derivative Observer
+                </h3>
+                <div style="font-family: 'Courier New', monospace; background: #1a202c; color: #e2e8f0; padding: 20px; border-radius: 8px; margin: 15px 0; overflow-x: auto;">
+                    <div style="margin-bottom: 15px;"><strong style="color: #81e6d9;">Observer Dynamics:</strong></div>
+                    <div style="margin-left: 20px; margin-bottom: 15px; font-size: 1.1rem;">
+                        $$\dot{\hat{r}} = g(x,\dot{x})u - \ddot{x}_d(t) + \alpha_1(r - \alpha_1 e) + \hat{f} + \alpha_2\tilde{r}$$
+                    </div>
+                    <div style="margin-left: 20px; margin-bottom: 15px; font-size: 1.1rem;">
+                        $$\dot{\hat{f}} = k_f(\dot{\tilde{r}} + \alpha_2\tilde{r}) + \tilde{r}$$
+                    </div>
+                    <div style="margin-bottom: 15px;"><strong style="color: #81e6d9;">Observer Error Dynamics:</strong></div>
+                    <div style="margin-left: 20px; margin-bottom: 15px; font-size: 1.1rem;">
+                        $$\dot{\tilde{r}} = \tilde{f} - \alpha_2\tilde{r}, \qquad \dot{\tilde{f}} = \dot{f} - k_f\tilde{f} - \tilde{r}$$
+                    </div>
+                    <div style="margin-bottom: 10px;"><strong style="color: #fbb6ce;">Observer Variables:</strong></div>
+                    <div style="margin-left: 20px; line-height: 1.8;">
+                        • $\hat{r}, \hat{f} \in \mathbb{R}^n$: Observer estimates of $r$ and $f$<br>
+                        • $\tilde{r} \triangleq r - \hat{r}$, $\tilde{f} \triangleq f(x,\dot{x}) - \hat{f}$: Observer errors<br>
+                        • $\alpha_2, k_f \in \mathbb{R}_{>0}$: Constant observer gains<br>
+                        • $\dot{f} \triangleq \frac{\partial f}{\partial x}\dot{x} + \frac{\partial f}{\partial \dot{x}}\ddot{x}$: Time derivative of drift function
+                    </div>
+                </div>
+                <div style="background: #fffbeb; border: 1px solid #f6ad55; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                    <strong style="color: #c05621;">Implementation Note:</strong> Since $\dot{\tilde{r}}$ is unknown, equation (2) is implemented by integration: 
+                    $$\hat{f}(t) = \hat{f}(t_0) + k_f\tilde{r}(t) - k_f\tilde{r}(t_0) + \int_{t_0}^t (k_f\alpha_2 + 1)\tilde{r}(\tau)d\tau$$
+                </div>
+            </div>
+
+            <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                <h3 style="color: #4a5568; font-size: 1.8rem; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                    🧠 Composite Adaptation Law
+                </h3>
+                <div style="font-family: 'Courier New', monospace; background: #1a202c; color: #e2e8f0; padding: 20px; border-radius: 8px; margin: 15px 0; overflow-x: auto;">
+                    <div style="margin-bottom: 15px;"><strong style="color: #a78bfa;">Prediction Error Design:</strong></div>
+                    <div style="margin-left: 20px; margin-bottom: 15px; font-size: 1.1rem;">
+                        $$E \triangleq \hat{f} - \Phi(X,\hat{\theta})$$
+                    </div>
+                    <div style="margin-bottom: 15px;"><strong style="color: #a78bfa;">Composite Least Squares Adaptation:</strong></div>
+                    <div style="margin-left: 20px; margin-bottom: 15px; font-size: 1.05rem;">
+                        $$\dot{\hat{\theta}} = \text{proj}\left(-k_{\hat{\theta}}\Gamma(t)\hat{\theta} + \Gamma(t)\Phi'^T(X,\hat{\theta})(r + \alpha_3 E)\right)$$
+                    </div>
+                    <div style="margin-bottom: 15px;"><strong style="color: #a78bfa;">Time-Varying Adaptation Gain:</strong></div>
+                    <div style="margin-left: 20px; font-size: 1.05rem;">
+                        $$\frac{d}{dt}\Gamma^{-1} = \begin{cases}
+                        -\beta(t)\Gamma^{-1} + \Phi'^T(X,\hat{\theta})\Phi'(X,\hat{\theta}), & \text{if } \lambda_{\Gamma,\min} < \lambda_{\min}(\Gamma) \text{ and } \lambda_{\max}(\Gamma) < \lambda_{\Gamma,\max} \\
+                        0_{p \times p}, & \text{otherwise}
+                        \end{cases}$$
+                    </div>
+                </div>
+                <div style="background: #f7fafc; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+                    <strong>Key Innovation:</strong> The prediction error $E$ uses the dynamic state-derivative estimator $\hat{f}$ 
+                    instead of traditional approaches, enabling composite adaptation for non-linearly parameterized (NIP) neural networks.
+                </div>
+                <div style="font-family: 'Courier New', monospace; background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <div style="margin-bottom: 10px;"><strong style="color: #fbb6ce;">Adaptation Parameters:</strong></div>
+                    <div style="margin-left: 20px; line-height: 1.8; font-size: 0.95rem;">
+                        • $\alpha_3, k_{\hat{\theta}} \in \mathbb{R}_{>0}$: Constant adaptation gains<br>
+                        • $\Phi'(X,\hat{\theta}) \triangleq \frac{\partial \Phi(X,\hat{\theta})}{\partial \hat{\theta}} \in \mathbb{R}^{n \times p}$: Jacobian matrix<br>
+                        • $\text{proj}(\cdot)$: Continuous projection operator ensuring $\hat{\theta}(t) \in \mathcal{B}_{\bar{\theta}}$<br>
+                        • $\beta(t) \triangleq \beta_0\left(1 - \frac{\|\Gamma(t)\|}{\varkappa_0}\right)$: Bounded forgetting factor
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                <h3 style="color: #4a5568; font-size: 1.8rem; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                    �️ Intermittent Feedback Framework
+                </h3>
+                <div style="font-family: 'Courier New', monospace; background: #1a202c; color: #e2e8f0; padding: 20px; border-radius: 8px; margin: 15px 0;">
+                    <div style="margin-bottom: 15px;"><strong style="color: #f6ad55;">Time Partition:</strong></div>
+                    <div style="margin-left: 20px; line-height: 1.8;">
+                        • Feedback Available: $t \in [t_{2i}, t_{2i+1})$, $i \in \mathbb{N}$<br>
+                        • Feedback Lost: $t \in [t_{2i+1}, t_{2i+2})$, $i \in \mathbb{N}$<br>
+                        • Total feedback loss duration: $\sum_i (t_{2i+2} - t_{2i+1}) \leq T_{\max}$
+                    </div>
+                </div>
+                <div style="font-family: 'Courier New', monospace; background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <div style="margin-bottom: 15px;"><strong style="color: #f6ad55;">Control During Feedback Loss:</strong></div>
+                    <div style="margin-left: 20px; line-height: 1.8;">
+                        • Neural network weights frozen: $\dot{\hat{\theta}} = 0$<br>
+                        • Observer adaptation suspended: $\dot{\hat{r}} = 0$, $\dot{\hat{f}} = 0$<br>
+                        • Open-loop control using last known states and frozen DNN
+                    </div>
+                </div>
+                <p style="font-size: 1.05rem; line-height: 1.7; color: #2d3748; margin-bottom: 15px;">
+                    During feedback-available periods, the controller has access to state measurements $x(t)$, $\dot{x}(t)$ and performs 
+                    active adaptation. During feedback-lost periods, the controller operates open-loop using the last known state 
+                    information and frozen learned dynamics.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
 </body>
 </html>
