@@ -22,5 +22,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Script logs
+scripts/update-scholar-*.log
+
 # Local dev-only components
 app/components/TestClient.tsx

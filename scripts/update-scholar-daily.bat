@@ -17,6 +17,15 @@ if defined dt (
 )
 set "LOGFILE=%~dp0update-scholar-%timestamp%.log"
 
+:: Log rotation - clean up old log files (keep last 7 days)
+echo Cleaning up old log files...
+forfiles /p "%~dp0" /s /m "update-scholar-*.log" /d -7 /c "cmd /c del @path" 2>nul
+if !errorlevel! equ 0 (
+    echo Old log files cleaned up successfully
+) else (
+    echo No old log files to clean up or cleanup failed
+)
+
 :: Check if running interactively (for pause behavior)
 set "INTERACTIVE=0"
 echo %cmdcmdline% | find /i "/c" >nul || set "INTERACTIVE=1"
