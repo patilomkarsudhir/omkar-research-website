@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Universal Image Format Converter</title>
+    <!-- jsPDF library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -191,6 +193,10 @@
                     AVIF
                     <div class="format-info">Next-gen format, best compression</div>
                 </div>
+                <div class="format-option" data-format="pdf" onclick="selectFormat('pdf')">
+                    PDF
+                    <div class="format-info">Document format, printable</div>
+                </div>
                 <div class="format-option selected" data-format="svg" onclick="selectFormat('svg')">
                     SVG
                     <div class="format-info">Vector, infinitely scalable</div>
@@ -224,6 +230,37 @@
                         </label>
                     </div>
                 </div>
+                
+                <!-- PDF Settings -->
+                <div class="setting-group" id="pdfGroup" style="display: none;">
+                    <label class="setting-label">Page Size:</label>
+                    <select id="pdfPageSize" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="a4">A4 (210 × 297 mm)</option>
+                        <option value="letter">Letter (8.5 × 11 in)</option>
+                        <option value="legal">Legal (8.5 × 14 in)</option>
+                        <option value="a3">A3 (297 × 420 mm)</option>
+                        <option value="a5">A5 (148 × 210 mm)</option>
+                        <option value="custom">Custom Size</option>
+                    </select>
+                    
+                    <label class="setting-label" style="margin-top: 10px;">Orientation:</label>
+                    <select id="pdfOrientation" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="portrait">Portrait</option>
+                        <option value="landscape">Landscape</option>
+                    </select>
+                    
+                    <label class="setting-label" style="margin-top: 10px;">Image Fit:</label>
+                    <select id="pdfImageFit" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="fit">Fit to page (maintain aspect ratio)</option>
+                        <option value="fill">Fill page (may crop image)</option>
+                        <option value="center">Center on page (original size)</option>
+                    </select>
+                    
+                    <div id="customSizeOptions" style="display: none; margin-top: 10px;">
+                        <label style="margin-right: 15px;">Width (mm): <input type="number" id="customWidth" min="50" max="1000" value="210" style="width: 80px; margin-left: 5px;"></label>
+                        <label>Height (mm): <input type="number" id="customHeight" min="50" max="1000" value="297" style="width: 80px; margin-left: 5px;"></label>
+                    </div>
+                </div>
             </div>
             
             <div style="text-align: center; margin: 20px 0;">
@@ -253,7 +290,7 @@
             PERFORMANCE_WARNING_SIZE: 10 * 1024 * 1024, // 10MB
             MAX_DIMENSION: 8000,                     // 8000px
             DEFAULT_QUALITY: 90,                     // 90%
-            SUPPORTED_FORMATS: ['png', 'jpeg', 'webp', 'svg', 'gif', 'bmp', 'avif'],
+            SUPPORTED_FORMATS: ['png', 'jpeg', 'webp', 'svg', 'gif', 'bmp', 'avif', 'pdf'],
             QUALITY_MIN: 10,
             QUALITY_MAX: 100,
             MAX_PREVIEW_HEIGHT: 400,
@@ -268,6 +305,20 @@
 
         // File input handler
         document.getElementById('fileInput').addEventListener('change', handleFile);
+
+        // PDF page size change handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const pdfPageSize = document.getElementById('pdfPageSize');
+            const customSizeOptions = document.getElementById('customSizeOptions');
+            
+            pdfPageSize.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    customSizeOptions.style.display = 'block';
+                } else {
+                    customSizeOptions.style.display = 'none';
+                }
+            });
+        });
 
         // Drag and drop handlers
         const uploadArea = document.getElementById('uploadArea');
@@ -395,6 +446,14 @@
             } else {
                 qualityGroup.style.display = 'none';
             }
+            
+            // Show/hide PDF settings
+            const pdfGroup = document.getElementById('pdfGroup');
+            if (format === 'pdf') {
+                pdfGroup.style.display = 'block';
+            } else {
+                pdfGroup.style.display = 'none';
+            }
         }
 
         function updateQuality(value) {
@@ -467,6 +526,8 @@
                 // For SVG, use resized canvas data if resizing is enabled
                 const dataUrlForSvg = shouldResize ? canvas.toDataURL('image/png') : currentImageData;
                 generateSVG(dataUrlForSvg, newWidth, newHeight);
+            } else if (selectedFormat === 'pdf') {
+                generatePDF(canvas);
             } else {
                 const quality = document.getElementById('qualitySlider').value / 100;
                 let mimeType = `image/${selectedFormat}`;
@@ -546,6 +607,116 @@
             document.getElementById('downloadBtn').style.display = 'inline-block';
         }
 
+        function generatePDF(canvas) {
+            try {
+                // Get PDF settings
+                const pageSize = document.getElementById('pdfPageSize').value;
+                const orientation = document.getElementById('pdfOrientation').value;
+                const imageFit = document.getElementById('pdfImageFit').value;
+                
+                // Define page dimensions in mm
+                const pageDimensions = {
+                    a4: { width: 210, height: 297 },
+                    letter: { width: 215.9, height: 279.4 },
+                    legal: { width: 215.9, height: 355.6 },
+                    a3: { width: 297, height: 420 },
+                    a5: { width: 148, height: 210 },
+                    custom: {
+                        width: parseInt(document.getElementById('customWidth').value) || 210,
+                        height: parseInt(document.getElementById('customHeight').value) || 297
+                    }
+                };
+                
+                let { width: pageWidth, height: pageHeight } = pageDimensions[pageSize];
+                
+                // Swap dimensions for landscape
+                if (orientation === 'landscape') {
+                    [pageWidth, pageHeight] = [pageHeight, pageWidth];
+                }
+                
+                // Create PDF document
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: orientation,
+                    unit: 'mm',
+                    format: pageSize === 'custom' ? [pageWidth, pageHeight] : pageSize
+                });
+                
+                // Get image data from canvas
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                
+                // Calculate image dimensions based on fit option
+                let imgWidth, imgHeight, x, y;
+                const canvasRatio = canvas.width / canvas.height;
+                const pageRatio = pageWidth / pageHeight;
+                
+                switch (imageFit) {
+                    case 'fit':
+                        // Fit image to page while maintaining aspect ratio
+                        if (canvasRatio > pageRatio) {
+                            // Image is wider - fit to width
+                            imgWidth = pageWidth * 0.9; // 5% margin on each side
+                            imgHeight = imgWidth / canvasRatio;
+                        } else {
+                            // Image is taller - fit to height
+                            imgHeight = pageHeight * 0.9; // 5% margin on top/bottom
+                            imgWidth = imgHeight * canvasRatio;
+                        }
+                        x = (pageWidth - imgWidth) / 2;
+                        y = (pageHeight - imgHeight) / 2;
+                        break;
+                        
+                    case 'fill':
+                        // Fill entire page (may crop image)
+                        imgWidth = pageWidth;
+                        imgHeight = pageHeight;
+                        x = 0;
+                        y = 0;
+                        break;
+                        
+                    case 'center':
+                        // Center image at original size (converted to mm)
+                        const pxToMm = 0.264583; // 96 DPI conversion
+                        imgWidth = Math.min(canvas.width * pxToMm, pageWidth * 0.9);
+                        imgHeight = Math.min(canvas.height * pxToMm, pageHeight * 0.9);
+                        x = (pageWidth - imgWidth) / 2;
+                        y = (pageHeight - imgHeight) / 2;
+                        break;
+                }
+                
+                // Add image to PDF
+                pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+                
+                // Generate PDF blob
+                const pdfBlob = pdf.output('blob');
+                const pdfUrl = URL.createObjectURL(pdfBlob);
+                
+                // Store for download
+                currentConvertedData = pdfUrl;
+                
+                // Display preview
+                const imageOutput = document.getElementById('imageOutput');
+                imageOutput.innerHTML = `
+                    <div style="border: 1px solid #ddd; border-radius: 5px; padding: 20px; margin: 10px 0; text-align: center;">
+                        <div style="font-size: 48px; color: #e74c3c; margin-bottom: 10px;">📄</div>
+                        <div style="font-weight: bold; color: #333; margin-bottom: 5px;">PDF Generated Successfully</div>
+                        <div style="color: #666; font-size: 14px;">
+                            Page: ${pageSize.toUpperCase()} ${orientation}<br>
+                            Dimensions: ${Math.round(pageWidth)}×${Math.round(pageHeight)}mm<br>
+                            Image fit: ${imageFit}
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('outputSection').style.display = 'block';
+                document.getElementById('downloadBtn').style.display = 'inline-block';
+                
+            } catch (error) {
+                console.error('PDF generation error:', error);
+                alert('Error generating PDF. Please ensure jsPDF is loaded and try again.');
+            }
+        }
+
         function displayConvertedImage(actualFormat = null) {
             const imageOutput = document.getElementById('imageOutput');
             
@@ -598,6 +769,21 @@
                 
                 // Announce download for screen readers
                 document.getElementById('announcements').textContent = 'SVG file download started.';
+            } else if (selectedFormat === 'pdf') {
+                // For PDF, currentConvertedData is already a blob URL
+                const a = document.createElement('a');
+                a.href = currentConvertedData;
+                a.download = `${sanitizedName}.pdf`;
+                a.setAttribute('aria-label', 'Download converted PDF file');
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                // Don't revoke URL immediately to allow download to complete
+                setTimeout(() => URL.revokeObjectURL(currentConvertedData), 1000);
+                
+                // Announce download for screen readers
+                document.getElementById('announcements').textContent = 'PDF file download started.';
             } else {
                 // For better performance with large images, try to use the original canvas if available
                 const lastCanvas = document.querySelector('canvas');
