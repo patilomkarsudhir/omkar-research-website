@@ -13,18 +13,19 @@ export default function CVPage() {
 			<div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-blue-500/10 to-purple-600/10 backdrop-blur-sm">
 				<div className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
 					<div className="flex-1 text-center sm:text-left">
-						<h2 className="text-xl font-semibold mb-2">Download Full CV</h2>
+						<h2 className="text-xl font-semibold mb-2">Full CV</h2>
 						<p className="text-[var(--muted)] text-sm">
-							Get the complete PDF version with all publications, detailed experience, and references
+							View the complete PDF version with all publications, detailed experience, and references
 						</p>
 					</div>
 					<a
 						href="/CV Files/academic_cv.pdf"
-						download="Omkar_Patil_CV.pdf"
+						target="_blank"
+						rel="noopener noreferrer"
 						className="group relative inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
 					>
 						<svg
-							className="w-5 h-5 transition-transform group-hover:translate-y-0.5"
+							className="w-5 h-5 transition-transform group-hover:scale-110"
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
@@ -34,10 +35,16 @@ export default function CVPage() {
 								strokeLinecap="round"
 								strokeLinejoin="round"
 								strokeWidth={2}
-								d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+								d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+							/>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth={2}
+								d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
 							/>
 						</svg>
-						<span>Download PDF</span>
+						<span>View PDF</span>
 						<div className="absolute inset-0 bg-white/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 					</a>
 				</div>
