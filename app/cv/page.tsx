@@ -54,7 +54,14 @@ export default function CVPage() {
 							<p className="text-[var(--muted)] font-medium">PhD in Mechanical Engineering</p>
 							<div className="mt-2 text-[var(--muted)]">
 								<p><strong>Advisor:</strong> Dr. Warren Dixon</p>
-								<p><strong>Dissertation:</strong> Implicit and Deep Learning-Based Control Methods for Uncertain Nonlinear Systems</p>
+								<p><strong>Dissertation:</strong> <a 
+									href="/Dissertation.pdf" 
+									target="_blank" 
+									rel="noopener noreferrer"
+									className="text-blue-400 hover:text-blue-300 hover:underline transition-colors"
+								>
+									Implicit and Deep Learning-Based Control Methods for Uncertain Nonlinear Systems
+								</a></p>
 							</div>
 						</div>
 						<div className="text-[var(--muted)] text-sm md:text-base md:text-right whitespace-nowrap">
