@@ -1,0 +1,366 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Welcome to Overleaf --- just edit your LaTeX on the left,
+% and we'll compile it for you on the right. If you open the
+% 'Share' menu, you can invite other users to edit at the same
+% time. See www.overleaf.com/learn for more info. Enjoy!
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[10pt, letterpaper]{article}
+
+% Packages:
+\usepackage[
+    ignoreheadfoot, % set margins without considering header and footer
+    top=2 cm, % seperation between body and page edge from the top
+    bottom=2 cm, % seperation between body and page edge from the bottom
+    left=2 cm, % seperation between body and page edge from the left
+    right=2 cm, % seperation between body and page edge from the right
+    footskip=1.0 cm, % seperation between body and footer
+    % showframe % for debugging 
+]{geometry} % for adjusting page geometry
+\usepackage{titlesec} % for customizing section titles
+\usepackage{tabularx} % for making tables with fixed width columns
+\usepackage{array} % tabularx requires this
+\usepackage[dvipsnames]{xcolor} % for coloring text
+\definecolor{primaryColor}{RGB}{0, 79, 144} % define primary color
+\usepackage{enumitem} % for customizing lists
+\usepackage{fontawesome5} % for using icons
+\usepackage{amsmath} % for math
+\usepackage[
+    pdftitle={Omkar Sudhir Patil's CV},
+    pdfauthor={Omkar Sudhir Patil},
+    pdfcreator={LaTeX with RenderCV},
+    colorlinks=true,
+    urlcolor=primaryColor
+]{hyperref} % for links, metadata and bookmarks
+\usepackage[pscoord]{eso-pic} % for floating text on the page
+\usepackage{calc} % for calculating lengths
+\usepackage{bookmark} % for bookmarks
+\usepackage{lastpage} % for getting the total number of pages
+\usepackage{changepage} % for one column entries (adjustwidth environment)
+\usepackage{paracol} % for two and three column entries
+\usepackage{ifthen} % for conditional statements
+\usepackage{needspace} % for avoiding page brake right after the section title
+\usepackage{iftex} % check if engine is pdflatex, xetex or luatex
+
+% Ensure that generate pdf is machine readable/ATS parsable:
+\ifPDFTeX
+    \input{glyphtounicode}
+    \pdfgentounicode=1
+    % \usepackage[T1]{fontenc} % this breaks sb2nov
+    \usepackage[utf8]{inputenc}
+    \usepackage{lmodern}
+\fi
+
+
+
+% Some settings:
+\AtBeginEnvironment{adjustwidth}{\partopsep0pt} % remove space before adjustwidth environment
+\pagestyle{empty} % no header or footer
+\setcounter{secnumdepth}{0} % no section numbering
+\setlength{\parindent}{0pt} % no indentation
+\setlength{\topskip}{0pt} % no top skip
+\setlength{\columnsep}{0cm} % set column seperation
+\makeatletter
+\let\ps@customFooterStyle\ps@plain % Copy the plain style to customFooterStyle
+\patchcmd{\ps@customFooterStyle}{\thepage}{
+    \color{gray}\textit{\small Omkar Sudhir Patil - Page \thepage{} of \pageref*{LastPage}}
+}{}{} % replace number by desired string
+\makeatother
+\pagestyle{customFooterStyle}
+
+\titleformat{\section}{\needspace{4\baselineskip}\bfseries\large}{}{0pt}{}[\vspace{1pt}\titlerule]
+
+\titlespacing{\section}{
+    % left space:
+    -1pt
+}{
+    % top space:
+    0.3 cm
+}{
+    % bottom space:
+    0.2 cm
+} % section title spacing
+
+\renewcommand\labelitemi{$\circ$} % custom bullet points
+\newenvironment{highlights}{
+    \begin{itemize}[
+        topsep=0.10 cm,
+        parsep=0.10 cm,
+        partopsep=0pt,
+        itemsep=0pt,
+        leftmargin=0.4 cm + 10pt
+    ]
+}{
+    \end{itemize}
+} % new environment for highlights
+
+\newenvironment{highlightsforbulletentries}{
+    \begin{itemize}[
+        topsep=0.10 cm,
+        parsep=0.10 cm,
+        partopsep=0pt,
+        itemsep=0pt,
+        leftmargin=10pt
+    ]
+}{
+    \end{itemize}
+} % new environment for highlights for bullet entries
+
+
+\newenvironment{onecolentry}{
+    \begin{adjustwidth}{
+        0.2 cm + 0.00001 cm
+    }{
+        0.2 cm + 0.00001 cm
+    }
+}{
+    \end{adjustwidth}
+} % new environment for one column entries
+
+\newenvironment{twocolentry}[2][]{
+    \onecolentry
+    \def\secondColumn{#2}
+    \setcolumnwidth{\fill, 4.5 cm}
+    \begin{paracol}{2}
+}{
+    \switchcolumn \raggedleft \secondColumn
+    \end{paracol}
+    \endonecolentry
+} % new environment for two column entries
+
+\newenvironment{header}{
+    \setlength{\topsep}{0pt}\par\kern\topsep\centering\linespread{1.5}
+}{
+    \par\kern\topsep
+} % new environment for the header
+
+\newcommand{\placelastupdatedtext}{% \placetextbox{<horizontal pos>}{<vertical pos>}{<stuff>}
+  \AddToShipoutPictureFG*{% Add <stuff> to current page foreground
+    \put(
+        \LenToUnit{\paperwidth-2 cm-0.2 cm+0.05cm},
+        \LenToUnit{\paperheight-1.0 cm}
+    ){\vtop{{\null}\makebox[0pt][c]{
+        \small\color{gray}\textit{}\hspace{\widthof{}}
+    }}}%
+  }%
+}%
+
+% save the original href command in a new command:
+\let\hrefWithoutArrow\href
+
+% new command for external links:
+\renewcommand{\href}[2]{\hrefWithoutArrow{#1}{\ifthenelse{\equal{#2}{}}{ }{#2 }\raisebox{.15ex}{\footnotesize \faExternalLink*}}}
+
+
+\begin{document}
+    \newcommand{\AND}{\unskip
+        \cleaders\copy\ANDbox\hskip\wd\ANDbox
+        \ignorespaces
+    }
+    \newsavebox\ANDbox
+    \sbox\ANDbox{}
+
+    \placelastupdatedtext
+    \begin{header}
+        \textbf{\fontsize{24 pt}{24 pt}\selectfont Omkar Sudhir Patil}
+
+        \vspace{0.3 cm}
+
+        \normalsize
+        \mbox{\hrefWithoutArrow{mailto:omkarpatil64328@gmail.com}{\color{black}{\footnotesize\faEnvelope[regular]}\hspace*{0.13cm}omkarpatil64328@gmail.com}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{tel:+1-352-222-1713}{\color{black}{\footnotesize\faPhone*}\hspace*{0.13cm}(352) 222-1713}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{https://linkedin.com/in/omkar-patil-024}{\color{black}{\footnotesize\faLinkedinIn}\hspace*{0.13cm}omkar-patil-024}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{https://omkarsudhirpatil.com}{\color{black}{\footnotesize\faGlobe}\hspace*{0.13cm}omkarsudhirpatil.com}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{https://github.com/patilomkarsudhir}{\color{black}{\footnotesize\faGithub}\hspace*{0.13cm}patilomkarsudhir}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{https://scholar.google.com/citations?user=EtkfNQMAAAAJ&hl=en}{\color{black}{\footnotesize\faGraduationCap}\hspace*{0.13cm}Google Scholar}}%
+    \end{header}
+
+    \vspace{0.3 cm - 0.3 cm}
+
+    \section{Professional Summary}
+
+    \begin{onecolentry}
+        Researcher working at the intersection of controls, robotics, and AI to solve fundamental challenges in autonomous systems. Pioneered Lyapunov-based Deep Neural Networks (LbDNNs), solving a 25-year open problem by developing the first DNN-based controller with real-time adaptation and provable stability guarantees. Expertise spans adaptive control, multi-agent systems, and safety-critical applications, with research validated on real-world robotic platforms ranging from quadrotors to multi-robot coordination.
+    \end{onecolentry}
+
+    \section{Education}
+
+
+\textbf{University of Florida} \hfill \textit{Aug 2019 -- May 2023}\\
+\textit{Ph.D. in Mechanical Engineering} (GPA: 3.97/4.0)
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item \textbf{Advisor:} Dr. Warren E. Dixon
+    \item \textbf{Dissertation:} ``Implicit and Deep Learning-Based Control Methods for Uncertain Nonlinear Systems''
+    \item \textbf{Research Focus:} Lyapunov-based deep neural networks, adaptive control theory, nonlinear control, RISE controllers, multi-agent systems, concurrent learning, physics-informed neural networks
+    \item \textbf{Key Achievement:} Solved 25-year open problem extending Lyapunov-derived adaptive online update laws from shallow networks to deep neural networks of arbitrary depth
+\end{itemize}
+
+\textbf{University of Florida} \hfill \textit{Aug 2019 -- Aug 2022}\\
+\textit{M.S. in Mechanical Engineering}
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item \textbf{Specialization:} Nonlinear control systems, adaptive control, robust control
+\end{itemize}
+
+\textbf{Indian Institute of Technology Delhi} \hfill \textit{Jul 2014 -- Aug 2018}\\
+\textit{B.Tech in Production and Industrial Engineering}
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item \textbf{Research Area:} Control systems and robotics applications
+\end{itemize}
+
+\section{Professional Experience}
+
+\textbf{Postdoctoral Research Associate} \hfill \textit{May 2023 -- Present}\\
+\textit{University of Florida, Department of Mechanical \& Aerospace Engineering}
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item \textbf{Research Leadership:} Lead development of next-generation adaptive control frameworks combining deep learning with mathematical rigor, securing \$2M+ in research funding from ONR, AFOSR, and AFRL
+    \item \textbf{Breakthrough Innovations:} Pioneered Lyapunov-based deep neural network (Lb-DNN) controllers with online weight adaptation, enabling real-time learning without pre-training requirements
+    \item \textbf{Industry Applications:} Developed adaptive control solutions for aerospace systems, autonomous spacecraft servicing, quadrotor control, and multi-agent robotics with guaranteed stability
+    \item \textbf{Publication Impact:} 20 papers in premier venues including IEEE TAC, IEEE T-NN, ACC, and CDC with 300+ citations
+    \item \textbf{Mentorship:} Supervised 15 graduate students and postdocs, fostering collaborative research environment
+    \item \textbf{Software Development:} Created MATLAB and Python packages for Lb-DNN controllers and projection algorithms, deployed on robotic platforms at UF Autonomy Park
+\end{itemize}
+
+\textbf{Graduate Research Assistant} \hfill \textit{Aug 2019 -- May 2023}\\
+\textit{University of Florida, Nonlinear Controls and Robotics Group}
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item \textbf{Theoretical Breakthroughs:} Solved 17-year open question on exponential stability of RISE controllers, previously thought to achieve only asymptotic convergence
+    \item \textbf{Algorithm Development:} Developed composite adaptive laws for deep neural networks using concurrent learning, achieving parameter convergence without persistent excitation
+    \item \textbf{Multi-disciplinary Research:} Advanced control barrier functions, physics-informed neural networks, and stochastic control theory
+    \item \textbf{Experimental Validation:} Implemented controllers on quadrotors, robotic manipulators, and multi-agent systems with real-time performance verification
+\end{itemize}
+
+\textbf{Project Associate} \hfill \textit{May 2018 -- Apr 2019}\\
+\textit{Indian Institute of Technology Delhi, Department of Electrical Engineering}
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item \textbf{Aerial Robotics:} Designed and implemented hierarchical control systems for quadrotor aerial manipulators
+    \item \textbf{Nonlinear Control:} Developed singularity-free control algorithms using barrier Lyapunov functions and saturation techniques
+    \item \textbf{System Integration:} Programmed flight control systems and derived complete Lagrangian dynamics for aerial manipulation platforms
+\end{itemize}
+
+\section{Key Research Contributions \& Impact}
+
+\textbf{Deep Learning \& Control Theory Integration}
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item \textbf{Pioneering Framework:} First to extend Lyapunov-based adaptive control to deep neural networks of arbitrary depth, solving 25-year theoretical gap
+    \item \textbf{Composite Adaptation:} Developed first composite adaptive laws for Lb-DNNs using concurrent learning, achieving parameter convergence guarantees
+    \item \textbf{Real-time Learning:} Created online adaptation algorithms requiring no pre-training, enabling deployment in unknown dynamic environments
+\end{itemize}
+
+\textbf{Fundamental Control Theory Advances}
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item \textbf{RISE Stability:} Proved exponential stability of RISE controllers, resolving 17-year open question in robust control
+    \item \textbf{Stochastic Control:} Extended Lb-DNN framework to stochastic nonlinear systems with unknown drift and diffusion processes
+    \item \textbf{Safety-Critical Systems:} Advanced adaptive control barrier functions using deep neural networks for real-time safety guarantee
+\end{itemize}
+
+\textbf{Multi-Agent \& Aerospace Applications}
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item \textbf{Spacecraft Control:} Developed distributed controllers for collaborative spacecraft servicing under partial state feedback
+    \item \textbf{Target Tracking:} Created exponential convergence algorithms for heterogeneous multi-agent systems with limited communication
+    \item \textbf{Herding Control:} Designed adaptive indirect herding strategies for multiple target agents with unknown interaction dynamics
+\end{itemize}
+
+\section{Technical Skills}
+
+\textbf{Control Theory \& Mathematics:} Lyapunov stability analysis, adaptive control, nonlinear control, robust control, optimal control, stochastic control, multi-agent systems, differential geometry, functional analysis, convex optimization\\
+
+\textbf{Machine Learning \& AI:} Deep neural networks, physics-informed neural networks, reinforcement learning, concurrent learning, online learning algorithms, ResNet architectures, LSTM networks, graph neural networks\\
+
+\textbf{Programming \& Software:} MATLAB/Simulink, Python, C++, ROS, Git, \LaTeX, TensorFlow, PyTorch, control system toolboxes, numerical optimization solvers\\
+
+\textbf{Experimental Platforms:} Quadrotor UAVs, robotic manipulators, multi-agent testbeds, real-time control systems, embedded systems, hardware-in-the-loop simulation
+
+\section{Interactive Research Demonstrations}
+
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item \textbf{\href{https://omkarsudhirpatil.com/LbDNN\%20Quadrotor.html}{LbDNN Quadrotor Control}:} 3D interactive simulation demonstrating real-time neural network adaptation with feedback loss
+    \item \textbf{\href{https://omkarsudhirpatil.com/CBF\%20Lab.html}{CBF Lab}:} Educational platform for Control Barrier Functions with safety-critical control demonstrations
+    \item \textbf{\href{https://omkarsudhirpatil.com/PINN.html}{Physics-Informed Neural Networks}:} Interactive demos for scientific machine learning with automatic differentiation
+    \item \textbf{\href{https://omkarsudhirpatil.com/neural_ODE.html}{Neural ODE Visualizer}:} Real-time continuous-time deep learning with dynamic system modeling
+    \item \textbf{\href{https://omkarsudhirpatil.com/SLAM.html}{SLAM Tutorial}:} Interactive robotics localization and mapping educational tool
+\end{itemize}
+
+\section{Selected Publications}
+
+\textbf{Book}
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item O. Patil, E. Griffis, and W. E. Dixon, \textit{Deep Learning-Based Adaptive Control: A Lyapunov-Based Approach}. In development with Springer, 2025.
+\end{itemize}
+
+\textbf{Journal Papers}
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item O. Patil, R. Kamalapurkar, and W. Dixon, "A saturated RISE controller with exponential stability guarantees," \textit{IEEE Trans. Autom. Control}, 2025.
+    \item O. Patil, D. Le, E. Griffis, and W. Dixon, "Lyapunov-based deep residual neural network (ResNet) adaptive control," \textit{IEEE Access}, 2025.
+    \item W. Makumi, O. Patil, and W. Dixon, "Lyapunov-based adaptive deep learning for approximate dynamic programming," \textit{Automatica}, vol. 180, p. 112462, 2025.
+    \item O. Patil, R. Sun, S. Bhasin, and W. E. Dixon, "Adaptive control of time-varying parameter systems with asymptotic tracking," \textit{IEEE Trans. Autom. Control}, vol. 67, no. 9, pp. 4809–4815, 2022.
+    \item O. Patil, D. Le, M. Greene, and W. E. Dixon, "Lyapunov-derived control and adaptive update laws for inner and outer layer weights of a deep neural network," \textit{IEEE Control Syst Lett.}, vol. 6, pp. 1855–1860, 2022.
+\end{itemize}
+
+\section{Awards}
+
+\begin{itemize}
+    \item \textbf{Graduate Student Research Award}, 2023, for outstanding research as a graduate student in the Department of Mechanical and Aerospace Engineering, University of Florida
+    \item \textbf{BOSS Award}, 2018, for the best hardcore experimental project in Mechanical Engineering discipline, IIT Delhi
+\end{itemize}
+
+\section{Invited Talks}
+
+\begin{itemize}
+
+\item{``Lyapunov-derived control and adaptive update laws for inner and outer layer weights of a deep neural network", \textit{Resilient and Autonomous Systems Lab (RASLab), Florida State University}, Dec. 2021}
+
+\item{``Deep Residual Neural Network (ResNet)-based Adaptive Control: A Lyapunov-based Approach", \textit{AFOSR COE Program Review, University of Florida}, April. 2023}
+
+\item{``Composite Adaptive Lyapunov-based Deep Neural Network Control", \textit{AFOSR COE Program Review, Duke University}, Dec. 2023}
+
+\end{itemize}
+
+\section{Teaching Experience}
+
+\begin{itemize}
+\item{Teaching Assistant (UF), Vibrations, Spring 2020}
+\end{itemize}
+
+
+
+
+\section{Peer Review Service}
+
+\begin{itemize}
+    \setlength{\itemsep}{0pt} % Adjusts spacing between items
+    \item IEEE Transactions on Automatic Control
+    \item Automatica
+    \item IEEE Control Systems Letters
+    \item IEEE Transactions on Control Systems Technology
+    \item IEEE/ASME Transactions on Mechatronics
+    \item IEEE Transactions on Neural Networks and Learning Systems
+    \item International Journal of Adaptive Control and Signal Processing
+    \item Advances on Neural Information Processing Systems (NeurIPS)
+    \item International Conference on Learning and Representations (ICLR)
+    \item IEEE Conference on Decision and Control
+    \item American Control Conference
+    \item IFAC World Congress
+\end{itemize}
+
+\label{LastPage}
+    
+
+    
+
+\end{document}

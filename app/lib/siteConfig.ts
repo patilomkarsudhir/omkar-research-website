@@ -2,6 +2,7 @@ export const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/research", label: "Research" },
   { href: "/publications", label: "Publications" },
+  { href: "/cv", label: "CV" },
   { href: "/contact", label: "Contact" },
 ];
 export const SITE = {

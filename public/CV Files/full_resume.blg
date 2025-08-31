@@ -1,0 +1,30 @@
+[0] Config.pm:308> INFO - This is Biber 2.20
+[1] Config.pm:311> INFO - Logfile is 'full_resume.blg'
+[137] biber-MSWIN64:340> INFO - === 
+[202] Biber.pm:420> INFO - Reading 'full_resume.bcf'
+[319] Biber.pm:991> INFO - Using all citekeys in bib section 0
+[334] Biber.pm:4463> INFO - Processing section 0
+[358] Biber.pm:4654> INFO - Looking for bibtex file 'books.bib' for section 0
+[460] bibtex.pm:1713> INFO - LaTeX decoding ...
+[472] bibtex.pm:1519> INFO - Found BibTeX data source 'books.bib'
+[498] Biber.pm:4654> INFO - Looking for bibtex file 'journal.bib' for section 0
+[596] bibtex.pm:1713> INFO - LaTeX decoding ...
+[633] bibtex.pm:1519> INFO - Found BibTeX data source 'journal.bib'
+[781] Biber.pm:4654> INFO - Looking for bibtex file 'conf.bib' for section 0
+[879] bibtex.pm:1713> INFO - LaTeX decoding ...
+[899] bibtex.pm:1519> INFO - Found BibTeX data source 'conf.bib'
+[1017] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[1018] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[1019] Biber.pm:4283> INFO - Sorting list 'none/global//global/global/global' of type 'entry' with template 'none' and locale 'en-US'
+[1019] Biber.pm:4289> INFO - No sort tailoring available for locale 'en-US'
+[1055] bbl.pm:676> INFO - Writing 'full_resume.bbl' with encoding 'UTF-8'
+[1100] bbl.pm:779> INFO - Output to full_resume.bbl
+[1102] Biber.pm:131> WARN - legacy year field '2025, under review' in entry 'Patil.Griffis.ea2024' is not an integer - this will probably not sort properly.
+[1102] Biber.pm:131> WARN - legacy year field 'under review' in entry 'Akbari.Nino.ea2025' is not an integer - this will probably not sort properly.
+[1103] Biber.pm:131> WARN - legacy year field 'under review' in entry 'akbari2023lyapunov' is not an integer - this will probably not sort properly.
+[1104] Biber.pm:131> WARN - legacy year field 'under review' in entry 'Fallin.Nino.ea2025' is not an integer - this will probably not sort properly.
+[1104] Biber.pm:131> WARN - legacy year field 'under review' in entry 'Sweatland.Patil.ea2024' is not an integer - this will probably not sort properly.
+[1105] Biber.pm:131> WARN - legacy year field 'under review' in entry 'Hart.Patil.ea2025' is not an integer - this will probably not sort properly.
+[1105] Biber.pm:131> WARN - legacy year field 'under review' in entry 'Griffis.Patil.ea2024' is not an integer - this will probably not sort properly.
+[1106] Biber.pm:131> WARN - Duplicate entry key: 'Nino.Patil.ea2023' in file 'conf.bib', skipping ...
+[1106] Biber.pm:133> INFO - WARNINGS: 8
