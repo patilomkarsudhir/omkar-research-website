@@ -6,9 +6,15 @@ import Section from "../components/Section";
 
 export default function Page() {
   const [showSuccess, setShowSuccess] = useState(false);
+  const [redirectUrl, setRedirectUrl] = useState("");
   
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  // Set the correct redirect URL when component mounts
+  useEffect(() => {
+    setRedirectUrl(`${window.location.origin}/contact?sent=1`);
+  }, []);
 
   // Check if user was redirected back with success parameter
   useEffect(() => {
@@ -88,7 +94,7 @@ export default function Page() {
           {/* Honeypot field to trap bots */}
           <input type="text" name="_honey" className="hidden" tabIndex={-1} autoComplete="off" />
           {/* Redirect after submit to avoid email exposure in URL */}
-          <input type="hidden" name="_next" value={typeof window !== 'undefined' ? `${window.location.origin}/contact?sent=1` : "/contact?sent=1"} />
+          <input type="hidden" name="_next" value={redirectUrl} />
 
           <div>
             <label
