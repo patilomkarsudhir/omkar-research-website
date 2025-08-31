@@ -9,7 +9,7 @@ export default function Page() {
         </p>
       </Section>
       <div className="space-y-8">
-        <Section title="Lyapunov-based Deep Neural Networks (LbDNNs)">
+        <Section title="Lyapunov-based Deep Neural Networks (LbDNNs)" href="/research/lbdnns">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
     <div className="md:col-span-4">
               <div className="relative w-full aspect-[4/3] overflow-hidden rounded-lg shadow">
@@ -30,7 +30,7 @@ export default function Page() {
             </div>
           </div>
         </Section>
-        <Section title="Multi-Agent Systems">
+        <Section title="Multi-Agent Systems" href="/research/multi-agent-systems">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
             <div className="md:col-span-8">
               <p className="text-[var(--muted)]">
@@ -51,7 +51,7 @@ export default function Page() {
             </div>
           </div>
         </Section>
-        <Section title="RISE Controllers">
+        <Section title="RISE Controllers" href="/research/rise-controllers">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
             <div className="md:col-span-3">
               <div className="relative w-full aspect-[4/3] overflow-hidden rounded-lg shadow">
@@ -73,7 +73,7 @@ export default function Page() {
             </div>
           </div>
         </Section>
-        <Section title="Safe Control Methods">
+        <Section title="Safe Control Methods" href="/research/safe-control-methods">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
             <div className="md:col-span-9">
               <p className="text-[var(--muted)]">
