@@ -1,0 +1,14 @@
+{
+  "source_pdf": "C:\\Users\\patilomkarsudhir\\OneDrive - University of Florida\\Desktop\\Website\\omkar-site-remade\\omkar-research-site-remade\\public\\lyapunov_paper.pdf",
+  "conversion_config": {
+    "extract_images": true,
+    "preserve_math": true,
+    "output_format": "markdown"
+  },
+  "extracted_images": 0,
+  "text_blocks": 160,
+  "output_files": {
+    "markdown": "C:\\Users\\patilomkarsudhir\\OneDrive - University of Florida\\Desktop\\Website\\omkar-site-remade\\omkar-research-site-remade\\public\\lyapunov_paper_converted\\lyapunov_paper.md",
+    "images": []
+  }
+}

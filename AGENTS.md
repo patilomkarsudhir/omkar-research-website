@@ -263,6 +263,44 @@ Examples:
 - **Schedule**: Can be run manually or via automation
 - **Dependencies**: Node.js, requires Scholar API access
 
+### PDF Processing Tools
+
+#### PDF to Markdown Converter
+- **Location**: `/scripts/pdf-to-markdown.py`
+- **Purpose**: Convert academic PDF papers to markdown format for AI analysis
+- **Dependencies**: PyMuPDF, Pillow, pytesseract (see `/scripts/requirements-pdf-converter.txt`)
+- **Setup**: Run `/scripts/setup-pdf-converter.ps1` to install dependencies
+
+#### Key Features
+- **Mathematical Notation Preservation**: Maintains LaTeX symbols and equations
+- **Academic Structure Detection**: Preserves paper sections, abstracts, references
+- **Image Extraction**: Extracts figures and diagrams from PDFs
+- **Metadata Generation**: Creates JSON metadata for conversion details
+
+#### Usage Examples
+```bash
+# Convert a PDF for AI analysis
+cd scripts
+python ai-pdf-helper.py paper.pdf
+
+# Full conversion with all options
+python pdf-to-markdown.py paper.pdf
+```
+
+#### When to Use PDF Converter
+**ALWAYS use this tool when:**
+- User attaches or mentions a PDF research paper
+- User asks to analyze PDF content
+- User requests conversion of academic documents
+- Need to extract mathematical content from PDFs
+
+**Never say "I cannot process PDF files"** - use the converter first!
+
+#### Output Structure
+- **Markdown File**: Clean text with preserved mathematical notation
+- **Images Folder**: Extracted figures and diagrams
+- **Metadata JSON**: Conversion statistics and processing details
+
 ### Maintenance
 - **Log cleanup**: Automated log rotation for script logs
 - **Cache validation**: Verify data integrity after updates

@@ -2,6 +2,32 @@
 
 This directory contains utility scripts for maintaining the website.
 
+## PDF to Markdown Converter
+
+A powerful tool for converting academic PDFs (especially LaTeX-compiled papers) to clean Markdown format while preserving mathematical notation and extracting images.
+
+### Quick Start
+
+```bash
+# Install dependencies
+pip install -r requirements-pdf-converter.txt
+
+# Convert a PDF
+python pdf-to-markdown.py your_paper.pdf
+
+# AI Assistant Helper (simplified interface)
+python ai-pdf-helper.py your_paper.pdf
+```
+
+### Features
+
+- **Smart Text Extraction**: Preserves document structure and formatting
+- **Math Preservation**: Maintains mathematical symbols and equations in Unicode
+- **Image Extraction**: Automatically extracts and references images
+- **Academic Paper Support**: Optimized for research papers and technical documents
+
+See `PDF_CONVERTER_README.md` for detailed documentation.
+
 ## update-scholar-cache.js
 
 Updates the `data/scholar-cache.json` file with fresh data from Google Scholar.

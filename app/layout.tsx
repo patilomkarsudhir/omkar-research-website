@@ -1,6 +1,7 @@
 import "./globals.css";
 import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
+import SiteTracker from "./components/SiteTracker";
 import { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="canonical" href="https://omkarsudhirpatil.com" />
       </head>
       <body className="min-h-screen flex flex-col">
+        <SiteTracker />
         <NavBar />
         <main className="flex-1 container py-10">{children}</main>
         <Footer />
