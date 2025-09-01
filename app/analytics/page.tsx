@@ -37,7 +37,7 @@ export default function AnalyticsPage() {
               <li>• Visitor presence updates every 30 seconds while browsing</li>
               <li>• Sessions expire after 5 minutes of inactivity</li>
               <li>• Unique visitors are identified by IP address</li>
-              <li>• Data is stored locally in JSON format</li>
+              <li>• Data is stored persistently in Redis database</li>
             </ul>
           </div>
           
