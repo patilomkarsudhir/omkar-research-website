@@ -18,23 +18,33 @@ interface VisitorData {
 const ANALYTICS_KEY = 'analytics';
 const SESSION_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
-// Initialize Redis client
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+// Initialize Redis client with fallback handling
+let redis: Redis | null = null;
+
+try {
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+  }
+} catch (error) {
+  console.warn('Redis client could not be initialized:', error);
+}
 
 async function getAnalyticsData(): Promise<VisitorData> {
   try {
-    const data = await redis.get<VisitorData>(ANALYTICS_KEY);
-    if (data) {
-      return data;
+    if (redis) {
+      const data = await redis.get<VisitorData>(ANALYTICS_KEY);
+      if (data) {
+        return data;
+      }
     }
   } catch (error) {
     console.error('Error reading analytics from Redis:', error);
   }
   
-  // Return default data if not found or error occurred
+  // Return default data if Redis not available or error occurred
   return {
     totalVisitors: 0,
     uniqueVisitors: 0,
@@ -46,7 +56,9 @@ async function getAnalyticsData(): Promise<VisitorData> {
 
 async function saveAnalyticsData(data: VisitorData): Promise<void> {
   try {
-    await redis.set(ANALYTICS_KEY, data);
+    if (redis) {
+      await redis.set(ANALYTICS_KEY, data);
+    }
   } catch (error) {
     console.error('Error saving analytics to Redis:', error);
   }
