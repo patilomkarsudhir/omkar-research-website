@@ -1,4 +1,5 @@
 import VisitorAnalytics from "../components/VisitorAnalytics";
+import VercelAnalyticsCard from "../components/VercelAnalyticsCard";
 import Section from "../components/Section";
 import { Metadata } from "next";
 
@@ -14,8 +15,11 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-8">
       <Section title="Site Analytics" subtitle="Detailed visitor analytics and insights">
-        <VisitorAnalytics />
-      </Section>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <VisitorAnalytics />
+          <VercelAnalyticsCard />
+        </div>
+        </div>
       
       <Section title="Analytics Overview">
         <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-white/10 rounded-xl p-6 shadow-lg">
