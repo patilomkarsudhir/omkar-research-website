@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { kv } from '@vercel/kv';
 
 interface VisitorData {
   totalVisitors: number;
@@ -16,24 +15,20 @@ interface VisitorData {
   };
 }
 
-const ANALYTICS_FILE = path.join(process.cwd(), 'data', 'analytics.json');
+const ANALYTICS_KEY = 'analytics';
 const SESSION_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
-function ensureAnalyticsFile(): VisitorData {
+async function getAnalyticsData(): Promise<VisitorData> {
   try {
-    if (!fs.existsSync(path.dirname(ANALYTICS_FILE))) {
-      fs.mkdirSync(path.dirname(ANALYTICS_FILE), { recursive: true });
-    }
-    
-    if (fs.existsSync(ANALYTICS_FILE)) {
-      const data = JSON.parse(fs.readFileSync(ANALYTICS_FILE, 'utf8'));
+    const data = await kv.get<VisitorData>(ANALYTICS_KEY);
+    if (data) {
       return data;
     }
   } catch (error) {
-    console.error('Error reading analytics file:', error);
+    console.error('Error reading analytics from KV:', error);
   }
   
-  // Return default data if file doesn't exist or is corrupted
+  // Return default data if not found or error occurred
   return {
     totalVisitors: 0,
     uniqueVisitors: 0,
@@ -43,11 +38,11 @@ function ensureAnalyticsFile(): VisitorData {
   };
 }
 
-function saveAnalyticsData(data: VisitorData) {
+async function saveAnalyticsData(data: VisitorData): Promise<void> {
   try {
-    fs.writeFileSync(ANALYTICS_FILE, JSON.stringify(data, null, 2));
+    await kv.set(ANALYTICS_KEY, data);
   } catch (error) {
-    console.error('Error saving analytics file:', error);
+    console.error('Error saving analytics to KV:', error);
   }
 }
 
@@ -135,7 +130,7 @@ function cleanExpiredSessions(data: VisitorData): VisitorData {
 
 export async function GET() {
   try {
-    let data = ensureAnalyticsFile();
+    let data = await getAnalyticsData();
     data = cleanExpiredSessions(data);
     
     return NextResponse.json({
@@ -170,12 +165,12 @@ export async function POST(request: NextRequest) {
     const clientIP = getClientIP(request);
     const now = Date.now();
     
-    let data = ensureAnalyticsFile();
+    let data = await getAnalyticsData();
     data = cleanExpiredSessions(data);
     
     // Check if this is a new session
     const isNewSession = !data.sessions[sessionId];
-    const isNewIP = !Object.values(data.sessions).some(session => session.ip === clientIP);
+    const isNewIP = !Object.values(data.sessions).some((session: any) => session.ip === clientIP);
     
     // Update or create session
     data.sessions[sessionId] = {
@@ -195,7 +190,7 @@ export async function POST(request: NextRequest) {
     data.currentOnline = Object.keys(data.sessions).length;
     data.lastUpdated = new Date().toISOString();
     
-    saveAnalyticsData(data);
+    await saveAnalyticsData(data);
     
     return NextResponse.json({
       totalVisitors: data.totalVisitors,
