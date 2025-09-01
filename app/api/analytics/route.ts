@@ -23,15 +23,15 @@ let redis: Redis | null = null;
 
 try {
   console.log('Environment check:');
-  console.log('UPSTASH_REDIS_REST_URL exists:', !!process.env.UPSTASH_REDIS_REST_URL);
-  console.log('UPSTASH_REDIS_REST_TOKEN exists:', !!process.env.UPSTASH_REDIS_REST_TOKEN);
+  console.log('KV_REST_API_URL exists:', !!process.env.KV_REST_API_URL);
+  console.log('KV_REST_API_TOKEN exists:', !!process.env.KV_REST_API_TOKEN);
   
-  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
     console.log('Attempting to create Redis client with explicit constructor...');
-    // Try explicit constructor instead of fromEnv()
+    // Try explicit constructor with KV variable names from Vercel
     redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      url: process.env.KV_REST_API_URL,
+      token: process.env.KV_REST_API_TOKEN,
     });
     console.log('Redis client created successfully');
   } else {

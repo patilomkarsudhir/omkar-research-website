@@ -5,19 +5,22 @@ export async function GET() {
   try {
     console.log('Testing Redis connection...');
     console.log('Environment variables check:');
-    console.log('UPSTASH_REDIS_REST_URL:', process.env.UPSTASH_REDIS_REST_URL ? 'SET' : 'NOT SET');
-    console.log('UPSTASH_REDIS_REST_TOKEN:', process.env.UPSTASH_REDIS_REST_TOKEN ? 'SET' : 'NOT SET');
+    console.log('KV_REST_API_URL:', process.env.KV_REST_API_URL ? 'SET' : 'NOT SET');
+    console.log('KV_REST_API_TOKEN:', process.env.KV_REST_API_TOKEN ? 'SET' : 'NOT SET');
     
-    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
       return NextResponse.json({
         success: false,
         error: 'Redis environment variables not set',
-        hasUrl: !!process.env.UPSTASH_REDIS_REST_URL,
-        hasToken: !!process.env.UPSTASH_REDIS_REST_TOKEN
+        hasUrl: !!process.env.KV_REST_API_URL,
+        hasToken: !!process.env.KV_REST_API_TOKEN
       });
     }
     
-    const redis = Redis.fromEnv();
+    const redis = new Redis({
+      url: process.env.KV_REST_API_URL,
+      token: process.env.KV_REST_API_TOKEN,
+    });
     
     // Test basic operations
     const testKey = `test-${Date.now()}`;

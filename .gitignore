@@ -27,3 +27,5 @@ scripts/update-scholar-*.log
 
 # Local dev-only components
 app/components/TestClient.tsx
+
+.vercel
