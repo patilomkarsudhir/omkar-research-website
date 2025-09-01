@@ -22,9 +22,17 @@ const SESSION_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 let redis: Redis | null = null;
 
 try {
+  console.log('Environment check:');
+  console.log('UPSTASH_REDIS_REST_URL exists:', !!process.env.UPSTASH_REDIS_REST_URL);
+  console.log('UPSTASH_REDIS_REST_TOKEN exists:', !!process.env.UPSTASH_REDIS_REST_TOKEN);
+  
   if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    console.log('Attempting to create Redis client...');
     // Use Redis.fromEnv() for better Vercel integration
     redis = Redis.fromEnv();
+    console.log('Redis client created successfully');
+  } else {
+    console.log('Redis environment variables not available');
   }
 } catch (error) {
   console.warn('Redis client could not be initialized:', error);
