@@ -19,111 +19,6 @@ export default function VisitorAnalytics() {
     currentOnline: 0,
     lastUpdated: new Date().toISOString()
   });
-  const [isOnline, setIsOnline] = useState(false);
-  const [sessionId] = useState(() => {
-    if (typeof window !== 'undefined') {
-      let id = localStorage.getItem('visitor-session-id');
-      if (!id) {
-        id = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        localStorage.setItem('visitor-session-id', id);
-      }
-      return id;
-    }
-    return '';
-  });
-
-  // Initialize visitor tracking
-  useEffect(() => {
-    if (!sessionId) return;
-
-    // Additional bot detection - check if this looks like a real browser
-    const isLikelyBot = () => {
-      // Check for headless browser indicators
-      if (typeof navigator !== 'undefined') {
-        const userAgent = navigator.userAgent.toLowerCase();
-        
-        // Check for headless browser patterns
-        if (userAgent.includes('headlesschrome') || 
-            userAgent.includes('phantomjs') ||
-            userAgent.includes('slimerjs') ||
-            !navigator.languages ||
-            !navigator.plugins ||
-            navigator.webdriver) {
-          return true;
-        }
-        
-        // Check for missing expected browser features
-        if (!window.screen || 
-            !window.screen.width || 
-            !window.screen.height ||
-            !document.documentElement) {
-          return true;
-        }
-      }
-      
-      return false;
-    };
-
-    // Don't track if this appears to be a bot
-    if (isLikelyBot()) {
-      return;
-    }
-
-    const initializeVisitor = async () => {
-      try {
-        const response = await fetch('/api/analytics', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ sessionId }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          // Don't update analytics if server detected this as a bot
-          if (!data.isBot) {
-            setAnalytics(data);
-            setIsOnline(true);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to initialize visitor tracking:', error);
-      }
-    };
-
-    initializeVisitor();
-  }, [sessionId]);
-
-  // Update visitor presence every 30 seconds
-  useEffect(() => {
-    if (!sessionId || !isOnline) return;
-
-    const updatePresence = async () => {
-      try {
-        const response = await fetch('/api/analytics', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ sessionId }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          // Only update if not detected as bot
-          if (!data.isBot) {
-            setAnalytics(data);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to update presence:', error);
-      }
-    };
-
-    const interval = setInterval(updatePresence, 30000); // 30 seconds
-    return () => clearInterval(interval);
-  }, [sessionId, isOnline]);
 
   // Fetch analytics data every 10 seconds for real-time updates
   useEffect(() => {
@@ -139,7 +34,11 @@ export default function VisitorAnalytics() {
       }
     };
 
-    const interval = setInterval(fetchAnalytics, 10000); // 10 seconds
+    // Fetch immediately on mount
+    fetchAnalytics();
+
+    // Then fetch every 10 seconds
+    const interval = setInterval(fetchAnalytics, 10000);
     return () => clearInterval(interval);
   }, []);
 
