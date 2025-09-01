@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { kv } from '@vercel/kv';
+import { Redis } from '@upstash/redis';
 
 interface VisitorData {
   totalVisitors: number;
@@ -18,14 +18,20 @@ interface VisitorData {
 const ANALYTICS_KEY = 'analytics';
 const SESSION_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
+// Initialize Redis client
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
 async function getAnalyticsData(): Promise<VisitorData> {
   try {
-    const data = await kv.get<VisitorData>(ANALYTICS_KEY);
+    const data = await redis.get<VisitorData>(ANALYTICS_KEY);
     if (data) {
       return data;
     }
   } catch (error) {
-    console.error('Error reading analytics from KV:', error);
+    console.error('Error reading analytics from Redis:', error);
   }
   
   // Return default data if not found or error occurred
@@ -40,9 +46,9 @@ async function getAnalyticsData(): Promise<VisitorData> {
 
 async function saveAnalyticsData(data: VisitorData): Promise<void> {
   try {
-    await kv.set(ANALYTICS_KEY, data);
+    await redis.set(ANALYTICS_KEY, data);
   } catch (error) {
-    console.error('Error saving analytics to KV:', error);
+    console.error('Error saving analytics to Redis:', error);
   }
 }
 
