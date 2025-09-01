@@ -27,9 +27,12 @@ try {
   console.log('UPSTASH_REDIS_REST_TOKEN exists:', !!process.env.UPSTASH_REDIS_REST_TOKEN);
   
   if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-    console.log('Attempting to create Redis client...');
-    // Use Redis.fromEnv() for better Vercel integration
-    redis = Redis.fromEnv();
+    console.log('Attempting to create Redis client with explicit constructor...');
+    // Try explicit constructor instead of fromEnv()
+    redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
     console.log('Redis client created successfully');
   } else {
     console.log('Redis environment variables not available');
