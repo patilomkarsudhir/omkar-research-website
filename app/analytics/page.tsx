@@ -19,7 +19,7 @@ export default function AnalyticsPage() {
           <VisitorAnalytics />
           <VercelAnalyticsCard />
         </div>
-        </div>
+      </Section>
       
       <Section title="Analytics Overview">
         <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-white/10 rounded-xl p-6 shadow-lg">
