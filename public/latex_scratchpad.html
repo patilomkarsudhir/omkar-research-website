@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live LaTeX Scratchpad</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/latex.js@0.12.4/dist/latex.min.js"></script>
+    <!-- html2pdf bundle (includes html2canvas + jsPDF) for client-side PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.12.0/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0b1220 0%, #020617 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.04) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            box-shadow: 
+                0 32px 64px rgba(0, 0, 0, 0.15),
+                0 16px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideIn 0.8s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #111827 0%, #0b1220 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .header > * {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 16px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #f0f9ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        
+        
+        .editor-container {
+            display: flex;
+            min-height: 700px;
+            gap: 2px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        
+        .input-panel, .output-panel {
+            flex: 1;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .input-panel {
+            background: linear-gradient(135deg, #fafbff 0%, #f1f5f9 100%);
+            border-right: 2px solid rgba(148, 163, 184, 0.1);
+        }
+        
+        .output-panel {
+            background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
+        }
+        
+        .panel-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+        }
+        
+        .panel-title::before {
+            content: "✏️";
+            font-size: 1.2em;
+            padding: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .output-panel .panel-title::before {
+            content: "👁️";
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .panel-title::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, rgba(148, 163, 184, 0.3), transparent);
+            margin-left: 16px;
+        }
+
+        /* Panel actions (e.g., Download PDF button) */
+        .panel-actions {
+            position: absolute;
+            top: 24px;
+            right: 32px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .btn {
+            appearance: none;
+            border: 0;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:active { transform: translateY(1px); }
+        .btn-green {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+        }
+        .btn-green:hover { box-shadow: 0 8px 22px rgba(16, 185, 129, 0.5); }
+        .btn[disabled] { opacity: 0.6; cursor: not-allowed; }
+        
+        #latex-input {
+            flex: 1;
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.7;
+            resize: none;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
+            box-shadow: 
+                0 4px 6px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            position: relative;
+        }
+        
+        #latex-input:focus {
+            border-color: #667eea;
+            box-shadow: 
+                0 0 0 4px rgba(102, 126, 234, 0.1),
+                0 8px 25px rgba(102, 126, 234, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+        }
+        
+        #latex-input::placeholder {
+            color: #94a3b8;
+            font-style: italic;
+        }
+        
+        #math-output {
+            flex: 1;
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
+            overflow-y: auto;
+            min-height: 500px;
+            font-size: 16px;
+            line-height: 1.6;
+            text-align: left;
+            box-shadow: 
+                0 4px 6px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        #math-output:hover {
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+        
+        /* Loading animation */
+        #math-output.loading::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* Style for latex.js output */
+        #math-output .body {
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        #math-output h1, #math-output h2, #math-output h3 {
+            color: #1e293b;
+            margin-top: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .error-message {
+            color: #ef4444;
+            font-style: italic;
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            padding: 20px 24px;
+            border-radius: 12px;
+            border-left: 4px solid #ef4444;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+            animation: errorSlide 0.3s ease-out;
+        }
+        
+        @keyframes errorSlide {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .examples {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 32px;
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+            position: relative;
+        }
+        
+        .examples::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 32px;
+            right: 32px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.3), transparent);
+        }
+        
+        .examples h3 {
+            color: #1e293b;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .examples h3::before {
+            content: "🎯";
+            font-size: 1.1em;
+        }
+        
+        .example-item {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            padding: 12px 18px;
+            margin: 6px 8px 6px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid rgba(148, 163, 184, 0.1);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 500;
+            color: #475569;
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .example-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .example-item:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 
+                0 8px 25px rgba(102, 126, 234, 0.3),
+                0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .example-item:hover::before {
+            left: 100%;
+        }
+        
+        .example-item:active {
+            transform: translateY(-1px) scale(1.01);
+        }
+        
+        @media (max-width: 768px) {
+            .editor-container {
+                flex-direction: column;
+                gap: 1px;
+                min-height: auto;
+            }
+            
+            .input-panel {
+                border-right: none;
+                border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+                padding: 24px 20px;
+            }
+            
+            .output-panel {
+                padding: 24px 20px;
+            }
+            
+            body {
+                padding: 16px;
+            }
+            
+            .header {
+                padding: 32px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .header p {
+                font-size: 1.1em;
+            }
+            
+            #latex-input, #math-output {
+                min-height: 300px;
+                padding: 20px;
+            }
+            
+            .examples {
+                padding: 24px 20px;
+            }
+            
+            .example-item {
+                display: block;
+                margin: 8px 0;
+                text-align: center;
+            }
+        }
+        
+        /* Scrollbar styling */
+        #math-output::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #math-output::-webkit-scrollbar-track {
+            background: rgba(148, 163, 184, 0.1);
+            border-radius: 4px;
+        }
+        
+        #math-output::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 4px;
+        }
+        
+        #math-output::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5a67d8, #6b46c1);
+        }
+        
+        /* Focus indicators for accessibility */
+        .example-item:focus {
+            outline: 3px solid rgba(102, 126, 234, 0.5);
+            outline-offset: 2px;
+        }
+        
+        /* Improved math rendering */
+        .katex-display {
+            margin: 1.5em 0 !important;
+        }
+        
+        .katex {
+            font-size: 1.1em !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Live LaTeX Scratchpad</h1>
+            <p>Type LaTeX equations or full documents and see them rendered instantly</p>
+        </div>
+        
+        <div class="editor-container">
+            <div class="input-panel">
+                <h2 class="panel-title">LaTeX Input</h2>
+                <textarea id="latex-input" placeholder="Type your LaTeX equation or document here...
+
+Math examples:
+E = mc^2
+\frac{d}{dx}[f(x)] = \lim_{h \to 0} \frac{f(x+h) - f(x)}{h}
+
+Document example:
+\documentclass{article}
+\begin{document}
+\section{Introduction}
+Hello world!
+\end{document}">E = mc^2</textarea>
+            </div>
+            
+            <div class="output-panel">
+                <h2 class="panel-title">Rendered Output</h2>
+                <div class="panel-actions">
+                    <button id="download-pdf-btn" class="btn btn-green" title="Download the rendered output as PDF" aria-label="Download PDF">⬇️ Download PDF</button>
+                </div>
+                <div id="math-output"></div>
+            </div>
+        </div>
+        
+        <div class="examples">
+            <h3>Click to try these examples:</h3>
+            <div class="example-item" onclick="setLatex('E = mc^2')">E = mc^2</div>
+            <div class="example-item" onclick="setLatex('\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}')">Quadratic Formula</div>
+            <div class="example-item" onclick="setLatex('\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}')">Basel Problem</div>
+            <div class="example-item" onclick="setLatex('\\int_{0}^{\\pi} \\sin(x) dx = 2')">Integral</div>
+            <div class="example-item" onclick="setLatex('\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}')">Matrix</div>
+            <div class="example-item" onclick="setLatex('f(x) = \\begin{cases} x^2 & \\text{if } x \\geq 0 \\\\ -x^2 & \\text{if } x < 0 \\end{cases}')">Piecewise Function</div>
+            <div class="example-item" onclick="setLatex('\\lim_{x \\to \\infty} \\left(1 + \\frac{1}{x}\\right)^x = e')">Limit</div>
+            <div class="example-item" onclick="setLatex('\\nabla \\times \\vec{F} = \\left(\\frac{\\partial F_z}{\\partial y} - \\frac{\\partial F_y}{\\partial z}\\right)\\hat{i} + \\left(\\frac{\\partial F_x}{\\partial z} - \\frac{\\partial F_z}{\\partial x}\\right)\\hat{j} + \\left(\\frac{\\partial F_y}{\\partial x} - \\frac{\\partial F_x}{\\partial y}\\right)\\hat{k}')">Curl</div>
+            <div class="example-item" onclick="setLatex(this.dataset.latex)" data-latex="&#92;documentclass{article}&#92;n&#92;begin{document}&#92;n&#92;section{Introduction}&#92;nThis is a simple LaTeX document with math: $E = mc^2$.&#92;n&#92;n&#92;subsection{Mathematics}&#92;nHere is an equation:&#92;n&#92;[&#92;int_0^&#92;infty e^{-x^2} dx = &#92;frac{&#92;sqrt{&#92;pi}}{2}&#92;]&#92;n&#92;end{document}">Simple Document</div>
+            <div class="example-item" onclick="setLatex(this.dataset.latex)" data-latex="&#92;documentclass{article}&#92;n&#92;usepackage{amsmath}&#92;n&#92;begin{document}&#92;n&#92;title{Sample Paper}&#92;n&#92;author{Your Name}&#92;n&#92;date{&#92;today}&#92;n&#92;maketitle&#92;n&#92;n&#92;section{Abstract}&#92;nThis is a sample academic paper.&#92;n&#92;n&#92;section{Introduction}&#92;nWelcome to LaTeX!&#92;n&#92;end{document}">Academic Paper</div>
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById('latex-input');
+        const output = document.getElementById('math-output');
+    const downloadBtn = document.getElementById('download-pdf-btn');
+        
+        function renderLatex() {
+            const latex = input.value.trim();
+            
+            if (!latex) {
+                output.innerHTML = '<div style="color: #94a3b8; font-style: italic; font-size: 1.1em; text-align: center; padding: 40px 20px;">✨ Start typing LaTeX to see the magic happen...</div>';
+                return;
+            }
+            
+            // Add loading state
+            output.classList.add('loading');
+            
+            try {
+                // Clear previous content
+                output.innerHTML = '';
+                
+                // Check if this looks like a document (has \documentclass or \begin{document})
+                const isDocument = latex.includes('\\documentclass') || latex.includes('\\begin{document}');
+                
+                // Try latex.js first for full documents
+                if (isDocument && typeof latexjs !== 'undefined') {
+                    try {
+                        const generator = new latexjs.HtmlGenerator({ hyphenate: false });
+                        const doc = latexjs.parse(latex, { generator: generator });
+                        const html = generator.domFragment();
+                        output.innerHTML = '';
+                        output.appendChild(html);
+                        // Ensure latex.js styles/scripts are injected once so documents render correctly
+                        if (!window.__latexjsAssetsInjected) {
+                            try {
+                                // Use matching CDN base for this latex.js version
+                                document.head.appendChild(generator.stylesAndScripts("https://cdn.jsdelivr.net/npm/latex.js@0.12.4/dist/"));
+                                window.__latexjsAssetsInjected = true;
+                            } catch (_) { /* no-op */ }
+                        }
+                        output.classList.remove('loading');
+                        return;
+                    } catch (latexError) {
+                        console.log('latex.js failed, falling back to KaTeX:', latexError);
+                    }
+                }
+                
+                // Fallback to KaTeX for math rendering
+                katex.render(latex, output, {
+                    throwOnError: false,
+                    displayMode: true,
+                    strict: false,
+                    trust: false,
+                    macros: {
+                        "\\f": "#1f(#2)"
+                    }
+                });
+                output.classList.remove('loading');
+            } catch (error) {
+                output.classList.remove('loading');
+                // Build error message safely without injecting raw HTML from error.message
+                const wrapper = document.createElement('div');
+                wrapper.className = 'error-message';
+                const strong = document.createElement('strong');
+                strong.textContent = '🚫 LaTeX Error:';
+                const br = document.createElement('br');
+                const msg = document.createElement('div');
+                msg.style.marginTop = '6px';
+                msg.textContent = error && error.message ? error.message : String(error);
+                const tip = document.createElement('small');
+                tip.innerText = '💡 Try checking your syntax. For documents, include \\documentclass and \\begin{document}. For math, check brackets and command names.';
+                wrapper.appendChild(strong);
+                wrapper.appendChild(br);
+                wrapper.appendChild(msg);
+                wrapper.appendChild(document.createElement('br'));
+                wrapper.appendChild(document.createElement('br'));
+                wrapper.appendChild(tip);
+                output.innerHTML = '';
+                output.appendChild(wrapper);
+            }
+        }
+        
+        function setLatex(latex) {
+            // Replace \\n with actual newlines for document examples
+            const formattedLatex = latex.replace(/\\n/g, '\n');
+            input.value = formattedLatex;
+            renderLatex();
+            input.focus();
+        }
+        
+        // Real-time rendering (input event is sufficient)
+        input.addEventListener('input', renderLatex);
+        input.addEventListener('paste', () => setTimeout(renderLatex, 10));
+
+        // Download PDF handler
+        function downloadPDF() {
+            if (!window.html2pdf) {
+                alert('PDF export library failed to load.');
+                return;
+            }
+            // Disable button during generation
+            downloadBtn.disabled = true;
+            const firstLine = (input.value || '').trim().split(/\n/)[0] || 'rendered-output';
+            const safeName = firstLine.replace(/[^a-z0-9-_]+/gi, '_').slice(0, 60) || 'rendered-output';
+            const opt = {
+                margin:       10, // in mm when unit is mm (see jsPDF unit below)
+                filename:     `${safeName}.pdf`,
+                image:        { type: 'jpeg', quality: 0.95 },
+                html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css', 'legacy'] }
+            };
+            // Export the existing rendered node for accurate styles & fonts
+            output.style.background = '#ffffff';
+            output.style.padding = '16px';
+            html2pdf().set(opt).from(output).save().finally(() => {
+                downloadBtn.disabled = false;
+                // Restore any temporary styling
+                output.style.removeProperty('background');
+                output.style.removeProperty('padding');
+            });
+        }
+        downloadBtn.addEventListener('click', downloadPDF);
+        
+        // Initial render
+        renderLatex();
+        
+        // Focus on input when page loads
+        window.addEventListener('load', () => {
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length);
+        });
+    </script>
+</body>
+</html>
