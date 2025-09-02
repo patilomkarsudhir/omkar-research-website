@@ -63,7 +63,241 @@
 
         <!-- React App Container -->
         <div id="neural-chess-app"></div>
+
+        <!-- Mathematical Description Section -->
+        <div class="mt-16 bg-white rounded-2xl shadow-lg p-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Mathematical Framework & Algorithm Description</h2>
+            
+            <div class="prose prose-lg max-w-none">
+                <!-- Classical Alpha-Beta Section -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4">1. Classical Alpha-Beta Pruning</h3>
+                    <p class="text-gray-700 mb-4">
+                        The classical alpha-beta algorithm is a minimax search with pruning that explores the game tree to find optimal moves. 
+                        It maintains two bounds: α (lower bound for maximizing player) and β (upper bound for minimizing player).
+                    </p>
+                    
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <h4 class="font-semibold mb-3">Minimax Value Function:</h4>
+                        <div class="text-center bg-white p-4 rounded border">
+                            $$V(s, d) = \begin{cases}
+                            \text{eval}(s) & \text{if } d = 0 \text{ or } s \text{ is terminal} \\
+                            \max_{a \in A(s)} V(\text{result}(s,a), d-1) & \text{if player}(s) = \text{MAX} \\
+                            \min_{a \in A(s)} V(\text{result}(s,a), d-1) & \text{if player}(s) = \text{MIN}
+                            \end{cases}$$
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">
+                            Where <em>s</em> is the game state, <em>d</em> is the remaining search depth, <em>A(s)</em> is the set of legal actions, 
+                            and <em>result(s,a)</em> is the state after applying action <em>a</em> to state <em>s</em>.
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <h4 class="font-semibold mb-3">Alpha-Beta Pruning Conditions:</h4>
+                        <div class="text-center bg-white p-4 rounded border">
+                            $$\text{Prune if: } \alpha \geq \beta$$
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">
+                            Where α is updated as: $\alpha = \max(\alpha, v)$ for MAX nodes, and β is updated as: $\beta = \min(\beta, v)$ for MIN nodes.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Neural/Soft Alpha-Beta Section -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4">2. Neural/Soft Alpha-Beta Framework</h3>
+                    <p class="text-gray-700 mb-4">
+                        The soft variant replaces hard max/min operations with differentiable approximations, enabling gradient-based optimization
+                        and neural network integration. This approach is inspired by AlphaZero-style architectures.
+                    </p>
+
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <h4 class="font-semibold mb-3">Soft Max/Min Operations:</h4>
+                        <div class="text-center bg-white p-4 rounded border">
+                            $$\text{softmax}(a, b; \tau) = \frac{a \cdot e^{a/\tau} + b \cdot e^{b/\tau}}{e^{a/\tau} + e^{b/\tau}}$$
+                        </div>
+                        <div class="text-center bg-white p-4 rounded border mt-2">
+                            $$\text{softmin}(a, b; \tau) = -\text{softmax}(-a, -b; \tau)$$
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">
+                            The temperature parameter τ controls the softness: as $\tau \to 0$, softmax approaches hard max operation.
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <h4 class="font-semibold mb-3">Soft Pruning Gates:</h4>
+                        <div class="text-center bg-white p-4 rounded border">
+                            $$g_{\text{MAX}}(\tilde{v}, \beta) = \sigma\left(\frac{\beta - \tilde{v}}{\tau_g}\right)$$
+                        </div>
+                        <div class="text-center bg-white p-4 rounded border mt-2">
+                            $$g_{\text{MIN}}(\tilde{v}, \alpha) = \sigma\left(\frac{\tilde{v} - \alpha}{\tau_g}\right)$$
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">
+                            Where $\sigma(x) = \frac{1}{1 + e^{-x}}$ is the sigmoid function, and $\tau_g$ controls gate sensitivity.
+                            The gates provide soft pruning by dampening contributions from "pruned" branches.
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <h4 class="font-semibold mb-3">Soft Search Update:</h4>
+                        <div class="text-center bg-white p-4 rounded border">
+                            $$v_{\text{new}} = g \cdot \tilde{v} + (1-g) \cdot v_{\text{old}}$$
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">
+                            Where $\tilde{v}$ is the soft max/min result and $g$ is the pruning gate value.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Game State Evaluation -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4">3. Game State Evaluation & Terminal Conditions</h3>
+                    
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <h4 class="font-semibold mb-3">Position Evaluation Function:</h4>
+                        <div class="text-center bg-white p-4 rounded border">
+                            $$\text{eval}(s) = \phi \cdot E_{\text{mg}}(s) + (1-\phi) \cdot E_{\text{eg}}(s)$$
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">
+                            Tapered evaluation combining middle-game ($E_{\text{mg}}$) and end-game ($E_{\text{eg}}$) assessments, 
+                            where $\phi \in [0,1]$ is the game phase factor based on remaining material.
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <h4 class="font-semibold mb-3">Material and Positional Evaluation:</h4>
+                        <div class="text-center bg-white p-4 rounded border">
+                            $$E(s) = \sum_{p \in \text{pieces}} \text{sign}(p) \cdot \left[V(p) + \text{PST}(p, \text{pos}(p))\right]$$
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">
+                            Where $V(p)$ is the material value of piece $p$, $\text{PST}(p, \text{pos}(p))$ is the piece-square table value,
+                            and $\text{sign}(p) = \pm 1$ based on piece color.
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <h4 class="font-semibold mb-3">Terminal State Rewards:</h4>
+                        <div class="text-center bg-white p-4 rounded border">
+                            $$R_{\text{terminal}}(s) = \begin{cases}
+                            \pm(100000 - d) & \text{if checkmate at depth } d \\
+                            0 & \text{if stalemate or draw} \\
+                            \text{eval}(s) & \text{if depth limit reached}
+                            \end{cases}$$
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">
+                            Checkmate rewards decrease with search depth to prefer faster mates. All draws (stalemate, 50-move rule, 
+                            insufficient material, threefold repetition) receive neutral reward.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Search Enhancements -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4">4. Search Enhancements</h3>
+                    
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <h4 class="font-semibold mb-3">Zobrist Hashing for Transposition Tables:</h4>
+                        <div class="text-center bg-white p-4 rounded border">
+                            $$h(s) = \bigoplus_{i} Z_{\text{piece}[i]}[\text{square}[i]] \oplus Z_{\text{flags}}$$
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">
+                            Where $\bigoplus$ is the XOR operation, $Z$ are random 64-bit numbers, and flags include castling rights, 
+                            en passant, and side to move. Enables $O(1)$ position lookup and repetition detection.
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <h4 class="font-semibold mb-3">Move Ordering (MVV-LVA):</h4>
+                        <div class="text-center bg-white p-4 rounded border">
+                            $$\text{priority}(m) = 10000 \cdot \mathbb{1}_{\text{capture}}(m) + V(\text{captured}) - V(\text{attacker})$$
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">
+                            Most Valuable Victim - Least Valuable Attacker ordering prioritizes capturing high-value pieces 
+                            with low-value pieces, improving alpha-beta cutoff efficiency.
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <h4 class="font-semibold mb-3">Quiescence Search:</h4>
+                        <div class="text-center bg-white p-4 rounded border">
+                            $$Q(s, \alpha, \beta) = \begin{cases}
+                            \max(\text{eval}(s), \max_{c \in \text{captures}(s)} Q(\text{result}(s,c), \alpha, \beta)) & \text{if MAX} \\
+                            \min(\text{eval}(s), \min_{c \in \text{captures}(s)} Q(\text{result}(s,c), \alpha, \beta)) & \text{if MIN}
+                            \end{cases}$$
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">
+                            Extends search in tactical positions by considering only captures and checks until a "quiet" position is reached,
+                            reducing horizon effects and improving tactical accuracy.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Probabilistic Move Selection -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4">5. Probabilistic Move Selection (Soft Mode)</h3>
+                    
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <h4 class="font-semibold mb-3">Move Choice Distribution:</h4>
+                        <div class="text-center bg-white p-4 rounded border">
+                            $$P(a_i) = \frac{\exp(c_i / \tau_{\text{choice}})}{\sum_j \exp(c_j / \tau_{\text{choice}})}$$
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">
+                            Where $c_i$ is the contribution of move $a_i$ from the soft search, and $\tau_{\text{choice}}$ 
+                            controls exploration vs exploitation. Lower temperatures lead to more deterministic play.
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <h4 class="font-semibold mb-3">Contribution Accumulation:</h4>
+                        <div class="text-center bg-white p-4 rounded border">
+                            $$c_i = \prod_{j=1}^{i} g_j \cdot v_i$$
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">
+                            Move contributions are weighted by the cumulative product of pruning gates, 
+                            giving higher weight to moves explored more thoroughly.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Implementation Notes -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4">6. Implementation Details</h3>
+                    <div class="bg-blue-50 p-6 rounded-lg">
+                        <h4 class="font-semibold mb-3">Key Features:</h4>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li><strong>Iterative Deepening:</strong> Searches progressively deeper depths (1, 2, ..., d) to improve move ordering and enable time management</li>
+                            <li><strong>Transposition Tables:</strong> Cache search results using Zobrist hashing to avoid redundant computations</li>
+                            <li><strong>Complete Rule Implementation:</strong> Handles all chess rules including castling, en passant, promotions, and draw conditions</li>
+                            <li><strong>Dual Mode Operation:</strong> Toggle between classical hard alpha-beta and differentiable soft variant</li>
+                            <li><strong>Game State Detection:</strong> Comprehensive checkmate, stalemate, and draw detection (50-move rule, threefold repetition, insufficient material)</li>
+                            <li><strong>Parameter Tuning:</strong> Interactive adjustment of temperature parameters (τ, τ_g, τ_choice) in soft mode</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-6 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border border-orange-200">
+                    <h4 class="font-semibold text-orange-800 mb-2">Research Applications:</h4>
+                    <p class="text-gray-700">
+                        This implementation demonstrates how classical game-playing algorithms can be enhanced with neural network techniques,
+                        providing a foundation for exploring differentiable game tree search, policy gradient methods, and hybrid AI architectures 
+                        that combine symbolic reasoning with deep learning.
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Include MathJax for LaTeX rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
 
     <!-- Load and render the JSX component -->
     <script type="text/babel" src="neural_alpha_beta_chess_interactive.jsx"></script>
