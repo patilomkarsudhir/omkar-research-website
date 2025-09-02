@@ -197,7 +197,7 @@ export default function Page() {
 							</div>
 							<div className="p-3 flex items-start gap-3">
 								<div className="flex-1">
-									<h3 className="text-base font-semibold tracking-tight">Image Extension Converter</h3>
+									<h3 className="text-base font-semibold tracking-tight">Image Format Converter</h3>
 								</div>
 							</div>
 							<div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl" />
