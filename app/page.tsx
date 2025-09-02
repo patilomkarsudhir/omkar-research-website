@@ -181,7 +181,8 @@ export default function Page() {
 					))}
 				</div>
 			</Section>
-			<Section title="Tools and Accessories">
+			<Section title="Quick Tools and Accessories">
+				<p className="text-[var(--muted)] mb-6">Tools I made for my personal use but do not mind sharing with everyone.</p>
 				<div className="flex gap-4 flex-wrap">
 					<Link href="/convert-images.html" className="group" passHref>
 						<div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-orange-500/20 to-orange-700/30 transition shadow-sm hover:shadow-md hover:brightness-110 dark:border-white/5 w-[210px] h-48">
