@@ -33,7 +33,7 @@ function isBlack(p){ return p && p === p.toLowerCase(); }
 function sideOf(p){ return isWhite(p) ? 'w' : isBlack(p) ? 'b' : null; }
 
 function parseFEN(fen){
-  const [placement, stm, castling, ep] = fen.split(" ");
+  const [placement, stm, castling, ep, halfmove, fullmove] = fen.split(" ");
   const rows = placement.split("/");
   const board = new Array(64).fill(".");
   for(let r=0; r<8; r++){
@@ -44,12 +44,29 @@ function parseFEN(fen){
     }
   }
   const epIdx = ep === '-' ? null : idx(ep[1]==='3'? 2:5, ep.charCodeAt(0) - 'a'.charCodeAt(0));
-  const state = { board, side: stm || 'w', castling: castling || 'KQkq', ep: epIdx };
+  const state = { 
+    board, 
+    side: stm || 'w', 
+    castling: castling || 'KQkq', 
+    ep: epIdx,
+    halfmove: parseInt(halfmove || '0', 10), // For 50-move rule
+    fullmove: parseInt(fullmove || '1', 10)
+  };
   state.hash = computeHash(state);
   return state;
 }
 
-function cloneState(s){ return { board: s.board.slice(), side: s.side, castling: s.castling, ep: s.ep, hash: s.hash }; }
+function cloneState(s){ 
+  return { 
+    board: s.board.slice(), 
+    side: s.side, 
+    castling: s.castling, 
+    ep: s.ep, 
+    halfmove: s.halfmove || 0,
+    fullmove: s.fullmove || 1,
+    hash: s.hash 
+  }; 
+}
 
 function flipSide(side){ return side==='w'? 'b' : 'w'; }
 
@@ -467,6 +484,23 @@ function makeMove(state, move){
   // Update side to move
   h ^= ZOBRIST.blackToMove;
   ns.side = flipSide(state.side);
+  
+  // Update move counters
+  const isPawnMove = piece.toUpperCase() === 'P';
+  const isCapture = move.captured !== '.';
+  
+  if (isPawnMove || isCapture) {
+    ns.halfmove = 0; // Reset 50-move counter
+  } else {
+    ns.halfmove = state.halfmove + 1;
+  }
+  
+  if (state.side === 'b') {
+    ns.fullmove = state.fullmove + 1;
+  } else {
+    ns.fullmove = state.fullmove;
+  }
+  
   ns.hash = h;
   return ns;
 }
@@ -479,6 +513,110 @@ function legalMoves(state){
     if(!inCheck(ns.board, state.side)) moves.push(m);
   }
   return moves;
+}
+
+// Check for insufficient material to checkmate
+function hasInsufficientMaterial(board) {
+  const pieces = { w: [], b: [] };
+  
+  // Collect all pieces by side
+  for (let i = 0; i < 64; i++) {
+    const piece = board[i];
+    if (piece !== '.') {
+      const side = isWhite(piece) ? 'w' : 'b';
+      pieces[side].push(piece.toLowerCase());
+    }
+  }
+  
+  // Helper function to check if a side has insufficient material
+  const isInsufficient = (sidePieces) => {
+    const counts = { k: 0, q: 0, r: 0, b: 0, n: 0, p: 0 };
+    sidePieces.forEach(p => counts[p]++);
+    
+    // King alone
+    if (sidePieces.length === 1) return true;
+    
+    // King + Bishop or King + Knight
+    if (sidePieces.length === 2 && (counts.b === 1 || counts.n === 1)) return true;
+    
+    // Both sides must have insufficient material for a draw
+    return false;
+  };
+  
+  // Both sides must have insufficient material
+  return isInsufficient(pieces.w) && isInsufficient(pieces.b);
+}
+
+// Game state detection
+function getGameState(state, positionHistory = []) {
+  const moves = legalMoves(state);
+  const isInCheck = inCheck(state.board, state.side);
+  
+  // Check for insufficient material draw
+  if (hasInsufficientMaterial(state.board)) {
+    return {
+      status: 'draw',
+      winner: null,
+      message: 'Draw by insufficient material.'
+    };
+  }
+  
+  // Check for threefold repetition
+  if (positionHistory.length > 0) {
+    const currentHash = state.hash.toString();
+    let repetitionCount = 1; // Current position counts as 1
+    
+    for (const pastHash of positionHistory) {
+      if (pastHash === currentHash) {
+        repetitionCount++;
+      }
+    }
+    
+    if (repetitionCount >= 3) {
+      return {
+        status: 'draw',
+        winner: null,
+        message: 'Draw by threefold repetition.'
+      };
+    }
+  }
+  
+  // Check for 50-move rule draw
+  if (state.halfmove >= 100) { // 50 moves = 100 half-moves
+    return {
+      status: 'draw',
+      winner: null,
+      message: 'Draw by 50-move rule.'
+    };
+  }
+  
+  if (moves.length === 0) {
+    if (isInCheck) {
+      return {
+        status: 'checkmate',
+        winner: flipSide(state.side), // the side that delivered checkmate wins
+        message: `Checkmate! ${flipSide(state.side) === 'w' ? 'White' : 'Black'} wins.`
+      };
+    } else {
+      return {
+        status: 'stalemate',
+        winner: null,
+        message: 'Stalemate! The game is a draw.'
+      };
+    }
+  } else if (isInCheck) {
+    return {
+      status: 'check',
+      winner: null,
+      message: `${state.side === 'w' ? 'White' : 'Black'} is in check.`
+    };
+  } else {
+    return {
+      status: 'playing',
+      winner: null,
+      message: `${state.side === 'w' ? 'White' : 'Black'} to move.`
+    };
+  }
 }
 
 // simple MVV-LVA ordering
@@ -624,10 +762,19 @@ function searchHard(state, depth, alpha, beta, initialDepth){
   }
   const moves = legalMoves(state).sort((a,b)=> moveOrderKey(b)-moveOrderKey(a));
   if(moves.length===0){
-    if(inCheck(state.board, state.side)){
-      const mateScore = (state.side==='w'? -1 : 1) * -100000 + (initialDepth - depth); // mate is bad for side to move
+    const gameState = getGameState(state);
+    if(gameState.status === 'checkmate'){
+      const mateScore = (state.side==='w'? -1 : 1) * (100000 - (initialDepth - depth)); // mate is bad for side to move, closer mates score higher
       return { score: mateScore, nodes: 1, pv: [] };
-    } else { return { score: 0, nodes: 1, pv: [] }; } // stalemate
+    } else { 
+      return { score: 0, nodes: 1, pv: [] }; // stalemate or other draws
+    }
+  }
+  
+  // Check for draw conditions even with legal moves available
+  const gameState = getGameState(state, []); // Pass empty history for search (threefold rep handled in UI)
+  if(gameState.status === 'draw') {
+    return { score: 0, nodes: 1, pv: [] }; // 50-move rule, insufficient material, or other draws
   }
 
   let bestMove=null; let bestScore = state.side==='w'? -1e9 : 1e9; let nodes=1; // count this node
@@ -700,10 +847,19 @@ function searchSoft(state, depth, alpha, beta, params, atRoot=false, initialDept
 
   const moves = legalMoves(state).sort((a,b)=> moveOrderKey(b)-moveOrderKey(a));
   if(moves.length===0){
-    if(inCheck(state.board, state.side)){
-      const mateScore = (state.side==='w'? -1 : 1) * -100000 + (initialDepth - depth);
+    const gameState = getGameState(state);
+    if(gameState.status === 'checkmate'){
+      const mateScore = (state.side==='w'? -1 : 1) * (100000 - (initialDepth - depth)); // mate is bad for side to move, closer mates score higher
       return { score: mateScore, nodes: 1, choice: null };
-    } else { return { score: 0, nodes: 1, choice: null }; }
+    } else { 
+      return { score: 0, nodes: 1, choice: null }; // stalemate or other draws
+    }
+  }
+  
+  // Check for draw conditions even with legal moves available
+  const gameState = getGameState(state, []); // Pass empty history for search (threefold rep handled in UI)
+  if(gameState.status === 'draw') {
+    return { score: 0, nodes: 1, choice: null }; // 50-move rule, insufficient material, or other draws
   }
 
   let nodes=1; // this node
@@ -763,12 +919,24 @@ function NeuralAlphaBetaChess(){
   const [tauChoice, setTauChoice] = useState(0.05);
   const [thinking, setThinking] = useState(false);
   const [info, setInfo] = useState({ nodes:0, score:0, choice:[], ttHits: 0, ttLookups: 0, depth: 0 });
+  const [positionHistory, setPositionHistory] = useState([]); // For threefold repetition
 
-  // recompute legal moves for highlight
+  // recompute legal moves and game state for highlight
   const legals = useMemo(()=> new Set(legalMoves(state).map(m=> m.from*100+m.to)), [state]);
+  const gameState = useMemo(()=> getGameState(state, positionHistory), [state, positionHistory]);
+  const isGameOver = gameState.status === 'checkmate' || gameState.status === 'stalemate' || gameState.status === 'draw';
+  
+  // Find king position for check highlighting
+  const kingInCheck = useMemo(() => {
+    if (gameState.status === 'check' || gameState.status === 'checkmate') {
+      const [kr, kc] = findKing(state.board, state.side);
+      return kr >= 0 ? idx(kr, kc) : null;
+    }
+    return null;
+  }, [state, gameState]);
 
   function onSquareClick(i){
-    if(state.side !== humanSide) return; // not human's turn
+    if(state.side !== humanSide || isGameOver) return; // not human's turn or game is over
     const p = state.board[i];
     if(sel==null){
       if(p!=='.' && sideOf(p)===humanSide) setSel(i);
@@ -782,6 +950,8 @@ function NeuralAlphaBetaChess(){
         if(m){
           const ns = makeMove(state, m);
           setState(ns); setSel(null);
+          // Add current position to history for repetition detection
+          setPositionHistory(prev => [...prev, state.hash.toString()]);
           setTimeout(()=> engineMove(ns), 0);
         }
       } else {
@@ -793,6 +963,13 @@ function NeuralAlphaBetaChess(){
 
   function engineMove(cur){
     if(cur.side===humanSide) return; // engine only moves on its turn
+    
+    // Check if game is over
+    const curGameState = getGameState(cur);
+    if(curGameState.status === 'checkmate' || curGameState.status === 'stalemate' || curGameState.status === 'draw') {
+      return; // Game is over, don't make a move
+    }
+    
     setThinking(true);
     TT_STATS.hits = 0; TT_STATS.lookups = 0; // Reset stats for this move
     const t0 = performance.now();
@@ -853,6 +1030,8 @@ function NeuralAlphaBetaChess(){
     if(chosenMove){
         const ns = makeMove(cur, chosenMove);
         setState(ns);
+        // Add current position to history for repetition detection
+        setPositionHistory(prev => [...prev, cur.hash.toString()]);
     }
     setThinking(false);
     setInfo({
@@ -870,6 +1049,8 @@ function NeuralAlphaBetaChess(){
     clearTranspositionTable();
     setState(parseFEN(START_FEN));
     setSel(null);
+    setThinking(false);
+    setPositionHistory([]); // Clear position history
     setInfo({ nodes:0, score:0, choice:[], ttHits: 0, ttLookups: 0, depth: 0 });
   }
 
@@ -877,7 +1058,9 @@ function NeuralAlphaBetaChess(){
   const firstRun = useRef(false);
   if(!firstRun.current){
     firstRun.current = true;
-    setTimeout(()=> { if(state.side!==humanSide) engineMove(state); }, 10);
+    setTimeout(()=> { 
+      if(state.side!==humanSide && !isGameOver) engineMove(state); 
+    }, 10);
   }
 
   return (
@@ -886,12 +1069,62 @@ function NeuralAlphaBetaChess(){
         <h1 className="text-2xl md:text-3xl font-semibold mb-2">Neural Alpha‑Beta Chess</h1>
         <p className="text-sm text-gray-600 mb-4">Play against a toy chess engine that can run either classical alpha‑beta or a differentiable soft variant. No external libraries.</p>
 
+        {/* Game Status Display */}
+        <div className={`mb-4 p-4 rounded-2xl border-2 ${
+          gameState.status === 'checkmate' ? 'bg-red-50 border-red-300' :
+          gameState.status === 'stalemate' || gameState.status === 'draw' ? 'bg-yellow-50 border-yellow-300' :
+          gameState.status === 'check' ? 'bg-orange-50 border-orange-300' :
+          'bg-blue-50 border-blue-300'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className={`text-lg font-semibold ${
+                gameState.status === 'checkmate' ? 'text-red-700' :
+                gameState.status === 'stalemate' || gameState.status === 'draw' ? 'text-yellow-700' :
+                gameState.status === 'check' ? 'text-orange-700' :
+                'text-blue-700'
+              }`}>
+                {gameState.status === 'checkmate' ? '👑 Checkmate!' :
+                 gameState.status === 'stalemate' ? '🤝 Stalemate!' :
+                 gameState.status === 'draw' ? '🤝 Draw!' :
+                 gameState.status === 'check' ? '⚠️ Check!' :
+                 thinking ? '🤔 Thinking...' : '♟️ Game in Progress'}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">
+                {gameState.message}
+              </div>
+            </div>
+            {isGameOver && (
+              <button 
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                onClick={reset}
+              >
+                New Game
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="grid md:grid-cols-3 gap-4 mb-6">
           <div className="p-3 rounded-2xl border shadow">
             <div className="font-medium mb-2">Game</div>
             <div className="flex items-center gap-2 mb-2">
               <button className="px-3 py-1 rounded bg-gray-100 border" onClick={reset}>New game</button>
-              <button className="px-3 py-1 rounded bg-gray-100 border" onClick={()=> setHumanSide(h=>{ const ns = h==='w'?'b':'w'; setTimeout(()=>{ if(state.side!==ns) engineMove(state); }, 0); return ns; })}>Human plays: <b className="ml-1">{humanSide==='w'? 'White' : 'Black'}</b></button>
+              <button 
+                className="px-3 py-1 rounded bg-gray-100 border" 
+                disabled={isGameOver}
+                onClick={()=> setHumanSide(h=>{ 
+                  if(isGameOver) return h;
+                  const ns = h==='w'?'b':'w'; 
+                  setTimeout(()=>{ 
+                    const curGameState = getGameState(state);
+                    if(state.side!==ns && curGameState.status === 'playing') engineMove(state); 
+                  }, 0); 
+                  return ns; 
+                })}
+              >
+                Human plays: <b className="ml-1">{humanSide==='w'? 'White' : 'Black'}</b>
+              </button>
             </div>
             <div className="flex items-center gap-2 mb-2">
                 <button className="px-3 py-1 rounded bg-gray-100 border text-sm" onClick={clearTranspositionTable}>Clear TT</button>
@@ -914,7 +1147,13 @@ function NeuralAlphaBetaChess(){
               </div>
             )}
             <div className="mt-3 text-sm">
-              <button className="px-3 py-1 rounded bg-indigo-100 border" disabled={thinking || state.side===humanSide} onClick={()=> engineMove(state)}>{thinking? 'Thinking…' : 'Engine move'}</button>
+              <button 
+                className="px-3 py-1 rounded bg-indigo-100 border" 
+                disabled={thinking || state.side===humanSide || isGameOver} 
+                onClick={()=> engineMove(state)}
+              >
+                {thinking? 'Thinking…' : isGameOver ? 'Game Over' : 'Engine move'}
+              </button>
             </div>
           </div>
 
@@ -924,6 +1163,8 @@ function NeuralAlphaBetaChess(){
             <div className="text-sm flex justify-between"><span>Last nodes</span><span className="font-mono">{info.nodes}</span></div>
             <div className="text-sm flex justify-between"><span>Last score</span><span className="font-mono">{info.score?.toFixed? info.score.toFixed(1) : info.score}</span></div>
             <div className="text-sm flex justify-between"><span>TT Hit Rate</span><span className="font-mono">{info.ttLookups > 0 ? `${((info.ttHits / info.ttLookups) * 100).toFixed(1)}%` : 'N/A'}</span></div>
+            <div className="text-sm flex justify-between"><span>Halfmoves</span><span className="font-mono">{state.halfmove}/100</span></div>
+            <div className="text-sm flex justify-between"><span>Positions</span><span className="font-mono">{positionHistory.length}</span></div>
             {mode==='soft' && info.choice?.length>0 && (
               <div className="mt-2">
                 <div className="text-xs text-gray-600 mb-1">Root choice distribution</div>
@@ -948,6 +1189,7 @@ function NeuralAlphaBetaChess(){
               <li>In Soft mode, a higher <b>Choice Temperature (τ_choice)</b> leads to more random moves. A value near 0 is more deterministic.</li>
               <li>Promotions are automatic to Queens.</li>
               <li>Castling and en passant are now implemented. Checks and checkmates are enforced.</li>
+              <li><b>Draw detection</b> includes: 50-move rule, threefold repetition, insufficient material, and stalemate.</li>
               <li>Increase depth for stronger play (5–6 plies recommended for a challenge).</li>
               <li>The transposition table (TT) is now active, improving search speed by caching results.</li>
               <li>A quiescence search is used to make the engine's tactical evaluation more accurate.</li>
@@ -967,9 +1209,21 @@ function NeuralAlphaBetaChess(){
                   const dark = (r+c)%2===1; const isSel = sel===i;
                   const key = sel!=null? sel*100+i : -1;
                   const isLegal = legals.has(key);
+                  const isKingInCheck = kingInCheck === i;
                   return (
-                    <div key={c} onClick={()=> onSquareClick(i)} className={`w-12 h-12 flex items-center justify-center select-none cursor-pointer ${dark? 'bg-emerald-200' : 'bg-emerald-50'} ${isSel? 'ring-2 ring-indigo-500' : ''}`}>
+                    <div key={c} onClick={()=> onSquareClick(i)} className={`w-12 h-12 flex items-center justify-center select-none cursor-pointer relative ${
+                      dark? 'bg-emerald-200' : 'bg-emerald-50'
+                    } ${
+                      isSel? 'ring-2 ring-indigo-500' : ''
+                    } ${
+                      isKingInCheck? 'ring-2 ring-red-500 bg-red-100' : ''
+                    } ${
+                      isGameOver ? 'cursor-not-allowed opacity-75' : ''
+                    }`}>
                       <div className={`text-2xl ${isLegal? 'opacity-100' : ''}`}>{PIECE_TO_UNICODE[p]||''}</div>
+                      {isLegal && (
+                        <div className="absolute inset-0 bg-green-400 opacity-30 rounded-full m-1"></div>
+                      )}
                     </div>
                   );
                 })}
