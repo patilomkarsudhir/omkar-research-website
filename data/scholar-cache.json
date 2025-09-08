@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 409,
-      "recent": 407
+      "all": 411,
+      "recent": 409
     },
     "h-index": {
       "all": 11,
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 73,
+      "cited": 74,
       "year": 2021
     },
     {
@@ -119,6 +119,14 @@
       "year": 2022
     },
     {
+      "title": "Accelerated gradient approach for deep neural network-based adaptive control of unknown nonlinear systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
+      "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
+      "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
+      "cited": 8,
+      "year": 2024
+    },
+    {
       "title": "Deep adaptive indirect herding of multiple target agents with unknown interaction dynamics",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:5nxA0vEk-isC",
       "authors": "CF Nino, OS Patil, JN Philor, ZI Bell, WE Dixon",
@@ -141,14 +149,6 @@
       "venue": "2022 American Control Conference (ACC), 806-811, 2022",
       "cited": 8,
       "year": 2022
-    },
-    {
-      "title": "Accelerated gradient approach for deep neural network-based adaptive control of unknown nonlinear systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
-      "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
-      "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
-      "cited": 7,
-      "year": 2024
     },
     {
       "title": "Exponential stability with rise controllers for uncertain nonlinear systems with unknown time-varying state delays",
