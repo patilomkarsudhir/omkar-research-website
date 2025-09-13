@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 412,
-      "recent": 410
+      "all": 414,
+      "recent": 412
     },
     "h-index": {
       "all": 11,
@@ -59,7 +59,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:W7OEmFMy1HYC",
       "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
       "venue": "2022 IEEE 61st Conference on Decision and Control (CDC), 3487-3492, 2022",
-      "cited": 32,
+      "cited": 33,
       "year": 2022
     },
     {
@@ -119,6 +119,14 @@
       "year": 2022
     },
     {
+      "title": "Integral concurrent learning-based accelerated gradient adaptive control of uncertain Euler-Lagrange systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Y0pCki6q_DkC",
+      "authors": "DM Le, OS Patil, PM Amy, WE Dixon",
+      "venue": "2022 American Control Conference (ACC), 806-811, 2022",
+      "cited": 9,
+      "year": 2022
+    },
+    {
       "title": "Accelerated gradient approach for deep neural network-based adaptive control of unknown nonlinear systems",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
       "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
@@ -141,14 +149,6 @@
       "venue": "arXiv preprint arXiv:2311.13056, 2023",
       "cited": 8,
       "year": 2023
-    },
-    {
-      "title": "Integral concurrent learning-based accelerated gradient adaptive control of uncertain Euler-Lagrange systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Y0pCki6q_DkC",
-      "authors": "DM Le, OS Patil, PM Amy, WE Dixon",
-      "venue": "2022 American Control Conference (ACC), 806-811, 2022",
-      "cited": 8,
-      "year": 2022
     },
     {
       "title": "Exponential stability with rise controllers for uncertain nonlinear systems with unknown time-varying state delays",
