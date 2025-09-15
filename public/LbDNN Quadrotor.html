@@ -903,7 +903,7 @@
                     </div>
                 </div>
 
-                <div class="section adaptive-params">
+                <div class="section">
                     <h3>🌪️ Turbulent Nonlinearity</h3>
                     <div class="parameter-group">
                         <div class="parameter checkbox-param">
@@ -2010,23 +2010,23 @@
                     const velocity_magnitude = Math.sqrt(x_dot * x_dot + y_dot * y_dot + z_dot * z_dot);
                     const effective_aoa = Math.atan2(z_dot, Math.sqrt(x_dot * x_dot + y_dot * y_dot + 0.001));
                     const stall_factor = 1.0 - 0.8 * Math.exp(-Math.pow((effective_aoa - 0.3) / 0.15, 2));
-                    const rotor_interference = 0.1 * Math.sin(2 * phi) * Math.cos(3 * theta) * velocity_magnitude;
+                    const rotor_interference = 1.5 * Math.sin(2 * phi) * Math.cos(3 * theta) * velocity_magnitude;
                     
-                    total_forces[0] += -0.15 * stall_factor * x_dot * velocity_magnitude / this.m;
-                    total_forces[1] += -0.15 * stall_factor * y_dot * velocity_magnitude / this.m;
-                    total_forces[2] += -0.2 * stall_factor * z_dot * velocity_magnitude / this.m;
-                    total_moments[2] += rotor_interference * 0.1;
+                    total_forces[0] += -2.0 * stall_factor * x_dot * velocity_magnitude / this.m;
+                    total_forces[1] += -2.0 * stall_factor * y_dot * velocity_magnitude / this.m;
+                    total_forces[2] += -2.5 * stall_factor * z_dot * velocity_magnitude / this.m;
+                    total_moments[2] += rotor_interference * 1.5;
                 }
 
                 // 2. Ground Effect with Exponential Proximity
                 if (this.enableGroundEffect) {
                     const ground_height = Math.max(0.1, z);
                     const ground_effect = Math.pow(this.rotor_diameter / ground_height, 2) * Math.exp(-ground_height / this.rotor_diameter);
-                    const lift_augmentation = ground_effect * (0.15 * Math.tanh(5 * z_dot));
+                    const lift_augmentation = ground_effect * (2.5 * Math.tanh(5 * z_dot));
                     
                     total_forces[2] += lift_augmentation;
-                    total_moments[0] += 0.05 * ground_effect * Math.sin(phi);
-                    total_moments[1] += 0.05 * ground_effect * Math.sin(theta);
+                    total_moments[0] += 0.8 * ground_effect * Math.sin(phi);
+                    total_moments[1] += 0.8 * ground_effect * Math.sin(theta);
                 }
 
                 // 3. Vortex Ring State (Helicopter Physics)
@@ -2035,18 +2035,18 @@
                     const forward_speed = Math.sqrt(x_dot * x_dot + y_dot * y_dot);
                     const vrs_condition = descent_rate > 2.0 && forward_speed < 1.5;
                     const vrs_intensity = vrs_condition ? Math.exp(-Math.pow((forward_speed - 0.5) / 0.3, 2)) : 0;
-                    const vrs_force = -vrs_intensity * 8.0 * Math.sin(0.5 * time);
+                    const vrs_force = -vrs_intensity * 18.0 * Math.sin(0.5 * time);
                     
                     total_forces[2] += vrs_force / this.m;
-                    total_moments[0] += vrs_intensity * 0.3 * Math.sin(1.5 * time);
-                    total_moments[1] += vrs_intensity * 0.3 * Math.cos(1.8 * time);
+                    total_moments[0] += vrs_intensity * 2.5 * Math.sin(1.5 * time);
+                    total_moments[1] += vrs_intensity * 2.5 * Math.cos(1.8 * time);
                 }
 
                 // 4. Coupled Structural Flexibility
                 if (this.enableStructuralFlex) {
-                    const structural_coupling_x = 0.1 * Math.sin(phi) * (x_dot * x_dot + y_dot * y_dot);
-                    const structural_coupling_y = 0.08 * Math.cos(theta) * z_dot * phi_dot;
-                    const structural_coupling_z = 0.12 * (phi * phi + theta * theta) * Math.sign(psi_dot);
+                    const structural_coupling_x = 1.5 * Math.sin(phi) * (x_dot * x_dot + y_dot * y_dot);
+                    const structural_coupling_y = 1.2 * Math.cos(theta) * z_dot * phi_dot;
+                    const structural_coupling_z = 2.0 * (phi * phi + theta * theta) * Math.sign(psi_dot);
                     
                     total_forces[0] += structural_coupling_x / this.m;
                     total_forces[1] += structural_coupling_y / this.m;
@@ -2056,7 +2056,7 @@
                 // 5. Battery Voltage Drop & Actuator Nonlinearity  
                 if (this.enableActuatorNonlin) {
                     const battery_factor = 1.0 - this.battery_degradation_rate * Math.tanh(time / 30.0);
-                    const motor_nonlinearity = 0.1 * (1 - battery_factor);
+                    const motor_nonlinearity = 3.5 * (1 - battery_factor);
                     
                     total_forces[0] += motor_nonlinearity * Math.sin(2 * time) * x_dot / this.m;
                     total_forces[1] += motor_nonlinearity * Math.cos(2.3 * time) * y_dot / this.m;
@@ -2070,17 +2070,17 @@
                     const gust_front = this.turbulence_intensity * Math.exp(-Math.pow((time % 20 - 10) / 3, 2));
                     const atmospheric_chaos = large_eddy + small_eddy + gust_front;
                     
-                    total_forces[0] += 0.5 * atmospheric_chaos * Math.sin(time) / this.m;
-                    total_forces[1] += 0.5 * atmospheric_chaos * Math.cos(1.3 * time) / this.m;
-                    total_forces[2] += 0.3 * atmospheric_chaos / this.m;
-                    total_moments[2] += 0.1 * atmospheric_chaos;
+                    total_forces[0] += 6.0 * atmospheric_chaos * Math.sin(time) / this.m;
+                    total_forces[1] += 6.0 * atmospheric_chaos * Math.cos(1.3 * time) / this.m;
+                    total_forces[2] += 4.0 * atmospheric_chaos / this.m;
+                    total_moments[2] += 1.5 * atmospheric_chaos;
                 }
 
                 // 7. Reynolds Number-Dependent Drag
                 if (this.enableReynoldsEffects) {
                     const velocity_magnitude = Math.sqrt(x_dot * x_dot + y_dot * y_dot + z_dot * z_dot);
                     const reynolds_number = velocity_magnitude * this.characteristic_length / this.kinematic_viscosity;
-                    const drag_coefficient = 0.1 + 0.4 / (1 + Math.exp(-(reynolds_number - 1000) / 200));
+                    const drag_coefficient = 0.8 + 3.0 / (1 + Math.exp(-(reynolds_number - 1000) / 200));
                     const nonlinear_drag_x = -drag_coefficient * x_dot * velocity_magnitude * Math.sign(x_dot);
                     const nonlinear_drag_y = -drag_coefficient * y_dot * velocity_magnitude * Math.sign(y_dot);
                     const nonlinear_drag_z = -drag_coefficient * z_dot * velocity_magnitude * Math.sign(z_dot);
@@ -2093,9 +2093,9 @@
                 // 8. Propwash-Induced Coupling
                 if (this.enablePropwashCoupling) {
                     const propwash_velocity = 5.0 + 2.0 * Math.abs(z_dot);
-                    const induced_force_x = 0.05 * propwash_velocity * Math.sin(2 * phi) * Math.cos(psi);
-                    const induced_force_y = 0.05 * propwash_velocity * Math.sin(2 * theta) * Math.sin(psi);
-                    const induced_force_z = -0.1 * propwash_velocity * (1 + 0.3 * Math.cos(phi) * Math.cos(theta));
+                    const induced_force_x = 1.2 * propwash_velocity * Math.sin(2 * phi) * Math.cos(psi);
+                    const induced_force_y = 1.2 * propwash_velocity * Math.sin(2 * theta) * Math.sin(psi);
+                    const induced_force_z = -2.5 * propwash_velocity * (1 + 0.3 * Math.cos(phi) * Math.cos(theta));
                     
                     total_forces[0] += induced_force_x / this.m;
                     total_forces[1] += induced_force_y / this.m;
@@ -2104,11 +2104,11 @@
 
                 // 9. Magnetic Interference & Electronic Coupling
                 if (this.enableMagneticInterference) {
-                    const magnetic_field_strength = 0.02 * (1 + 0.5 * Math.sin(0.1 * time));
+                    const magnetic_field_strength = 0.8 * (1 + 0.5 * Math.sin(0.1 * time));
                     const angular_rate_magnitude = Math.sqrt(phi_dot * phi_dot + theta_dot * theta_dot + psi_dot * psi_dot);
                     const electronic_coupling_x = magnetic_field_strength * Math.sin(phi) * (x * x + y * y) / 10;
                     const electronic_coupling_y = magnetic_field_strength * Math.cos(theta) * z * Math.sign(psi_dot);
-                    const electronic_coupling_z = magnetic_field_strength * Math.tanh(angular_rate_magnitude) * 0.1;
+                    const electronic_coupling_z = magnetic_field_strength * Math.tanh(angular_rate_magnitude) * 1.5;
                     
                     total_forces[0] += electronic_coupling_x / this.m;
                     total_forces[1] += electronic_coupling_y / this.m;
@@ -2594,27 +2594,110 @@
             }
         }
 
+        // Cache for storing previous attitude derivatives to avoid recursion
+        let attitudeCache = new Map();
+
         function generate3DTrajectory(t) {
+            // Position trajectory (unchanged)
             const x_d = 2.0 * Math.sin(0.5 * t);
             const y_d = 1.5 * Math.cos(0.7 * t);
             const z_d = 1.0 + 0.8 * Math.sin(0.3 * t);
-            const phi_d = 0.2 * Math.sin(0.4 * t);
-            const theta_d = 0.15 * Math.cos(0.6 * t);
-            const psi_d = 0.3 * Math.sin(0.2 * t);
 
+            // Position first derivatives
             const x_dot_d = 1.0 * Math.cos(0.5 * t);
             const y_dot_d = -1.05 * Math.sin(0.7 * t);
             const z_dot_d = 0.24 * Math.cos(0.3 * t);
-            const phi_dot_d = 0.08 * Math.cos(0.4 * t);
-            const theta_dot_d = -0.09 * Math.sin(0.6 * t);
-            const psi_dot_d = 0.06 * Math.cos(0.2 * t);
 
+            // Position second derivatives (accelerations)
             const x_ddot_d = -0.5 * Math.sin(0.5 * t);
             const y_ddot_d = -0.735 * Math.cos(0.7 * t);
             const z_ddot_d = -0.072 * Math.sin(0.3 * t);
-            const phi_ddot_d = -0.032 * Math.sin(0.4 * t);
-            const theta_ddot_d = -0.054 * Math.cos(0.6 * t);
+
+            // Position third derivatives (needed for attitude derivatives)
+            const x_dddot_d = -0.25 * Math.cos(0.5 * t);
+            const y_dddot_d = 0.5145 * Math.sin(0.7 * t);
+            const z_dddot_d = -0.0216 * Math.cos(0.3 * t);
+
+            // Yaw trajectory and derivatives
+            const psi_d = 0.3 * Math.sin(0.2 * t);
+            const psi_dot_d = 0.06 * Math.cos(0.2 * t);
             const psi_ddot_d = -0.012 * Math.sin(0.2 * t);
+
+            // Physical constants
+            const g = 9.81;
+            const mq = 1.0;
+
+            // Thrust components from paper equations (14), (15), (16)
+            // Simplified version of the virtual control law from equation (9)
+            const Txd = mq * x_ddot_d;
+            const Tyd = mq * y_ddot_d;
+            const Tzd = mq * (z_ddot_d + g);
+
+            // Thrust derivatives
+            const Txd_dot = mq * x_dddot_d;
+            const Tyd_dot = mq * y_dddot_d;
+            const Tzd_dot = mq * z_dddot_d;
+
+            // Trigonometric functions and their derivatives
+            const cos_psi = Math.cos(psi_d);
+            const sin_psi = Math.sin(psi_d);
+            const cos_psi_dot = -sin_psi * psi_dot_d;
+            const sin_psi_dot = cos_psi * psi_dot_d;
+
+            // EXACT attitude angle calculation from paper equations (18) and (19)
+            // φd = arctan((Txd*sin(ψd) - Tyd*cos(ψd))/√((Txd*cos(ψd) + Tyd*sin(ψd))² + Tzd²))
+            // θd = arctan((Txd*cos(ψd) + Tyd*sin(ψd))/Tzd)
+
+            // Roll angle φd components
+            const u_phi = Txd * sin_psi - Tyd * cos_psi;
+            const w_phi = Txd * cos_psi + Tyd * sin_psi;
+            const v_phi = Math.sqrt(w_phi * w_phi + Tzd * Tzd);
+            const phi_d = Math.atan2(u_phi, v_phi);
+
+            // Pitch angle θd components
+            const u_theta = w_phi;  // Same as w_phi
+            const v_theta = Tzd;
+            const theta_d = Math.atan2(u_theta, v_theta);
+
+            // EXACT first derivatives of attitude angles using analytical expressions
+            // Derivatives of roll angle components
+            const u_phi_dot = Txd_dot * sin_psi + Txd * sin_psi_dot - Tyd_dot * cos_psi - Tyd * cos_psi_dot;
+            const w_phi_dot = Txd_dot * cos_psi + Txd * cos_psi_dot + Tyd_dot * sin_psi + Tyd * sin_psi_dot;
+            const v_phi_dot = (w_phi * w_phi_dot + Tzd * Tzd_dot) / v_phi;
+
+            // Roll angle first derivative using quotient rule for atan2
+            const phi_dot_d = (v_phi * u_phi_dot - u_phi * v_phi_dot) / (u_phi * u_phi + v_phi * v_phi);
+
+            // Pitch angle first derivative
+            const u_theta_dot = w_phi_dot;
+            const v_theta_dot = Tzd_dot;
+            const theta_dot_d = (v_theta * u_theta_dot - u_theta * v_theta_dot) / (u_theta * u_theta + v_theta * v_theta);
+
+            // Second derivatives using stored previous values to avoid recursion
+            let phi_ddot_d = 0, theta_ddot_d = 0;
+            const timeKey = Math.round(t * 1000); // Round to millisecond precision
+            
+            // Look for previous data with appropriate time step (simulation uses 20ms steps)
+            let prevTimeKey = timeKey - 20; // Look for data 20ms ago
+            for (let lookback = 15; lookback <= 25 && !attitudeCache.has(prevTimeKey); lookback++) {
+                prevTimeKey = timeKey - lookback; // Search nearby keys due to rounding
+            }
+            
+            if (attitudeCache.has(prevTimeKey)) {
+                const prevData = attitudeCache.get(prevTimeKey);
+                const actual_dt = (timeKey - prevTimeKey) / 1000; // Convert back to seconds
+                phi_ddot_d = (phi_dot_d - prevData.phi_dot_d) / actual_dt;
+                theta_ddot_d = (theta_dot_d - prevData.theta_dot_d) / actual_dt;
+            }
+            
+            // Store current derivatives for next iteration
+            attitudeCache.set(timeKey, { phi_dot_d, theta_dot_d });
+            
+            // Clean up old cache entries (keep last 10)
+            if (attitudeCache.size > 10) {
+                const oldestKey = Math.min(...attitudeCache.keys());
+                attitudeCache.delete(oldestKey);
+            }
 
             return [
                 [x_d, y_d, z_d, phi_d, theta_d, psi_d],
@@ -3188,6 +3271,9 @@
                 this.feedbackLostAt = 0;
                 this.feedbackLossScheduled = false;
                 this.nextFeedbackLossTime = 0;
+                
+                // Clear attitude cache for fresh trajectory generation
+                attitudeCache.clear();
                 
                 const params = this.getParameters();
                 
