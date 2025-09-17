@@ -1,16 +1,16 @@
 {
   "metrics": {
     "citations": {
-      "all": 414,
-      "recent": 412
+      "all": 415,
+      "recent": 413
     },
     "h-index": {
       "all": 11,
       "recent": 11
     },
     "i10-index": {
-      "all": 11,
-      "recent": 11
+      "all": 12,
+      "recent": 12
     }
   },
   "publications": [
@@ -103,6 +103,14 @@
       "year": 2023
     },
     {
+      "title": "Integral concurrent learning-based accelerated gradient adaptive control of uncertain Euler-Lagrange systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Y0pCki6q_DkC",
+      "authors": "DM Le, OS Patil, PM Amy, WE Dixon",
+      "venue": "2022 American Control Conference (ACC), 806-811, 2022",
+      "cited": 10,
+      "year": 2022
+    },
+    {
       "title": "Lyapunov-based long short-term memory (Lb-LSTM) neural network-based adaptive observer",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:0EnyYjriUFMC",
       "authors": "EJ Griffis, OS Patil, RG Hart, WE Dixon",
@@ -115,14 +123,6 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:YsMSGLbcyi4C",
       "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
       "venue": "2022 IEEE 61st Conference on Decision and Control (CDC), 3475-3480, 2022",
-      "cited": 9,
-      "year": 2022
-    },
-    {
-      "title": "Integral concurrent learning-based accelerated gradient adaptive control of uncertain Euler-Lagrange systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Y0pCki6q_DkC",
-      "authors": "DM Le, OS Patil, PM Amy, WE Dixon",
-      "venue": "2022 American Control Conference (ACC), 806-811, 2022",
       "cited": 9,
       "year": 2022
     },
