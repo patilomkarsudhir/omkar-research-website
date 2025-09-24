@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 418,
-      "recent": 416
+      "all": 419,
+      "recent": 417
     },
     "h-index": {
       "all": 11,
@@ -223,6 +223,14 @@
       "year": 2023
     },
     {
+      "title": "Lyapunov-based adaptive deep system identification for approximate dynamic programming",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TQgYirikUcIC",
+      "authors": "WA Makumi, OS Patil, WE Dixon",
+      "venue": "Automatica 180, 112462, 2025",
+      "cited": 1,
+      "year": 2025
+    },
+    {
       "title": "Collaborative spacecraft servicing under partial feedback using Lyapunov-based deep neural networks",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qxL8FJ1GzNcC",
       "authors": "CF Nino, OS Patil, CD Petersen, S Phillips, WE Dixon",
@@ -245,14 +253,6 @@
       "venue": "arXiv preprint arXiv:2412.21095, 2024",
       "cited": 1,
       "year": 2024
-    },
-    {
-      "title": "Lyapunov-based adaptive deep system identification for approximate dynamic programming",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TQgYirikUcIC",
-      "authors": "WA Makumi, OS Patil, WE Dixon",
-      "venue": "Automatica 180, 112462, 2025",
-      "cited": 0,
-      "year": 2025
     },
     {
       "title": "LyLA-Therm: Lyapunov-based Langevin Adaptive Thermodynamic Neural Network Controller",
