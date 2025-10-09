@@ -90,12 +90,7 @@ const demos = [
 export default function Page() {
 	return (
 		<div className="space-y-10">
-			<header className="text-center space-y-3">
-				<h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[var(--foreground)]">Omkar Sudhir Patil</h1>
-				<p className="text-base sm:text-lg text-[var(--muted)]">
-					Research Scientist in adaptive control, robotics, and trustworthy AI systems
-				</p>
-			</header>
+			<h1 className="sr-only">Omkar Sudhir Patil</h1>
 			<Section title="About Me">
 				<div className="flex flex-col sm:flex-row items-center gap-8">
 					<div className="flex flex-col items-center">
