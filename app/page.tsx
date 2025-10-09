@@ -7,13 +7,13 @@ import SchoolIcon from "@mui/icons-material/School";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-	title: "Omkar Patil - Control Systems & AI Research",
-	description: "Postdoctoral Research Associate at University of Florida specializing in adaptive control, robotics, and deep learning. Expert in Lyapunov-based techniques, control barrier functions, and neural network adaptation for nonlinear systems.",
+	title: "Omkar Patil - Controls, Robotics, AI Research",
+	description: "Research at University of Florida specializing in adaptive control, robotics, and deep learning. Expert in Lyapunov-based techniques, control barrier functions, and neural network adaptation for nonlinear systems.",
 	keywords: ["control systems", "adaptive control", "robotics", "deep learning", "neural networks", "Lyapunov control", "control barrier functions", "research", "AI", "machine learning"],
 	authors: [{ name: "Omkar Sudhir Patil" }],
 	creator: "Omkar Sudhir Patil",
 	openGraph: {
-		title: "Omkar Patil - Control Systems & AI Research",
+		title: "Omkar Patil - Controls, Robotics, AI Research",
 		description: "Innovative control strategies for robotics and automation. Interactive demos, research publications, and cutting-edge solutions in adaptive control and machine learning.",
 		url: "https://omkarsudhirpatil.com",
 		siteName: "Omkar Patil Research",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 				url: "/research-overview-thumbnail.svg",
 				width: 1200,
 				height: 630,
-				alt: "Omkar Patil - Control Systems & AI Research Overview",
+				alt: "Omkar Patil - Controls, Robotics, AI Research Overview",
 			},
 		],
 		locale: "en_US",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Omkar Patil - Control Systems & AI Research",
+		title: "Omkar Patil - Controls, Robotics, AI Research",
 		description: "Innovative control strategies for robotics and automation. Interactive demos and cutting-edge research.",
 		images: ["/research-overview-thumbnail.svg"],
 	},
@@ -127,7 +127,7 @@ export default function Page() {
 						</div>
 					</div>
 					<p className="text-[var(--muted)]">
-						I’m a Postdoctoral Research Associate at the University of Florida with a PhD specializing in cutting-edge control systems, robotics, and deep learning-based methods. My work bridges advanced control theory, adaptive algorithms, and machine learning to design robust, real-time solutions for uncertain nonlinear systems and multi-agent environments. My research has led to breakthroughs in solving longstanding open problems in adaptive control and stability analysis, notably extending Lyapunov-based techniques to deep neural networks. I’ve developed innovative methods, ranging from Lyapunov-derived adaptive laws and safety-focused control barrier functions to physics-informed online learning algorithms, that have been implemented in real-world robotic platforms and validated through extensive experimentation. I’m always eager to connect with fellow researchers, industry professionals, and anyone interested in the intersection of control theory, robotics, AI, and machine learning. Let’s explore how innovative control strategies can transform robotics, automation, and beyond.
+						I am a Research Scientist at the University of Florida with a PhD specializing in cutting-edge controls, robotics, and AI-based methods. My work bridges advanced control theory, adaptive algorithms, and machine learning to design robust, real-time solutions for uncertain nonlinear systems and multi-agent environments. My research has led to breakthroughs in solving longstanding open problems in adaptive control and stability analysis, notably extending Lyapunov-based techniques to deep neural networks. I have developed innovative methods, ranging from Lyapunov-derived adaptive laws and safety-focused control barrier functions to physics-informed online learning algorithms, that have been implemented in real-world robotic platforms and validated through extensive experimentation. I am always eager to connect with fellow researchers, industry professionals, and anyone interested in the intersection of control theory, robotics, AI, and machine learning. Let us explore how innovative control strategies can transform robotics, automation, and beyond.
 					</p>
 				</div>
 			</Section>
