@@ -1,12 +1,58 @@
 import Section from "../../components/Section";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import { Metadata } from "next";
 
 const ResearchPublications = dynamic(() => import("../../components/ResearchPublications"), { ssr: false });
 
+export const metadata: Metadata = {
+  title: "Lyapunov-based Deep Neural Networks (LbDNNs) - Omkar Patil",
+  description: "Deep neural network-based controllers with Lyapunov-based adaptation techniques and real-time stability guarantees. Solving a 25-year-old open problem in adaptive control for uncertain nonlinear systems.",
+  alternates: {
+    canonical: "/research/lbdnns",
+  },
+  openGraph: {
+    title: "Lyapunov-based Deep Neural Networks (LbDNNs) - Omkar Patil",
+    description: "Deep neural network-based controllers with Lyapunov-based adaptation techniques and real-time stability guarantees.",
+    url: "https://omkarsudhirpatil.com/research/lbdnns",
+    images: [{ url: "/LbDNN Quadrotor Pic.png" }],
+    type: "website",
+  },
+};
+
+const breadcrumbStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://omkarsudhirpatil.com"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Research",
+      "item": "https://omkarsudhirpatil.com/research"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Lyapunov-based Deep Neural Networks",
+      "item": "https://omkarsudhirpatil.com/research/lbdnns"
+    }
+  ]
+};
+
 export default function Page() {
   return (
-    <div className="space-y-12">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbStructuredData) }}
+      />
+      <div className="space-y-12">
       <Section title="Lyapunov-based Deep Neural Networks (LbDNNs)">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
           <div className="md:col-span-4">
@@ -33,5 +79,6 @@ export default function Page() {
         <ResearchPublications category="lbdnn" title="LbDNN Publications" />
       </Section>
     </div>
+    </>
   );
 }

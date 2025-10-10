@@ -1,4 +1,13 @@
 import Section from "../components/Section";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Contact - Omkar Patil",
+  description: "Get in touch for research collaborations, academic inquiries, or professional opportunities in control systems, robotics, and AI.",
+  alternates: {
+    canonical: "/contact",
+  },
+};
 
 export default function Page() {
   return (

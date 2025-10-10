@@ -9,9 +9,11 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
 	title: "Omkar Patil - Controls, Robotics, AI Research",
 	description: "Research at University of Florida specializing in adaptive control, robotics, and deep learning. Expert in Lyapunov-based techniques, control barrier functions, and neural network adaptation for nonlinear systems.",
-	keywords: ["control systems", "adaptive control", "robotics", "deep learning", "neural networks", "Lyapunov control", "control barrier functions", "research", "AI", "machine learning"],
 	authors: [{ name: "Omkar Sudhir Patil" }],
 	creator: "Omkar Sudhir Patil",
+	alternates: {
+		canonical: "/",
+	},
 	openGraph: {
 		title: "Omkar Patil - Controls, Robotics, AI Research",
 		description: "Innovative control strategies for robotics and automation. Interactive demos, research publications, and cutting-edge solutions in adaptive control and machine learning.",

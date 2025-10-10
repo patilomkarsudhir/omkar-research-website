@@ -1,12 +1,58 @@
 import Section from "../../components/Section";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import { Metadata } from "next";
 
 const ResearchPublications = dynamic(() => import("../../components/ResearchPublications"), { ssr: false });
 
+export const metadata: Metadata = {
+  title: "Safe Control Methods - Omkar Patil",
+  description: "Safe control for autonomous systems using Control Barrier Functions (CBFs) and Signal Temporal Logic (STL). Formal safety guarantees and performance on complex temporal logic specifications.",
+  alternates: {
+    canonical: "/research/safe-control-methods",
+  },
+  openGraph: {
+    title: "Safe Control Methods - Omkar Patil",
+    description: "Safe control for autonomous systems using Control Barrier Functions and Signal Temporal Logic.",
+    url: "https://omkarsudhirpatil.com/research/safe-control-methods",
+    images: [{ url: "/CBF Lab Pic.png" }],
+    type: "website",
+  },
+};
+
+const breadcrumbStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://omkarsudhirpatil.com"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Research",
+      "item": "https://omkarsudhirpatil.com/research"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Safe Control Methods",
+      "item": "https://omkarsudhirpatil.com/research/safe-control-methods"
+    }
+  ]
+};
+
 export default function Page() {
   return (
-    <div className="space-y-12">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbStructuredData) }}
+      />
+      <div className="space-y-12">
       <Section title="Safe Control Methods">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
           <div className="md:col-span-9">
@@ -33,5 +79,6 @@ export default function Page() {
         <ResearchPublications category="safety" title="Safe Control Methods Publications" />
       </Section>
     </div>
+    </>
   );
 }

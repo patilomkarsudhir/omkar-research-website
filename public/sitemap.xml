@@ -3,33 +3,86 @@
   <url>
     <loc>https://omkarsudhirpatil.com/</loc>
     <priority>1.0</priority>
+    <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://omkarsudhirpatil.com/cv</loc>
     <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://omkarsudhirpatil.com/publications</loc>
     <priority>0.9</priority>
+    <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://omkarsudhirpatil.com/research</loc>
+    <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://omkarsudhirpatil.com/research/lbdnns</loc>
     <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://omkarsudhirpatil.com/research/multi-agent-systems</loc>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://omkarsudhirpatil.com/research/rise-controllers</loc>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://omkarsudhirpatil.com/research/safe-control-methods</loc>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://omkarsudhirpatil.com/projects</loc>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
+    <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://omkarsudhirpatil.com/demos</loc>
     <priority>0.7</priority>
+    <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://omkarsudhirpatil.com/analytics</loc>
+    <loc>https://omkarsudhirpatil.com/neural_ODE.html</loc>
+    <priority>0.7</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://omkarsudhirpatil.com/LbDNN%20Quadrotor.html</loc>
+    <priority>0.7</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://omkarsudhirpatil.com/CBF%20Lab.html</loc>
+    <priority>0.7</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://omkarsudhirpatil.com/neural_alpha_beta_chess_interactive.html</loc>
     <priority>0.6</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://omkarsudhirpatil.com/PINN.html</loc>
+    <priority>0.7</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://omkarsudhirpatil.com/SLAM.html</loc>
+    <priority>0.6</priority>
+    <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://omkarsudhirpatil.com/contact</loc>
     <priority>0.6</priority>
+    <changefreq>yearly</changefreq>
   </url>
 </urlset>

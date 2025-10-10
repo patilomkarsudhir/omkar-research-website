@@ -1,5 +1,21 @@
 import Section from "../components/Section";
 import Image from "next/image";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Research - Omkar Patil",
+  description: "Research in machine learning and control theory with certifiable guarantees for autonomous systems. Specializing in Lyapunov-based Deep Neural Networks, multi-agent systems, RISE controllers, and safe control methods using Control Barrier Functions.",
+  alternates: {
+    canonical: "/research",
+  },
+  openGraph: {
+    title: "Research - Omkar Patil",
+    description: "Research in machine learning and control theory with certifiable guarantees for autonomous systems.",
+    url: "https://omkarsudhirpatil.com/research",
+    type: "website",
+  },
+};
+
 export default function Page() {
   return (
     <div className="space-y-12">

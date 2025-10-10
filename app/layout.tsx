@@ -5,6 +5,18 @@ import SiteTracker from "./components/SiteTracker";
 import { Analytics } from '@vercel/analytics/next';
 import { Metadata, Viewport } from "next";
 
+const websiteStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": "https://omkarsudhirpatil.com/#website",
+  url: "https://omkarsudhirpatil.com",
+  name: "Omkar Patil Research",
+  description: "Research in adaptive control, robotics, and AI-driven safety-critical systems",
+  publisher: {
+    "@id": "https://omkarsudhirpatil.com/#person",
+  },
+};
+
 const organizationStructuredData = {
   "@context": "https://schema.org",
   "@type": "Organization",
@@ -87,7 +99,7 @@ const personStructuredData = {
   ],
 };
 
-const structuredData = [organizationStructuredData, personStructuredData];
+const structuredData = [websiteStructuredData, organizationStructuredData, personStructuredData];
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://omkarsudhirpatil.com'),
@@ -107,7 +119,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <link rel="canonical" href="https://omkarsudhirpatil.com" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

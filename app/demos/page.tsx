@@ -1,5 +1,20 @@
 import Section from "../components/Section";
 import Link from "next/link";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Interactive Demos - Omkar Patil",
+  description: "Interactive demonstrations of Neural ODEs, Lyapunov-based Deep Neural Networks, Control Barrier Functions, Physics-Informed Neural Networks, and more machine learning concepts.",
+  alternates: {
+    canonical: "/demos",
+  },
+  openGraph: {
+    title: "Interactive Demos - Omkar Patil",
+    description: "Interactive demonstrations of Neural ODEs, LbDNNs, CBFs, PINNs, and machine learning concepts.",
+    url: "https://omkarsudhirpatil.com/demos",
+    type: "website",
+  },
+};
 
 export default function DemosPage() {
   const demos = [
