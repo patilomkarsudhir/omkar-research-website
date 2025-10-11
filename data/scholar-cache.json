@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 426,
-      "recent": 424
+      "all": 427,
+      "recent": 425
     },
     "h-index": {
       "all": 11,
@@ -63,20 +63,20 @@
       "year": 2022
     },
     {
+      "title": "Lyapunov-based physics-informed long short-term memory (LSTM) neural network-based adaptive control",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:hqOjcs7Dif8C",
+      "authors": "RG Hart, EJ Griffis, OS Patil, WE Dixon",
+      "venue": "IEEE Control Systems Letters 8, 13-18, 2023",
+      "cited": 16,
+      "year": 2023
+    },
+    {
       "title": "Adaptive safety with a rise-based disturbance observer",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:MXK_kJrjxJIC",
       "authors": "A Isaly, OS Patil, HM Sweatland, RG Sanfelice, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 69 (7), 4883-4890, 2024",
       "cited": 15,
       "year": 2024
-    },
-    {
-      "title": "Lyapunov-based physics-informed long short-term memory (LSTM) neural network-based adaptive control",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:hqOjcs7Dif8C",
-      "authors": "RG Hart, EJ Griffis, OS Patil, WE Dixon",
-      "venue": "IEEE Control Systems Letters 8, 13-18, 2023",
-      "cited": 15,
-      "year": 2023
     },
     {
       "title": "A singularity-free hierarchical nonlinear quad-rotorcraft control using saturation and barrier lyapunov function",
