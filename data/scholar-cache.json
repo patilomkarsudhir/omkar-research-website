@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 427,
-      "recent": 425
+      "all": 430,
+      "recent": 428
     },
     "h-index": {
       "all": 11,
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 77,
+      "cited": 78,
       "year": 2021
     },
     {
@@ -43,7 +43,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ufrVoPGSRksC",
       "authors": "EJ Griffis, OS Patil, ZI Bell, WE Dixon",
       "venue": "IEEE Control Systems Letters 7, 2976-2981, 2023",
-      "cited": 39,
+      "cited": 40,
       "year": 2023
     },
     {
@@ -67,7 +67,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:hqOjcs7Dif8C",
       "authors": "RG Hart, EJ Griffis, OS Patil, WE Dixon",
       "venue": "IEEE Control Systems Letters 8, 13-18, 2023",
-      "cited": 16,
+      "cited": 17,
       "year": 2023
     },
     {
