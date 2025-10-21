@@ -1,16 +1,16 @@
 {
   "metrics": {
     "citations": {
-      "all": 430,
-      "recent": 428
+      "all": 431,
+      "recent": 429
     },
     "h-index": {
       "all": 11,
       "recent": 11
     },
     "i10-index": {
-      "all": 12,
-      "recent": 12
+      "all": 13,
+      "recent": 13
     }
   },
   "publications": [
@@ -103,20 +103,20 @@
       "year": 2023
     },
     {
+      "title": "Accelerated gradient approach for deep neural network-based adaptive control of unknown nonlinear systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
+      "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
+      "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
+      "cited": 10,
+      "year": 2024
+    },
+    {
       "title": "Integral concurrent learning-based accelerated gradient adaptive control of uncertain Euler-Lagrange systems",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Y0pCki6q_DkC",
       "authors": "DM Le, OS Patil, PM Amy, WE Dixon",
       "venue": "2022 American Control Conference (ACC), 806-811, 2022",
       "cited": 10,
       "year": 2022
-    },
-    {
-      "title": "Accelerated gradient approach for deep neural network-based adaptive control of unknown nonlinear systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
-      "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
-      "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
-      "cited": 9,
-      "year": 2024
     },
     {
       "title": "Lyapunov-based long short-term memory (Lb-LSTM) neural network-based adaptive observer",
