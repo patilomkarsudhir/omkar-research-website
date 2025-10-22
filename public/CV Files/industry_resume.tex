@@ -1,0 +1,285 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Industry Resume - Omkar Sudhir Patil
+% Optimized for AI, Robotics, Controls, and Aerospace Industries
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[10pt, letterpaper]{article}
+
+% Packages:
+\usepackage[
+    ignoreheadfoot, % set margins without considering header and footer
+    top=1.5 cm, % seperation between body and page edge from the top
+    bottom=1.5 cm, % seperation between body and page edge from the bottom
+    left=1.8 cm, % seperation between body and page edge from the left
+    right=1.8 cm, % seperation between body and page edge from the right
+    footskip=1.0 cm, % seperation between body and footer
+    % showframe % for debugging 
+]{geometry} % for adjusting page geometry
+\usepackage{titlesec} % for customizing section titles
+\usepackage{tabularx} % for making tables with fixed width columns
+\usepackage{array} % tabularx requires this
+\usepackage[dvipsnames]{xcolor} % for coloring text
+\definecolor{primaryColor}{RGB}{0, 79, 144} % define primary color
+\usepackage{enumitem} % for customizing lists
+\usepackage{fontawesome5} % for using icons
+\usepackage{amsmath} % for math
+\usepackage[
+    pdftitle={Omkar Sudhir Patil's Resume},
+    pdfauthor={Omkar Sudhir Patil},
+    pdfcreator={LaTeX with RenderCV},
+    colorlinks=true,
+    urlcolor=primaryColor
+]{hyperref} % for links, metadata and bookmarks
+\usepackage[pscoord]{eso-pic} % for floating text on the page
+\usepackage{calc} % for calculating lengths
+\usepackage{bookmark} % for bookmarks
+\usepackage{lastpage} % for getting the total number of pages
+\usepackage{changepage} % for one column entries (adjustwidth environment)
+\usepackage{paracol} % for two and three column entries
+\usepackage{ifthen} % for conditional statements
+\usepackage{needspace} % for avoiding page brake right after the section title
+\usepackage{iftex} % check if engine is pdflatex, xetex or luatex
+
+% Ensure that generate pdf is machine readable/ATS parsable:
+\ifPDFTeX
+    \input{glyphtounicode}
+    \pdfgentounicode=1
+    % \usepackage[T1]{fontenc} % this breaks sb2nov
+    \usepackage[utf8]{inputenc}
+    \usepackage{lmodern}
+\fi
+
+
+
+% Some settings:
+\AtBeginEnvironment{adjustwidth}{\partopsep0pt} % remove space before adjustwidth environment
+\pagestyle{empty} % no header or footer
+\setcounter{secnumdepth}{0} % no section numbering
+\setlength{\parindent}{0pt} % no indentation
+\setlength{\topskip}{0pt} % no top skip
+\setlength{\columnsep}{0cm} % set column seperation
+\makeatletter
+\let\ps@customFooterStyle\ps@plain % Copy the plain style to customFooterStyle
+\patchcmd{\ps@customFooterStyle}{\thepage}{
+    \color{gray}\textit{\small Omkar Sudhir Patil - Page \thepage{} of \pageref*{LastPage}}
+}{}{} % replace number by desired string
+\makeatother
+\pagestyle{customFooterStyle}
+
+\titleformat{\section}{\needspace{4\baselineskip}\bfseries\large}{}{0pt}{}[\vspace{1pt}\titlerule]
+
+\titlespacing{\section}{
+    % left space:
+    -1pt
+}{
+    % top space:
+    0.3 cm
+}{
+    % bottom space:
+    0.2 cm
+} % section title spacing
+
+\renewcommand\labelitemi{$\circ$} % custom bullet points
+\newenvironment{highlights}{
+    \begin{itemize}[
+        topsep=0.10 cm,
+        parsep=0.10 cm,
+        partopsep=0pt,
+        itemsep=0pt,
+        leftmargin=0.4 cm + 10pt
+    ]
+}{
+    \end{itemize}
+} % new environment for highlights
+
+\newenvironment{highlightsforbulletentries}{
+    \begin{itemize}[
+        topsep=0.10 cm,
+        parsep=0.10 cm,
+        partopsep=0pt,
+        itemsep=0pt,
+        leftmargin=10pt
+    ]
+}{
+    \end{itemize}
+} % new environment for highlights for bullet entries
+
+
+\newenvironment{onecolentry}{
+    \begin{adjustwidth}{
+        0.2 cm + 0.00001 cm
+    }{
+        0.2 cm + 0.00001 cm
+    }
+}{
+    \end{adjustwidth}
+} % new environment for one column entries
+
+\newenvironment{twocolentry}[2][]{
+    \onecolentry
+    \def\secondColumn{#2}
+    \setcolumnwidth{\fill, 4.5 cm}
+    \begin{paracol}{2}
+}{
+    \switchcolumn \raggedleft \secondColumn
+    \end{paracol}
+    \endonecolentry
+} % new environment for two column entries
+
+\newenvironment{header}{
+    \setlength{\topsep}{0pt}\par\kern\topsep\centering\linespread{1.5}
+}{
+    \par\kern\topsep
+} % new environment for the header
+
+\newcommand{\placelastupdatedtext}{% \placetextbox{<horizontal pos>}{<vertical pos>}{<stuff>}
+  \AddToShipoutPictureFG*{% Add <stuff> to current page foreground
+    \put(
+        \LenToUnit{\paperwidth-2 cm-0.2 cm+0.05cm},
+        \LenToUnit{\paperheight-1.0 cm}
+    ){\vtop{{\null}\makebox[0pt][c]{
+        \small\color{gray}\textit{}\hspace{\widthof{}}
+    }}}%
+  }%
+}%
+
+% save the original href command in a new command:
+\let\hrefWithoutArrow\href
+
+% new command for external links:
+\renewcommand{\href}[2]{\hrefWithoutArrow{#1}{\ifthenelse{\equal{#2}{}}{ }{#2 }\raisebox{.15ex}{\footnotesize \faExternalLink*}}}
+
+
+\begin{document}
+    \newcommand{\AND}{\unskip
+        \cleaders\copy\ANDbox\hskip\wd\ANDbox
+        \ignorespaces
+    }
+    \newsavebox\ANDbox
+    \sbox\ANDbox{}
+
+    \placelastupdatedtext
+    \begin{header}
+        \textbf{\fontsize{24 pt}{24 pt}\selectfont Omkar Sudhir Patil}
+
+        \vspace{0.3 cm}
+
+        \normalsize
+        \mbox{\hrefWithoutArrow{mailto:omkarpatil64328@gmail.com}{\color{black}{\footnotesize\faEnvelope[regular]}\hspace*{0.13cm}omkarpatil64328@gmail.com}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{tel:+1-352-222-1713}{\color{black}{\footnotesize\faPhone*}\hspace*{0.13cm}(352) 222-1713}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{https://linkedin.com/in/omkar-patil-024}{\color{black}{\footnotesize\faLinkedinIn}\hspace*{0.13cm}omkar-patil-024}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{https://omkarsudhirpatil.com}{\color{black}{\footnotesize\faGlobe}\hspace*{0.13cm}omkarsudhirpatil.com}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{https://github.com/patilomkarsudhir}{\color{black}{\footnotesize\faGithub}\hspace*{0.13cm}patilomkarsudhir}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{https://scholar.google.com/citations?user=EtkfNQMAAAAJ&hl=en}{\color{black}{\footnotesize\faGraduationCap}\hspace*{0.13cm}Google Scholar}}%
+    \end{header}
+
+    \vspace{0.3 cm - 0.3 cm}
+
+    \section{Professional Summary}
+
+    \begin{onecolentry}
+        AI/ML researcher and control systems engineer specializing in intelligent autonomous systems. Pioneered Lyapunov-based Deep Neural Networks (LbDNNs), developing the first DNN controller with real-time adaptation and provable stability guarantees. Proven track record securing \$2M+ in funding, publishing 20+ papers (300+ citations), and deploying control solutions on real robotic platforms. Expert in bridging theoretical AI with practical engineering applications across aerospace, robotics, and autonomous systems.
+    \end{onecolentry}
+
+    \section{Professional Experience}
+
+\textbf{Research Scientist} \hfill \textit{Oct 2025 -- Present}\\
+\textit{University of Florida, Department of Mechanical \& Aerospace Engineering}
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item Leading research on next-generation mathematical frameworks for modular and compositional control design, enabling scalable solutions for complex autonomous systems
+    \item Developing energy-based control methods leveraging geometric structures for improved stability and efficiency
+    \item Advancing adaptive control solutions for aerospace, spacecraft servicing, and multi-agent robotics applications
+\end{itemize}
+
+\textbf{Postdoctoral Research Associate} \hfill \textit{May 2023 -- Oct 2025}\\
+\textit{University of Florida, Department of Mechanical \& Aerospace Engineering}
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item Secured \$2M+ in competitive research funding from ONR, AFOSR, and AFRL for AI and control systems projects
+    \item Pioneered Lyapunov-based deep neural network (Lb-DNN) controllers with online weight adaptation, enabling real-time learning without pre-training—solving a 25-year open problem in adaptive control
+    \item Developed and deployed adaptive control algorithms for quadrotors, spacecraft, and multi-agent systems with mathematical stability guarantees, validated on hardware platforms
+    \item Published 20 papers in top-tier venues (IEEE TAC, IEEE T-NN, ACC, CDC) with 300+ citations
+    \item Mentored 15 graduate students and postdocs; created open-source MATLAB/Python packages deployed on robotic platforms
+\end{itemize}
+
+\textbf{Graduate Research Assistant} \hfill \textit{Aug 2019 -- May 2023}\\
+\textit{University of Florida, Nonlinear Controls and Robotics Group}
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item Solved 17-year open problem on exponential stability of RISE controllers—a fundamental result in robust control theory
+    \item Developed composite adaptive learning algorithms using concurrent learning, achieving parameter convergence without restrictive excitation conditions
+    \item Implemented and validated controllers on quadrotors, robotic manipulators, and multi-agent testbeds with real-time performance verification
+\end{itemize}
+
+\textbf{Project Associate} \hfill \textit{May 2018 -- Apr 2019}\\
+\textit{Indian Institute of Technology Delhi}
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item Designed hierarchical control systems for quadrotor aerial manipulators with singularity-free algorithms
+    \item Programmed flight control systems and derived complete Lagrangian dynamics for aerial platforms
+\end{itemize}
+
+    \section{Education}
+
+\textbf{Ph.D. in Mechanical Engineering} \hfill \textit{Aug 2019 -- May 2023}\\
+\textit{University of Florida} | GPA: 3.97/4.0\\
+Dissertation: ``Implicit and Deep Learning-Based Control Methods for Uncertain Nonlinear Systems''
+
+\textbf{M.S. in Mechanical Engineering} \hfill \textit{Aug 2019 -- Aug 2022}\\
+\textit{University of Florida} | Specialization: Adaptive and Nonlinear Control
+
+\textbf{B.Tech in Production and Industrial Engineering} \hfill \textit{Jul 2014 -- Aug 2018}\\
+\textit{Indian Institute of Technology Delhi}
+
+\section{Technical Skills}
+
+\textbf{AI \& Machine Learning:} Deep neural networks, physics-informed neural networks (PINNs), reinforcement learning, online learning, ResNet/LSTM architectures, TensorFlow, PyTorch, concurrent learning algorithms\\
+
+\textbf{Control Systems:} Lyapunov stability theory, adaptive control, nonlinear control, optimal control, model predictive control (MPC), control barrier functions (CBFs), multi-agent systems, distributed control\\
+
+\textbf{Programming:} Python, C++, MATLAB/Simulink, ROS, Git, numerical optimization, real-time embedded systems\\
+
+\textbf{Robotics \& Hardware:} Quadrotor UAVs, robotic manipulators, multi-agent platforms, sensor integration, hardware-in-the-loop (HIL) simulation, embedded control systems
+
+\section{Key Achievements \& Impact}
+
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item \textbf{Industry-Ready Innovation:} First to extend Lyapunov adaptive control to deep neural networks of arbitrary depth—enabling real-time AI adaptation with mathematical guarantees for safety-critical systems
+    \item \textbf{Funding Success:} Secured \$2M+ from government agencies (ONR, AFOSR, AFRL) demonstrating strong proposal writing and research impact
+    \item \textbf{Publications \& Recognition:} 20+ papers in premier AI/robotics/control venues with 300+ citations; book contract with Springer on "Lyapunov-Based Deep Learning for Autonomy"
+    \item \textbf{Practical Deployment:} Validated algorithms on real robotic hardware including quadrotors, manipulators, and multi-agent testbeds at UF Autonomy Park
+    \item \textbf{Open Source Contributions:} Developed widely-used MATLAB/Python packages for adaptive control and neural network controllers
+    \item \textbf{Cross-disciplinary Expertise:} Proven ability to bridge theoretical AI/ML with practical engineering applications in aerospace, robotics, and autonomous systems
+\end{itemize}
+
+\section{Selected Publications \& Patents}
+
+\textbf{Book:} \textit{Lyapunov-Based Deep Learning for Autonomy}, Springer (in development)\\
+\textbf{Key Papers:} 1 book, 8 journal articles, 11+ conference papers in IEEE TAC, Automatica, IEEE T-NN, ACC, CDC\\
+\textbf{Full Publication List:} \href{https://scholar.google.com/citations?user=EtkfNQMAAAAJ}{Google Scholar Profile}
+
+\section{Awards \& Recognition}
+
+\begin{itemize}[leftmargin=20pt, itemsep=1pt]
+    \item \textbf{Graduate Student Research Award} (2023) -- University of Florida, Department of Mechanical \& Aerospace Engineering
+    \item \textbf{BOSS Award} (2018) -- Best experimental project in Mechanical Engineering, IIT Delhi
+\end{itemize}
+
+    
+
+    
+
+\end{document}
