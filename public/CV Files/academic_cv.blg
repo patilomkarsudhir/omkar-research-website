@@ -1,30 +1,29 @@
-[1] Config.pm:308> INFO - This is Biber 2.20
-[2] Config.pm:311> INFO - Logfile is 'academic_cv.blg'
-[258] biber-MSWIN64:340> INFO - === 
-[336] Biber.pm:420> INFO - Reading 'academic_cv.bcf'
-[487] Biber.pm:991> INFO - Using all citekeys in bib section 0
-[487] Biber.pm:4463> INFO - Processing section 0
-[509] Biber.pm:4654> INFO - Looking for bibtex file 'books.bib' for section 0
-[625] bibtex.pm:1713> INFO - LaTeX decoding ...
-[646] bibtex.pm:1519> INFO - Found BibTeX data source 'books.bib'
-[670] Biber.pm:4654> INFO - Looking for bibtex file 'journal.bib' for section 0
-[784] bibtex.pm:1713> INFO - LaTeX decoding ...
-[834] bibtex.pm:1519> INFO - Found BibTeX data source 'journal.bib'
-[979] Biber.pm:4654> INFO - Looking for bibtex file 'conf.bib' for section 0
-[1101] bibtex.pm:1713> INFO - LaTeX decoding ...
-[1132] bibtex.pm:1519> INFO - Found BibTeX data source 'conf.bib'
-[1263] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
-[1263] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[1264] Biber.pm:4283> INFO - Sorting list 'none/global//global/global/global' of type 'entry' with template 'none' and locale 'en-US'
-[1264] Biber.pm:4289> INFO - No sort tailoring available for locale 'en-US'
-[1294] bbl.pm:676> INFO - Writing 'academic_cv.bbl' with encoding 'UTF-8'
-[1338] bbl.pm:779> INFO - Output to academic_cv.bbl
-[1339] Biber.pm:131> WARN - legacy year field 'under review' in entry 'akbari2023lyapunov' is not an integer - this will probably not sort properly.
-[1340] Biber.pm:131> WARN - legacy year field 'under review' in entry 'Fallin.Nino.ea2025' is not an integer - this will probably not sort properly.
-[1340] Biber.pm:131> WARN - legacy year field 'under review' in entry 'Griffis.Patil.ea2024' is not an integer - this will probably not sort properly.
-[1341] Biber.pm:131> WARN - legacy year field 'under review' in entry 'Akbari.Nino.ea2025' is not an integer - this will probably not sort properly.
-[1341] Biber.pm:131> WARN - legacy year field '2025, under review' in entry 'Patil.Griffis.ea2024' is not an integer - this will probably not sort properly.
-[1342] Biber.pm:131> WARN - legacy year field 'under review' in entry 'Hart.Patil.ea2025' is not an integer - this will probably not sort properly.
-[1343] Biber.pm:131> WARN - legacy year field 'under review' in entry 'Sweatland.Patil.ea2024' is not an integer - this will probably not sort properly.
-[1344] Biber.pm:131> WARN - Duplicate entry key: 'Nino.Patil.ea2023' in file 'conf.bib', skipping ...
-[1344] Biber.pm:133> INFO - WARNINGS: 8
+[0] Config.pm:308> INFO - This is Biber 2.20
+[0] Config.pm:311> INFO - Logfile is 'academic_cv.blg'
+[362] biber-MSWIN64:340> INFO - === 
+[504] Biber.pm:420> INFO - Reading 'academic_cv.bcf'
+[669] Biber.pm:991> INFO - Using all citekeys in bib section 0
+[695] Biber.pm:4463> INFO - Processing section 0
+[751] Biber.pm:4654> INFO - Looking for bibtex file 'books.bib' for section 0
+[845] bibtex.pm:1713> INFO - LaTeX decoding ...
+[863] bibtex.pm:1519> INFO - Found BibTeX data source 'books.bib'
+[881] Biber.pm:4654> INFO - Looking for bibtex file 'journal.bib' for section 0
+[967] bibtex.pm:1713> INFO - LaTeX decoding ...
+[996] bibtex.pm:1519> INFO - Found BibTeX data source 'journal.bib'
+[1200] Biber.pm:4654> INFO - Looking for bibtex file 'conf.bib' for section 0
+[1286] bibtex.pm:1713> INFO - LaTeX decoding ...
+[1314] bibtex.pm:1519> INFO - Found BibTeX data source 'conf.bib'
+[1458] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[1458] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[1458] Biber.pm:4283> INFO - Sorting list 'none/global//global/global/global' of type 'entry' with template 'none' and locale 'en-US'
+[1458] Biber.pm:4289> INFO - No sort tailoring available for locale 'en-US'
+[1503] bbl.pm:676> INFO - Writing 'academic_cv.bbl' with encoding 'UTF-8'
+[1549] bbl.pm:779> INFO - Output to academic_cv.bbl
+[1550] Biber.pm:131> WARN - legacy year field 'under review' in entry 'Hart.Patil.ea2025' is not an integer - this will probably not sort properly.
+[1550] Biber.pm:131> WARN - legacy year field '2025, under review' in entry 'Patil.Griffis.ea2024' is not an integer - this will probably not sort properly.
+[1550] Biber.pm:131> WARN - legacy year field 'under review' in entry 'akbari2023lyapunov' is not an integer - this will probably not sort properly.
+[1551] Biber.pm:131> WARN - legacy year field 'under review' in entry 'Hart.Patil.ea2026' is not an integer - this will probably not sort properly.
+[1551] Biber.pm:131> WARN - legacy year field 'under review' in entry 'Sweatland.Patil.ea2024' is not an integer - this will probably not sort properly.
+[1551] Biber.pm:131> WARN - legacy year field 'under review' in entry 'Akbari.Nino.ea2025' is not an integer - this will probably not sort properly.
+[1551] Biber.pm:131> WARN - legacy year field 'under review' in entry 'Fallin.Nino.ea2025' is not an integer - this will probably not sort properly.
+[1552] Biber.pm:133> INFO - WARNINGS: 7

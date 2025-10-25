@@ -38,7 +38,7 @@
            givenun=0}}%
       }
       \list{publisher}{1}{%
-        {in development with Springer}%
+        {In development with Springer (anticipated completion May 2026)}%
       }
       \strng{namehash}{6aff64c5ff70307586ef354a81b94db8}
       \strng{fullhash}{97607c1fbb6397e001757a4a9e686948}
@@ -53,7 +53,7 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{title}{Deep Learning-Based Adaptive Control: A Lyapunov-Based Approach}
+      \field{title}{Lyapunov-Based Deep Learning for Autonomy}
       \true{nocite}
     \endentry
     \entry{Patil.Sun.ea2022}{article}{}{}
@@ -852,7 +852,7 @@
       \field{labeltitlesource}{title}
       \field{journaltitle}{IEEE Trans. Autom. Control}
       \field{title}{Adaptive Output Feedback Control Using Lyapunov-Based Deep Recurrent Neural Networks ({Lb-DRNNs})}
-      \field{year}{under review}
+      \field{year}{2025}
       \true{nocite}
     \endentry
     \entry{Sweatland.Patil.ea2024}{article}{}{}
@@ -1052,8 +1052,50 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Control Syst. Lett.}
+      \field{title}{Concurrent Learning for System Identification and Control Using Lyapunov-Based Deep Neural Networks}
+      \field{year}{under review}
+      \true{nocite}
+    \endentry
+    \entry{Hart.Patil.ea2026}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=a206c8e0508adb6bb85783120187e1d1}{%
+           family={Hart},
+           familyi={H\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=05210bc29456a30ade4925c65f341830}{%
+           family={Bell},
+           familyi={B\bibinitperiod},
+           given={Z.},
+           giveni={Z\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{c6190736f08106fc790bd72b8f2f2297}
+      \strng{fullhash}{f589a3eb3f980d11454d2370a16e0207}
+      \strng{fullhashraw}{f589a3eb3f980d11454d2370a16e0207}
+      \strng{bibnamehash}{f589a3eb3f980d11454d2370a16e0207}
+      \strng{authorbibnamehash}{f589a3eb3f980d11454d2370a16e0207}
+      \strng{authornamehash}{c6190736f08106fc790bd72b8f2f2297}
+      \strng{authorfullhash}{f589a3eb3f980d11454d2370a16e0207}
+      \strng{authorfullhashraw}{f589a3eb3f980d11454d2370a16e0207}
+      \field{extraname}{3}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
       \field{journaltitle}{IEEE Trans. Autom. Control}
-      \field{title}{System Identification and Control Using {L}yapunov-Based Deep Neural Networks without Persistent Excitation: A Concurrent Learning Approach}
+      \field{title}{Lyapunov-Based Concurrent Learning for DNN Parameter Identifiability Without Persistent Excitation}
       \field{year}{under review}
       \true{nocite}
     \endentry
@@ -1205,8 +1247,8 @@
       \strng{authorfullhash}{b2de2dc22463d8663ea94e20e8db5646}
       \strng{authorfullhashraw}{b2de2dc22463d8663ea94e20e8db5646}
       \field{extraname}{1}
-      \field{sortinit}{2}
-      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{booktitle}{Proc. IEEE Conf. Decis. Control}
@@ -1420,13 +1462,61 @@
       \strng{authornamehash}{c6190736f08106fc790bd72b8f2f2297}
       \strng{authorfullhash}{057fbeb044dcbc8cea144753d737cc65}
       \strng{authorfullhashraw}{057fbeb044dcbc8cea144753d737cc65}
-      \field{extraname}{3}
+      \field{extraname}{4}
       \field{sortinit}{3}
       \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{booktitle}{Proc. IEEE Conf. Decis. Control}
       \field{title}{Lyapunov-Based Deep Physics-Informed Neural Network-Based Adaptive Control}
+      \field{year}{2023}
+      \true{nocite}
+    \endentry
+    \entry{Nino.Patil.ea2023a}{inproceedings}{}{}
+      \name{author}{5}{}{%
+        {{un=1,uniquepart=given,hash=4e26536f2e872c8afd9b84badcc29a50}{%
+           family={Nino},
+           familyi={N\bibinitperiod},
+           given={C.},
+           giveni={C\bibinitperiod},
+           givenun=1}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=e25d90fd633fe6304191f4688b251c78}{%
+           family={Philor},
+           familyi={P\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=05210bc29456a30ade4925c65f341830}{%
+           family={Bell},
+           familyi={B\bibinitperiod},
+           given={Z.},
+           giveni={Z\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{1e5d3e7b25dad6cce333d3039b581543}
+      \strng{fullhash}{37a09674a72cadedcb4d0680fdbc3948}
+      \strng{fullhashraw}{37a09674a72cadedcb4d0680fdbc3948}
+      \strng{bibnamehash}{37a09674a72cadedcb4d0680fdbc3948}
+      \strng{authorbibnamehash}{37a09674a72cadedcb4d0680fdbc3948}
+      \strng{authornamehash}{1e5d3e7b25dad6cce333d3039b581543}
+      \strng{authorfullhash}{37a09674a72cadedcb4d0680fdbc3948}
+      \strng{authorfullhashraw}{37a09674a72cadedcb4d0680fdbc3948}
+      \field{extraname}{4}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proc. IEEE Conf. Decis. Control}
+      \field{title}{Deep Adaptive Indirect Herding of Multiple Target Agents with Unknown Interaction Dynamics}
       \field{year}{2023}
       \true{nocite}
     \endentry
@@ -1600,8 +1690,8 @@
       \strng{authornamehash}{2ebdce6c12828c88afa56418b7501b0d}
       \strng{authorfullhash}{a9b1f76d3c773fa636b9758ce22b8af9}
       \strng{authorfullhashraw}{a9b1f76d3c773fa636b9758ce22b8af9}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{booktitle}{Proc. IEEE Conf. Decis. Control}
