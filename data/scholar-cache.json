@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 432,
-      "recent": 430
+      "all": 433,
+      "recent": 431
     },
     "h-index": {
       "all": 11,
@@ -107,7 +107,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
       "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
       "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
-      "cited": 10,
+      "cited": 11,
       "year": 2024
     },
     {
