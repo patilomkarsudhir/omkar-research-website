@@ -49,6 +49,7 @@
 \addbibresource{books.bib}
 \addbibresource{journal.bib}
 \addbibresource{conf.bib}
+\addbibresource{underreview.bib}
 
 % Ensure that generate pdf is machine readable/ATS parsable:
 \ifPDFTeX
@@ -319,10 +320,13 @@
 \printbibliography[type=book, heading=none]
 
 \subsection*{Journal Papers}
-\printbibliography[type=article, heading=none]
+\printbibliography[type=article, heading=none, nottype=inproceedings, nottype=book, notkeyword=underreview]
 
 \subsection*{Conference Papers}
 \printbibliography[type=inproceedings, heading=none]
+
+\subsection*{Under Review}
+\printbibliography[keyword=underreview, heading=none, resetnumbers=false]
 
 \section{Awards}
 

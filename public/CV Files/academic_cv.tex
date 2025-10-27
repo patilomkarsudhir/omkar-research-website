@@ -43,12 +43,13 @@
 \usepackage{needspace} % for avoiding page brake right after the section title
 \usepackage{iftex} % check if engine is pdflatex, xetex or luatex
 
-\usepackage[backend=biber,style=ieee,sorting=none,uniquename=init]{biblatex}
+\usepackage[backend=biber,style=ieee,sorting=none,uniquename=init,defernumbers=true]{biblatex}
 
 
 \addbibresource{books.bib}
 \addbibresource{journal.bib}
 \addbibresource{conf.bib}
+\addbibresource{underreview.bib}
 
 % Ensure that generate pdf is machine readable/ATS parsable:
 \ifPDFTeX
@@ -330,10 +331,13 @@
 \printbibliography[type=book, heading=none]
 
 \subsection*{Journal Papers}
-\printbibliography[type=article, heading=none]
+\printbibliography[type=article, heading=none, nottype=inproceedings, nottype=book, notkeyword=underreview]
 
 \subsection*{Conference Papers}
 \printbibliography[type=inproceedings, heading=none]
+
+\subsection*{Under Review}
+\printbibliography[keyword=underreview, heading=none, resetnumbers=false]
 
 \section{Awards}
 
