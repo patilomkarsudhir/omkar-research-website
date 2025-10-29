@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.30)  22 OCT 2025 15:41
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.30)  27 OCT 2025 18:41
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -713,30 +713,30 @@ Package biblatex Warning: Load 'inputenc' before biblatex.
 \@quotelevel=\count454
 \@quotereset=\count455
 LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 1
-63.
+64.
 (c:/texlive/2025/texmf-dist/tex/latex/lm/ot1lmr.fd
 File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 ) (./full_resume.aux)
 \openout1 = `full_resume.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 163.
-LaTeX Font Info:    ... okay on input line 163.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 163.
-LaTeX Font Info:    ... okay on input line 163.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 163.
-LaTeX Font Info:    ... okay on input line 163.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 163.
-LaTeX Font Info:    ... okay on input line 163.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 163.
-LaTeX Font Info:    ... okay on input line 163.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 163.
-LaTeX Font Info:    ... okay on input line 163.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 163.
-LaTeX Font Info:    ... okay on input line 163.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 163.
-LaTeX Font Info:    ... okay on input line 163.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 163.
-LaTeX Font Info:    ... okay on input line 163.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 164.
+LaTeX Font Info:    ... okay on input line 164.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 164.
+LaTeX Font Info:    ... okay on input line 164.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 164.
+LaTeX Font Info:    ... okay on input line 164.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 164.
+LaTeX Font Info:    ... okay on input line 164.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 164.
+LaTeX Font Info:    ... okay on input line 164.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 164.
+LaTeX Font Info:    ... okay on input line 164.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 164.
+LaTeX Font Info:    ... okay on input line 164.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 164.
+LaTeX Font Info:    ... okay on input line 164.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 164.
+LaTeX Font Info:    ... okay on input line 164.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -786,7 +786,7 @@ LaTeX Font Info:    ... okay on input line 163.
 \makeMPintoPDFobject=\count461
 \everyMPtoPDFconversion=\toks32
 )
-Package hyperref Info: Link coloring ON on input line 163.
+Package hyperref Info: Link coloring ON on input line 164.
 Package biblatex Info: Trying to load language 'english'...
 Package biblatex Info: ... file 'english.lbx' found.
  (c:/texlive/2025/texmf-dist/tex/latex/biblatex/lbx/english.lbx
@@ -801,51 +801,51 @@ Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'full_resume.bbl' found.
 
 (./full_resume.bbl)
-Package biblatex Info: Reference section=0 on input line 163.
-Package biblatex Info: Reference segment=0 on input line 163.
+Package biblatex Info: Reference section=0 on input line 164.
+Package biblatex Info: Reference segment=0 on input line 164.
 \ANDbox=\box66
 LaTeX Font Info:    Trying to load font information for U+fontawesomefree1 on i
-nput line 178.
+nput line 179.
 
 (c:/texlive/2025/texmf-dist/tex/latex/fontawesome5/ufontawesomefree1.fd)
 LaTeX Font Info:    Trying to load font information for U+fontawesomefree2 on i
-nput line 182.
+nput line 183.
 
 (c:/texlive/2025/texmf-dist/tex/latex/fontawesome5/ufontawesomefree2.fd)
 LaTeX Font Info:    Trying to load font information for U+fontawesomebrands0 on
- input line 186.
+ input line 187.
 
 (c:/texlive/2025/texmf-dist/tex/latex/fontawesome5/ufontawesomebrands0.fd)
 LaTeX Font Info:    Font shape `U/fontawesomebrands0/solid/n' in size <8> not a
 vailable
 (Font)              Font shape `U/fontawesomebrands0/regular/n' tried instead o
-n input line 186.
+n input line 187.
 LaTeX Font Info:    Trying to load font information for OML+lmm on input line 2
-15.
+16.
 
 (c:/texlive/2025/texmf-dist/tex/latex/lm/omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
-215.
+216.
 
 (c:/texlive/2025/texmf-dist/tex/latex/lm/omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
-215.
+216.
 
 (c:/texlive/2025/texmf-dist/tex/latex/lm/omxlmex.fd
 File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 215.
+(Font)              <10> on input line 216.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 215.
+(Font)              <7> on input line 216.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 215.
+(Font)              <5> on input line 216.
 LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 2
-46.
+47.
 
 (c:/texlive/2025/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
@@ -861,27 +861,32 @@ fa5brands0.enc}{c:/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{c:
 /texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}]
 
 [2]
-Underfull \hbox (badness 10000) in paragraph at lines 296--297
+Underfull \hbox (badness 10000) in paragraph at lines 297--298
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 298--299
+Underfull \hbox (badness 10000) in paragraph at lines 299--300
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 300--301
+Underfull \hbox (badness 10000) in paragraph at lines 301--302
 
  []
 
 
 
 [3]
+LaTeX Font Info:    Trying to load font information for OT1+lmtt on input line 
+329.
+ (c:/texlive/2025/texmf-dist/tex/latex/lm/ot1lmtt.fd
+File: ot1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
 
 [4]
 
-[5]
+[5{c:/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-rmtt.enc}]
 
 [6] 
 enddocument/afterlastpage (AED): lastpage setting LastPage.
@@ -890,22 +895,18 @@ enddocument/afterlastpage (AED): lastpage setting LastPage.
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-04-14>
  ***********
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
 Package logreq Info: Writing requests to 'full_resume.run.xml'.
 \openout1 = `full_resume.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 22645 strings out of 469608
- 414278 string characters out of 5474779
- 1236872 words of memory out of 5000000
- 49166 multiletter control sequences out of 15000+600000
- 668468 words of font info for 64 fonts, out of 8000000 for 9000
+ 22713 strings out of 469608
+ 416008 string characters out of 5474779
+ 1237437 words of memory out of 5000000
+ 49226 multiletter control sequences out of 15000+600000
+ 668779 words of font info for 65 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,10n,79p,1204b,1481s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,10n,79p,1204b,1480s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2025/texmf-dist/fonts/type1/public/fontawesome5/FontAwesome5Brand
 s-Regular.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/fontawesome5/FontA
 wesome5Free-Regular.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/fontawes
@@ -914,11 +915,11 @@ lm/lmbx10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx12.pfb><c:/
 texlive/2025/texmf-dist/fonts/type1/public/lm/lmr10.pfb><c:/texlive/2025/texmf-
 dist/fonts/type1/public/lm/lmri10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/p
 ublic/lm/lmri9.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmsy10.pfb
->
-Output written on full_resume.pdf (6 pages, 193585 bytes).
+><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmtt10.pfb>
+Output written on full_resume.pdf (6 pages, 219165 bytes).
 PDF statistics:
- 196 PDF objects out of 1000 (max. 8388607)
- 166 compressed objects within 2 object streams
- 55 named destinations out of 1000 (max. 500000)
+ 218 PDF objects out of 1000 (max. 8388607)
+ 186 compressed objects within 2 object streams
+ 58 named destinations out of 1000 (max. 500000)
  89 words of extra memory for PDF output out of 10000 (max. 10000000)
 

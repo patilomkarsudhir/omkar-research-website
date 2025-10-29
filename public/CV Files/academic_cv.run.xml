@@ -85,6 +85,7 @@
       <file>books.bib</file>
       <file>journal.bib</file>
       <file>conf.bib</file>
+      <file>underreview.bib</file>
     </requires>
   </external>
 </requests>

@@ -1,12 +1,12 @@
 {
   "metrics": {
     "citations": {
-      "all": 433,
-      "recent": 431
+      "all": 434,
+      "recent": 432
     },
     "h-index": {
-      "all": 11,
-      "recent": 11
+      "all": 12,
+      "recent": 12
     },
     "i10-index": {
       "all": 13,
@@ -95,20 +95,20 @@
       "year": 2023
     },
     {
+      "title": "Accelerated gradient approach for deep neural network-based adaptive control of unknown nonlinear systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
+      "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
+      "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
+      "cited": 12,
+      "year": 2024
+    },
+    {
       "title": "Deep recurrent neural network-based observer for uncertain nonlinear systems",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Se3iqnhoufwC",
       "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
       "venue": "IFAC-PapersOnLine 56 (2), 6851-6856, 2023",
       "cited": 12,
       "year": 2023
-    },
-    {
-      "title": "Accelerated gradient approach for deep neural network-based adaptive control of unknown nonlinear systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
-      "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
-      "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
-      "cited": 11,
-      "year": 2024
     },
     {
       "title": "Integral concurrent learning-based accelerated gradient adaptive control of uncertain Euler-Lagrange systems",
