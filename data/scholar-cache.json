@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 443,
-      "recent": 441
+      "all": 445,
+      "recent": 443
     },
     "h-index": {
       "all": 12,
@@ -75,7 +75,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:MXK_kJrjxJIC",
       "authors": "A Isaly, OS Patil, HM Sweatland, RG Sanfelice, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 69 (7), 4883-4890, 2024",
-      "cited": 16,
+      "cited": 17,
       "year": 2024
     },
     {
@@ -239,6 +239,14 @@
       "year": 2025
     },
     {
+      "title": "Lyapunov-Based Deep Residual Neural Network (ResNet) Adaptive Control",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
+      "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
+      "venue": "IEEE Access, 2025",
+      "cited": 1,
+      "year": 2025
+    },
+    {
       "title": "Online ResNet-Based Adaptive Control for Nonlinear Target Tracking",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:mVmsd5A6BfQC",
       "authors": "CF Nino, OS Patil, JC Insinger, MR Eisman, WE Dixon",
@@ -267,14 +275,6 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:R3hNpaxXUhUC",
       "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control, 2025",
-      "cited": 0,
-      "year": 2025
-    },
-    {
-      "title": "Lyapunov-Based Deep Residual Neural Network (ResNet) Adaptive Control",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
-      "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
-      "venue": "IEEE Access, 2025",
       "cited": 0,
       "year": 2025
     },
