@@ -65,6 +65,11 @@
             overflow-x: hidden;
         }
 
+        /* Subtle glow for goal markers - no animation */
+        .goal-glow {
+            filter: drop-shadow(0 0 4px rgba(167, 139, 250, 0.6));
+        }
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -84,6 +89,7 @@
         .header h1 {
             font-size: 3rem;
             background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 10px;
@@ -174,6 +180,29 @@
             margin: 15px 0;
             position: relative;
             overflow: hidden;
+            cursor: crosshair;
+        }
+
+        .demo-canvas.dragging {
+            cursor: grabbing !important;
+        }
+
+        .interaction-hint {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin: 10px 0;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .interaction-hint::before {
+            content: "💡";
+            font-size: 1.2rem;
         }
 
         .controls {
@@ -202,6 +231,7 @@
             border-radius: 3px;
             background: #334155;
             outline: none;
+            appearance: none;
             -webkit-appearance: none;
         }
 
@@ -397,8 +427,10 @@
                     <p style="color: #94a3b8; margin: 10px 0; font-size: 0.9rem;">
                         Watch the robot navigate safely around obstacles using Control Barrier Functions. 
                         Includes automatic deadlock resolution when the robot gets stuck at saddle points.
-                        <strong>Click on the canvas to set a new goal position.</strong>
                     </p>
+                    <div class="interaction-hint">
+                        <strong>Click</strong> anywhere to set goal • <strong>Drag</strong> red obstacles to reposition them
+                    </div>
                     <div class="demo-canvas" id="basic-canvas">
                         <div class="grid-background"></div>
                         <svg width="100%" height="100%" id="basic-svg"></svg>
@@ -414,7 +446,7 @@
                             <input type="range" id="obstacle-size" min="20" max="80" step="5" value="40">
                         </div>
                         <div class="control-group">
-                            <label>Robot Speed: <span id="robot-speed-value">50</span></label>
+                            <label>Speed: <span id="robot-speed-value">50</span></label>
                             <input type="range" id="robot-speed" min="20" max="100" step="5" value="50">
                         </div>
                     </div>
@@ -523,7 +555,13 @@
         <div id="hocbf-demo" class="content-section">
             <div class="demo-grid">
                 <div class="demo-card">
-                    <h3>Double Integrator with HOCBF</h3>
+                    <h3>2D Double Integrator with HOCBF</h3>
+                    <p style="color: #94a3b8; margin-bottom: 10px; font-size: 0.9rem;">
+                        Interactive demonstration of High-Order CBF on acceleration-controlled robot.
+                    </p>
+                    <div class="interaction-hint">
+                        <strong>Click</strong> anywhere to set goal • <strong>Drag</strong> red obstacles to reposition them
+                    </div>
                     <div class="demo-canvas" id="hocbf-canvas">
                         <div class="grid-background"></div>
                         <svg width="100%" height="100%" id="hocbf-svg"></svg>
@@ -531,102 +569,127 @@
                     
                     <div class="controls">
                         <div class="control-group">
-                            <label>α₁ (Position CBF): <span id="alpha1-hocbf-value">1.0</span></label>
+                            <label>α₁ (Class-K₁): <span id="alpha1-hocbf-value">1.0</span></label>
                             <input type="range" id="alpha1-hocbf" min="0.1" max="3" step="0.1" value="1.0">
                         </div>
                         <div class="control-group">
-                            <label>α₂ (Velocity CBF): <span id="alpha2-hocbf-value">2.0</span></label>
-                            <input type="range" id="alpha2-hocbf" min="0.1" max="5" step="0.1" value="2.0">
+                            <label>α₂ (Class-K₂): <span id="alpha2-hocbf-value">1.5</span></label>
+                            <input type="range" id="alpha2-hocbf" min="0.1" max="5" step="0.1" value="1.5">
                         </div>
                         <div class="control-group">
-                            <label>Control Limit: <span id="control-limit-value">50</span></label>
-                            <input type="range" id="control-limit" min="10" max="100" step="5" value="50">
+                            <label>Accel. Limit: <span id="accel-limit-value">100</span></label>
+                            <input type="range" id="accel-limit" min="20" max="200" step="10" value="100">
+                        </div>
+                        <div class="control-group">
+                            <label>Simulation Speed: <span id="speed-hocbf-value">1.0x</span></label>
+                            <input type="range" id="speed-hocbf" min="0.2" max="3" step="0.1" value="1.0">
                         </div>
                     </div>
                     
                     <div class="controls">
                         <button class="button" onclick="resetHOCBFDemo()">Reset Demo</button>
                         <button class="button" onclick="toggleHOCBFAnimation()">Start/Stop</button>
-                        <button class="button danger" onclick="addDisturbance()">Add Disturbance</button>
+                        <button class="button" onclick="testHOCBF()">Test Collision</button>
+                        <button class="button danger" onclick="addHOCBFDisturbance()">Add Disturbance</button>
+                        <button class="button" onclick="addHOCBFObstacle()">Add Obstacle</button>
+                        <button class="button danger" onclick="clearHOCBFObstacles()">Clear Extra</button>
                     </div>
                     
-                    <div class="parameter-display">
-                        <div class="parameter-card">
-                            <div class="status-value" id="position-value">250</div>
-                            <div class="status-label">Position</div>
+                    <div class="status-display">
+                        <div class="status-item">
+                            <div class="status-value safe" id="h0-value-hocbf">100</div>
+                            <div class="status-label">h₀(x) - Position</div>
                         </div>
-                        <div class="parameter-card">
-                            <div class="status-value" id="velocity-value">0</div>
-                            <div class="status-label">Velocity</div>
+                        <div class="status-item">
+                            <div class="status-value" id="h1-value-hocbf">100</div>
+                            <div class="status-label">h₁(x) - Velocity</div>
                         </div>
-                        <div class="parameter-card">
-                            <div class="status-value safe" id="h0-value">100</div>
-                            <div class="status-label">h₀(x)</div>
+                        <div class="status-item">
+                            <div class="status-value safe" id="safety-status-hocbf">SAFE</div>
+                            <div class="status-label">Safety Status</div>
                         </div>
-                        <div class="parameter-card">
-                            <div class="status-value" id="control-value">0</div>
-                            <div class="status-label">Control u</div>
+                        <div class="status-item">
+                            <div class="status-value" id="control-modification-hocbf">0%</div>
+                            <div class="status-label">Control Modified</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value" id="cbf-active-hocbf">INACTIVE</div>
+                            <div class="status-label">CBF Status</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value" id="speed-magnitude-hocbf">0.0</div>
+                            <div class="status-label">Speed (m/s)</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="demo-card">
-                    <h3>HOCBF Theory</h3>
+                    <h3>2D HOCBF Theory</h3>
                     <div class="info-panel">
-                        <h4>High-Order Control Barrier Functions:</h4>
+                        <h4>High-Order Control Barrier Functions in 2D:</h4>
                         <p style="color: #94a3b8; line-height: 1.6; margin-bottom: 15px;">
-                            For higher-order dynamics like double integrator $\ddot{x} = u$, we need High-Order CBFs
-                            because control doesn't appear directly in $\dot{h}_0$. We recursively construct barriers.
+                            For double integrator dynamics $\ddot{\mathbf{p}} = \mathbf{u}$ where $\mathbf{p} \in \mathbb{R}^2$ and $\mathbf{u} \in \mathbb{R}^2$, 
+                            control appears at relative degree 2. We construct high-order barriers recursively.
                         </p>
                         <div class="math-formula">
-                            <p><strong>System Dynamics:</strong></p>
+                            <p><strong>System Dynamics (2D Double Integrator):</strong></p>
                             $$\begin{align}
-                            \dot{x} &= v \\
-                            \dot{v} &= u
+                            \dot{\mathbf{p}} &= \mathbf{v} \\
+                            \dot{\mathbf{v}} &= \mathbf{u}
                             \end{align}$$
                             <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                                Double integrator with position $x$, velocity $v$, and control $u$.
+                                State: $\mathbf{x} = [\mathbf{p}^T, \mathbf{v}^T]^T \in \mathbb{R}^4$ with position $\mathbf{p} = [p_x, p_y]^T$ and velocity $\mathbf{v} = [v_x, v_y]^T$.
                             </p>
                             
-                            <p><strong>Zeroth-Order Barrier (Position Constraint):</strong></p>
-                            $$h_0(x) = x - x_{obs}$$
+                            <p><strong>Zeroth-Order Barrier (Obstacle Avoidance):</strong></p>
+                            $$h_0(\mathbf{x}) = \|\mathbf{p} - \mathbf{o}\|^2 - r^2 = (p_x - o_x)^2 + (p_y - o_y)^2 - r^2$$
                             <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                                Original safety constraint: stay away from obstacle at $x_{obs}$.
+                                Safe set: $\mathcal{C}_0 = \{\mathbf{x} : h_0(\mathbf{x}) \geq 0\}$ ensures distance from obstacle center $\mathbf{o}$ exceeds radius $r$.
                             </p>
                             
-                            <p><strong>Relative Degree Issue:</strong></p>
-                            $$\dot{h}_0 = \frac{\partial h_0}{\partial x} \dot{x} = 1 \cdot v = v$$
+                            <p><strong>First Lie Derivative:</strong></p>
+                            $$\dot{h}_0(\mathbf{x}) = \nabla_{\mathbf{p}} h_0 \cdot \mathbf{v} = 2(\mathbf{p} - \mathbf{o})^T \mathbf{v}$$
                             <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                                Control $u$ doesn't appear in $\dot{h}_0$! We need higher-order differentiation.
+                                Control $\mathbf{u}$ does not appear! Relative degree is 2, requiring HOCBF construction.
                             </p>
                             
                             <p><strong>First-Order Barrier Construction:</strong></p>
-                            $$h_1(x,v) = \dot{h}_0 + \alpha_1 h_0 = v + \alpha_1(x - x_{obs})$$
+                            $$h_1(\mathbf{x}) = \dot{h}_0(\mathbf{x}) + \alpha_1 h_0(\mathbf{x}) = 2(\mathbf{p} - \mathbf{o})^T \mathbf{v} + \alpha_1[\|\mathbf{p} - \mathbf{o}\|^2 - r^2]$$
                             <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                                Combine velocity with scaled position constraint.
+                                Augment position safety with velocity-scaled term using class-$\mathcal{K}$ function $\alpha_1$.
                             </p>
                             
-                            <p><strong>HOCBF Safety Constraint:</strong></p>
-                            $$\dot{h}_1 + \alpha_2 h_1 \geq 0$$
-                            
-                            <p><strong>Control Derivation:</strong></p>
+                            <p><strong>Second Lie Derivative:</strong></p>
                             $$\begin{align}
-                            \dot{h}_1 &= \frac{\partial h_1}{\partial x} \dot{x} + \frac{\partial h_1}{\partial v} \dot{v} \\
-                            &= \alpha_1 v + 1 \cdot u = u + \alpha_1 v
+                            \ddot{h}_0(\mathbf{x}, \mathbf{u}) &= 2\|\mathbf{v}\|^2 + 2(\mathbf{p} - \mathbf{o})^T \mathbf{u} \\
+                            \dot{h}_1(\mathbf{x}, \mathbf{u}) &= \ddot{h}_0 + \alpha_1 \dot{h}_0 = 2\|\mathbf{v}\|^2 + 2(\mathbf{p} - \mathbf{o})^T \mathbf{u} + \alpha_1 \dot{h}_0
                             \end{align}$$
                             
-                            <p><strong>Final Control Constraint:</strong></p>
-                            $$u \geq -\alpha_1 v - \alpha_2 h_1$$
+                            <p><strong>HOCBF Safety Constraint:</strong></p>
+                            $$\dot{h}_1(\mathbf{x}, \mathbf{u}) + \alpha_2 h_1(\mathbf{x}) \geq 0$$
+                            
+                            <p><strong>Control Constraint (Linear in $\mathbf{u}$):</strong></p>
+                            $$(\mathbf{p} - \mathbf{o})^T \mathbf{u} \geq -\|\mathbf{v}\|^2 - \frac{\alpha_2}{2}[\dot{h}_0 + \alpha_1 h_0] - \frac{\alpha_1}{2}\dot{h}_0$$
                             <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                                Now control $u$ appears explicitly and can enforce safety!
+                                Half-space constraint in control space $\mathbb{R}^2$. Minimum-norm projection yields safe control.
+                            </p>
+                            
+                            <p><strong>QP-Based Safety Filter:</strong></p>
+                            $$\begin{align}
+                            \mathbf{u}^* = \arg\min_{\mathbf{u}} &\quad \|\mathbf{u} - \mathbf{u}_{\text{nom}}\|^2 \\
+                            \text{subject to} &\quad (\mathbf{p}_i - \mathbf{o}_i)^T \mathbf{u} \geq b_i, \quad \forall i \in \mathcal{I}_{\text{obs}}
+                            \end{align}$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                Minimal modification to nominal control $\mathbf{u}_{\text{nom}}$ while satisfying all obstacle constraints.
                             </p>
                             
                             <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.2);">
                                 <strong>Key Properties:</strong><br>
-                                • $\alpha_1, \alpha_2 > 0$ ensure exponential stability<br>
-                                • Higher relative degree requires recursive barrier construction<br>
-                                • Maintains safety for dynamic systems with momentum<br>
-                                • Enables smooth braking before hitting constraints
+                                • Relative degree 2 requires two class-$\mathcal{K}$ functions: $\alpha_1, \alpha_2 > 0$<br>
+                                • Velocity-aware safety: accounts for momentum and provides predictive braking<br>
+                                • Smooth deceleration: continuous acceleration prevents jerky motion<br>
+                                • Forward invariance: $h_0(\mathbf{x}(0)) \geq 0 \implies h_0(\mathbf{x}(t)) \geq 0, \; \forall t \geq 0$<br>
+                                • Exponential convergence to safe set when $h_1 < 0$
                             </p>
                         </div>
                     </div>
@@ -900,19 +963,22 @@
             perturbationCooldown: 0 // frames to wait before applying another perturbation
         };
 
-        // HOCBF Demo State
+        // HOCBF Demo State (2D Double Integrator)
         let hocbfDemo = {
-            position: 250,       // CORRECTED: Start in the safe zone
-            velocity: 0,
-            goalPosition: 170,   // CORRECTED: Goal is closer to the obstacle to test CBF
-            obstaclePosition: 150, // The "wall" is at x=150. Safe zone is x > 150.
+            robot: { x: 100, y: 150, vx: 0, vy: 0, goalX: 300, goalY: 150 },
+            obstacles: [{ x: 200, y: 150, radius: 40 }],
+            trajectory: [],
             alpha1: 1.0,
-            alpha2: 2.0,
-            controlLimit: 50,
+            alpha2: 1.5,
+            accelLimit: 100,
+            speed: 1.0,
             dt: 0.016,
-            control: 0,
+            controlModification: 0,
+            safetyMargin: 15,
+            isInfeasible: false,
             isCBFActive: false,
-            isInfeasible: false
+            nominalControl: null,
+            safeControl: null
         };
 
         // Multi-Agent Demo State
@@ -1012,6 +1078,9 @@
 
                 // Canvas click handler for setting a new goal
                 canvas.addEventListener('click', (e) => {
+                    // Don't set goal if we just finished dragging
+                    if (isDragging) return;
+                    
                     const rect = canvas.getBoundingClientRect();
                     const x = e.clientX - rect.left;
                     const y = e.clientY - rect.top;
@@ -1033,12 +1102,14 @@
                         basicDemo.lastPosition = { x: basicDemo.robot.x, y: basicDemo.robot.y };
                         basicDemo.perturbationApplied = false;
                         basicDemo.perturbationCooldown = 0;
+                        renderBasicDemo();
                     }
                 });
                 
                 // Obstacle dragging logic
                 let isDragging = false;
                 let dragIndex = -1;
+                let hoveredObstacle = -1;
                 
                 canvas.addEventListener('mousedown', (e) => {
                     const rect = canvas.getBoundingClientRect();
@@ -1052,25 +1123,54 @@
                         if (dist_squared < obs.radius * obs.radius) {
                             isDragging = true;
                             dragIndex = i;
+                            canvas.classList.add('dragging');
+                            e.stopPropagation(); // Prevent goal setting when dragging
                         }
                     });
                 });
                 
                 canvas.addEventListener('mousemove', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
                     if (isDragging && dragIndex >= 0) {
-                        const rect = canvas.getBoundingClientRect();
-                        basicDemo.obstacles[dragIndex].x = e.clientX - rect.left;
-                        basicDemo.obstacles[dragIndex].y = e.clientY - rect.top;
+                        basicDemo.obstacles[dragIndex].x = x;
+                        basicDemo.obstacles[dragIndex].y = y;
+                        renderBasicDemo();
+                    } else {
+                        // Update cursor based on hover
+                        let overObstacle = false;
+                        basicDemo.obstacles.forEach((obs, i) => {
+                            const dx = x - obs.x;
+                            const dy = y - obs.y;
+                            const dist_squared = dx*dx + dy*dy;
+                            if (dist_squared < obs.radius * obs.radius) {
+                                overObstacle = true;
+                                hoveredObstacle = i;
+                            }
+                        });
+                        
+                        if (overObstacle) {
+                            canvas.style.cursor = 'grab';
+                        } else {
+                            canvas.style.cursor = 'crosshair';
+                            hoveredObstacle = -1;
+                        }
                     }
                 });
                 
                 canvas.addEventListener('mouseup', () => {
                     isDragging = false;
                     dragIndex = -1;
+                    canvas.classList.remove('dragging');
                 });
                 canvas.addEventListener('mouseleave', () => {
                      isDragging = false;
                      dragIndex = -1;
+                     hoveredObstacle = -1;
+                     canvas.classList.remove('dragging');
+                     canvas.style.cursor = 'crosshair';
                 });
                 
                 // Control listeners
@@ -1123,7 +1223,7 @@
             }
             
             // Draw obstacles and their safe zones
-            basicDemo.obstacles.forEach(obs => {
+            basicDemo.obstacles.forEach((obs, i) => {
                 // CBF activation zone - shows when CBF constraints become active
                 const cbfActivationRadius = obs.radius + basicDemo.safetyMargin;
                 svg.innerHTML += `
@@ -1131,17 +1231,43 @@
                             fill="none" stroke="#10b981" stroke-width="2" 
                             stroke-dasharray="5,5" opacity="0.4"/>
                     <circle cx="${obs.x}" cy="${obs.y}" r="${obs.radius}" 
-                            fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" stroke-width="2"/>
+                            fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" stroke-width="2"
+                            style="cursor: grab;"/>
+                    <!-- Draggable indicator -->
+                    <text x="${obs.x}" y="${obs.y + 5}" fill="#ef4444" font-size="16" 
+                          text-anchor="middle" opacity="0.6" style="pointer-events: none;">⊕</text>
                 `;
             });
             
-            // Draw goal position
+            // Draw goal position with target reticle design
             svg.innerHTML += `
+                <!-- Outer orbit rings (static) -->
                 <circle cx="${basicDemo.robot.goalX}" cy="${basicDemo.robot.goalY}" 
-                        r="8" fill="none" stroke="#a78bfa" stroke-width="2" 
-                        stroke-dasharray="3,3"/>
+                        r="16" fill="none" stroke="#a78bfa" stroke-width="1" 
+                        stroke-dasharray="2,3" opacity="0.4"/>
                 <circle cx="${basicDemo.robot.goalX}" cy="${basicDemo.robot.goalY}" 
-                        r="3" fill="#a78bfa"/>
+                        r="12" fill="none" stroke="#a78bfa" stroke-width="1.5" 
+                        stroke-dasharray="4,4" opacity="0.5"/>
+                <!-- Crosshair lines -->
+                <line x1="${basicDemo.robot.goalX - 10}" y1="${basicDemo.robot.goalY}" 
+                      x2="${basicDemo.robot.goalX - 4}" y2="${basicDemo.robot.goalY}" 
+                      stroke="#a78bfa" stroke-width="1.5" opacity="0.6"/>
+                <line x1="${basicDemo.robot.goalX + 4}" y1="${basicDemo.robot.goalY}" 
+                      x2="${basicDemo.robot.goalX + 10}" y2="${basicDemo.robot.goalY}" 
+                      stroke="#a78bfa" stroke-width="1.5" opacity="0.6"/>
+                <line x1="${basicDemo.robot.goalX}" y1="${basicDemo.robot.goalY - 10}" 
+                      x2="${basicDemo.robot.goalX}" y2="${basicDemo.robot.goalY - 4}" 
+                      stroke="#a78bfa" stroke-width="1.5" opacity="0.6"/>
+                <line x1="${basicDemo.robot.goalX}" y1="${basicDemo.robot.goalY + 4}" 
+                      x2="${basicDemo.robot.goalX}" y2="${basicDemo.robot.goalY + 10}" 
+                      stroke="#a78bfa" stroke-width="1.5" opacity="0.6"/>
+                <!-- Center dot with glow -->
+                <circle cx="${basicDemo.robot.goalX}" cy="${basicDemo.robot.goalY}" 
+                        r="3" fill="#a78bfa" class="goal-glow"/>
+                <!-- Label -->
+                <text x="${basicDemo.robot.goalX}" y="${basicDemo.robot.goalY - 20}" 
+                      fill="#a78bfa" font-size="9" text-anchor="middle" opacity="0.8" 
+                      font-weight="500">GOAL</text>
             `;
             
             // Determine robot color based on safety status
@@ -1576,11 +1702,13 @@
             renderBasicDemo();
         }
 
-        // ============= HIGH-ORDER CBF DEMO =============
+        // ============= HIGH-ORDER CBF DEMO (2D) =============
         function initHOCBFDemo() {
             const canvas = document.getElementById('hocbf-canvas');
+            
             if (!canvas.dataset.initialized) {
                 canvas.dataset.initialized = 'true';
+                
                 // Control listeners
                 document.getElementById('alpha1-hocbf').addEventListener('input', (e) => {
                     hocbfDemo.alpha1 = parseFloat(e.target.value);
@@ -1592,11 +1720,97 @@
                     document.getElementById('alpha2-hocbf-value').textContent = e.target.value;
                 });
                 
-                document.getElementById('control-limit').addEventListener('input', (e) => {
-                    hocbfDemo.controlLimit = parseInt(e.target.value);
-                    document.getElementById('control-limit-value').textContent = e.target.value;
+                document.getElementById('accel-limit').addEventListener('input', (e) => {
+                    hocbfDemo.accelLimit = parseInt(e.target.value);
+                    document.getElementById('accel-limit-value').textContent = e.target.value;
+                });
+                
+                document.getElementById('speed-hocbf').addEventListener('input', (e) => {
+                    hocbfDemo.speed = parseFloat(e.target.value);
+                    document.getElementById('speed-hocbf-value').textContent = e.target.value + 'x';
+                });
+                
+                // Mouse interaction for goal setting
+                canvas.addEventListener('click', (e) => {
+                    // Check if clicking on an obstacle
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    let clickedObstacle = false;
+                    hocbfDemo.obstacles.forEach(obs => {
+                        const dist = Math.sqrt((x - obs.x)**2 + (y - obs.y)**2);
+                        if (dist < obs.radius) clickedObstacle = true;
+                    });
+                    
+                    if (!clickedObstacle) {
+                        hocbfDemo.robot.goalX = x;
+                        hocbfDemo.robot.goalY = y;
+                        renderHOCBFDemo();
+                    }
+                });
+                
+                // Drag obstacles
+                let draggedObstacle = null;
+                let hoveredObstacle = null;
+                
+                canvas.addEventListener('mousedown', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    const mouseY = e.clientY - rect.top;
+                    
+                    hocbfDemo.obstacles.forEach(obs => {
+                        const dist = Math.sqrt((mouseX - obs.x)**2 + (mouseY - obs.y)**2);
+                        if (dist < obs.radius + 5) {
+                            draggedObstacle = obs;
+                            canvas.classList.add('dragging');
+                            e.stopPropagation();
+                        }
+                    });
+                });
+                
+                canvas.addEventListener('mousemove', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    const mouseY = e.clientY - rect.top;
+                    
+                    if (draggedObstacle) {
+                        draggedObstacle.x = mouseX;
+                        draggedObstacle.y = mouseY;
+                        renderHOCBFDemo();
+                    } else {
+                        // Update cursor based on hover
+                        let overObstacle = false;
+                        hocbfDemo.obstacles.forEach(obs => {
+                            const dist = Math.sqrt((mouseX - obs.x)**2 + (mouseY - obs.y)**2);
+                            if (dist < obs.radius + 5) {
+                                overObstacle = true;
+                                hoveredObstacle = obs;
+                            }
+                        });
+                        
+                        if (overObstacle) {
+                            canvas.style.cursor = 'grab';
+                        } else {
+                            canvas.style.cursor = 'crosshair';
+                            hoveredObstacle = null;
+                        }
+                    }
+                });
+                
+                canvas.addEventListener('mouseup', () => {
+                    draggedObstacle = null;
+                    canvas.classList.remove('dragging');
+                });
+                
+                canvas.addEventListener('mouseleave', () => {
+                    draggedObstacle = null;
+                    hoveredObstacle = null;
+                    canvas.classList.remove('dragging');
+                    canvas.style.cursor = 'crosshair';
                 });
             }
+            
             renderHOCBFDemo();
         }
 
@@ -1604,121 +1818,335 @@
             const svg = document.getElementById('hocbf-svg');
             if (!svg) return;
             
-            const width = svg.clientWidth || 400;
-            const height = svg.clientHeight || 300;
-            
-            svg.innerHTML = '';
-            
-            // Draw track
-            svg.innerHTML += `
-                <line x1="20" y1="${height/2}" x2="${width-20}" y2="${height/2}" 
-                      stroke="#334155" stroke-width="4"/>
-                <text x="20" y="${height/2 - 10}" fill="#94a3b8" font-size="12">0</text>
-                <text x="${width-20}" y="${height/2 - 10}" fill="#94a3b8" font-size="12" text-anchor="end">300</text>
+            // Define SVG markers for arrows
+            svg.innerHTML = `
+                <defs>
+                    <marker id="arrow-nominal-hocbf" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L0,6 L9,3 z" fill="#60a5fa" opacity="0.6"/>
+                    </marker>
+                    <marker id="arrow-safe-hocbf" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L0,6 L9,3 z" fill="#10b981"/>
+                    </marker>
+                </defs>
             `;
             
-            // Scale positions to fit canvas width
-            const scale = (width - 40) / 300;
-            const robotX = 20 + hocbfDemo.position * scale;
-            const obstacleX = 20 + hocbfDemo.obstaclePosition * scale;
-            const goalX = 20 + hocbfDemo.goalPosition * scale;
-            
-            // Draw obstacle
-            svg.innerHTML += `
-                <rect x="${obstacleX}" y="${height/2 - 20}" width="10" height="40" 
-                      fill="#ef4444" stroke="#dc2626" stroke-width="2"/>
-            `;
-            
-            // Draw goal
-            svg.innerHTML += `
-                <circle cx="${goalX}" cy="${height/2}" r="8" 
-                        fill="none" stroke="#a78bfa" stroke-width="2" stroke-dasharray="3,3"/>
-            `;
-            
-            // Determine robot color based on status
-            const h0 = hocbfDemo.position - hocbfDemo.obstaclePosition;
-            let robotColor = '#3b82f6'; // Default blue
-            if (h0 < 0) {
-                robotColor = '#ef4444'; // Red for collision
-            } else if (hocbfDemo.isInfeasible) {
-                robotColor = '#a78bfa'; // Purple for infeasible (control limits exceeded)
-            } else if (hocbfDemo.isCBFActive) {
-                robotColor = '#f59e0b'; // Orange for CBF actively modifying control
-            }
-            
-            svg.innerHTML += `
-                <circle cx="${robotX}" cy="${height/2}" r="10" 
-                        fill="${robotColor}" stroke="#ffffff" stroke-width="2"/>
-            `;
-            
-            // Draw velocity arrow
-            if (Math.abs(hocbfDemo.velocity) > 1) {
-                const velScale = 0.5;
+            // Draw trajectory path
+            if (hocbfDemo.trajectory.length > 1) {
+                const pathData = 'M ' + hocbfDemo.trajectory.map(p => `${p.x},${p.y}`).join(' L ');
                 svg.innerHTML += `
-                    <line x1="${robotX}" y1="${height/2 - 15}" 
-                          x2="${robotX + hocbfDemo.velocity * velScale}" y2="${height/2 - 15}" 
-                          stroke="#60a5fa" stroke-width="3" marker-end="url(#arrow-gray)"/>
+                    <path d="${pathData}" fill="none" stroke="#6366f1" stroke-width="1.5" opacity="0.4"/>
                 `;
             }
+            
+            // Draw obstacles with safety margins
+            hocbfDemo.obstacles.forEach(obs => {
+                const safeRadius = obs.radius + hocbfDemo.safetyMargin;
+                svg.innerHTML += `
+                    <circle cx="${obs.x}" cy="${obs.y}" r="${safeRadius}" 
+                            fill="rgba(239, 68, 68, 0.1)" stroke="rgba(239, 68, 68, 0.3)" stroke-width="2" stroke-dasharray="5,5"/>
+                    <circle cx="${obs.x}" cy="${obs.y}" r="${obs.radius}" 
+                            fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" stroke-width="2"
+                            style="cursor: grab;"/>
+                    <!-- Draggable indicator -->
+                    <text x="${obs.x}" y="${obs.y + 5}" fill="#ef4444" font-size="16" 
+                          text-anchor="middle" opacity="0.6" style="pointer-events: none;">⊕</text>
+                `;
+            });
+            
+            // Draw goal with target reticle design
+            svg.innerHTML += `
+                <g>
+                    <!-- Outer orbit rings (static) -->
+                    <circle cx="${hocbfDemo.robot.goalX}" cy="${hocbfDemo.robot.goalY}" r="18" 
+                            fill="none" stroke="#a78bfa" stroke-width="1" 
+                            stroke-dasharray="2,3" opacity="0.4"/>
+                    <circle cx="${hocbfDemo.robot.goalX}" cy="${hocbfDemo.robot.goalY}" r="12" 
+                            fill="none" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.5"/>
+                    <!-- Crosshair lines -->
+                    <line x1="${hocbfDemo.robot.goalX - 11}" y1="${hocbfDemo.robot.goalY}" 
+                          x2="${hocbfDemo.robot.goalX - 5}" y2="${hocbfDemo.robot.goalY}" 
+                          stroke="#a78bfa" stroke-width="1.5" opacity="0.6"/>
+                    <line x1="${hocbfDemo.robot.goalX + 5}" y1="${hocbfDemo.robot.goalY}" 
+                          x2="${hocbfDemo.robot.goalX + 11}" y2="${hocbfDemo.robot.goalY}" 
+                          stroke="#a78bfa" stroke-width="1.5" opacity="0.6"/>
+                    <line x1="${hocbfDemo.robot.goalX}" y1="${hocbfDemo.robot.goalY - 11}" 
+                          x2="${hocbfDemo.robot.goalX}" y2="${hocbfDemo.robot.goalY - 5}" 
+                          stroke="#a78bfa" stroke-width="1.5" opacity="0.6"/>
+                    <line x1="${hocbfDemo.robot.goalX}" y1="${hocbfDemo.robot.goalY + 5}" 
+                          x2="${hocbfDemo.robot.goalX}" y2="${hocbfDemo.robot.goalY + 11}" 
+                          stroke="#a78bfa" stroke-width="1.5" opacity="0.6"/>
+                    <!-- Center dot with glow -->
+                    <circle cx="${hocbfDemo.robot.goalX}" cy="${hocbfDemo.robot.goalY}" r="4" 
+                            fill="#a78bfa" class="goal-glow"/>
+                    <!-- Label -->
+                    <text x="${hocbfDemo.robot.goalX}" y="${hocbfDemo.robot.goalY - 22}" 
+                          fill="#a78bfa" font-size="9" text-anchor="middle" opacity="0.8" 
+                          font-weight="500">GOAL</text>
+                </g>
+            `;
+            
+            // Determine robot color based on safety status
+            let minH0 = Infinity;
+            hocbfDemo.obstacles.forEach(obs => {
+                const dx = hocbfDemo.robot.x - obs.x;
+                const dy = hocbfDemo.robot.y - obs.y;
+                const safety_radius = obs.radius + hocbfDemo.safetyMargin;
+                const h0 = dx*dx + dy*dy - safety_radius*safety_radius;
+                minH0 = Math.min(minH0, h0);
+            });
+            
+            let robotColor = '#10b981'; // Green (safe)
+            if (minH0 < 0) {
+                robotColor = '#ef4444'; // Red (collision)
+            } else if (hocbfDemo.isInfeasible) {
+                robotColor = '#a78bfa'; // Purple (infeasible)
+            } else if (hocbfDemo.isCBFActive) {
+                robotColor = '#f59e0b'; // Orange (CBF active)
+            }
+            
+            // Draw control vectors
+            if (hocbfDemo.nominalControl && hocbfDemo.safeControl) {
+                const accelScale = 0.3; // Scale for visualization
+                
+                // Nominal control (semi-transparent blue)
+                svg.innerHTML += `
+                    <line x1="${hocbfDemo.robot.x}" y1="${hocbfDemo.robot.y}" 
+                          x2="${hocbfDemo.robot.x + hocbfDemo.nominalControl.x * accelScale}" 
+                          y2="${hocbfDemo.robot.y + hocbfDemo.nominalControl.y * accelScale}" 
+                          stroke="#60a5fa" stroke-width="3" opacity="0.5" 
+                          marker-end="url(#arrow-nominal-hocbf)"/>
+                    <text x="${hocbfDemo.robot.x + hocbfDemo.nominalControl.x * accelScale + 5}" 
+                          y="${hocbfDemo.robot.y + hocbfDemo.nominalControl.y * accelScale}" 
+                          fill="#60a5fa" font-size="10" opacity="0.7">u_nom</text>
+                `;
+                
+                // Safe control (solid green)
+                svg.innerHTML += `
+                    <line x1="${hocbfDemo.robot.x}" y1="${hocbfDemo.robot.y}" 
+                          x2="${hocbfDemo.robot.x + hocbfDemo.safeControl.x * accelScale}" 
+                          y2="${hocbfDemo.robot.y + hocbfDemo.safeControl.y * accelScale}" 
+                          stroke="#10b981" stroke-width="3" 
+                          marker-end="url(#arrow-safe-hocbf)"/>
+                    <text x="${hocbfDemo.robot.x + hocbfDemo.safeControl.x * accelScale + 5}" 
+                          y="${hocbfDemo.robot.y + hocbfDemo.safeControl.y * accelScale + 15}" 
+                          fill="#10b981" font-size="10">u_safe</text>
+                `;
+            }
+            
+            // Draw velocity vector
+            const velScale = 2.0;
+            const velMag = Math.sqrt(hocbfDemo.robot.vx**2 + hocbfDemo.robot.vy**2);
+            if (velMag > 0.5) {
+                svg.innerHTML += `
+                    <line x1="${hocbfDemo.robot.x}" y1="${hocbfDemo.robot.y}" 
+                          x2="${hocbfDemo.robot.x + hocbfDemo.robot.vx * velScale}" 
+                          y2="${hocbfDemo.robot.y + hocbfDemo.robot.vy * velScale}" 
+                          stroke="#8b5cf6" stroke-width="2" stroke-dasharray="3,3" opacity="0.7"/>
+                `;
+            }
+            
+            // Draw robot
+            svg.innerHTML += `
+                <circle cx="${hocbfDemo.robot.x}" cy="${hocbfDemo.robot.y}" r="12" 
+                        fill="${robotColor}" stroke="#ffffff" stroke-width="2"/>
+            `;
             
             updateHOCBFStatus();
         }
 
         function updateHOCBFStatus() {
-            const h0 = hocbfDemo.position - hocbfDemo.obstaclePosition;
+            // Calculate h0 and h1 for the closest obstacle
+            let minH0 = Infinity;
+            let minH1 = Infinity;
             
-            document.getElementById('position-value').textContent = Math.round(hocbfDemo.position);
-            document.getElementById('velocity-value').textContent = hocbfDemo.velocity.toFixed(1);
-            document.getElementById('h0-value').textContent = h0.toFixed(1);
-            document.getElementById('h0-value').className = `status-value ${h0 >= 0 ? 'safe' : 'unsafe'}`;
-            document.getElementById('control-value').textContent = hocbfDemo.control.toFixed(1);
+            hocbfDemo.obstacles.forEach(obs => {
+                const dx = hocbfDemo.robot.x - obs.x;
+                const dy = hocbfDemo.robot.y - obs.y;
+                const safety_radius = obs.radius + hocbfDemo.safetyMargin;
+                
+                const h0 = dx*dx + dy*dy - safety_radius*safety_radius;
+                const h0_dot = 2 * (dx * hocbfDemo.robot.vx + dy * hocbfDemo.robot.vy);
+                const h1 = h0_dot + hocbfDemo.alpha1 * h0;
+                
+                minH0 = Math.min(minH0, h0);
+                minH1 = Math.min(minH1, h1);
+            });
+            
+            const isSafe = minH0 >= 0;
+            
+            document.getElementById('h0-value-hocbf').textContent = minH0.toFixed(1);
+            document.getElementById('h0-value-hocbf').className = `status-value ${isSafe ? 'safe' : 'unsafe'}`;
+            
+            document.getElementById('h1-value-hocbf').textContent = minH1.toFixed(1);
+            document.getElementById('h1-value-hocbf').className = `status-value ${minH1 >= 0 ? 'safe' : 'warning'}`;
+            
+            // Update safety status
+            let statusText = 'SAFE';
+            let statusClass = 'safe';
+            
+            if (!isSafe) {
+                statusText = 'COLLISION';
+                statusClass = 'unsafe';
+            } else if (hocbfDemo.isInfeasible) {
+                statusText = 'INFEASIBLE';
+                statusClass = 'infeasible';
+            } else if (hocbfDemo.isCBFActive) {
+                statusText = 'CBF ACTIVE';
+                statusClass = 'warning';
+            }
+            
+            document.getElementById('safety-status-hocbf').textContent = statusText;
+            document.getElementById('safety-status-hocbf').className = `status-value ${statusClass}`;
+            
+            document.getElementById('control-modification-hocbf').textContent = `${Math.round(hocbfDemo.controlModification)}%`;
+            document.getElementById('control-modification-hocbf').className = `status-value ${hocbfDemo.controlModification > 50 ? 'warning' : ''}`;
+            
+            document.getElementById('cbf-active-hocbf').textContent = hocbfDemo.isCBFActive ? 'ACTIVE' : 'INACTIVE';
+            document.getElementById('cbf-active-hocbf').className = `status-value ${hocbfDemo.isCBFActive ? 'warning' : ''}`;
+            
+            const speed = Math.sqrt(hocbfDemo.robot.vx**2 + hocbfDemo.robot.vy**2);
+            document.getElementById('speed-magnitude-hocbf').textContent = speed.toFixed(2);
+        }
+
+        function computeHOCBFControl(robot, obstacles, nominalControl, alpha1, alpha2) {
+            let safeControl = {...nominalControl};
+            let maxModification = 0;
+            let isInfeasible = false;
+            let isCBFActive = false;
+            
+            // Apply HOCBF constraints iteratively for each obstacle
+            let iterations = 0;
+            const maxIterations = 5;
+            
+            while (iterations < maxIterations) {
+                let needsModification = false;
+                
+                obstacles.forEach(obs => {
+                    const dx = robot.x - obs.x;
+                    const dy = robot.y - obs.y;
+                    const safety_radius = obs.radius + hocbfDemo.safetyMargin;
+                    
+                    // h0 = ||p - o||^2 - r^2
+                    const h0 = dx*dx + dy*dy - safety_radius*safety_radius;
+                    
+                    // h0_dot = 2*(p - o)^T * v
+                    const h0_dot = 2 * (dx * robot.vx + dy * robot.vy);
+                    
+                    // h1 = h0_dot + alpha1 * h0
+                    const h1 = h0_dot + alpha1 * h0;
+                    
+                    // h0_ddot = 2*||v||^2 + 2*(p - o)^T * u
+                    const v_norm_sq = robot.vx**2 + robot.vy**2;
+                    
+                    // h1_dot = h0_ddot + alpha1 * h0_dot
+                    //        = 2*||v||^2 + 2*(p - o)^T * u + alpha1 * h0_dot
+                    
+                    // HOCBF constraint: h1_dot + alpha2 * h1 >= 0
+                    // => 2*(p - o)^T * u >= -2*||v||^2 - alpha1 * h0_dot - alpha2 * h1
+                    
+                    const b = -v_norm_sq - (alpha1 / 2) * h0_dot - (alpha2 / 2) * h1;
+                    
+                    // Gradient: (p - o)
+                    const grad_x = dx;
+                    const grad_y = dy;
+                    const grad_norm = Math.sqrt(grad_x**2 + grad_y**2);
+                    
+                    if (grad_norm < 1e-6) return; // Avoid division by zero
+                    
+                    // Check constraint: grad^T * u >= b
+                    const constraint_value = grad_x * safeControl.x + grad_y * safeControl.y;
+                    
+                    if (constraint_value < b) {
+                        needsModification = true;
+                        isCBFActive = true;
+                        
+                        // Project control onto constraint boundary
+                        // u_safe = u_nom + lambda * grad, where lambda chosen to satisfy constraint
+                        const lambda = (b - constraint_value) / (grad_norm**2);
+                        safeControl.x += lambda * grad_x;
+                        safeControl.y += lambda * grad_y;
+                    }
+                });
+                
+                iterations++;
+                if (!needsModification) break;
+            }
+            
+            // Check actuator limits
+            const accelMag = Math.sqrt(safeControl.x**2 + safeControl.y**2);
+            if (accelMag > hocbfDemo.accelLimit) {
+                isInfeasible = iterations >= maxIterations || accelMag > hocbfDemo.accelLimit * 1.5;
+                // Clip to limits
+                const scale = hocbfDemo.accelLimit / accelMag;
+                safeControl.x *= scale;
+                safeControl.y *= scale;
+            }
+            
+            // Calculate modification percentage
+            const nominalMag = Math.sqrt(nominalControl.x**2 + nominalControl.y**2);
+            const diff = Math.sqrt((safeControl.x - nominalControl.x)**2 + (safeControl.y - nominalControl.y)**2);
+            maxModification = nominalMag > 0 ? (diff / nominalMag) * 100 : 0;
+            
+            return { safeControl, modification: maxModification, isInfeasible, isCBFActive };
         }
 
         function animateHOCBFDemo() {
             if (!animations.hocbf) return;
             
-            const dt = hocbfDemo.dt;
+            const robot = hocbfDemo.robot;
+            const dt = hocbfDemo.dt * hocbfDemo.speed;
             
-            // Nominal control (PD controller to drive to goal)
-            const error = hocbfDemo.goalPosition - hocbfDemo.position;
-            const kp = 2.0;
-            const kd = 3.0;
-            let u_nominal = kp * error - kd * hocbfDemo.velocity;
+            // Nominal control: PD controller toward goal
+            const dx_goal = robot.goalX - robot.x;
+            const dy_goal = robot.goalY - robot.y;
+            const dist = Math.sqrt(dx_goal**2 + dy_goal**2);
             
-            // Apply control limits to nominal control
-            u_nominal = Math.max(-hocbfDemo.controlLimit, 
-                                 Math.min(hocbfDemo.controlLimit, u_nominal));
-            
-            // HOCBF calculation
-            const h0 = hocbfDemo.position - hocbfDemo.obstaclePosition;
-            const h1 = hocbfDemo.velocity + hocbfDemo.alpha1 * h0;
-            
-            // Constraint from theory: u ≥ -α₁·v - α₂·h₁
-            const u_min = -hocbfDemo.alpha1 * hocbfDemo.velocity - hocbfDemo.alpha2 * h1;
-            
-            // Apply safety filter
-            let u_safe = u_nominal;
-            hocbfDemo.isCBFActive = false;
-            if (u_nominal < u_min) {
-                u_safe = u_min;
-                hocbfDemo.isCBFActive = true;
+            let nominalControl = { x: 0, y: 0 };
+            if (dist > 5) {
+                const kp = 30.0; // Position gain
+                const kd = 20.0; // Velocity damping
+                nominalControl.x = kp * dx_goal - kd * robot.vx;
+                nominalControl.y = kp * dy_goal - kd * robot.vy;
+                
+                // Clip to acceleration limits
+                const nominalMag = Math.sqrt(nominalControl.x**2 + nominalControl.y**2);
+                if (nominalMag > hocbfDemo.accelLimit) {
+                    const scale = hocbfDemo.accelLimit / nominalMag;
+                    nominalControl.x *= scale;
+                    nominalControl.y *= scale;
+                }
             }
             
-            // Check if the required safe control is achievable within actuator limits
-            hocbfDemo.isInfeasible = (u_safe > hocbfDemo.controlLimit || u_safe < -hocbfDemo.controlLimit);
+            // Apply HOCBF safety filter
+            const { safeControl, modification, isInfeasible, isCBFActive } = computeHOCBFControl(
+                robot,
+                hocbfDemo.obstacles,
+                nominalControl,
+                hocbfDemo.alpha1,
+                hocbfDemo.alpha2
+            );
             
-            // Apply physical control limits to the final safe control
-            u_safe = Math.max(-hocbfDemo.controlLimit, 
-                              Math.min(hocbfDemo.controlLimit, u_safe));
+            hocbfDemo.nominalControl = nominalControl;
+            hocbfDemo.safeControl = safeControl;
+            hocbfDemo.controlModification = modification;
+            hocbfDemo.isInfeasible = isInfeasible;
+            hocbfDemo.isCBFActive = isCBFActive;
             
-            hocbfDemo.control = u_safe;
+            // Update robot state (double integrator dynamics)
+            robot.vx += safeControl.x * dt;
+            robot.vy += safeControl.y * dt;
+            robot.x += robot.vx * dt;
+            robot.y += robot.vy * dt;
             
-            // Update dynamics (double integrator: ẍ = u)
-            hocbfDemo.velocity += u_safe * dt;
-            hocbfDemo.position += hocbfDemo.velocity * dt;
-            
-            // Apply some damping to prevent oscillations
-            hocbfDemo.velocity *= 0.995;
+            // Update trajectory
+            if (hocbfDemo.trajectory.length === 0 || 
+                Math.hypot(robot.x - hocbfDemo.trajectory[hocbfDemo.trajectory.length - 1].x,
+                          robot.y - hocbfDemo.trajectory[hocbfDemo.trajectory.length - 1].y) > 3) {
+                hocbfDemo.trajectory.push({ x: robot.x, y: robot.y });
+                if (hocbfDemo.trajectory.length > 300) {
+                    hocbfDemo.trajectory.shift();
+                }
+            }
             
             renderHOCBFDemo();
             requestAnimationFrame(animateHOCBFDemo);
@@ -1732,19 +2160,52 @@
         }
 
         function resetHOCBFDemo() {
-            // CORRECTED: Reset to a valid, safe initial state
-            hocbfDemo.position = 250;
-            hocbfDemo.velocity = 0;
-            hocbfDemo.control = 0;
-            hocbfDemo.goalPosition = 170;
-            hocbfDemo.isCBFActive = false;
+            hocbfDemo.robot = { x: 100, y: 150, vx: 0, vy: 0, goalX: 300, goalY: 150 };
+            hocbfDemo.trajectory = [];
+            hocbfDemo.controlModification = 0;
             hocbfDemo.isInfeasible = false;
+            hocbfDemo.isCBFActive = false;
             renderHOCBFDemo();
         }
 
-        function addDisturbance() {
-            hocbfDemo.velocity += (Math.random() - 0.5) * 40;
+        function testHOCBF() {
+            // Set up a direct collision course
+            if (hocbfDemo.obstacles.length === 0) return;
+            const obs = hocbfDemo.obstacles[0];
+            hocbfDemo.robot.x = obs.x - 100;
+            hocbfDemo.robot.y = obs.y;
+            hocbfDemo.robot.vx = 0;
+            hocbfDemo.robot.vy = 0;
+            hocbfDemo.robot.goalX = obs.x + 100;
+            hocbfDemo.robot.goalY = obs.y;
+            hocbfDemo.trajectory = [];
+            renderHOCBFDemo();
         }
+
+        function addHOCBFDisturbance() {
+            hocbfDemo.robot.vx += (Math.random() - 0.5) * 60;
+            hocbfDemo.robot.vy += (Math.random() - 0.5) * 60;
+        }
+
+        function addHOCBFObstacle() {
+            const canvas = document.getElementById('hocbf-canvas');
+            const rect = canvas.getBoundingClientRect();
+            
+            const newObs = {
+                x: 50 + Math.random() * (rect.width - 100),
+                y: 50 + Math.random() * (rect.height - 100),
+                radius: 30 + Math.random() * 20
+            };
+            
+            hocbfDemo.obstacles.push(newObs);
+            renderHOCBFDemo();
+        }
+
+        function clearHOCBFObstacles() {
+            hocbfDemo.obstacles = [hocbfDemo.obstacles[0]];
+            renderHOCBFDemo();
+        }
+
 
         // ============= MULTI-AGENT DEMO =============
         function initMultiAgentDemo() {
