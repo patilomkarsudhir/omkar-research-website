@@ -416,6 +416,7 @@
         <div class="nav-tabs">
             <button class="tab-button active" onclick="switchTab('basic-demo', event)">Basic CBF Demo</button>
             <button class="tab-button" onclick="switchTab('hocbf-demo', event)">High-Order CBF</button>
+            <button class="tab-button" onclick="switchTab('rise-cbf-demo', event)">RISE-CBF with Disturbances</button>
             <button class="tab-button" onclick="switchTab('multi-agent', event)">Multi-Agent Systems</button>
         </div>
 
@@ -697,6 +698,166 @@
             </div>
         </div>
 
+        <!-- RISE-CBF Demo with Disturbance Observer -->
+        <div id="rise-cbf-demo" class="content-section">
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <h3>2D Robot with RISE Disturbance Observer</h3>
+                    <p style="color: #94a3b8; margin: 10px 0; font-size: 0.9rem;">
+                        Watch the robot navigate with unknown disturbances while a RISE observer estimates and compensates for them.
+                        The system uses vector-valued CBFs for multiple simultaneous safety constraints.
+                        <strong>Click to set goal. Toggle disturbances to see real-time adaptation.</strong>
+                    </p>
+                    <div class="demo-canvas" id="rise-canvas" style="height: 400px;">
+                        <svg id="rise-svg" width="100%" height="100%" style="position: absolute; top: 0; left: 0;"></svg>
+                        <div class="grid-background"></div>
+                    </div>
+                    
+                    <div class="interaction-hint">
+                        <strong>Interactive Controls:</strong>
+                        Drag robot to reposition | Click canvas to set goal | Toggle disturbances on/off | Adjust observer gains
+                    </div>
+                    
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Observer α: <span id="alpha-val-rise">2.0</span></label>
+                            <input type="range" id="alpha-rise" min="1.1" max="5" step="0.1" value="2.0" 
+                                   oninput="riseDemo.alpha = parseFloat(this.value); document.getElementById('alpha-val-rise').textContent = this.value;">
+                        </div>
+                        <div class="control-group">
+                            <label>Observer k_d: <span id="kd-val-rise">1.5</span></label>
+                            <input type="range" id="kd-rise" min="0.1" max="5" step="0.1" value="1.5" 
+                                   oninput="riseDemo.kd = parseFloat(this.value); document.getElementById('kd-val-rise').textContent = this.value;">
+                        </div>
+                        <div class="control-group">
+                            <label>Observer β: <span id="beta-val-rise">4.0</span></label>
+                            <input type="range" id="beta-rise" min="0.5" max="15" step="0.5" value="4.0" 
+                                   oninput="riseDemo.beta = parseFloat(this.value); document.getElementById('beta-val-rise').textContent = this.value;">
+                        </div>
+                        <div class="control-group">
+                            <label>Disturbance bound \u0305d: <span id="dbar-val-rise">5.0</span></label>
+                            <input type="range" id="dbar-rise" min="0.5" max="15" step="0.5" value="5.0" 
+                                   oninput="riseDemo.dBar = parseFloat(this.value); document.getElementById('dbar-val-rise').textContent = this.value;">
+                        </div>
+                        <div class="control-group">
+                            <label>γ gain: <span id="gamma-val-rise">2.0</span></label>
+                            <input type="range" id="gamma-rise" min="0" max="10" step="0.5" value="2.0" 
+                                   oninput="riseDemo.gammaGain = parseFloat(this.value); document.getElementById('gamma-val-rise').textContent = this.value;">
+                        </div>
+                        <div class="control-group">
+                            <label>Speed: <span id="speed-val-rise">1.0</span>x</label>
+                            <input type="range" id="speed-rise" min="0.1" max="2" step="0.1" value="1.0" 
+                                   oninput="riseDemo.speed = parseFloat(this.value); document.getElementById('speed-val-rise').textContent = this.value;">
+                        </div>
+                    </div>
+                    
+                    <div class="controls">
+                        <button class="button" onclick="resetRISEDemo()">Reset Demo</button>
+                        <button class="button" onclick="toggleRISEAnimation()">Start/Stop</button>
+                        <button class="button" onclick="testRISECollision()">Test Collision</button>
+                        <button class="button danger" onclick="toggleDisturbances()">Toggle Disturbances</button>
+                        <button class="button" onclick="addRISEObstacle()">Add Obstacle</button>
+                        <button class="button danger" onclick="clearRISEObstacles()">Clear Extra</button>
+                    </div>
+                    
+                    <div class="status-display">
+                        <div class="status-item">
+                            <div class="status-value safe" id="safety-status-rise">SAFE</div>
+                            <div class="status-label">Safety Status</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value" id="dist-estimate-rise">0.0</div>
+                            <div class="status-label">‖d̂‖ Estimate</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value" id="dist-actual-rise">0.0</div>
+                            <div class="status-label">‖d‖ Actual</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value" id="observer-error-rise">0.0</div>
+                            <div class="status-label">Observer Error</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value" id="cbf-active-rise">OFF</div>
+                            <div class="status-label">CBF Active</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value" id="num-constraints-rise">0</div>
+                            <div class="status-label">Active Constraints</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-card">
+                    <h3>RISE Observer + Vector-Valued CBF Theory</h3>
+                    <div class="info-panel">
+                        <h4>System Dynamics with Unknown Disturbances:</h4>
+                        <div class="math-formula">
+                            <p><strong>Single Integrator with Disturbance:</strong></p>
+                            $$\dot{\mathbf{x}} = \mathbf{u} + \mathbf{d}(\mathbf{x},t)$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                Unknown bounded disturbance $\mathbf{d}$ satisfies $\|\mathbf{d}(\mathbf{x},t)\| \leq \bar d$ in the safe region.
+                            </p>
+                        </div>
+                        
+                        <h4>RISE Disturbance Observer:</h4>
+                        <div class="math-formula">
+                            <p><strong>Observer dynamics (component-wise):</strong></p>
+                            $$\tilde{\mathbf{x}} = \mathbf{x} - \hat{\mathbf{x}}, \quad \text{dir}(\tilde{\mathbf{x}}) = \frac{\tilde{\mathbf{x}}}{\|\tilde{\mathbf{x}}\|}$$
+                            $$\dot{\hat{\mathbf{x}}} = \mathbf{u} + \hat{\mathbf{d}} + \alpha \, \tilde{\mathbf{x}}$$
+                            $$\hat{\mathbf{d}}(t) = \hat{\mathbf{d}}(0) + k_d \, \tilde{\mathbf{x}} + \int_0^t \big[(k_d \alpha + 1)\,\tilde{\mathbf{x}}(\tau) + \beta\,\text{dir}(\tilde{\mathbf{x}}(\tau))\big] d\tau$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                Gains satisfy $\alpha > 1,\; k_d,\beta>0$. Define $\lambda = \tfrac{1}{2}\min\{\alpha-1,\,k_d\}$. Then
+                                $\|\tilde{\mathbf{d}}(t)\| \le 2\bar d\,e^{-\lambda t}$.
+                            </p>
+                        </div>
+                        
+                        <h4>Vector-Valued Control Barrier Functions:</h4>
+                        <div class="math-formula">
+                            <p><strong>Vector CBF Definition (safe set):</strong></p>
+                            $$\mathbf{B}(\mathbf{x}) = \begin{bmatrix} B_1(\mathbf{x}) \\ \vdots \\ B_m(\mathbf{x}) \end{bmatrix},\quad \mathcal{S} = \{\mathbf{x} : \mathbf{B}(\mathbf{x}) \le \mathbf{0}\}$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                Here we use $B_i(\mathbf{x}) = r_i^2 - \|\mathbf{x}-\mathbf{o}_i\|^2$ so $B_i\le 0$ is safe.
+                            </p>
+                            <p><strong>Constraint form (single integrator):</strong></p>
+                            $$\Gamma_i(\mathbf{x},\mathbf{u}) = \nabla B_i(\mathbf{x})^T (\mathbf{u} + \mathbf{d}) \le -\gamma_i(\mathbf{x})$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                Implement using an upper bound $\chi_i$ on $\nabla B_i^T\mathbf{d}$.
+                            </p>
+                        </div>
+                        
+                        <h4>Adaptive CBF Constraint with Observer:</h4>
+                        <div class="math-formula">
+                            <p><strong>Observer-aided robust constraint:</strong></p>
+                            $$\chi_i(\mathbf{x}) = \min\{\bar d\,\|\nabla B_i\|,\; \nabla B_i^T\hat{\mathbf{d}} + \tilde d_{UB}(t)\,\|\nabla B_i\|\}$$
+                            $$\nabla B_i(\mathbf{x})^T\,\mathbf{u} \le -\gamma_i(\mathbf{x}) - \chi_i(\mathbf{x})$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                With $\tilde d_{UB}(t) = 2\bar d\,e^{-\lambda t}$ and $\gamma_i(\mathbf{x}) = \gamma\,\max\{B_i(\mathbf{x}),0\}$.
+                            </p>
+                            <p><strong>Minimum-modification control (conceptually QP):</strong></p>
+                            $$\begin{align}
+                            \mathbf{u}^* = \arg\min_{\mathbf{u}} &\quad \|\mathbf{u} - \mathbf{u}_{\text{nom}}\|^2 \\
+                            	ext{subject to} &\quad \nabla B_i(\mathbf{x})^T\,\mathbf{u} \le -\gamma_i(\mathbf{x}) - \chi_i(\mathbf{x}),\quad i=1,\ldots,m
+                            \end{align}$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                Minimally modify nominal control $\mathbf{u}_{\text{nom}}$ while satisfying all $m$ vector CBF constraints.
+                            </p>
+                        </div>
+                        
+                        <div style="background: #f0fff4; border: 1px solid #68d391; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                            <strong style="color: #2f855a;">Key Theoretical Guarantees:</strong>
+                            <ul style="color: #2d3748; margin: 10px 0 0 20px; line-height: 1.8;">
+                                <li><strong>Exponential observer convergence:</strong> $\|\tilde{\mathbf{d}}(t)\| \le 2\bar d\,e^{-\lambda t}$ with $\lambda = \tfrac{1}{2}\min\{\alpha-1,\,k_d\}$</li>
+                                <li><strong>Forward invariance (vector CBF):</strong> $\mathbf{B}(\mathbf{x}(0)) \le \mathbf{0} \Rightarrow \mathbf{B}(\mathbf{x}(t)) \le \mathbf{0}$ for all $t\ge 0$</li>
+                                <li><strong>Robustness to transients:</strong> Safety maintained even during observer convergence phase</li>
+                                <li><strong>Multiple simultaneous constraints:</strong> Vector formulation handles $m$ obstacles naturally</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Multi-Agent Demo -->
         <div id="multi-agent" class="content-section">
             <div class="demo-card">
@@ -938,6 +1099,7 @@
         let animations = {
             basic: false,
             hocbf: false,
+            rise: false,
             multiagent: false
         };
 
@@ -979,6 +1141,44 @@
             isCBFActive: false,
             nominalControl: null,
             safeControl: null
+        };
+
+        // RISE-CBF Demo State (Single Integrator with Disturbance Observer per TAC'24)
+        let riseDemo = {
+            // Single-integrator robot: ẋ = u + d(x)
+            robot: { x: 100, y: 150, vx: 0, vy: 0, goalX: 350, goalY: 150 },
+            obstacles: [
+                { x: 200, y: 150, radius: 35 },
+                { x: 280, y: 220, radius: 30 }
+            ],
+            trajectory: [],
+            // RISE observer parameters (Theorem 1)
+            alpha: 2.0,   // α > 1 recommended
+            kd: 1.5,      // k_d > 0
+            beta: 4.0,    // β large enough per (7)
+            // Observer states
+            hatX: { x: 100, y: 150 },   // ˆx
+            intTilde: { x: 0, y: 0 },   // ∫ \tilde{x} dτ
+            intDir: { x: 0, y: 0 },     // ∫ dir(\tilde{x}) dτ
+            disturbanceEstimate: { x: 0, y: 0 },  // ˆd
+            // Disturbance model and bounds (Assumption 3)
+            actualDisturbance: { x: 0, y: 0 },
+            disturbancesEnabled: false,
+            dBar: 5.0,   // \bar d bound on ‖d(x)‖ in S
+            // Vector-CBF parameters (Section II)
+            gammaGain: 2.0, // γ_i(x) = gammaGain * max(B_i(x), 0)
+            speed: 1.0,
+            dt: 0.016,
+            safetyMargin: 15,
+            // Status tracking
+            controlModification: 0,
+            isInfeasible: false,
+            isCBFActive: false,
+            activeConstraints: 0,
+            nominalControl: null,
+            safeControl: null,
+            observerError: 0,
+            t: 0.0       // simulation time for \tilde d_UB(t)
         };
 
         // Multi-Agent Demo State
@@ -1056,6 +1256,7 @@
             // Initialize demos when switching to them
             if (tabName === 'basic-demo') initBasicDemo();
             if (tabName === 'hocbf-demo') initHOCBFDemo();
+            if (tabName === 'rise-cbf-demo') initRISEDemo();
             if (tabName === 'multi-agent') initMultiAgentDemo();
             
             // Re-render MathJax for the new content
@@ -2204,6 +2405,600 @@
         function clearHOCBFObstacles() {
             hocbfDemo.obstacles = [hocbfDemo.obstacles[0]];
             renderHOCBFDemo();
+        }
+
+
+        // ============= RISE-CBF DEMO WITH DISTURBANCE OBSERVER =============
+        function initRISEDemo() {
+            const canvas = document.getElementById('rise-canvas');
+            
+            if (!canvas.dataset.initialized) {
+                canvas.dataset.initialized = 'true';
+                
+                // Obstacle dragging (similar to basic demo)
+                let isDraggingObstacle = false;
+                let dragIndex = -1;
+                let hoveredObstacle = -1;
+                
+                canvas.addEventListener('mousedown', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    // Check if clicking on an obstacle first
+                    riseDemo.obstacles.forEach((obs, i) => {
+                        const dx = x - obs.x;
+                        const dy = y - obs.y;
+                        const dist_squared = dx*dx + dy*dy;
+                        if (dist_squared < obs.radius * obs.radius) {
+                            isDraggingObstacle = true;
+                            dragIndex = i;
+                            canvas.classList.add('dragging');
+                            e.stopPropagation();
+                        }
+                    });
+                });
+                
+                canvas.addEventListener('mousemove', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    if (isDraggingObstacle && dragIndex >= 0) {
+                        riseDemo.obstacles[dragIndex].x = x;
+                        riseDemo.obstacles[dragIndex].y = y;
+                        renderRISEDemo();
+                    } else {
+                        // Update cursor based on hover
+                        let overObstacle = false;
+                        riseDemo.obstacles.forEach((obs, i) => {
+                            const dx = x - obs.x;
+                            const dy = y - obs.y;
+                            const dist_squared = dx*dx + dy*dy;
+                            if (dist_squared < obs.radius * obs.radius) {
+                                overObstacle = true;
+                                hoveredObstacle = i;
+                            }
+                        });
+                        
+                        if (overObstacle) {
+                            canvas.style.cursor = 'grab';
+                        } else {
+                            canvas.style.cursor = 'crosshair';
+                            hoveredObstacle = -1;
+                        }
+                    }
+                });
+                
+                canvas.addEventListener('mouseup', () => {
+                    isDraggingObstacle = false;
+                    dragIndex = -1;
+                    canvas.classList.remove('dragging');
+                });
+                
+                canvas.addEventListener('mouseleave', () => {
+                    isDraggingObstacle = false;
+                    dragIndex = -1;
+                    hoveredObstacle = -1;
+                    canvas.classList.remove('dragging');
+                    canvas.style.cursor = 'crosshair';
+                });
+                
+                // Canvas click handler for setting a new goal
+                canvas.addEventListener('click', (e) => {
+                    // Don't set goal if we just finished dragging
+                    if (isDraggingObstacle) return;
+                    
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    // Check if clicking on an obstacle to avoid setting goal inside it
+                    let clickedObstacle = false;
+                    riseDemo.obstacles.forEach(obs => {
+                        const dx = x - obs.x;
+                        const dy = y - obs.y;
+                        const dist_squared = dx*dx + dy*dy;
+                        if (dist_squared < obs.radius * obs.radius) clickedObstacle = true;
+                    });
+                    
+                    if (!clickedObstacle) {
+                        riseDemo.robot.goalX = x;
+                        riseDemo.robot.goalY = y;
+                        renderRISEDemo();
+                    }
+                });
+            }
+            
+            renderRISEDemo();
+        }
+
+        function renderRISEDemo() {
+            const svg = document.getElementById('rise-svg');
+            if (!svg) return;
+            
+            // Define SVG markers for arrows
+            svg.innerHTML = `
+                <defs>
+                    <marker id="arrowhead-rise" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#94a3b8" />
+                    </marker>
+                    <marker id="arrowhead-rise-nominal" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#64748b" />
+                    </marker>
+                    <marker id="arrowhead-rise-safe" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#10b981" />
+                    </marker>
+                    <marker id="arrowhead-rise-disturbance" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#ef4444" />
+                    </marker>
+                    <marker id="arrowhead-rise-estimate" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#f59e0b" />
+                    </marker>
+                </defs>
+            `;
+            
+            // Draw trajectory path
+            if (riseDemo.trajectory.length > 1) {
+                const pathData = riseDemo.trajectory.map((pt, i) => 
+                    `${i === 0 ? 'M' : 'L'} ${pt.x} ${pt.y}`
+                ).join(' ');
+                svg.innerHTML += `<path d="${pathData}" stroke="#3b82f6" stroke-width="2" fill="none" opacity="0.4" />`;
+            }
+            
+            // Draw obstacles with safety margins
+            riseDemo.obstacles.forEach((obs, i) => {
+                const safetyRadius = obs.radius + riseDemo.safetyMargin;
+                svg.innerHTML += `
+                    <circle cx="${obs.x}" cy="${obs.y}" r="${safetyRadius}" fill="rgba(239, 68, 68, 0.1)" stroke="rgba(239, 68, 68, 0.3)" stroke-width="1" stroke-dasharray="4,4" />
+                    <circle cx="${obs.x}" cy="${obs.y}" r="${obs.radius}" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" stroke-width="2" style="cursor: grab;" />
+                    <!-- Draggable indicator -->
+                    <text x="${obs.x}" y="${obs.y + 5}" fill="#ef4444" font-size="16" 
+                          text-anchor="middle" opacity="0.6" style="pointer-events: none;">⊕</text>
+                `;
+            });
+            
+            // Draw goal with target reticle design
+            svg.innerHTML += `
+                <circle cx="${riseDemo.robot.goalX}" cy="${riseDemo.robot.goalY}" r="12" fill="none" stroke="#a78bfa" stroke-width="2" class="goal-glow" />
+                <circle cx="${riseDemo.robot.goalX}" cy="${riseDemo.robot.goalY}" r="6" fill="none" stroke="#a78bfa" stroke-width="2" class="goal-glow" />
+                <line x1="${riseDemo.robot.goalX - 18}" y1="${riseDemo.robot.goalY}" x2="${riseDemo.robot.goalX - 12}" y2="${riseDemo.robot.goalY}" stroke="#a78bfa" stroke-width="2" class="goal-glow" />
+                <line x1="${riseDemo.robot.goalX + 12}" y1="${riseDemo.robot.goalY}" x2="${riseDemo.robot.goalX + 18}" y2="${riseDemo.robot.goalY}" stroke="#a78bfa" stroke-width="2" class="goal-glow" />
+                <line x1="${riseDemo.robot.goalX}" y1="${riseDemo.robot.goalY - 18}" x2="${riseDemo.robot.goalX}" y2="${riseDemo.robot.goalY - 12}" stroke="#a78bfa" stroke-width="2" class="goal-glow" />
+                <line x1="${riseDemo.robot.goalX}" y1="${riseDemo.robot.goalY + 12}" x2="${riseDemo.robot.goalX}" y2="${riseDemo.robot.goalY + 18}" stroke="#a78bfa" stroke-width="2" class="goal-glow" />
+            `;
+            
+            // Determine robot color based on safety status
+            let minH0 = Infinity;
+            riseDemo.obstacles.forEach(obs => {
+                const dx = riseDemo.robot.x - obs.x;
+                const dy = riseDemo.robot.y - obs.y;
+                const safety_radius = obs.radius + riseDemo.safetyMargin;
+                const h0 = dx*dx + dy*dy - safety_radius*safety_radius;
+                minH0 = Math.min(minH0, h0);
+            });
+            
+            let robotColor = '#10b981'; // Green (safe)
+            if (minH0 < 0) {
+                robotColor = '#ef4444'; // Red (collision)
+            } else if (riseDemo.isInfeasible) {
+                robotColor = '#a78bfa'; // Purple (infeasible)
+            } else if (riseDemo.isCBFActive) {
+                robotColor = '#f59e0b'; // Orange (CBF active)
+            }
+            
+            // Draw disturbance vectors (actual and estimated)
+            if (riseDemo.disturbancesEnabled) {
+                const distScale = 8.0;
+                
+                // Actual disturbance (red)
+                const actualMag = Math.sqrt(riseDemo.actualDisturbance.x**2 + riseDemo.actualDisturbance.y**2);
+                if (actualMag > 0.1) {
+                    const dx_actual = (riseDemo.actualDisturbance.x / actualMag) * Math.min(actualMag * distScale, 50);
+                    const dy_actual = (riseDemo.actualDisturbance.y / actualMag) * Math.min(actualMag * distScale, 50);
+                    svg.innerHTML += `
+                        <line x1="${riseDemo.robot.x}" y1="${riseDemo.robot.y}" 
+                              x2="${riseDemo.robot.x + dx_actual}" y2="${riseDemo.robot.y + dy_actual}" 
+                              stroke="#ef4444" stroke-width="3" marker-end="url(#arrowhead-rise-disturbance)" opacity="0.7" />
+                        <text x="${riseDemo.robot.x + dx_actual + 5}" y="${riseDemo.robot.y + dy_actual - 5}" 
+                              fill="#ef4444" font-size="11px" font-weight="bold">d</text>
+                    `;
+                }
+                
+                // Estimated disturbance (orange)
+                const estMag = Math.sqrt(riseDemo.disturbanceEstimate.x**2 + riseDemo.disturbanceEstimate.y**2);
+                if (estMag > 0.1) {
+                    const dx_est = (riseDemo.disturbanceEstimate.x / estMag) * Math.min(estMag * distScale, 50);
+                    const dy_est = (riseDemo.disturbanceEstimate.y / estMag) * Math.min(estMag * distScale, 50);
+                    svg.innerHTML += `
+                        <line x1="${riseDemo.robot.x}" y1="${riseDemo.robot.y}" 
+                              x2="${riseDemo.robot.x + dx_est}" y2="${riseDemo.robot.y + dy_est}" 
+                              stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowhead-rise-estimate)" opacity="0.7" stroke-dasharray="4,4" />
+                        <text x="${riseDemo.robot.x + dx_est + 5}" y="${riseDemo.robot.y + dy_est + 15}" 
+                              fill="#f59e0b" font-size="11px" font-weight="bold">d̂</text>
+                    `;
+                }
+            }
+            
+            // Draw control vectors
+            if (riseDemo.nominalControl && riseDemo.safeControl) {
+                const scale = 2.0;
+                
+                // Nominal control vector (gray)
+                const nomMag = Math.sqrt(riseDemo.nominalControl.x**2 + riseDemo.nominalControl.y**2);
+                if (nomMag > 0.5) {
+                    const dx_nom = (riseDemo.nominalControl.x / nomMag) * Math.min(nomMag * scale, 40);
+                    const dy_nom = (riseDemo.nominalControl.y / nomMag) * Math.min(nomMag * scale, 40);
+                    svg.innerHTML += `
+                        <line x1="${riseDemo.robot.x}" y1="${riseDemo.robot.y}" 
+                              x2="${riseDemo.robot.x + dx_nom}" y2="${riseDemo.robot.y + dy_nom}" 
+                              stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead-rise-nominal)" opacity="0.5" />
+                        <text x="${riseDemo.robot.x + dx_nom - 15}" y="${riseDemo.robot.y + dy_nom - 5}" 
+                              fill="#64748b" font-size="10px">u_nom</text>
+                    `;
+                }
+                
+                // Safe control vector (green)
+                const safeMag = Math.sqrt(riseDemo.safeControl.x**2 + riseDemo.safeControl.y**2);
+                if (safeMag > 0.5) {
+                    const dx_safe = (riseDemo.safeControl.x / safeMag) * Math.min(safeMag * scale, 40);
+                    const dy_safe = (riseDemo.safeControl.y / safeMag) * Math.min(safeMag * scale, 40);
+                    svg.innerHTML += `
+                        <line x1="${riseDemo.robot.x}" y1="${riseDemo.robot.y}" 
+                              x2="${riseDemo.robot.x + dx_safe}" y2="${riseDemo.robot.y + dy_safe}" 
+                              stroke="#10b981" stroke-width="3" marker-end="url(#arrowhead-rise-safe)" />
+                        <text x="${riseDemo.robot.x + dx_safe + 5}" y="${riseDemo.robot.y + dy_safe + 15}" 
+                              fill="#10b981" font-size="10px" font-weight="bold">u_safe</text>
+                    `;
+                }
+            }
+            
+            // Draw velocity vector
+            const velScale = 3.0;
+            const velMag = Math.sqrt(riseDemo.robot.vx**2 + riseDemo.robot.vy**2);
+            if (velMag > 0.5) {
+                const dx_vel = (riseDemo.robot.vx / velMag) * Math.min(velMag * velScale, 35);
+                const dy_vel = (riseDemo.robot.vy / velMag) * Math.min(velMag * velScale, 35);
+                svg.innerHTML += `
+                    <line x1="${riseDemo.robot.x}" y1="${riseDemo.robot.y}" 
+                          x2="${riseDemo.robot.x + dx_vel}" y2="${riseDemo.robot.y + dy_vel}" 
+                          stroke="#60a5fa" stroke-width="2" marker-end="url(#arrowhead-rise)" opacity="0.6" />
+                    <text x="${riseDemo.robot.x + dx_vel - 10}" y="${riseDemo.robot.y + dy_vel + 15}" 
+                          fill="#60a5fa" font-size="10px">v</text>
+                `;
+            }
+            
+            // Draw robot
+            svg.innerHTML += `
+                <circle cx="${riseDemo.robot.x}" cy="${riseDemo.robot.y}" r="10" fill="${robotColor}" stroke="#1e293b" stroke-width="2" />
+                <circle cx="${riseDemo.robot.x}" cy="${riseDemo.robot.y}" r="3" fill="#1e293b" />
+            `;
+            
+            updateRISEStatus();
+        }
+
+        function updateRISEStatus() {
+            // Vector-valued CBF uses B(x) ≤ 0 as safe set. Here B_i = (r+margin)^2 - ||x-o||^2
+            let minB = Infinity;
+            let activeConstraints = 0;
+
+            riseDemo.obstacles.forEach(obs => {
+                const dx = riseDemo.robot.x - obs.x;
+                const dy = riseDemo.robot.y - obs.y;
+                const safety_radius = obs.radius + riseDemo.safetyMargin;
+                const Bi = safety_radius*safety_radius - (dx*dx + dy*dy); // ≤ 0 is safe
+                minB = Math.min(minB, Bi);
+
+                // Count as active if near boundary or unsafe region
+                if (Bi > - (riseDemo.safetyMargin * riseDemo.safetyMargin)) {
+                    activeConstraints++;
+                }
+            });
+
+            const isSafe = minB <= 0;
+
+            // Update safety status
+            let statusText = 'SAFE';
+            let statusClass = 'safe';
+
+            if (!isSafe) {
+                statusText = 'UNSAFE';
+                statusClass = 'unsafe';
+            } else if (riseDemo.isInfeasible) {
+                statusText = 'INFEASIBLE';
+                statusClass = 'infeasible';
+            } else if (riseDemo.isCBFActive) {
+                statusText = 'CBF ACTIVE';
+                statusClass = 'warning';
+            }
+
+            document.getElementById('safety-status-rise').textContent = statusText;
+            document.getElementById('safety-status-rise').className = `status-value ${statusClass}`;
+
+            // Update disturbance estimates
+            const distEst = Math.sqrt(riseDemo.disturbanceEstimate.x**2 + riseDemo.disturbanceEstimate.y**2);
+            document.getElementById('dist-estimate-rise').textContent = distEst.toFixed(2);
+
+            const distActual = Math.sqrt(riseDemo.actualDisturbance.x**2 + riseDemo.actualDisturbance.y**2);
+            document.getElementById('dist-actual-rise').textContent = distActual.toFixed(2);
+
+            document.getElementById('observer-error-rise').textContent = riseDemo.observerError.toFixed(2);
+            document.getElementById('observer-error-rise').className = `status-value ${riseDemo.observerError < 1.0 ? 'safe' : 'warning'}`;
+
+            document.getElementById('cbf-active-rise').textContent = riseDemo.isCBFActive ? 'ACTIVE' : 'OFF';
+            document.getElementById('cbf-active-rise').className = `status-value ${riseDemo.isCBFActive ? 'warning' : ''}`;
+
+            document.getElementById('num-constraints-rise').textContent = activeConstraints;
+            document.getElementById('num-constraints-rise').className = `status-value ${activeConstraints > 0 ? 'warning' : ''}`;
+        }
+
+        function updateRISEObserver(appliedControl, dt) {
+            // RISE observer per TAC'24 (single integrator):
+            // \hat{x}\dot{} = u + \hat{d} + \alpha \tilde{x}
+            // \hat{d} = \hat{d}(0) + k_d \tilde{x} + \int [ (k_d\alpha + 1)\tilde{x} + \beta\,dir(\tilde{x}) ] d\tau
+            // where \tilde{x} = x - \hat{x}, dir(v) = v/\|v\| (with 0 protection)
+
+            const tildeX = {
+                x: riseDemo.robot.x - riseDemo.hatX.x,
+                y: riseDemo.robot.y - riseDemo.hatX.y
+            };
+
+            const tildeNorm = Math.hypot(tildeX.x, tildeX.y);
+            const dir = {
+                x: tildeNorm > 1e-6 ? tildeX.x / tildeNorm : 0,
+                y: tildeNorm > 1e-6 ? tildeX.y / tildeNorm : 0
+            };
+
+            // Accumulate raw integrals
+            riseDemo.intTilde.x += tildeX.x * dt;
+            riseDemo.intTilde.y += tildeX.y * dt;
+            riseDemo.intDir.x += dir.x * dt;
+            riseDemo.intDir.y += dir.y * dt;
+
+            // Disturbance estimate
+            const kd = riseDemo.kd;
+            const alpha = riseDemo.alpha;
+            const beta = riseDemo.beta;
+
+            riseDemo.disturbanceEstimate = {
+                x: kd * tildeX.x + (kd * alpha + 1) * riseDemo.intTilde.x + beta * riseDemo.intDir.x,
+                y: kd * tildeX.y + (kd * alpha + 1) * riseDemo.intTilde.y + beta * riseDemo.intDir.y
+            };
+
+            // Update \hat{x}
+            riseDemo.hatX.x += (appliedControl.x + riseDemo.disturbanceEstimate.x + alpha * tildeX.x) * dt;
+            riseDemo.hatX.y += (appliedControl.y + riseDemo.disturbanceEstimate.y + alpha * tildeX.y) * dt;
+
+            // Observer error metric (w.r.t. actual disturbance if enabled)
+            const ex = riseDemo.actualDisturbance.x - riseDemo.disturbanceEstimate.x;
+            const ey = riseDemo.actualDisturbance.y - riseDemo.disturbanceEstimate.y;
+            riseDemo.observerError = Math.hypot(ex, ey);
+        }
+
+        function computeRISECBFControl(robot, obstacles, nominalControl) {
+            let safeControl = {...nominalControl};
+            let maxModification = 0;
+            let isInfeasible = false;
+            let isCBFActive = false;
+            let activeConstraints = 0;
+            
+            // Apply vector-valued CBF constraints iteratively for each obstacle (single integrator)
+            let iterations = 0;
+            const maxIterations = 5;
+            
+            while (iterations < maxIterations) {
+                let needsModification = false;
+                
+                obstacles.forEach(obs => {
+                    const dx = robot.x - obs.x;
+                    const dy = robot.y - obs.y;
+                    const safety_radius = obs.radius + riseDemo.safetyMargin;
+
+                    // Vector-valued barrier B_i(x) = (r+margin)^2 - ||x - o||^2 ≤ 0 is safe
+                    const Bi = safety_radius*safety_radius - (dx*dx + dy*dy);
+
+                    // Activate constraint when near/inside unsafe region
+                    if (Bi <= - (riseDemo.safetyMargin * riseDemo.safetyMargin)) return;
+
+                    // Gradient of B: ∇B = -2(x - o)
+                    const grad_x = -2 * dx;
+                    const grad_y = -2 * dy;
+                    const grad_norm = Math.sqrt(grad_x**2 + grad_y**2);
+                    
+                    if (grad_norm < 1e-6) return;
+
+                    // Compute λ and \tilde d_UB(t) per Theorem 1
+                    const lambda = Math.max(0, Math.min(riseDemo.alpha - 1.0, riseDemo.kd)) / 2.0;
+                    const dtildeUB = 2.0 * riseDemo.dBar * Math.exp(-lambda * Math.max(0, riseDemo.t));
+
+                    // Upper bound χ_i(z) = min{ d̄||∇B||, ∇B^T d̂ + \tilde d_UB ||∇B|| }
+                    const gradDotDest = grad_x * riseDemo.disturbanceEstimate.x + grad_y * riseDemo.disturbanceEstimate.y;
+                    const chi_candidate = gradDotDest + dtildeUB * grad_norm;
+                    const chi_bound = riseDemo.dBar * grad_norm;
+                    let chi = Math.min(chi_bound, chi_candidate);
+                    if (!isFinite(chi)) chi = chi_bound;
+                    chi = Math.max(0, chi); // ensure nonnegative upper bound
+
+                    // γ_i(x) = γ * max(B_i(x), 0)
+                    const gamma = riseDemo.gammaGain * Math.max(Bi, 0);
+
+                    // Robust CBF constraint: ∇B^T u ≤ -γ - χ
+                    const aTu = grad_x * safeControl.x + grad_y * safeControl.y;
+                    const b = -gamma - chi;
+
+                    if (aTu > b) {
+                        needsModification = true;
+                        isCBFActive = true;
+                        activeConstraints++;
+
+                        // Project onto half-space: minimize ||u-u_nom|| s.t. a^T u ≤ b
+                        const violation = aTu - b;
+                        const scale = violation / (grad_norm**2);
+                        safeControl.x -= scale * grad_x;
+                        safeControl.y -= scale * grad_y;
+                    }
+                });
+                
+                if (!needsModification) break;
+                iterations++;
+            }
+            
+            if (iterations >= maxIterations) {
+                isInfeasible = true;
+            }
+            
+            // Clip control to reasonable bounds for visualization
+            const uMag = Math.hypot(safeControl.x, safeControl.y);
+            const uMax = 200;
+            if (uMag > uMax) {
+                safeControl.x = (safeControl.x / uMag) * uMax;
+                safeControl.y = (safeControl.y / uMag) * uMax;
+            }
+            
+            // Calculate modification percentage
+            const nominalMag = Math.sqrt(nominalControl.x**2 + nominalControl.y**2);
+            const diff = Math.sqrt((safeControl.x - nominalControl.x)**2 + (safeControl.y - nominalControl.y)**2);
+            maxModification = nominalMag > 0 ? (diff / nominalMag) * 100 : 0;
+            
+            return { safeControl, modification: maxModification, isInfeasible, isCBFActive, activeConstraints };
+        }
+
+        function computeActualDisturbance(time) {
+            if (!riseDemo.disturbancesEnabled) {
+                return { x: 0, y: 0 };
+            }
+            
+            // Time-varying disturbance with multiple frequency components
+            const d_x = 3.0 * Math.sin(0.5 * time) + 1.5 * Math.cos(1.2 * time);
+            const d_y = 2.5 * Math.cos(0.7 * time) + 1.8 * Math.sin(0.9 * time);
+            
+            return { x: d_x, y: d_y };
+        }
+
+        function animateRISEDemo() {
+            if (!animations.rise) return;
+            
+            const robot = riseDemo.robot;
+            const dt = riseDemo.dt * riseDemo.speed;
+            riseDemo.t += dt;
+            const time = performance.now() / 1000.0;  // wall-clock seconds (for disturbance generation)
+            
+            // Update actual disturbance (time-varying)
+            riseDemo.actualDisturbance = computeActualDisturbance(time);
+
+            // Nominal control: move toward goal with capped speed (single integrator)
+            const dx_goal = robot.goalX - robot.x;
+            const dy_goal = robot.goalY - robot.y;
+            const dist = Math.hypot(dx_goal, dy_goal);
+
+            let nominalControl = { x: 0, y: 0 };
+            if (dist > 5) {
+                const base = 50.0; // pixels/s
+                const uMag = base;
+                nominalControl.x = (dx_goal / dist) * uMag;
+                nominalControl.y = (dy_goal / dist) * uMag;
+            }
+
+            // Apply robust vector-valued CBF (uses current disturbance estimate internally)
+            const { safeControl, modification, isInfeasible, isCBFActive, activeConstraints } = computeRISECBFControl(
+                robot,
+                riseDemo.obstacles,
+                nominalControl
+            );
+
+            riseDemo.nominalControl = nominalControl;
+            riseDemo.safeControl = safeControl;
+            riseDemo.controlModification = modification;
+            riseDemo.isInfeasible = isInfeasible;
+            riseDemo.isCBFActive = isCBFActive;
+            riseDemo.activeConstraints = activeConstraints;
+
+            // Update observer with applied control
+            updateRISEObserver(safeControl, dt);
+
+            // Single integrator state update: ẋ = u + d
+            robot.vx = safeControl.x + riseDemo.actualDisturbance.x;
+            robot.vy = safeControl.y + riseDemo.actualDisturbance.y;
+            robot.x += robot.vx * dt;
+            robot.y += robot.vy * dt;
+            
+            // Update trajectory
+            if (riseDemo.trajectory.length === 0 || 
+                Math.hypot(robot.x - riseDemo.trajectory[riseDemo.trajectory.length - 1].x,
+                          robot.y - riseDemo.trajectory[riseDemo.trajectory.length - 1].y) > 3) {
+                riseDemo.trajectory.push({ x: robot.x, y: robot.y });
+                if (riseDemo.trajectory.length > 200) {
+                    riseDemo.trajectory.shift();
+                }
+            }
+            
+            renderRISEDemo();
+            requestAnimationFrame(animateRISEDemo);
+        }
+
+        function toggleRISEAnimation() {
+            animations.rise = !animations.rise;
+            if (animations.rise) {
+                animateRISEDemo();
+            }
+        }
+
+        function resetRISEDemo() {
+            riseDemo.robot = { x: 100, y: 150, vx: 0, vy: 0, goalX: 350, goalY: 150 };
+            riseDemo.trajectory = [];
+            riseDemo.hatX = { x: 100, y: 150 };
+            riseDemo.intTilde = { x: 0, y: 0 };
+            riseDemo.intDir = { x: 0, y: 0 };
+            riseDemo.disturbanceEstimate = { x: 0, y: 0 };
+            riseDemo.actualDisturbance = { x: 0, y: 0 };
+            riseDemo.controlModification = 0;
+            riseDemo.isInfeasible = false;
+            riseDemo.isCBFActive = false;
+            riseDemo.observerError = 0;
+            riseDemo.t = 0;
+            renderRISEDemo();
+        }
+
+        function testRISECollision() {
+            // Set up a collision course with first obstacle
+            if (riseDemo.obstacles.length === 0) return;
+            const obs = riseDemo.obstacles[0];
+            riseDemo.robot.x = obs.x - 100;
+            riseDemo.robot.y = obs.y;
+            riseDemo.robot.vx = 0;
+            riseDemo.robot.vy = 0;
+            riseDemo.robot.goalX = obs.x + 100;
+            riseDemo.robot.goalY = obs.y;
+            riseDemo.trajectory = [];
+            renderRISEDemo();
+        }
+
+        function toggleDisturbances() {
+            riseDemo.disturbancesEnabled = !riseDemo.disturbancesEnabled;
+            if (!riseDemo.disturbancesEnabled) {
+                riseDemo.actualDisturbance = { x: 0, y: 0 };
+                // Don't reset observer - let it converge to zero
+            }
+            renderRISEDemo();
+        }
+
+        function addRISEObstacle() {
+            const canvas = document.getElementById('rise-canvas');
+            const rect = canvas.getBoundingClientRect();
+            
+            const newObs = {
+                x: 50 + Math.random() * (rect.width - 100),
+                y: 50 + Math.random() * (rect.height - 100),
+                radius: 25 + Math.random() * 20
+            };
+            
+            riseDemo.obstacles.push(newObs);
+            renderRISEDemo();
+        }
+
+        function clearRISEObstacles() {
+            riseDemo.obstacles = [riseDemo.obstacles[0], riseDemo.obstacles[1]];
+            renderRISEDemo();
         }
 
 
