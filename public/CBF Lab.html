@@ -135,6 +135,33 @@
             box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
         }
 
+        /* Sub-tab styles for Adaptive CBFs section */
+        .subtab-button {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            color: #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .subtab-button:hover {
+            background: rgba(71, 85, 105, 0.45);
+            transform: translateY(-1px);
+        }
+
+        .subtab-button.active {
+            background: linear-gradient(135deg, #14b8a6, #22d3ee);
+            color: white;
+            box-shadow: 0 6px 20px rgba(20, 184, 166, 0.3);
+        }
+
+        /* Adaptive CBFs subsections */
+        .adaptive-subsection { display: none; }
+        .adaptive-subsection.active { display: block; }
+
         .content-section {
             display: none;
             animation: fadeIn 0.5s ease-in-out;
@@ -416,7 +443,7 @@
         <div class="nav-tabs">
             <button class="tab-button active" onclick="switchTab('basic-demo', event)">Basic CBF Demo</button>
             <button class="tab-button" onclick="switchTab('hocbf-demo', event)">High-Order CBF</button>
-            <button class="tab-button" onclick="switchTab('rise-cbf-demo', event)">RISE-CBF with Disturbances</button>
+            <button class="tab-button" onclick="switchTab('adaptive-cbf', event)">Adaptive CBFs</button>
             <button class="tab-button" onclick="switchTab('multi-agent', event)">Multi-Agent Systems</button>
         </div>
 
@@ -675,15 +702,6 @@
                                 Half-space constraint in control space $\mathbb{R}^2$. Minimum-norm projection yields safe control.
                             </p>
                             
-                            <p><strong>QP-Based Safety Filter:</strong></p>
-                            $$\begin{align}
-                            \mathbf{u}^* = \arg\min_{\mathbf{u}} &\quad \|\mathbf{u} - \mathbf{u}_{\text{nom}}\|^2 \\
-                            \text{subject to} &\quad (\mathbf{p}_i - \mathbf{o}_i)^T \mathbf{u} \geq b_i, \quad \forall i \in \mathcal{I}_{\text{obs}}
-                            \end{align}$$
-                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                                Minimal modification to nominal control $\mathbf{u}_{\text{nom}}$ while satisfying all obstacle constraints.
-                            </p>
-                            
                             <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.2);">
                                 <strong>Key Properties:</strong><br>
                                 • Relative degree 2 requires two class-$\mathcal{K}$ functions: $\alpha_1, \alpha_2 > 0$<br>
@@ -692,166 +710,427 @@
                                 • Forward invariance: $h_0(\mathbf{x}(0)) \geq 0 \implies h_0(\mathbf{x}(t)) \geq 0, \; \forall t \geq 0$<br>
                                 • Exponential convergence to safe set when $h_1 < 0$
                             </p>
+                            
+                            <p><strong>QP-Based Safety Filter:</strong></p>
+                            $$\begin{align}
+                            \mathbf{u}^* = \arg\min_{\mathbf{u}} &\quad \|\mathbf{u} - \mathbf{u}_{\text{nom}}\|^2 \\
+                            s.t. &\quad (\mathbf{p}_i - \mathbf{o}_i)^T \mathbf{u} \geq b_i, \quad \forall i \in \mathcal{I}_{\text{obs}}
+                            \end{align}$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                Minimal modification to nominal control $\mathbf{u}_{\text{nom}}$ while satisfying all obstacle constraints.
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- RISE-CBF Demo with Disturbance Observer -->
-        <div id="rise-cbf-demo" class="content-section">
-            <div class="demo-grid">
-                <div class="demo-card">
-                    <h3>2D Robot with RISE Disturbance Observer</h3>
-                    <p style="color: #94a3b8; margin: 10px 0; font-size: 0.9rem;">
-                        Watch the robot navigate with unknown disturbances while a RISE observer estimates and compensates for them.
-                        The system uses vector-valued CBFs for multiple simultaneous safety constraints.
-                        <strong>Click to set goal. Toggle disturbances to see real-time adaptation.</strong>
-                    </p>
-                    <div class="demo-canvas" id="rise-canvas" style="height: 400px;">
-                        <svg id="rise-svg" width="100%" height="100%" style="position: absolute; top: 0; left: 0;"></svg>
-                        <div class="grid-background"></div>
+        <!-- Adaptive CBFs (combined RISE + DNN) -->
+        <div id="adaptive-cbf" class="content-section">
+            <!-- Sub-tabs for Adaptive CBFs -->
+            <div class="nav-tabs" style="margin-top: -10px; margin-bottom: 20px;">
+                <button class="subtab-button active" data-sub="rise" onclick="switchAdaptiveSubtab('rise-cbf-demo', event)">RISE Observer</button>
+                <button class="subtab-button" data-sub="dnn" onclick="switchAdaptiveSubtab('adcbf-demo', event)">Adaptive DNN</button>
+            </div>
+
+            <!-- RISE-CBF Demo with Disturbance Observer (as subsection) -->
+            <div id="rise-cbf-demo" class="adaptive-subsection active">
+                <div class="demo-grid">
+                    <div class="demo-card">
+                        <h3>2D Robot with RISE Disturbance Observer</h3>
+                        <p style="color: #94a3b8; margin: 10px 0; font-size: 0.9rem;">
+                            Watch the robot navigate with unknown disturbances while a RISE observer estimates and compensates for them.
+                            The system uses vector-valued CBFs for multiple simultaneous safety constraints.
+                            <strong>Click to set goal. Toggle disturbances to see real-time adaptation.</strong>
+                        </p>
+                        <div class="demo-canvas" id="rise-canvas" style="height: 400px;">
+                            <svg id="rise-svg" width="100%" height="100%" style="position: absolute; top: 0; left: 0;"></svg>
+                            <div class="grid-background"></div>
+                        </div>
+                        
+                        <div class="interaction-hint">
+                            <strong>Interactive Controls:</strong>
+                            Drag robot to reposition | Click canvas to set goal | Toggle disturbances on/off | Adjust observer gains
+                        </div>
+                        
+                        <div class="controls">
+                            <div class="control-group">
+                                <label>Observer α: <span id="alpha-val-rise">2.0</span></label>
+                                <input type="range" id="alpha-rise" min="1.1" max="5" step="0.1" value="2.0" 
+                                       oninput="riseDemo.alpha = parseFloat(this.value); document.getElementById('alpha-val-rise').textContent = this.value;">
+                            </div>
+                            <div class="control-group">
+                                <label>Observer k_d: <span id="kd-val-rise">1.5</span></label>
+                                <input type="range" id="kd-rise" min="0.1" max="5" step="0.1" value="1.5" 
+                                       oninput="riseDemo.kd = parseFloat(this.value); document.getElementById('kd-val-rise').textContent = this.value;">
+                            </div>
+                            <div class="control-group">
+                                <label>Observer β: <span id="beta-val-rise">4.0</span></label>
+                                <input type="range" id="beta-rise" min="0.5" max="15" step="0.5" value="4.0" 
+                                       oninput="riseDemo.beta = parseFloat(this.value); document.getElementById('beta-val-rise').textContent = this.value;">
+                            </div>
+                            <div class="control-group">
+                                <label>Disturbance bound \u0305d: <span id="dbar-val-rise">5.0</span></label>
+                                <input type="range" id="dbar-rise" min="0.5" max="15" step="0.5" value="5.0" 
+                                       oninput="riseDemo.dBar = parseFloat(this.value); document.getElementById('dbar-val-rise').textContent = this.value;">
+                            </div>
+                            <div class="control-group">
+                                <label>γ gain: <span id="gamma-val-rise">2.0</span></label>
+                                <input type="range" id="gamma-rise" min="0" max="10" step="0.5" value="2.0" 
+                                       oninput="riseDemo.gammaGain = parseFloat(this.value); document.getElementById('gamma-val-rise').textContent = this.value;">
+                            </div>
+                            <div class="control-group">
+                                <label>Speed: <span id="speed-val-rise">1.0</span>x</label>
+                                <input type="range" id="speed-rise" min="0.1" max="2" step="0.1" value="1.0" 
+                                       oninput="riseDemo.speed = parseFloat(this.value); document.getElementById('speed-val-rise').textContent = this.value;">
+                            </div>
+                        </div>
+                        
+                        <div class="controls">
+                            <button class="button" onclick="resetRISEDemo()">Reset Demo</button>
+                            <button class="button" onclick="toggleRISEAnimation()">Start/Stop</button>
+                            <button class="button" onclick="testRISECollision()">Test Collision</button>
+                            <button class="button danger" onclick="toggleDisturbances()">Toggle Disturbances</button>
+                            <button class="button" onclick="addRISEObstacle()">Add Obstacle</button>
+                            <button class="button danger" onclick="clearRISEObstacles()">Clear Extra</button>
+                        </div>
+                        
+                        <div class="status-display">
+                            <div class="status-item">
+                                <div class="status-value safe" id="safety-status-rise">SAFE</div>
+                                <div class="status-label">Safety Status</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-value" id="dist-estimate-rise">0.0</div>
+                                <div class="status-label">‖d̂‖ Estimate</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-value" id="dist-actual-rise">0.0</div>
+                                <div class="status-label">‖d‖ Actual</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-value" id="observer-error-rise">0.0</div>
+                                <div class="status-label">Observer Error</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-value" id="cbf-active-rise">OFF</div>
+                                <div class="status-label">CBF Active</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-value" id="num-constraints-rise">0</div>
+                                <div class="status-label">Active Constraints</div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="interaction-hint">
-                        <strong>Interactive Controls:</strong>
-                        Drag robot to reposition | Click canvas to set goal | Toggle disturbances on/off | Adjust observer gains
-                    </div>
-                    
-                    <div class="controls">
-                        <div class="control-group">
-                            <label>Observer α: <span id="alpha-val-rise">2.0</span></label>
-                            <input type="range" id="alpha-rise" min="1.1" max="5" step="0.1" value="2.0" 
-                                   oninput="riseDemo.alpha = parseFloat(this.value); document.getElementById('alpha-val-rise').textContent = this.value;">
-                        </div>
-                        <div class="control-group">
-                            <label>Observer k_d: <span id="kd-val-rise">1.5</span></label>
-                            <input type="range" id="kd-rise" min="0.1" max="5" step="0.1" value="1.5" 
-                                   oninput="riseDemo.kd = parseFloat(this.value); document.getElementById('kd-val-rise').textContent = this.value;">
-                        </div>
-                        <div class="control-group">
-                            <label>Observer β: <span id="beta-val-rise">4.0</span></label>
-                            <input type="range" id="beta-rise" min="0.5" max="15" step="0.5" value="4.0" 
-                                   oninput="riseDemo.beta = parseFloat(this.value); document.getElementById('beta-val-rise').textContent = this.value;">
-                        </div>
-                        <div class="control-group">
-                            <label>Disturbance bound \u0305d: <span id="dbar-val-rise">5.0</span></label>
-                            <input type="range" id="dbar-rise" min="0.5" max="15" step="0.5" value="5.0" 
-                                   oninput="riseDemo.dBar = parseFloat(this.value); document.getElementById('dbar-val-rise').textContent = this.value;">
-                        </div>
-                        <div class="control-group">
-                            <label>γ gain: <span id="gamma-val-rise">2.0</span></label>
-                            <input type="range" id="gamma-rise" min="0" max="10" step="0.5" value="2.0" 
-                                   oninput="riseDemo.gammaGain = parseFloat(this.value); document.getElementById('gamma-val-rise').textContent = this.value;">
-                        </div>
-                        <div class="control-group">
-                            <label>Speed: <span id="speed-val-rise">1.0</span>x</label>
-                            <input type="range" id="speed-rise" min="0.1" max="2" step="0.1" value="1.0" 
-                                   oninput="riseDemo.speed = parseFloat(this.value); document.getElementById('speed-val-rise').textContent = this.value;">
-                        </div>
-                    </div>
-                    
-                    <div class="controls">
-                        <button class="button" onclick="resetRISEDemo()">Reset Demo</button>
-                        <button class="button" onclick="toggleRISEAnimation()">Start/Stop</button>
-                        <button class="button" onclick="testRISECollision()">Test Collision</button>
-                        <button class="button danger" onclick="toggleDisturbances()">Toggle Disturbances</button>
-                        <button class="button" onclick="addRISEObstacle()">Add Obstacle</button>
-                        <button class="button danger" onclick="clearRISEObstacles()">Clear Extra</button>
-                    </div>
-                    
-                    <div class="status-display">
-                        <div class="status-item">
-                            <div class="status-value safe" id="safety-status-rise">SAFE</div>
-                            <div class="status-label">Safety Status</div>
-                        </div>
-                        <div class="status-item">
-                            <div class="status-value" id="dist-estimate-rise">0.0</div>
-                            <div class="status-label">‖d̂‖ Estimate</div>
-                        </div>
-                        <div class="status-item">
-                            <div class="status-value" id="dist-actual-rise">0.0</div>
-                            <div class="status-label">‖d‖ Actual</div>
-                        </div>
-                        <div class="status-item">
-                            <div class="status-value" id="observer-error-rise">0.0</div>
-                            <div class="status-label">Observer Error</div>
-                        </div>
-                        <div class="status-item">
-                            <div class="status-value" id="cbf-active-rise">OFF</div>
-                            <div class="status-label">CBF Active</div>
-                        </div>
-                        <div class="status-item">
-                            <div class="status-value" id="num-constraints-rise">0</div>
-                            <div class="status-label">Active Constraints</div>
+
+                    <div class="demo-card">
+                        <h3>RISE Observer + Vector-Valued CBF Theory</h3>
+                        <div class="info-panel">
+                            <h4>System Dynamics with Unknown Disturbances:</h4>
+                            <div class="math-formula">
+                                <p><strong>Single Integrator with Disturbance:</strong></p>
+                                $$\dot{\mathbf{x}} = \mathbf{u} + \mathbf{d}(\mathbf{x},t)$$
+                                <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                    Unknown bounded disturbance $\mathbf{d}$ satisfies $\|\mathbf{d}(\mathbf{x},t)\| \leq \bar d$ in the safe region.
+                                </p>
+                            </div>
+                            
+                            <h4>RISE Disturbance Observer:</h4>
+                            <div class="math-formula">
+                                <p><strong>Observer dynamics (component-wise):</strong></p>
+                                $$\tilde{\mathbf{x}} = \mathbf{x} - \hat{\mathbf{x}}, \quad \text{dir}(\tilde{\mathbf{x}}) = \frac{\tilde{\mathbf{x}}}{\|\tilde{\mathbf{x}}\|}$$
+                                $$\dot{\hat{\mathbf{x}}} = \mathbf{u} + \hat{\mathbf{d}} + \alpha \, \tilde{\mathbf{x}}$$
+                                $$\hat{\mathbf{d}}(t) = \hat{\mathbf{d}}(0) + k_d \, \tilde{\mathbf{x}} + \int_0^t \big[(k_d \alpha + 1)\,\tilde{\mathbf{x}}(\tau) + \beta\,\text{dir}(\tilde{\mathbf{x}}(\tau))\big] d\tau$$
+                                <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                    Gains satisfy $\alpha > 1,\; k_d,\beta>0$. Define $\lambda = \tfrac{1}{2}\min\{\alpha-1,\,k_d\}$. Then
+                                    $\|\tilde{\mathbf{d}}(t)\| \le 2\bar d\,e^{-\lambda t}$.
+                                </p>
+                            </div>
+                            
+                            <h4>Vector-Valued Control Barrier Functions:</h4>
+                            <div class="math-formula">
+                                <p><strong>Vector CBF Definition (safe set):</strong></p>
+                                $$\mathbf{B}(\mathbf{x}) = \begin{bmatrix} B_1(\mathbf{x}) \\ \vdots \\ B_m(\mathbf{x}) \end{bmatrix},\quad \mathcal{S} = \{\mathbf{x} : \mathbf{B}(\mathbf{x}) \le \mathbf{0}\}$$
+                                <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                    Here we use $B_i(\mathbf{x}) = r_i^2 - \|\mathbf{x}-\mathbf{o}_i\|^2$ so $B_i\le 0$ is safe.
+                                </p>
+                                <p><strong>Constraint form (single integrator):</strong></p>
+                                $$\Gamma_i(\mathbf{x},\mathbf{u}) = \nabla B_i(\mathbf{x})^T (\mathbf{u} + \mathbf{d}) \le -\gamma_i(\mathbf{x})$$
+                                <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                    Implement using an upper bound $\chi_i$ on $\nabla B_i^T\mathbf{d}$.
+                                </p>
+                            </div>
+                            
+                            <h4>Adaptive CBF Constraint with Observer:</h4>
+                            <div class="math-formula">
+                                <p><strong>Observer-aided robust constraint:</strong></p>
+                                $$\chi_i(\mathbf{x}) = \min\{\bar d\,\|\nabla B_i\|,\; \nabla B_i^T\hat{\mathbf{d}} + \tilde d_{UB}(t)\,\|\nabla B_i\|\}$$
+                                $$\nabla B_i(\mathbf{x})^T\,\mathbf{u} \le -\gamma_i(\mathbf{x}) - \chi_i(\mathbf{x})$$
+                                <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                    With $\tilde d_{UB}(t) = 2\bar d\,e^{-\lambda t}$ and $\gamma_i(\mathbf{x}) = \gamma\,\max\{B_i(\mathbf{x}),0\}$.
+                                </p>
+                                <p><strong>Minimum-modification control (conceptually QP):</strong></p>
+                                $$\begin{align}
+                                \mathbf{u}^* = \arg\min_{\mathbf{u}} &\quad \|\mathbf{u} - \mathbf{u}_{\text{nom}}\|^2 \\
+                                	ext{subject to} &\quad \nabla B_i(\mathbf{x})^T\,\mathbf{u} \le -\gamma_i(\mathbf{x}) - \chi_i(\mathbf{x}),\quad i=1,\ldots,m
+                                \end{align}$$
+                                <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                    Minimally modify nominal control $\mathbf{u}_{\text{nom}}$ while satisfying all $m$ vector CBF constraints.
+                                </p>
+                            </div>
+                            
+                            <div style="background: #f0fff4; border: 1px solid #68d391; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                                <strong style="color: #2f855a;">Key Theoretical Guarantees:</strong>
+                                <ul style="color: #2d3748; margin: 10px 0 0 20px; line-height: 1.8;">
+                                    <li><strong>Exponential observer convergence:</strong> $\|\tilde{\mathbf{d}}(t)\| \le 2\bar d\,e^{-\lambda t}$ with $\lambda = \tfrac{1}{2}\min\{\alpha-1,\,k_d\}$</li>
+                                    <li><strong>Forward invariance (vector CBF):</strong> $\mathbf{B}(\mathbf{x}(0)) \le \mathbf{0} \Rightarrow \mathbf{B}(\mathbf{x}(t)) \le \mathbf{0}$ for all $t\ge 0$</li>
+                                    <li><strong>Robustness to transients:</strong> Safety maintained even during observer convergence phase</li>
+                                    <li><strong>Multiple simultaneous constraints:</strong> Vector formulation handles $m$ obstacles naturally</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="demo-card">
-                    <h3>RISE Observer + Vector-Valued CBF Theory</h3>
-                    <div class="info-panel">
-                        <h4>System Dynamics with Unknown Disturbances:</h4>
-                        <div class="math-formula">
-                            <p><strong>Single Integrator with Disturbance:</strong></p>
-                            $$\dot{\mathbf{x}} = \mathbf{u} + \mathbf{d}(\mathbf{x},t)$$
-                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                                Unknown bounded disturbance $\mathbf{d}$ satisfies $\|\mathbf{d}(\mathbf{x},t)\| \leq \bar d$ in the safe region.
-                            </p>
+            <!-- Adaptive DNN-CBF Demo (as subsection) -->
+            <div id="adcbf-demo" class="adaptive-subsection">
+                <div class="demo-grid">
+                    <div class="demo-card">
+                        <h3>Adaptive Deep Neural Network Control Barrier Functions</h3>
+                        <p style="color: #94a3b8; margin: 10px 0; font-size: 0.9rem;">
+                            Real-time learning of uncertain dynamics with safety guarantees. The DNN adapts online using Jacobian-based weight updates without pre-training, 
+                            while CBF constraints ensure forward invariance of the safe set. Watch the network learn the unknown drift model in real-time!
+                        </p>
+                        
+                        <div class="interaction-hint">
+                            <strong>Click</strong> to set goal position • 
+                            <strong>Drag obstacles</strong> to test adaptation • 
+                            <strong>Toggle unknown drift</strong> to see learning
                         </div>
                         
-                        <h4>RISE Disturbance Observer:</h4>
-                        <div class="math-formula">
-                            <p><strong>Observer dynamics (component-wise):</strong></p>
-                            $$\tilde{\mathbf{x}} = \mathbf{x} - \hat{\mathbf{x}}, \quad \text{dir}(\tilde{\mathbf{x}}) = \frac{\tilde{\mathbf{x}}}{\|\tilde{\mathbf{x}}\|}$$
-                            $$\dot{\hat{\mathbf{x}}} = \mathbf{u} + \hat{\mathbf{d}} + \alpha \, \tilde{\mathbf{x}}$$
-                            $$\hat{\mathbf{d}}(t) = \hat{\mathbf{d}}(0) + k_d \, \tilde{\mathbf{x}} + \int_0^t \big[(k_d \alpha + 1)\,\tilde{\mathbf{x}}(\tau) + \beta\,\text{dir}(\tilde{\mathbf{x}}(\tau))\big] d\tau$$
-                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                                Gains satisfy $\alpha > 1,\; k_d,\beta>0$. Define $\lambda = \tfrac{1}{2}\min\{\alpha-1,\,k_d\}$. Then
-                                $\|\tilde{\mathbf{d}}(t)\| \le 2\bar d\,e^{-\lambda t}$.
-                            </p>
+                        <div class="demo-canvas" id="adcbf-canvas" style="cursor: crosshair;">
+                            <div class="grid-background"></div>
+                            <svg id="adcbf-svg" width="100%" height="100%" style="position: absolute; top: 0; left: 0;"></svg>
                         </div>
-                        
-                        <h4>Vector-Valued Control Barrier Functions:</h4>
-                        <div class="math-formula">
-                            <p><strong>Vector CBF Definition (safe set):</strong></p>
-                            $$\mathbf{B}(\mathbf{x}) = \begin{bmatrix} B_1(\mathbf{x}) \\ \vdots \\ B_m(\mathbf{x}) \end{bmatrix},\quad \mathcal{S} = \{\mathbf{x} : \mathbf{B}(\mathbf{x}) \le \mathbf{0}\}$$
-                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                                Here we use $B_i(\mathbf{x}) = r_i^2 - \|\mathbf{x}-\mathbf{o}_i\|^2$ so $B_i\le 0$ is safe.
-                            </p>
-                            <p><strong>Constraint form (single integrator):</strong></p>
-                            $$\Gamma_i(\mathbf{x},\mathbf{u}) = \nabla B_i(\mathbf{x})^T (\mathbf{u} + \mathbf{d}) \le -\gamma_i(\mathbf{x})$$
-                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                                Implement using an upper bound $\chi_i$ on $\nabla B_i^T\mathbf{d}$.
-                            </p>
+
+                        <div class="controls">
+                            <div class="control-group">
+                                <label>Observer Gain k_x: <span id="kx-value-adcbf">5.0</span></label>
+                                <input type="range" id="kx-adcbf" min="1" max="10" step="0.5" value="5.0" 
+                                       oninput="adcbfDemo.kx = parseFloat(this.value); document.getElementById('kx-value-adcbf').textContent = this.value">
+                            </div>
+                            <div class="control-group">
+                                <label>Observer Gain k_f: <span id="kf-value-adcbf">10.0</span></label>
+                                <input type="range" id="kf-adcbf" min="5" max="20" step="1" value="10.0" 
+                                       oninput="adcbfDemo.kf = parseFloat(this.value); document.getElementById('kf-value-adcbf').textContent = this.value">
+                            </div>
+                            <div class="control-group">
+                                <label>Nominal Gain $k$: <span id="knom-value-adcbf">2.0</span></label>
+                                <input type="range" id="knom-adcbf" min="0.1" max="10" step="0.1" value="2.0"
+                                       oninput="adcbfDemo.nominalGain = parseFloat(this.value); document.getElementById('knom-value-adcbf').textContent = Number(this.value).toFixed(1)">
+                            </div>
+                            <div class="control-group">
+                                <label>Weight Decay $k_\theta$: <span id="wd-adcbf">0.010</span></label>
+                                <input id="weight-decay-adcbf" type="range" min="0" max="0.1" step="0.001" value="0.01" 
+                                       oninput="adcbfDemo.kTheta = parseFloat(this.value); document.getElementById('wd-adcbf').textContent = Number(this.value).toFixed(3);">
+                            </div>
+                            <div class="control-group">
+                                <label>CBF Gain γ: <span id="gamma-value-adcbf">2.0</span></label>
+                                <input type="range" id="gamma-adcbf" min="0.5" max="5" step="0.1" value="2.0" 
+                                       oninput="adcbfDemo.gammaGain = parseFloat(this.value); document.getElementById('gamma-value-adcbf').textContent = this.value">
+                            </div>
+                            <div class="control-group">
+                                <label>Forgetting Factor $\beta_0$: <span id="beta0-value-adcbf">0.20</span></label>
+                                <input type="range" id="beta0-adcbf" min="0.00" max="2.00" step="0.01" value="0.20"
+                                       oninput="adcbfDemo.beta0 = parseFloat(this.value); document.getElementById('beta0-value-adcbf').textContent = Number(this.value).toFixed(2)">
+                            </div>
+                            <div class="control-group">
+                                <label>Adaptive Gain Limit $\kappa_0$: <span id="kappa0-value-adcbf">10.0</span></label>
+                                <input type="range" id="kappa0-adcbf" min="1.0" max="100.0" step="1.0" value="10.0"
+                                       oninput="adcbfDemo.kappa0 = parseFloat(this.value); document.getElementById('kappa0-value-adcbf').textContent = this.value">
+                            </div>
+                            <div class="control-group">
+                                <label>Init Adaptive Gain $\Gamma_0$: <span id="Gamma0-value-adcbf">1.00</span></label>
+                                <input type="range" id="Gamma0-adcbf" min="0.10" max="10.00" step="0.01" value="1.00"
+                                       oninput="adcbfDemo.Gamma0 = parseFloat(this.value); adcbfDemo.Gamma = adcbfDemo.Gamma0; adcbfDemo.GammaInv = 1/Math.max(1e-6, adcbfDemo.Gamma0); document.getElementById('Gamma0-value-adcbf').textContent = Number(this.value).toFixed(2)">
+                            </div>
+                            <div class="control-group">
+                                <label>Sim Speed: <span id="speed-value-adcbf">1.0x</span></label>
+                                <input type="range" id="speed-adcbf" min="0.5" max="3" step="0.1" value="1.0" 
+                                       oninput="adcbfDemo.speed = parseFloat(this.value); document.getElementById('speed-value-adcbf').textContent = this.value + 'x'">
+                            </div>
                         </div>
-                        
-                        <h4>Adaptive CBF Constraint with Observer:</h4>
-                        <div class="math-formula">
-                            <p><strong>Observer-aided robust constraint:</strong></p>
-                            $$\chi_i(\mathbf{x}) = \min\{\bar d\,\|\nabla B_i\|,\; \nabla B_i^T\hat{\mathbf{d}} + \tilde d_{UB}(t)\,\|\nabla B_i\|\}$$
-                            $$\nabla B_i(\mathbf{x})^T\,\mathbf{u} \le -\gamma_i(\mathbf{x}) - \chi_i(\mathbf{x})$$
-                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                                With $\tilde d_{UB}(t) = 2\bar d\,e^{-\lambda t}$ and $\gamma_i(\mathbf{x}) = \gamma\,\max\{B_i(\mathbf{x}),0\}$.
-                            </p>
-                            <p><strong>Minimum-modification control (conceptually QP):</strong></p>
-                            $$\begin{align}
-                            \mathbf{u}^* = \arg\min_{\mathbf{u}} &\quad \|\mathbf{u} - \mathbf{u}_{\text{nom}}\|^2 \\
-                            	ext{subject to} &\quad \nabla B_i(\mathbf{x})^T\,\mathbf{u} \le -\gamma_i(\mathbf{x}) - \chi_i(\mathbf{x}),\quad i=1,\ldots,m
-                            \end{align}$$
-                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                                Minimally modify nominal control $\mathbf{u}_{\text{nom}}$ while satisfying all $m$ vector CBF constraints.
-                            </p>
+
+                        <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                            <button class="button" onclick="toggleADCBFAnimation()">
+                                <span id="adcbf-play-text">▶ Start</span>
+                            </button>
+                            <button class="button" onclick="resetADCBFDemo()">↺ Reset</button>
+                            <button class="button" onclick="testADCBFCollision()">🎯 Test Collision</button>
+                            <button class="button" onclick="toggleADCBFUnknownDrift()">
+                                <span id="adcbf-drift-text">Unknown Drift: ON</span>
+                            </button>
+                            <button class="button" onclick="addADCBFObstacle()">➕ Add Obstacle</button>
+                            <button class="button danger" onclick="clearADCBFObstacles()">🗑 Clear Extra</button>
                         </div>
+
                         
-                        <div style="background: #f0fff4; border: 1px solid #68d391; border-radius: 8px; padding: 15px; margin: 20px 0;">
-                            <strong style="color: #2f855a;">Key Theoretical Guarantees:</strong>
-                            <ul style="color: #2d3748; margin: 10px 0 0 20px; line-height: 1.8;">
-                                <li><strong>Exponential observer convergence:</strong> $\|\tilde{\mathbf{d}}(t)\| \le 2\bar d\,e^{-\lambda t}$ with $\lambda = \tfrac{1}{2}\min\{\alpha-1,\,k_d\}$</li>
-                                <li><strong>Forward invariance (vector CBF):</strong> $\mathbf{B}(\mathbf{x}(0)) \le \mathbf{0} \Rightarrow \mathbf{B}(\mathbf{x}(t)) \le \mathbf{0}$ for all $t\ge 0$</li>
-                                <li><strong>Robustness to transients:</strong> Safety maintained even during observer convergence phase</li>
-                                <li><strong>Multiple simultaneous constraints:</strong> Vector formulation handles $m$ obstacles naturally</li>
-                            </ul>
+
+                        <!-- DNN Hyperparameter Tuning Panel -->
+                        <div class="info-panel" style="margin-top: 20px;">
+                            <h4 style="color: #60a5fa; margin-bottom: 15px; font-size: 1.1rem;">🧠 DNN Hyperparameter Tuning</h4>
+                            
+                            <div class="controls">
+                                <div class="control-group">
+                                    <label>Hidden Dimension: <span id="hidden-dim-adcbf">16</span></label>
+                                    <input type="range" min="4" max="64" step="4" value="16" 
+                                           oninput="document.getElementById('hidden-dim-adcbf').textContent = this.value;">
+                                </div>
+                                <div class="control-group">
+                                    <label>Residual Blocks: <span id="num-blocks-adcbf">2</span></label>
+                                    <input type="range" min="1" max="6" step="1" value="2" 
+                                           oninput="document.getElementById('num-blocks-adcbf').textContent = this.value;">
+                                </div>
+                            </div>
+
+                            <div class="controls" style="margin-top: 10px;">
+                                <div class="control-group">
+                                    <label>Gradient Clip Norm: <span id="grad-clip-adcbf">10.0</span></label>
+                        <input id="grad-clip-norm-adcbf" type="range" min="1" max="50" step="1" value="10" 
+                            oninput="adcbfDemo.maxGradNorm = parseFloat(this.value); document.getElementById('grad-clip-adcbf').textContent = this.value.toFixed(1);">
+                                </div>
+                                <div class="control-group">
+                                    <label>Param Clamp Bound: <span id="clamp-adcbf">0.50</span></label>
+                        <input id="param-clamp-bound-adcbf" type="range" min="0.01" max="1" step="0.01" value="0.50" 
+                            oninput="adcbfDemo.clampBound = parseFloat(this.value); document.getElementById('clamp-adcbf').textContent = Number(this.value).toFixed(2);">
+                                </div>
+                                <div class="control-group" style="display: flex; align-items: flex-end;">
+                                    <button class="button" onclick="rebuildADCBFNetwork()" style="width: 100%;">
+                                        🔄 Rebuild Network
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="interaction-hint" style="margin-top: 15px;">
+                                Adjust architecture (hidden dim, blocks) and click "Rebuild Network" to create a new DNN with fresh He initialization. Training parameters (learning rate, weight decay, clipping) update live.
+                            </div>
+                        </div>
+
+                            <!-- Intermittent Feedback Control Panel -->
+                            <div class="info-panel" style="margin-top: 20px;">
+                                <h4 style="color: #60a5fa; margin-bottom: 10px; font-size: 1.1rem;">📡 Intermittent Feedback</h4>
+                                <div class="controls">
+                                    <div class="control-group" style="min-width: 180px;">
+                                        <label>State Feedback: <span id="adcbf-fb-state">AVAILABLE</span></label>
+                                        <button class="button" style="width: 100%; margin-top: 6px;" onclick="toggleADCBFIntermittent()">
+                                            <span id="adcbf-intermit-text">Intermittent: OFF</span>
+                                        </button>
+                                    </div>
+                                    <div class="control-group">
+                                        <label>Loss Duration (s): <span id="lossdur-val">1.0</span></label>
+                                        <input type="range" min="0.2" max="5.0" step="0.1" value="1.0" oninput="adcbfDemo.lossDurationSec = parseFloat(this.value); document.getElementById('lossdur-val').textContent = Number(this.value).toFixed(1)">
+                                    </div>
+                                    <div class="control-group">
+                                        <label>Avail Duration (s): <span id="availdur-val">5.0</span></label>
+                                        <input type="range" min="0.5" max="15.0" step="0.5" value="5.0" oninput="adcbfDemo.availDurationSec = parseFloat(this.value); document.getElementById('availdur-val').textContent = Number(this.value).toFixed(1)">
+                                    </div>
+                                    <div class="control-group" style="display: flex; align-items: flex-end;">
+                                        <button id="adcbf-drop-btn" class="button" style="width: 100%;" onclick="triggerADCBFLoss()">⚠️ Drop Feedback Now</button>
+                                    </div>
+                                </div>
+
+                                <div class="controls" style="margin-top: 10px;">
+                                    <div class="control-group">
+                                        <label>Lipschitz L_U: <span id="LU-val">1.0</span></label>
+                                        <input type="range" min="0.1" max="5.0" step="0.1" value="1.0" oninput="adcbfDemo.LU = parseFloat(this.value); document.getElementById('LU-val').textContent = Number(this.value).toFixed(1)">
+                                    </div>
+                                    <div class="control-group">
+                                        <label>Δ_U: <span id="DeltaU-val">0.5</span></label>
+                                        <input type="range" min="0.0" max="5.0" step="0.1" value="0.5" oninput="adcbfDemo.DeltaU = parseFloat(this.value); document.getElementById('DeltaU-val').textContent = Number(this.value).toFixed(1)">
+                                    </div>
+                                    <div class="control-group">
+                                        <label>∇B Lipschitz ρ: <span id="rho-val">0.2</span></label>
+                                        <input type="range" min="0.0" max="2.0" step="0.05" value="0.2" oninput="adcbfDemo.rho = parseFloat(this.value); document.getElementById('rho-val').textContent = Number(this.value).toFixed(2)">
+                                    </div>
+                                </div>
+
+                                <div class="interaction-hint" style="margin-top: 10px;">
+                                    When feedback is lost, controller uses an open-loop state predictor and a tightened CBF constraint per Eq. (29). Adaptation and observer updates are paused until feedback returns.
+                                </div>
+                            </div>
+
+                        <div class="status-display">
+                            <div class="status-item">
+                                <div id="safety-status-adcbf" class="status-value safe">SAFE</div>
+                                <div class="status-label">Safety Status</div>
+                            </div>
+                            <div class="status-item">
+                                <div id="approx-error-adcbf" class="status-value">0.00</div>
+                                <div class="status-label">DNN Approx Error</div>
+                            </div>
+                            <div class="status-item">
+                                <div id="observer-error-adcbf" class="status-value">0.00</div>
+                                <div class="status-label">Observer Error</div>
+                                        <p style="margin-top: 15px;"><strong>Nominal Control with Feedforward Cancellation:</strong></p>
+                                        <p>
+                                            $$\mathbf{u}_{\text{nom}}(\mathbf{x}) = k\,(\mathbf{x}_g - \mathbf{x}) - \Phi(\mathbf{x}, \hat{\boldsymbol{\theta}}), \quad k>0$$
+                                        </p>
+                                        <p style="font-size: 0.9em; color: #94a3b8;">In this demo $g(\mathbf{x}) = I$ (single integrator) and $\mathbf{x}_g$ is the goal. A hard cap on $\|\Phi(\mathbf{x},\hat{\boldsymbol{\theta}})\|\le 10$ is enforced for numerical robustness.</p>
+
+                            </div>
+                            <div class="status-item">
+                                <div id="cbf-active-adcbf" class="status-value">OFF</div>
+                                <div class="status-label">CBF Status</div>
+                            </div>
+                            <div class="status-item">
+                                <div id="param-count-adcbf" class="status-value">0</div>
+                                <div class="status-label">DNN Parameters</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <h3>Theory: Adaptive DNN-CBF Framework</h3>
+                        <div class="theory-section" style="padding: 20px;">
+                            <div class="math-formula">
+                                <p><strong>System Dynamics (Unknown $f$):</strong></p>
+                                <p>$$\dot{\mathbf{x}} = f(\mathbf{x}) + g(\mathbf{x})\mathbf{u}$$</p>
+                                
+                                
+                                <p style="margin-top: 15px;"><strong>DNN Universal Approximation:</strong></p>
+                                <p>$$f(\mathbf{x}) = \Phi(\mathbf{x}, \boldsymbol{\theta}^*) + \boldsymbol{\varepsilon}(\mathbf{x})$$</p>
+                                <p style="font-size: 0.9em; color: #94a3b8;">where $\Phi$ is the DNN, $\boldsymbol{\theta}^*$ are ideal weights, $\|\boldsymbol{\varepsilon}\| \le \bar{\varepsilon}$</p>
+                                
+                                <p style="margin-top: 15px;"><strong>High-Gain State-Derivative Estimator:</strong></p>
+                                <p>$$\dot{\hat{\mathbf{x}}} = \hat{f} + g(\mathbf{x})\mathbf{u} + k_x \tilde{\mathbf{x}}$$</p>
+                                <p>$$\dot{\hat{f}} = k_f(\dot{\tilde{\mathbf{x}}} + k_x \tilde{\mathbf{x}}) + \tilde{\mathbf{x}}$$</p>
+                                <p style="font-size: 0.9em; color: #94a3b8;">where $\tilde{\mathbf{x}} = \mathbf{x} - \hat{\mathbf{x}}$, $\tilde{f} = f(\mathbf{x}) - \hat{f}$</p>
+                                
+                                <p style="margin-top: 15px;"><strong>DNN Weight Adaptation (Least Squares):</strong></p>
+                                <p>$$\dot{\hat{\boldsymbol{\theta}}} = \text{proj}\left(\boldsymbol{\Gamma}\left[-k_\theta \hat{\boldsymbol{\theta}} + \alpha \Phi'^T(\mathbf{x}, \hat{\boldsymbol{\theta}})(\hat{f} - \Phi(\mathbf{x}, \hat{\boldsymbol{\theta}}))\right]\right)$$</p>
+                                <p style="font-size: 0.9em; color: #94a3b8;">$\Phi' = \frac{\partial \Phi}{\partial \hat{\boldsymbol{\theta}}}$ computed via backpropagation</p>
+                                
+                                <p style="margin-top: 15px;"><strong>Adaptive Gain Matrix:</strong></p>
+                                <p>$$\frac{d}{dt}\boldsymbol{\Gamma}^{-1} = -\beta(t)\boldsymbol{\Gamma}^{-1} + \Phi'^T(\mathbf{x}, \hat{\boldsymbol{\theta}})\Phi'(\mathbf{x}, \hat{\boldsymbol{\theta}})$$</p>
+                                <p style="font-size: 0.9em; color: #94a3b8;">with forgetting factor $\beta(t) = \beta_0(1 - \|\boldsymbol{\Gamma}\|/\kappa_0)$</p>
+                                
+                                <p style="margin-top: 15px;"><strong>Vector-Valued CBF with DNN Estimate:</strong></p>
+                                <p>$$\mathcal{S} = \{\mathbf{x} \in \mathbb{R}^n : \mathbf{B}(\mathbf{x}) \le \mathbf{0}\}$$</p>
+                                <p>$$K_c(\mathbf{x}) = \left\{\mathbf{u} : \nabla \mathbf{B}^T(\mathbf{x})[\Phi(\mathbf{x}, \hat{\boldsymbol{\theta}}) + g(\mathbf{x})\mathbf{u}] \le -\boldsymbol{\gamma}(\mathbf{x}) - \boldsymbol{\chi}(\mathbf{x})\right\}$$</p>
+                                <p style="font-size: 0.9em; color: #94a3b8;">$\boldsymbol{\chi}(\mathbf{x})$ accounts for $\|\tilde{\boldsymbol{\theta}}\|$ and $\|\boldsymbol{\varepsilon}\|$ bounds</p>
+
+                                <p style="margin-top: 15px;"><strong>Safety Filter as a QP (conceptual):</strong></p>
+                                <p>
+                                    $$\begin{aligned}
+                                    \mathbf{u}^*(\mathbf{x}) \;=\; &\arg\min_{\mathbf{u}}\; \tfrac{1}{2}\,\|\mathbf{u} - \mathbf{u}_{\text{nom}}(\mathbf{x})\|_2^2 \\
+                                    s.t.\; &\nabla B_i(\mathbf{x})^T\big(\Phi(\mathbf{x}, \hat{\boldsymbol{\theta}}) + \mathbf{u}\big) + \gamma_i(\mathbf{x}) + \chi\,\|\nabla B_i(\mathbf{x})\|_2 \;\le\; 0,\\
+                                    &\forall i \in \{1,\dots,m\}.
+                                    \end{aligned}$$
+                                </p>
+                                <p style="font-size: 0.9em; color: #94a3b8;">The implementation uses an efficient projection step equivalent to the KKT solution for a single active constraint per iteration.</p>
+                            </div>
+                        
                         </div>
                     </div>
                 </div>
@@ -1078,7 +1357,7 @@
                         <p><strong>QP Formulation for Agent $i$:</strong></p>
                         $$\begin{align}
                         \min_{u_i} &\quad \|u_i - u_i^{nom}\|^2 \\
-                        \text{s.t.} &\quad 2(x_i - x_j) \cdot u_i \geq -\frac{\alpha}{2} h_{ij}, \; \forall j \neq i
+                        s.t. &\quad 2(x_i - x_j) \cdot u_i \geq -\frac{\alpha}{2} h_{ij}, \; \forall j \neq i
                         \end{align}$$
                         
                         <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.2);">
@@ -1100,6 +1379,7 @@
             basic: false,
             hocbf: false,
             rise: false,
+            adcbf: false,
             multiagent: false
         };
 
@@ -1148,8 +1428,7 @@
             // Single-integrator robot: ẋ = u + d(x)
             robot: { x: 100, y: 150, vx: 0, vy: 0, goalX: 350, goalY: 150 },
             obstacles: [
-                { x: 200, y: 150, radius: 35 },
-                { x: 280, y: 220, radius: 30 }
+                { x: 200, y: 150, radius: 35 }
             ],
             trajectory: [],
             // RISE observer parameters (Theorem 1)
@@ -1179,6 +1458,425 @@
             safeControl: null,
             observerError: 0,
             t: 0.0       // simulation time for \tilde d_UB(t)
+        };
+
+        // ============= MATRIX CLASS FOR DNN =============
+        class Matrix {
+            constructor(rows, cols, data = null) {
+                this.rows = rows;
+                this.cols = cols;
+                this.data = data || new Array(rows * cols).fill(0);
+            }
+
+            get(i, j) {
+                return this.data[i * this.cols + j];
+            }
+
+            set(i, j, value) {
+                this.data[i * this.cols + j] = value;
+            }
+
+            static zeros(rows, cols) {
+                return new Matrix(rows, cols);
+            }
+
+            static random(rows, cols, scale = 0.1) {
+                const data = new Array(rows * cols).fill(0).map(() => (Math.random() - 0.5) * 2 * scale);
+                return new Matrix(rows, cols, data);
+            }
+
+            // Gaussian random matrix via Box-Muller transform
+            static randn(rows, cols, std = 1.0) {
+                const data = new Array(rows * cols);
+                for (let i = 0; i < data.length; i += 2) {
+                    const u1 = Math.random();
+                    const u2 = Math.random();
+                    const r = Math.sqrt(-2.0 * Math.log(Math.max(u1, 1e-12)));
+                    const theta = 2.0 * Math.PI * u2;
+                    const z0 = r * Math.cos(theta);
+                    const z1 = r * Math.sin(theta);
+                    data[i] = z0 * std;
+                    if (i + 1 < data.length) data[i + 1] = z1 * std;
+                }
+                return new Matrix(rows, cols, data);
+            }
+
+            multiply(other) {
+                if (this.cols !== other.rows) {
+                    throw new Error('Matrix dimensions do not match');
+                }
+                const result = Matrix.zeros(this.rows, other.cols);
+                for (let i = 0; i < this.rows; i++) {
+                    for (let j = 0; j < other.cols; j++) {
+                        let sum = 0;
+                        for (let k = 0; k < this.cols; k++) {
+                            sum += this.get(i, k) * other.get(k, j);
+                        }
+                        result.set(i, j, sum);
+                    }
+                }
+                return result;
+            }
+
+            add(other) {
+                const result = Matrix.zeros(this.rows, this.cols);
+                for (let i = 0; i < this.data.length; i++) {
+                    result.data[i] = this.data[i] + other.data[i];
+                }
+                return result;
+            }
+
+            scale(scalar) {
+                const result = Matrix.zeros(this.rows, this.cols);
+                for (let i = 0; i < this.data.length; i++) {
+                    result.data[i] = this.data[i] * scalar;
+                }
+                return result;
+            }
+
+            relu() {
+                const result = Matrix.zeros(this.rows, this.cols);
+                for (let i = 0; i < this.data.length; i++) {
+                    result.data[i] = Math.max(0, this.data[i]);
+                }
+                return result;
+            }
+
+            norm() {
+                return Math.sqrt(this.data.reduce((sum, val) => sum + val * val, 0));
+            }
+
+            clone() {
+                return new Matrix(this.rows, this.cols, [...this.data]);
+            }
+
+            transpose() {
+                const result = Matrix.zeros(this.cols, this.rows);
+                for (let i = 0; i < this.rows; i++) {
+                    for (let j = 0; j < this.cols; j++) {
+                        result.set(j, i, this.get(i, j));
+                    }
+                }
+                return result;
+            }
+        }
+
+        // ============= RESNET DNN FOR ADAPTIVE CBF =============
+        class AdaptiveResNet {
+            constructor(inputDim = 2, outputDim = 2, hiddenDim = 16, numBlocks = 2) {
+                this.inputDim = inputDim;
+                this.outputDim = outputDim;
+                this.hiddenDim = hiddenDim;
+                this.numBlocks = numBlocks;
+                
+                this.initializeWeights();
+                this.cache = {};
+            }
+
+            initializeWeights() {
+                // He initialization for ReLU networks: std = sqrt(2 / fan_in)
+                const heIn = Math.sqrt(2 / Math.max(1, this.inputDim));
+                const heHidden = Math.sqrt(2 / Math.max(1, this.hiddenDim));
+                const heOut = Math.sqrt(2 / Math.max(1, this.hiddenDim));
+
+                // Input layer
+                this.W_in = Matrix.randn(this.hiddenDim, this.inputDim, heIn);
+                this.b_in = Matrix.zeros(this.hiddenDim, 1);
+
+                // Residual blocks
+                this.blocks = [];
+                for (let i = 0; i < this.numBlocks; i++) {
+                    this.blocks.push({
+                        W1: Matrix.randn(this.hiddenDim, this.hiddenDim, heHidden),
+                        b1: Matrix.zeros(this.hiddenDim, 1),
+                        W2: Matrix.randn(this.hiddenDim, this.hiddenDim, heHidden),
+                        b2: Matrix.zeros(this.hiddenDim, 1)
+                    });
+                }
+
+                // Output layer
+                this.W_out = Matrix.randn(this.outputDim, this.hiddenDim, heOut);
+                this.b_out = Matrix.zeros(this.outputDim, 1);
+            }
+
+            forward(input, computeCache = false) {
+                const x = new Matrix(this.inputDim, 1, input);
+                
+                if (computeCache) {
+                    this.cache = { x: x };
+                }
+                
+                // Input layer
+                const z_in = this.W_in.multiply(x).add(this.b_in);
+                let h = z_in.relu();
+                
+                if (computeCache) {
+                    this.cache.z_in = z_in;
+                    this.cache.h_in = h;
+                    this.cache.blocks = [];
+                }
+
+                // Residual blocks
+                for (let i = 0; i < this.blocks.length; i++) {
+                    const block = this.blocks[i];
+                    const identity = h.clone();
+                    
+                    const z1 = block.W1.multiply(h).add(block.b1);
+                    const h1 = z1.relu();
+                    const z2 = block.W2.multiply(h1).add(block.b2);
+                    const pre_relu = z2.add(identity);
+                    h = pre_relu.relu();
+                    
+                    if (computeCache) {
+                        this.cache.blocks.push({
+                            identity: identity,
+                            z1: z1,
+                            h1: h1,
+                            z2: z2,
+                            pre_relu: pre_relu,
+                            h_out: h
+                        });
+                    }
+                }
+
+                // Output layer
+                const output = this.W_out.multiply(h).add(this.b_out);
+                
+                if (computeCache) {
+                    this.cache.h_final = h;
+                    this.cache.output = output;
+                }
+                
+                return output.data;
+            }
+
+            computeJacobian(outputGradient) {
+                const grad = new Matrix(this.outputDim, 1, outputGradient);
+                
+                // Backprop through output layer
+                const dW_out = this.outerProduct(grad, this.cache.h_final);
+                const db_out = grad.clone();
+                let dh = this.W_out.transpose().multiply(grad);
+                
+                // Backprop through residual blocks (in reverse order)
+                const blockGrads = [];
+                for (let i = this.numBlocks - 1; i >= 0; i--) {
+                    const blockCache = this.cache.blocks[i];
+                    
+                    // Gradient through final ReLU
+                    const dPre_relu = this.reluGradient(dh, blockCache.pre_relu);
+                    
+                    // Split gradient: one path through residual, one through identity
+                    const dZ2 = dPre_relu.clone();
+                    const dIdentity = dPre_relu.clone();
+                    
+                    // Backprop through second layer of block
+                    const dW2 = this.outerProduct(dZ2, blockCache.h1);
+                    const db2 = dZ2.clone();
+                    const dH1 = this.blocks[i].W2.transpose().multiply(dZ2);
+                    
+                    // Backprop through first ReLU
+                    const dZ1 = this.reluGradient(dH1, blockCache.z1);
+                    
+                    // Backprop through first layer of block
+                    const dW1 = this.outerProduct(dZ1, blockCache.identity);
+                    const db1 = dZ1.clone();
+                    const dH_block = this.blocks[i].W1.transpose().multiply(dZ1);
+                    
+                    // Combine gradients (residual + identity)
+                    dh = dH_block.add(dIdentity);
+                    
+                    blockGrads.unshift({ dW1, db1, dW2, db2 });
+                }
+                
+                // Backprop through input layer
+                const dH_in_relu = this.reluGradient(dh, this.cache.z_in);
+                const dW_in = this.outerProduct(dH_in_relu, this.cache.x);
+                const db_in = dH_in_relu.clone();
+                
+                // Flatten all gradients into a single vector
+                return this.flattenGradients({
+                    dW_in, db_in, blockGrads, dW_out, db_out
+                });
+            }
+
+            outerProduct(a, b) {
+                const result = Matrix.zeros(a.rows, b.rows);
+                for (let i = 0; i < a.rows; i++) {
+                    for (let j = 0; j < b.rows; j++) {
+                        result.set(i, j, a.get(i, 0) * b.get(j, 0));
+                    }
+                }
+                return result;
+            }
+
+            reluGradient(gradient, preActivation) {
+                const result = Matrix.zeros(gradient.rows, gradient.cols);
+                for (let i = 0; i < gradient.data.length; i++) {
+                    result.data[i] = preActivation.data[i] > 0 ? gradient.data[i] : 0;
+                }
+                return result;
+            }
+
+            flattenGradients(grads) {
+                const flattened = [];
+                
+                // Input layer
+                flattened.push(...grads.dW_in.data);
+                flattened.push(...grads.db_in.data);
+                
+                // Residual blocks
+                for (const blockGrad of grads.blockGrads) {
+                    flattened.push(...blockGrad.dW1.data);
+                    flattened.push(...blockGrad.db1.data);
+                    flattened.push(...blockGrad.dW2.data);
+                    flattened.push(...blockGrad.db2.data);
+                }
+                
+                // Output layer
+                flattened.push(...grads.dW_out.data);
+                flattened.push(...grads.db_out.data);
+                
+                return flattened;
+            }
+
+            updateWeights(gradients, learningRate, weightDecay = 0.0, maxGradNorm = 10.0, clampBound = 5.0) {
+                // Global gradient clipping by L2 norm
+                let gradNorm = 0.0;
+                for (let k = 0; k < gradients.length; k++) {
+                    const g = gradients[k];
+                    gradNorm += g * g;
+                }
+                gradNorm = Math.sqrt(gradNorm);
+                let scale = 1.0;
+                if (Number.isFinite(gradNorm) && gradNorm > maxGradNorm && maxGradNorm > 0) {
+                    scale = maxGradNorm / gradNorm;
+                }
+
+                let idx = 0;
+                const safeUpdate = (arr, applyWeightDecay = false) => {
+                    for (let i = 0; i < arr.length; i++) {
+                        let g = gradients[idx++] * scale;
+                        if (!Number.isFinite(g)) g = 0.0;
+                        let w = arr[i] - learningRate * g;
+                        if (applyWeightDecay && weightDecay > 0) {
+                            // L2 weight decay on weights (not biases)
+                            w *= (1 - learningRate * weightDecay);
+                        }
+                        // Clamp to prevent explosion
+                        if (Number.isFinite(w)) {
+                            if (clampBound > 0) {
+                                if (w > clampBound) w = clampBound;
+                                else if (w < -clampBound) w = -clampBound;
+                            }
+                            arr[i] = w;
+                        } else {
+                            // NaN/Inf guard
+                            arr[i] = 0.0;
+                        }
+                    }
+                };
+
+                // Update input layer
+                safeUpdate(this.W_in.data, true);
+                safeUpdate(this.b_in.data, false);
+
+                // Update residual blocks
+                for (const block of this.blocks) {
+                    safeUpdate(block.W1.data, true);
+                    safeUpdate(block.b1.data, false);
+                    safeUpdate(block.W2.data, true);
+                    safeUpdate(block.b2.data, false);
+                }
+                
+                // Update output layer
+                safeUpdate(this.W_out.data, true);
+                safeUpdate(this.b_out.data, false);
+            }
+
+            getParameterCount() {
+                return this.hiddenDim * this.inputDim + this.hiddenDim + 
+                       this.numBlocks * (2 * this.hiddenDim * this.hiddenDim + 2 * this.hiddenDim) + 
+                       this.outputDim * this.hiddenDim + this.outputDim;
+            }
+        }
+
+        // Adaptive DNN-CBF Demo State
+        let adcbfDemo = {
+            // Robot state (single integrator: ẋ = f(x) + g(x)u, f unknown)
+            robot: { x: 100, y: 150, vx: 0, vy: 0, goalX: 350, goalY: 150 },
+            obstacles: [
+                { x: 220, y: 150, radius: 35 }
+            ],
+            trajectory: [],
+            
+            // DNN for approximating unknown f(x)
+            dnn: new AdaptiveResNet(2, 2, 16, 2),
+            
+            // High-gain state-derivative estimator
+            hatX: { x: 100, y: 150 },   // ˆx
+            hatF: { x: 0, y: 0 },        // ˆf
+            // Implementable observer integral states (no numerical derivatives)
+            intTilde: { x: 0, y: 0 },    // ∫ x̃(τ) dτ
+            tildeX0: { x: 0, y: 0 },     // x̃(t0)
+            hatF0: { x: 0, y: 0 },       // ˆf(t0)
+            tildeXPrev: { x: 0, y: 0 },  // retained only for diagnostics; not used in update
+            
+            // Observer parameters
+            kx: 5.0,   // state observer gain
+            kf: 10.0,  // derivative observer gain
+            // Nominal control gain (for goal-directed feedback)
+            nominalGain: 2.0,
+            
+            // DNN adaptation parameters
+            learningRate: 0.05,  // Adaptation gain α (UI)
+            kTheta: 0.01,        // Regularization/weight decay k_θ
+            maxGradNorm: 10.0,   // gradient clipping norm threshold
+            clampBound: 0.5,     // parameter clamping bound (±limit)
+            // Adaptive gain (RLS-style scalar Γ with β_0, κ_0)
+            beta0: 0.20,
+            kappa0: 10.0,
+            Gamma0: 1.0,
+            Gamma: 1.0,
+            GammaInv: 1.0,
+            
+            // Actual unknown drift/dynamics
+            unknownDrift: { x: 0, y: 0 },
+            unknownDriftEnabled: true,
+            
+            // CBF parameters
+            gammaGain: 2.0,
+            safetyMargin: 15,
+            
+            // Status tracking
+            speed: 1.0,
+            dt: 0.016,
+            controlModification: 0,
+            isInfeasible: false,
+            isCBFActive: false,
+            activeConstraints: 0,
+            nominalControl: null,
+            safeControl: null,
+            approximationError: 0,
+            observerError: 0,
+            t: 0.0,
+
+            // Intermittent feedback control (Section V of aDCBF paper)
+            feedbackAvailable: true,      // true when state feedback is available
+            intermittentEnabled: false,   // enable periodic loss/restore scheduling
+            lossDurationSec: 1.0,         // duration of feedback loss (seconds)
+            availDurationSec: 5.0,        // duration of available feedback between losses (seconds)
+            intermitTimer: 0.0,           // internal timer for scheduling
+            inLoss: false,                // currently in loss-of-feedback interval
+            // Open-loop estimator state during loss of feedback
+            Xhat: { x: 100, y: 150 },     // open-loop predicted state \hat X
+            noFBElapsed: 0.0,             // elapsed time since feedback was lost
+            // Bounds/parameters for CU constraint (Eq. 29): L_U, Δ_U, ρ
+            LU: 1.0,
+            DeltaU: 0.5,
+            rho: 0.2,
+            // Internal helper: freeze adaptation/observer when feedback is lost
+            freezeAdaptation: false
         };
 
         // Multi-Agent Demo State
@@ -1256,7 +1954,22 @@
             // Initialize demos when switching to them
             if (tabName === 'basic-demo') initBasicDemo();
             if (tabName === 'hocbf-demo') initHOCBFDemo();
-            if (tabName === 'rise-cbf-demo') initRISEDemo();
+            // Adaptive CBFs parent tab initializes its currently active sub-demo
+            if (tabName === 'adaptive-cbf') {
+                const parent = document.getElementById('adaptive-cbf');
+                const activeSub = parent ? parent.querySelector('.adaptive-subsection.active') : null;
+                if (!activeSub) {
+                    const riseBtn = parent ? parent.querySelector('.subtab-button[data-sub="rise"]') : null;
+                    if (riseBtn) {
+                        switchAdaptiveSubtab('rise-cbf-demo', { target: riseBtn });
+                    } else {
+                        initRISEDemo();
+                    }
+                } else {
+                    if (activeSub.id === 'rise-cbf-demo') initRISEDemo();
+                    if (activeSub.id === 'adcbf-demo') initADCBFDemo();
+                }
+            }
             if (tabName === 'multi-agent') initMultiAgentDemo();
             
             // Re-render MathJax for the new content
@@ -1266,6 +1979,37 @@
                         console.log('MathJax re-rendered for tab:', tabName);
                     }).catch((err) => console.log('MathJax error on tab switch:', err.message));
                 }, 100);
+            }
+        }
+
+        // Sub-tab switcher for Adaptive CBFs (RISE vs DNN)
+        function switchAdaptiveSubtab(subId, event) {
+            const parent = document.getElementById('adaptive-cbf');
+            if (!parent) return;
+
+            // Toggle subsection visibility
+            parent.querySelectorAll('.adaptive-subsection').forEach(s => s.classList.remove('active'));
+            const targetSection = document.getElementById(subId);
+            if (targetSection) targetSection.classList.add('active');
+
+            // Update subtab button active state
+            parent.querySelectorAll('.subtab-button').forEach(b => b.classList.remove('active'));
+            if (event && event.target && event.target.classList && event.target.classList.contains('subtab-button')) {
+                event.target.classList.add('active');
+            } else {
+                const btn = parent.querySelector(`.subtab-button[onclick*="${subId}"]`);
+                if (btn) btn.classList.add('active');
+            }
+
+            // Initialize the appropriate demo
+            if (subId === 'rise-cbf-demo') initRISEDemo();
+            if (subId === 'adcbf-demo') initADCBFDemo();
+
+            // Re-typeset math only within the subsection
+            if (window.MathJax && window.MathJax.typesetPromise && targetSection) {
+                setTimeout(() => {
+                    window.MathJax.typesetPromise([targetSection]).catch(() => {});
+                }, 50);
             }
         }
 
@@ -2999,6 +3743,936 @@
         function clearRISEObstacles() {
             riseDemo.obstacles = [riseDemo.obstacles[0], riseDemo.obstacles[1]];
             renderRISEDemo();
+        }
+
+
+        // ============= ADAPTIVE DNN-CBF DEMO =============
+        function initADCBFDemo() {
+            const canvas = document.getElementById('adcbf-canvas');
+            
+            if (!canvas.dataset.initialized) {
+                canvas.dataset.initialized = 'true';
+                
+                // Mouse interaction state
+                let isDraggingObstacle = false;
+                let dragIndex = -1;
+                let hoveredObstacle = -1;
+                
+                // Mouse down - check if clicking on obstacle
+                canvas.addEventListener('mousedown', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    // Check if clicking on an obstacle
+                    for (let i = 0; i < adcbfDemo.obstacles.length; i++) {
+                        const obs = adcbfDemo.obstacles[i];
+                        const dist = Math.hypot(x - obs.x, y - obs.y);
+                        if (dist <= obs.radius) {
+                            isDraggingObstacle = true;
+                            dragIndex = i;
+                            canvas.classList.add('dragging');
+                            e.preventDefault();
+                            return;
+                        }
+                    }
+                });
+                
+                // Mouse move - update cursor and drag obstacles
+                canvas.addEventListener('mousemove', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    if (isDraggingObstacle && dragIndex >= 0) {
+                        adcbfDemo.obstacles[dragIndex].x = x;
+                        adcbfDemo.obstacles[dragIndex].y = y;
+                        renderADCBFDemo();
+                    } else {
+                        // Update hover state
+                        let foundHover = false;
+                        for (let i = 0; i < adcbfDemo.obstacles.length; i++) {
+                            const obs = adcbfDemo.obstacles[i];
+                            const dist = Math.hypot(x - obs.x, y - obs.y);
+                            if (dist <= obs.radius) {
+                                hoveredObstacle = i;
+                                canvas.style.cursor = 'grab';
+                                foundHover = true;
+                                break;
+                            }
+                        }
+                        if (!foundHover) {
+                            hoveredObstacle = -1;
+                            canvas.style.cursor = 'crosshair';
+                        }
+                    }
+                });
+                
+                // Click to set goal
+                canvas.addEventListener('click', (e) => {
+                    if (isDraggingObstacle) return;
+                    
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    // Check if clicking on obstacle
+                    for (const obs of adcbfDemo.obstacles) {
+                        const dist = Math.hypot(x - obs.x, y - obs.y);
+                        if (dist <= obs.radius) return;
+                    }
+                    
+                    adcbfDemo.robot.goalX = x;
+                    adcbfDemo.robot.goalY = y;
+                    renderADCBFDemo();
+                });
+                
+                // Mouse up and leave - end dragging
+                canvas.addEventListener('mouseup', () => {
+                    isDraggingObstacle = false;
+                    dragIndex = -1;
+                    canvas.classList.remove('dragging');
+                });
+                
+                canvas.addEventListener('mouseleave', () => {
+                    isDraggingObstacle = false;
+                    dragIndex = -1;
+                    hoveredObstacle = -1;
+                    canvas.classList.remove('dragging');
+                    canvas.style.cursor = 'crosshair';
+                });
+            }
+            
+            // Wire up hyperparameter sliders (weight decay, grad clip norm, clamp bound)
+            const wdSlider = document.getElementById('weight-decay-adcbf');
+            const gcSlider = document.getElementById('grad-clip-norm-adcbf');
+            const clampSlider = document.getElementById('param-clamp-bound-adcbf');
+
+            if (wdSlider && !wdSlider.dataset.initialized) {
+                wdSlider.dataset.initialized = 'true';
+                // Initialize from current state
+                wdSlider.value = String(adcbfDemo.kTheta);
+                const wdLabel = document.getElementById('wd-adcbf');
+                if (wdLabel) wdLabel.textContent = Number(adcbfDemo.kTheta).toFixed(3);
+                // Listener (in addition to inline oninput for robustness)
+                wdSlider.addEventListener('input', (e) => {
+                    const v = parseFloat(e.target.value);
+                    adcbfDemo.kTheta = v;
+                    if (wdLabel) wdLabel.textContent = v.toFixed(3);
+                });
+            }
+
+            if (gcSlider && !gcSlider.dataset.initialized) {
+                gcSlider.dataset.initialized = 'true';
+                gcSlider.value = String(adcbfDemo.maxGradNorm);
+                const gcLabel = document.getElementById('grad-clip-adcbf');
+                if (gcLabel) gcLabel.textContent = Number(adcbfDemo.maxGradNorm).toFixed(1);
+                gcSlider.addEventListener('input', (e) => {
+                    const v = parseFloat(e.target.value);
+                    adcbfDemo.maxGradNorm = v;
+                    if (gcLabel) gcLabel.textContent = v.toFixed(1);
+                });
+            }
+
+            if (clampSlider && !clampSlider.dataset.initialized) {
+                clampSlider.dataset.initialized = 'true';
+                clampSlider.value = String(adcbfDemo.clampBound);
+                const clampLabel = document.getElementById('clamp-adcbf');
+                if (clampLabel) clampLabel.textContent = Number(adcbfDemo.clampBound).toFixed(2);
+                clampSlider.addEventListener('input', (e) => {
+                    const v = parseFloat(e.target.value);
+                    adcbfDemo.clampBound = v;
+                    if (clampLabel) clampLabel.textContent = v.toFixed(2);
+                });
+            }
+
+            // Initialize and wire adaptation-related sliders (β0, κ0, Γ0)
+            const beta0Slider = document.getElementById('beta0-adcbf');
+            const kappa0Slider = document.getElementById('kappa0-adcbf');
+            const Gamma0Slider = document.getElementById('Gamma0-adcbf');
+
+            if (beta0Slider && !beta0Slider.dataset.initialized) {
+                beta0Slider.dataset.initialized = 'true';
+                beta0Slider.value = String(adcbfDemo.beta0);
+                const beta0Label = document.getElementById('beta0-value-adcbf');
+                if (beta0Label) beta0Label.textContent = Number(adcbfDemo.beta0).toFixed(2);
+                beta0Slider.addEventListener('input', (e) => {
+                    const v = parseFloat(e.target.value);
+                    adcbfDemo.beta0 = v;
+                    if (beta0Label) beta0Label.textContent = v.toFixed(2);
+                });
+            }
+
+            if (kappa0Slider && !kappa0Slider.dataset.initialized) {
+                kappa0Slider.dataset.initialized = 'true';
+                kappa0Slider.value = String(adcbfDemo.kappa0);
+                const kappa0Label = document.getElementById('kappa0-value-adcbf');
+                if (kappa0Label) kappa0Label.textContent = String(adcbfDemo.kappa0);
+                kappa0Slider.addEventListener('input', (e) => {
+                    const v = parseFloat(e.target.value);
+                    adcbfDemo.kappa0 = v;
+                    if (kappa0Label) kappa0Label.textContent = String(v);
+                });
+            }
+
+            if (Gamma0Slider && !Gamma0Slider.dataset.initialized) {
+                Gamma0Slider.dataset.initialized = 'true';
+                Gamma0Slider.value = String(adcbfDemo.Gamma0);
+                const Gamma0Label = document.getElementById('Gamma0-value-adcbf');
+                if (Gamma0Label) Gamma0Label.textContent = Number(adcbfDemo.Gamma0).toFixed(2);
+                Gamma0Slider.addEventListener('input', (e) => {
+                    const v = parseFloat(e.target.value);
+                    adcbfDemo.Gamma0 = v;
+                    adcbfDemo.Gamma = v;
+                    adcbfDemo.GammaInv = 1 / Math.max(1e-6, v);
+                    if (Gamma0Label) Gamma0Label.textContent = v.toFixed(2);
+                });
+            }
+            
+            // Update parameter count display
+            document.getElementById('param-count-adcbf').textContent = adcbfDemo.dnn.getParameterCount();
+            
+            renderADCBFDemo();
+        }
+
+        function renderADCBFDemo() {
+            const svg = document.getElementById('adcbf-svg');
+            if (!svg) return;
+            
+            svg.innerHTML = `
+                <defs>
+                    <marker id="arrowhead-nominal-adcbf" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#60a5fa" opacity="0.6" />
+                    </marker>
+                    <marker id="arrowhead-safe-adcbf" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#10b981" />
+                    </marker>
+                    <marker id="arrowhead-dnn-adcbf" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa" />
+                    </marker>
+                </defs>
+            `;
+            
+            // If feedback is lost, visualize the open-loop estimator Xhat
+            const usingOpenLoop = !adcbfDemo.feedbackAvailable;
+            if (usingOpenLoop) {
+                // Draw a ghost marker at \hat X and a faint tether to actual x
+                svg.innerHTML += `
+                    <circle cx="${adcbfDemo.Xhat.x}" cy="${adcbfDemo.Xhat.y}" r="8" 
+                            fill="none" stroke="#14b8a6" stroke-width="2" 
+                            stroke-dasharray="4,3" opacity="0.9" />
+                    <line x1="${adcbfDemo.Xhat.x}" y1="${adcbfDemo.Xhat.y}" 
+                          x2="${adcbfDemo.robot.x}" y2="${adcbfDemo.robot.y}" 
+                          stroke="#14b8a6" stroke-width="1" opacity="0.35" />
+                    <text x="${adcbfDemo.Xhat.x + 10}" y="${adcbfDemo.Xhat.y - 10}" 
+                          fill="#14b8a6" font-size="10" font-weight="600" opacity="0.8">\hat X (open-loop)</text>
+                `;
+            }
+
+            // Draw trajectory
+            if (adcbfDemo.trajectory.length > 1) {
+                const pathData = adcbfDemo.trajectory.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+                svg.innerHTML += `<path d="${pathData}" stroke="#3b82f6" stroke-width="2" fill="none" opacity="0.4" />`;
+            }
+            
+            // Draw obstacles
+            adcbfDemo.obstacles.forEach((obs, i) => {
+                const safetyRadius = obs.radius + adcbfDemo.safetyMargin;
+                svg.innerHTML += `
+                    <circle cx="${obs.x}" cy="${obs.y}" r="${safetyRadius}" fill="#ef4444" opacity="0.1" stroke="#ef4444" stroke-width="1" stroke-dasharray="4" />
+                    <circle cx="${obs.x}" cy="${obs.y}" r="${obs.radius}" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="2" style="cursor: grab;" />
+                    <text x="${obs.x}" y="${obs.y}" text-anchor="middle" dominant-baseline="middle" fill="#ef4444" font-size="20" font-weight="bold" style="pointer-events: none;">⊕</text>
+                `;
+            });
+            
+            // Draw goal
+            svg.innerHTML += `
+                <g class="goal-glow">
+                    <circle cx="${adcbfDemo.robot.goalX}" cy="${adcbfDemo.robot.goalY}" r="8" fill="none" stroke="#a78bfa" stroke-width="2" />
+                    <circle cx="${adcbfDemo.robot.goalX}" cy="${adcbfDemo.robot.goalY}" r="4" fill="#a78bfa" opacity="0.6" />
+                    <line x1="${adcbfDemo.robot.goalX - 12}" y1="${adcbfDemo.robot.goalY}" x2="${adcbfDemo.robot.goalX - 18}" y2="${adcbfDemo.robot.goalY}" stroke="#a78bfa" stroke-width="2" />
+                    <line x1="${adcbfDemo.robot.goalX + 12}" y1="${adcbfDemo.robot.goalY}" x2="${adcbfDemo.robot.goalX + 18}" y2="${adcbfDemo.robot.goalY}" stroke="#a78bfa" stroke-width="2" />
+                    <line x1="${adcbfDemo.robot.goalX}" y1="${adcbfDemo.robot.goalY - 12}" x2="${adcbfDemo.robot.goalX}" y2="${adcbfDemo.robot.goalY - 18}" stroke="#a78bfa" stroke-width="2" />
+                    <line x1="${adcbfDemo.robot.goalX}" y1="${adcbfDemo.robot.goalY + 12}" x2="${adcbfDemo.robot.goalX}" y2="${adcbfDemo.robot.goalY + 18}" stroke="#a78bfa" stroke-width="2" />
+                </g>
+            `;
+            
+            // Robot color based on safety
+            let minB = Infinity;
+            adcbfDemo.obstacles.forEach(obs => {
+                const dist_sq = (adcbfDemo.robot.x - obs.x)**2 + (adcbfDemo.robot.y - obs.y)**2;
+                const safety_radius_sq = (obs.radius + adcbfDemo.safetyMargin)**2;
+                const B_i = safety_radius_sq - dist_sq;
+                minB = Math.min(minB, B_i);
+            });
+            
+            let robotColor = '#10b981';
+            if (minB > 0) {
+                robotColor = '#ef4444';
+            } else if (adcbfDemo.isInfeasible) {
+                robotColor = '#a78bfa';
+            } else if (adcbfDemo.isCBFActive) {
+                robotColor = '#f59e0b';
+            }
+            
+        // Draw DNN estimate arrow (if unknown drift enabled)
+        if (adcbfDemo.unknownDriftEnabled) {
+            const evalAtOpenLoop = !adcbfDemo.feedbackAvailable;
+            const baseX = evalAtOpenLoop ? adcbfDemo.Xhat.x : adcbfDemo.robot.x;
+            const baseY = evalAtOpenLoop ? adcbfDemo.Xhat.y : adcbfDemo.robot.y;
+            // Evaluate DNN at the same state the controller uses
+            let dnnEst = adcbfDemo.dnn.forward([baseX, baseY]);
+            // Saturate magnitude ≤ 10 for visualization consistency
+            const estLimit = 10.0;
+            const estMag = Math.hypot(dnnEst[0], dnnEst[1]);
+            if (estMag > estLimit) {
+              const s = estLimit / (estMag + 1e-9);
+              dnnEst[0] *= s;
+              dnnEst[1] *= s;
+            }
+            const dnnScale = 10;
+                svg.innerHTML += `
+                    <line x1="${baseX}" y1="${baseY}" 
+                          x2="${baseX + dnnEst[0] * dnnScale}" 
+                          y2="${baseY + dnnEst[1] * dnnScale}" 
+                          stroke="#a78bfa" stroke-width="3" marker-end="url(#arrowhead-dnn-adcbf)" opacity="0.7" />
+              <text x="${baseX + dnnEst[0] * dnnScale + 15}" 
+                  y="${baseY + dnnEst[1] * dnnScale - 5}" 
+                  fill="#a78bfa" font-size="11" font-weight="bold">DNN est f(${evalAtOpenLoop ? '\\hat X' : 'x'})</text>
+                `;
+                
+            // Draw unknown drift
+                const distScale = 10;
+                                svg.innerHTML += `
+                                        <line x1="${adcbfDemo.robot.x}" y1="${adcbfDemo.robot.y}" 
+                                    x2="${adcbfDemo.robot.x + adcbfDemo.unknownDrift.x * distScale}" 
+                                    y2="${adcbfDemo.robot.y + adcbfDemo.unknownDrift.y * distScale}" 
+                                                    stroke="#ef4444" stroke-width="2" stroke-dasharray="4" opacity="0.6" />
+                            <text x="${adcbfDemo.robot.x + adcbfDemo.unknownDrift.x * distScale + 15}" 
+                                    y="${adcbfDemo.robot.y + adcbfDemo.unknownDrift.y * distScale + 15}" 
+                                    fill="#ef4444" font-size="11">unknown drift</text>
+                                `;
+            }
+            
+            // Draw control vectors
+            if (adcbfDemo.nominalControl && adcbfDemo.safeControl) {
+                const controlScale = 0.5;
+                svg.innerHTML += `
+                    <line x1="${adcbfDemo.robot.x}" y1="${adcbfDemo.robot.y}" 
+                          x2="${adcbfDemo.robot.x + adcbfDemo.nominalControl.x * controlScale}" 
+                          y2="${adcbfDemo.robot.y + adcbfDemo.nominalControl.y * controlScale}" 
+                          stroke="#60a5fa" stroke-width="2" stroke-dasharray="3" marker-end="url(#arrowhead-nominal-adcbf)" />
+                    <line x1="${adcbfDemo.robot.x}" y1="${adcbfDemo.robot.y}" 
+                          x2="${adcbfDemo.robot.x + adcbfDemo.safeControl.x * controlScale}" 
+                          y2="${adcbfDemo.robot.y + adcbfDemo.safeControl.y * controlScale}" 
+                          stroke="#10b981" stroke-width="3" marker-end="url(#arrowhead-safe-adcbf)" />
+                `;
+            }
+            
+            // Draw robot
+            svg.innerHTML += `
+                <circle cx="${adcbfDemo.robot.x}" cy="${adcbfDemo.robot.y}" r="12" fill="${robotColor}" opacity="0.8" stroke="#1e293b" stroke-width="2" />
+                <circle cx="${adcbfDemo.robot.x}" cy="${adcbfDemo.robot.y}" r="3" fill="#1e293b" />
+            `;
+            
+            updateADCBFStatus();
+        }
+
+        function updateADCBFStatus() {
+            // Calculate safety status
+            let minB = Infinity;
+            let activeConstraints = 0;
+            
+            adcbfDemo.obstacles.forEach(obs => {
+                const dist_sq = (adcbfDemo.robot.x - obs.x)**2 + (adcbfDemo.robot.y - obs.y)**2;
+                const safety_radius_sq = (obs.radius + adcbfDemo.safetyMargin)**2;
+                const B_i = safety_radius_sq - dist_sq;
+                if (B_i > -100) activeConstraints++;
+                minB = Math.min(minB, B_i);
+            });
+            
+            const isSafe = minB <= 0;
+            
+            let statusText = 'SAFE';
+            let statusClass = 'safe';
+            
+            if (!isSafe) {
+                statusText = 'COLLISION';
+                statusClass = 'unsafe';
+            } else if (adcbfDemo.isInfeasible) {
+                statusText = 'INFEASIBLE';
+                statusClass = 'infeasible';
+            } else if (adcbfDemo.isCBFActive) {
+                statusText = 'CBF ACTIVE';
+                statusClass = 'warning';
+            }
+            
+            document.getElementById('safety-status-adcbf').textContent = statusText;
+            document.getElementById('safety-status-adcbf').className = `status-value ${statusClass}`;
+            
+            document.getElementById('approx-error-adcbf').textContent = adcbfDemo.approximationError.toFixed(2);
+            document.getElementById('approx-error-adcbf').className = `status-value ${adcbfDemo.approximationError < 2.0 ? 'safe' : 'warning'}`;
+            
+            document.getElementById('observer-error-adcbf').textContent = adcbfDemo.observerError.toFixed(2);
+            document.getElementById('observer-error-adcbf').className = `status-value ${adcbfDemo.observerError < 1.0 ? 'safe' : 'warning'}`;
+            
+            document.getElementById('cbf-active-adcbf').textContent = adcbfDemo.isCBFActive ? 'ACTIVE' : 'OFF';
+            document.getElementById('cbf-active-adcbf').className = `status-value ${adcbfDemo.isCBFActive ? 'warning' : ''}`;
+        }
+
+        function updateADCBFObserver(appliedControl, dt) {
+            // Implementable integral form from Eq. (8):
+            // ˆf(t) = ˆf(t0) + kf [x̃(t) − x̃(t0)] + ∫_{t0}^t (kf kx + 1) x̃(τ) dτ
+            // with x̂ dynamics (Eq. (7)): x̂̇ = u + ˆf + kx x̃
+            const tildeX = {
+                x: adcbfDemo.robot.x - adcbfDemo.hatX.x,
+                y: adcbfDemo.robot.y - adcbfDemo.hatX.y
+            };
+
+            // Accumulate ∫ x̃ dτ
+            adcbfDemo.intTilde.x += tildeX.x * dt;
+            adcbfDemo.intTilde.y += tildeX.y * dt;
+
+            // Compute ˆf via the closed-form (no finite differences between consecutive steps)
+            const gainInt = (adcbfDemo.kf * adcbfDemo.kx + 1);
+            adcbfDemo.hatF.x = adcbfDemo.hatF0.x + adcbfDemo.kf * (tildeX.x - adcbfDemo.tildeX0.x) + gainInt * adcbfDemo.intTilde.x;
+            adcbfDemo.hatF.y = adcbfDemo.hatF0.y + adcbfDemo.kf * (tildeX.y - adcbfDemo.tildeX0.y) + gainInt * adcbfDemo.intTilde.y;
+
+            // Update x̂ using current ˆf
+            adcbfDemo.hatX.x += (appliedControl.x + adcbfDemo.hatF.x + adcbfDemo.kx * tildeX.x) * dt;
+            adcbfDemo.hatX.y += (appliedControl.y + adcbfDemo.hatF.y + adcbfDemo.kx * tildeX.y) * dt;
+
+            // Observer error metric
+            adcbfDemo.observerError = Math.hypot(tildeX.x, tildeX.y);
+
+            // Store last error (diagnostics)
+            adcbfDemo.tildeXPrev = tildeX;
+        }
+
+        function updateADCBFWeights(dt) {
+            // DNN adaptation using least squares
+            const state = [adcbfDemo.robot.x, adcbfDemo.robot.y];
+
+            // Forward pass with cache
+            let dnnOutput = adcbfDemo.dnn.forward(state, true);
+            if (!Number.isFinite(dnnOutput[0]) || !Number.isFinite(dnnOutput[1])) {
+                dnnOutput = [0, 0];
+            }
+
+            // Identification error: ˆf - Φ(x, ˆθ)
+            const identError = [
+                adcbfDemo.hatF.x - dnnOutput[0],
+                adcbfDemo.hatF.y - dnnOutput[1]
+            ];
+
+            // Backpropagate identification error to get gradients
+            const jacobian = adcbfDemo.dnn.computeJacobian(identError);
+
+            // --- Adaptive gain update (scalar RLS-style Γ) ---
+            // Approximate feature energy as ||Φ'(x,θ)||_F^2 via gradient norm proxy
+            let featureEnergy = 0.0;
+            for (let i = 0; i < jacobian.length; i++) {
+                const g = jacobian[i];
+                featureEnergy += g * g;
+            }
+            // β(t) = β0(1 - Γ/κ0), ensure non-negative
+            const beta_t = Math.max(0, adcbfDemo.beta0 * (1.0 - (adcbfDemo.Gamma / Math.max(1e-6, adcbfDemo.kappa0))));
+            // d/dt (Γ^{-1}) = -β(t) Γ^{-1} + featureEnergy
+            const dGammaInv = (-beta_t * adcbfDemo.GammaInv + featureEnergy) * dt;
+            adcbfDemo.GammaInv = Math.max(1e-6, adcbfDemo.GammaInv + dGammaInv);
+            adcbfDemo.Gamma = 1.0 / adcbfDemo.GammaInv;
+
+            // Effective adaptation gain η_eff = η · Γ
+            const effectiveLR = adcbfDemo.learningRate * adcbfDemo.Gamma * dt;
+
+            // Stabilized weight update with clipping, decay, and clamping
+            adcbfDemo.dnn.updateWeights(
+                jacobian,
+                effectiveLR,
+                adcbfDemo.kTheta,        // weight decay k_theta
+                adcbfDemo.maxGradNorm,   // max gradient norm
+                adcbfDemo.clampBound     // clamp bound for parameters
+            );
+
+            // Update approximation error metric
+            adcbfDemo.approximationError = Math.hypot(identError[0], identError[1]);
+        }
+
+        function computeADCBFUnknownDrift() {
+            if (!adcbfDemo.unknownDriftEnabled) {
+                return { x: 0, y: 0 };
+            }
+
+            // State-dependent, bounded unknown drift f(x), no time variation
+            const x = adcbfDemo.robot.x;
+            const y = adcbfDemo.robot.y;
+
+            // Smooth field with mild cross-coupling; each term bounded by tanh
+            const cx = (x - 250.0) * 0.01;
+            const cy = (y - 150.0) * 0.01;
+            const base_x = 6.0 * Math.tanh(cx) + 2.0 * Math.tanh(0.6 * cy);
+            const base_y = 6.0 * Math.tanh(cy) - 2.0 * Math.tanh(0.6 * cx);
+
+            // Very small swirl around obstacles, decaying with distance
+            let swirl_x = 0.0;
+            let swirl_y = 0.0;
+            for (const obs of adcbfDemo.obstacles) {
+                const dx = x - obs.x;
+                const dy = y - obs.y;
+                const r2 = dx * dx + dy * dy + 1e-3;
+                const r = Math.sqrt(r2);
+                const gain = 2.0 * (obs.radius * obs.radius) / (r2 + 5000.0); // small influence
+                swirl_x += -gain * (dy / (r + 1e-3));
+                swirl_y +=  gain * (dx / (r + 1e-3));
+            }
+
+            let ux = base_x + swirl_x;
+            let uy = base_y + swirl_y;
+
+            // Hard saturation: ||f(x)|| <= 9.5 (< 10)
+            const mag = Math.hypot(ux, uy);
+            const limit = 9.5;
+            if (mag > limit) {
+                const s = limit / (mag + 1e-9);
+                ux *= s;
+                uy *= s;
+            }
+            return { x: ux, y: uy };
+        }
+
+        // Helper: bound on |X - Xhat| during feedback loss (Eq. 27)
+        function adcbfXtildeBound() {
+            const t = adcbfDemo.noFBElapsed;
+            const LU = Math.max(0, adcbfDemo.LU);
+            const DU = Math.max(0, adcbfDemo.DeltaU);
+            const lambdaU = 2 * LU + DU;
+            const deltaU = (2 * DU) / Math.max(1e-6, (2 * LU + DU));
+            if (lambdaU <= 0) return 0;
+            return Math.sqrt(Math.max(0, deltaU * (Math.exp(lambdaU * t) - 1)));
+        }
+
+        // Compute safe control via CBF projection using DNN estimate; switches to intermittent-feedback constraint when feedback is lost
+        function computeADCBFControl(robot, obstacles, nominalControl) {
+            let safeControl = { ...nominalControl };
+            let maxModification = 0;
+            let isInfeasible = false;
+            let isCBFActive = false;
+            let activeConstraints = 0;
+
+            // Select evaluation state and DNN estimate source
+            const useOpenLoop = !adcbfDemo.feedbackAvailable;
+            const evalX = useOpenLoop ? adcbfDemo.Xhat.x : robot.x;
+            const evalY = useOpenLoop ? adcbfDemo.Xhat.y : robot.y;
+
+            // DNN estimate of unknown drift f(x) at evaluation state
+            let dnnEst = adcbfDemo.dnn.forward([evalX, evalY]);
+            if (!Number.isFinite(dnnEst[0]) || !Number.isFinite(dnnEst[1])) {
+                dnnEst = [0, 0];
+            }
+            // Hard saturation on DNN output magnitude: ||Φ(x,θ)|| ≤ 10
+            const estLimit = 10.0;
+            const estMag = Math.hypot(dnnEst[0], dnnEst[1]);
+            if (estMag > estLimit) {
+                const s = estLimit / (estMag + 1e-9);
+                dnnEst[0] *= s;
+                dnnEst[1] *= s;
+            }
+
+            // Safety bound accounting for DNN/observer error (feedback available case)
+            const chiMax = Math.max(adcbfDemo.approximationError, adcbfDemo.observerError) + 2.0;
+
+            // Additional terms for intermittent feedback constraint (Eq. 29)
+            const rho = adcbfDemo.rho;
+            const Xtilde = useOpenLoop ? adcbfXtildeBound() : 0;
+            const LU = adcbfDemo.LU;
+            const DU = adcbfDemo.DeltaU;
+
+            // Iterative projection for each obstacle
+            let iterations = 0;
+            const maxIterations = 5;
+
+            while (iterations < maxIterations) {
+                let constraintViolated = false;
+
+                for (const obs of obstacles) {
+                    const px = useOpenLoop ? evalX : robot.x;
+                    const py = useOpenLoop ? evalY : robot.y;
+                    const dist_sq = (px - obs.x) ** 2 + (py - obs.y) ** 2;
+                    const safety_radius_sq = (obs.radius + adcbfDemo.safetyMargin) ** 2;
+                    const B_i = safety_radius_sq - dist_sq; // safe set: B_i <= 0
+
+                    if (B_i > -100) {
+                        activeConstraints++;
+
+                        // Gradient ∇B_i
+                        const gradB = {
+                            x: -2 * (px - obs.x),
+                            y: -2 * (py - obs.y)
+                        };
+
+                        const gradNorm = Math.hypot(gradB.x, gradB.y);
+                        if (gradNorm < 1e-3) continue;
+
+                        // CBF inequality
+                        const gamma_i = adcbfDemo.gammaGain * Math.max(B_i, 0);
+                        const LfB = gradB.x * dnnEst[0] + gradB.y * dnnEst[1];
+                        const LgB = gradB.x * safeControl.x + gradB.y * safeControl.y; // ∇B·u
+
+                        let constraint;
+                        if (!useOpenLoop) {
+                            // Feedback available: standard aDCBF with chi bound
+                            constraint = LfB + LgB + gamma_i + chiMax * gradNorm;
+                        } else {
+                            // Feedback lost: modified CU(\hat X, u) per Eq. (29)
+                            // extra1 = rho * Xtilde * (LU * Xtilde + DU + ||Phi(\hat X) + u||)
+                            const vecMag = Math.hypot(dnnEst[0] + safeControl.x, dnnEst[1] + safeControl.y);
+                            const extra1 = rho * Xtilde * (LU * Xtilde + DU + vecMag);
+                            // extra2 = ||∇B|| * (LU * Xtilde + DU)
+                            const extra2 = gradNorm * (LU * Xtilde + DU);
+                            constraint = LfB + LgB + gamma_i + extra1 + extra2;
+                        }
+
+                        if (constraint > 0) {
+                            constraintViolated = true;
+                            isCBFActive = true;
+
+                            // Project control along −∇B to satisfy constraint
+                            const denom = gradNorm * gradNorm + 1e-6;
+                            const correction = constraint / denom;
+                            safeControl.x -= correction * gradB.x;
+                            safeControl.y -= correction * gradB.y;
+                        }
+                    }
+                }
+
+                if (!constraintViolated) break;
+                iterations++;
+            }
+
+            if (iterations >= maxIterations) {
+                isInfeasible = true;
+            }
+
+            // Clip control to visualization bounds
+            const uMag = Math.hypot(safeControl.x, safeControl.y);
+            const uMax = 200;
+            if (uMag > uMax) {
+                safeControl.x *= uMax / uMag;
+                safeControl.y *= uMax / uMag;
+            }
+
+            // Modification percentage
+            const nominalMag = Math.hypot(nominalControl.x, nominalControl.y);
+            const diff = Math.hypot(safeControl.x - nominalControl.x, safeControl.y - nominalControl.y);
+            maxModification = nominalMag > 0 ? (diff / nominalMag) * 100 : 0;
+
+            return { safeControl, modification: maxModification, isInfeasible, isCBFActive, activeConstraints };
+        }
+
+        function animateADCBFDemo() {
+            if (!animations.adcbf) return;
+            
+            const robot = adcbfDemo.robot;
+            const dt = adcbfDemo.dt * adcbfDemo.speed;
+            adcbfDemo.t += dt;
+            const time = adcbfDemo.t;
+            
+            // Update unknown drift
+            adcbfDemo.unknownDrift = computeADCBFUnknownDrift();
+            
+            // Intermittent feedback scheduling
+            if (adcbfDemo.intermittentEnabled) {
+                adcbfDemo.intermitTimer += dt;
+                if (!adcbfDemo.inLoss && adcbfDemo.intermitTimer >= adcbfDemo.availDurationSec) {
+                    // Enter loss of feedback
+                    adcbfDemo.inLoss = true;
+                    adcbfDemo.feedbackAvailable = false;
+                    adcbfDemo.freezeAdaptation = true;
+                    adcbfDemo.intermitTimer = 0;
+                    adcbfDemo.noFBElapsed = 0;
+                    // Initialize open-loop state
+                    adcbfDemo.Xhat.x = robot.x;
+                    adcbfDemo.Xhat.y = robot.y;
+                    const fbState = document.getElementById('adcbf-fb-state');
+                    if (fbState) fbState.textContent = 'LOST';
+                    const dropBtn0 = document.getElementById('adcbf-drop-btn');
+                    if (dropBtn0) dropBtn0.textContent = '↩ Resume Feedback Now';
+                } else if (adcbfDemo.inLoss && adcbfDemo.intermitTimer >= adcbfDemo.lossDurationSec) {
+                    // Restore feedback
+                    adcbfDemo.inLoss = false;
+                    adcbfDemo.feedbackAvailable = true;
+                    adcbfDemo.freezeAdaptation = false;
+                    adcbfDemo.intermitTimer = 0;
+                    adcbfDemo.noFBElapsed = 0;
+                    const fbState = document.getElementById('adcbf-fb-state');
+                    if (fbState) fbState.textContent = 'AVAILABLE';
+                    const dropBtn1 = document.getElementById('adcbf-drop-btn');
+                    if (dropBtn1) dropBtn1.textContent = '⚠️ Drop Feedback Now';
+                }
+            } else if (adcbfDemo.inLoss) {
+                // One-shot loss: auto-restore after configured duration
+                adcbfDemo.intermitTimer += dt;
+                if (adcbfDemo.intermitTimer >= adcbfDemo.lossDurationSec) {
+                    adcbfDemo.inLoss = false;
+                    adcbfDemo.feedbackAvailable = true;
+                    adcbfDemo.freezeAdaptation = false;
+                    adcbfDemo.intermitTimer = 0;
+                    adcbfDemo.noFBElapsed = 0;
+                    const fbState = document.getElementById('adcbf-fb-state');
+                    if (fbState) fbState.textContent = 'AVAILABLE';
+                    const dropBtn2 = document.getElementById('adcbf-drop-btn');
+                    if (dropBtn2) dropBtn2.textContent = '⚠️ Drop Feedback Now';
+                }
+            }
+            if (adcbfDemo.inLoss) {
+                adcbfDemo.noFBElapsed += dt;
+            }
+
+            // Select state for nominal control and feedforward cancellation
+            const useOpenLoop = !adcbfDemo.feedbackAvailable;
+            const px = useOpenLoop ? adcbfDemo.Xhat.x : robot.x;
+            const py = useOpenLoop ? adcbfDemo.Xhat.y : robot.y;
+
+            // Nominal control (goal-directed) with feedforward cancellation via learned DNN, per paper Sec. VI
+            const dx_goal = robot.goalX - px;
+            const dy_goal = robot.goalY - py;
+            const dist = Math.hypot(dx_goal, dy_goal);
+
+            // DNN estimate of unknown drift f(x) at evaluation state (||\hat f|| <= 10)
+            let fhat = adcbfDemo.dnn.forward([px, py]);
+            if (!Number.isFinite(fhat[0]) || !Number.isFinite(fhat[1])) {
+                fhat = [0, 0];
+            }
+            const fhatLimit = 10.0;
+            const fhatMag = Math.hypot(fhat[0], fhat[1]);
+            if (fhatMag > fhatLimit) {
+                const s = fhatLimit / (fhatMag + 1e-9);
+                fhat[0] *= s;
+                fhat[1] *= s;
+            }
+
+            let nominalControl = { x: 0, y: 0 };
+            if (dist > 5) {
+                const maxSpeed = 80;
+                const controlGain = adcbfDemo.nominalGain;
+                // Feedforward cancellation: u_nom = k(x_g - x) - \hat f(x)
+                nominalControl.x = controlGain * dx_goal - fhat[0];
+                nominalControl.y = controlGain * dy_goal - fhat[1];
+
+                // Clip nominal control magnitude for visualization stability
+                const nomMag = Math.hypot(nominalControl.x, nominalControl.y);
+                if (nomMag > maxSpeed) {
+                    const scale = maxSpeed / nomMag;
+                    nominalControl.x *= scale;
+                    nominalControl.y *= scale;
+                }
+            }
+            
+            // Apply adaptive DNN-CBF
+            const { safeControl, modification, isInfeasible, isCBFActive, activeConstraints } = computeADCBFControl(
+                robot, adcbfDemo.obstacles, nominalControl
+            );
+            
+            adcbfDemo.nominalControl = nominalControl;
+            adcbfDemo.safeControl = safeControl;
+            adcbfDemo.controlModification = modification;
+            adcbfDemo.isInfeasible = isInfeasible;
+            adcbfDemo.isCBFActive = isCBFActive;
+            adcbfDemo.activeConstraints = activeConstraints;
+            
+            // Update observer and DNN only when feedback is available
+            if (adcbfDemo.feedbackAvailable) {
+                updateADCBFObserver(safeControl, dt);
+                updateADCBFWeights(dt);
+            }
+
+            // Single integrator state update: ẋ = u + f(x) (unknown drift)
+            robot.vx = safeControl.x + adcbfDemo.unknownDrift.x;
+            robot.vy = safeControl.y + adcbfDemo.unknownDrift.y;
+            robot.x += robot.vx * dt;
+            robot.y += robot.vy * dt;
+
+            // Open-loop state predictor when feedback is lost: \dot{\hat X} = \Phi(\hat X, \hat\theta) + u
+            if (!adcbfDemo.feedbackAvailable) {
+                const ph = adcbfDemo.dnn.forward([adcbfDemo.Xhat.x, adcbfDemo.Xhat.y]);
+                const phx = Math.max(-10, Math.min(10, ph[0] || 0));
+                const phy = Math.max(-10, Math.min(10, ph[1] || 0));
+                adcbfDemo.Xhat.x += (phx + safeControl.x) * dt;
+                adcbfDemo.Xhat.y += (phy + safeControl.y) * dt;
+            }
+            
+            // Update trajectory
+            if (adcbfDemo.trajectory.length === 0 || 
+                Math.hypot(robot.x - adcbfDemo.trajectory[adcbfDemo.trajectory.length - 1].x,
+                          robot.y - adcbfDemo.trajectory[adcbfDemo.trajectory.length - 1].y) > 3) {
+                adcbfDemo.trajectory.push({ x: robot.x, y: robot.y });
+                if (adcbfDemo.trajectory.length > 200) {
+                    adcbfDemo.trajectory.shift();
+                }
+            }
+            
+            renderADCBFDemo();
+            requestAnimationFrame(animateADCBFDemo);
+        }
+
+        function testADCBFCollision() {
+            if (adcbfDemo.obstacles.length === 0) return;
+            const obs = adcbfDemo.obstacles[0];
+            adcbfDemo.robot.x = obs.x - 100;
+            adcbfDemo.robot.y = obs.y;
+            adcbfDemo.robot.vx = 0;
+            adcbfDemo.robot.vy = 0;
+            adcbfDemo.robot.goalX = obs.x + 100;
+            adcbfDemo.robot.goalY = obs.y;
+            adcbfDemo.trajectory = [];
+            renderADCBFDemo();
+        }
+
+        function toggleADCBFUnknownDrift() {
+            adcbfDemo.unknownDriftEnabled = !adcbfDemo.unknownDriftEnabled;
+            if (!adcbfDemo.unknownDriftEnabled) {
+                adcbfDemo.unknownDrift = { x: 0, y: 0 };
+            }
+            const btn = document.getElementById('adcbf-drift-text');
+            if (btn) btn.textContent = adcbfDemo.unknownDriftEnabled ? 'Unknown Drift: ON' : 'Unknown Drift: OFF';
+            renderADCBFDemo();
+        }
+
+        function addADCBFObstacle() {
+            const canvas = document.getElementById('adcbf-canvas');
+            const rect = canvas.getBoundingClientRect();
+            
+            const newObs = {
+                x: 100 + Math.random() * (rect.width - 200),
+                y: 100 + Math.random() * (rect.height - 200),
+                radius: 25 + Math.random() * 20
+            };
+            
+            adcbfDemo.obstacles.push(newObs);
+            renderADCBFDemo();
+        }
+
+        function clearADCBFObstacles() {
+            adcbfDemo.obstacles = [adcbfDemo.obstacles[0], adcbfDemo.obstacles[1]];
+            renderADCBFDemo();
+        }
+
+        function toggleADCBFAnimation() {
+            animations.adcbf = !animations.adcbf;
+            if (animations.adcbf) {
+                animateADCBFDemo();
+            }
+        }
+
+        function resetADCBFDemo() {
+            // Reset robot state and trajectory
+            adcbfDemo.robot = { x: 100, y: 150, vx: 0, vy: 0, goalX: 350, goalY: 150 };
+            adcbfDemo.trajectory = [];
+
+            // Reset observer states and integrals
+            adcbfDemo.hatX = { x: adcbfDemo.robot.x, y: adcbfDemo.robot.y };
+            adcbfDemo.hatF = { x: 0, y: 0 };
+            adcbfDemo.intTilde = { x: 0, y: 0 };
+            adcbfDemo.tildeX0 = { x: 0, y: 0 };
+            adcbfDemo.hatF0 = { x: 0, y: 0 };
+            adcbfDemo.tildeXPrev = { x: 0, y: 0 };
+
+            // Reset status
+            adcbfDemo.controlModification = 0;
+            adcbfDemo.isInfeasible = false;
+            adcbfDemo.isCBFActive = false;
+            adcbfDemo.activeConstraints = 0;
+            adcbfDemo.nominalControl = null;
+            adcbfDemo.safeControl = null;
+            adcbfDemo.approximationError = 0;
+            adcbfDemo.observerError = 0;
+            adcbfDemo.t = 0.0;
+
+            // Reset adaptive gain to initialization Γ0
+            adcbfDemo.Gamma = adcbfDemo.Gamma0;
+            adcbfDemo.GammaInv = 1 / Math.max(1e-6, adcbfDemo.Gamma0);
+
+            // Reset intermittent feedback state
+            adcbfDemo.feedbackAvailable = true;
+            adcbfDemo.intermittentEnabled = false;
+            adcbfDemo.inLoss = false;
+            adcbfDemo.intermitTimer = 0;
+            adcbfDemo.noFBElapsed = 0;
+            adcbfDemo.Xhat = { x: adcbfDemo.robot.x, y: adcbfDemo.robot.y };
+            adcbfDemo.freezeAdaptation = false;
+
+            const fbState = document.getElementById('adcbf-fb-state');
+            if (fbState) fbState.textContent = 'AVAILABLE';
+            const intermitText = document.getElementById('adcbf-intermit-text');
+            if (intermitText) intermitText.textContent = 'Intermittent: OFF';
+            const dropBtn = document.getElementById('adcbf-drop-btn');
+            if (dropBtn) dropBtn.textContent = '⚠️ Drop Feedback Now';
+
+            renderADCBFDemo();
+        }
+
+        function toggleADCBFIntermittent() {
+            adcbfDemo.intermittentEnabled = !adcbfDemo.intermittentEnabled;
+            adcbfDemo.intermitTimer = 0;
+            const label = document.getElementById('adcbf-intermit-text');
+            if (label) label.textContent = adcbfDemo.intermittentEnabled ? 'Intermittent: ON' : 'Intermittent: OFF';
+        }
+
+        function triggerADCBFLoss() {
+            // Start an immediate one-shot loss interval using current lossDurationSec
+            if (!adcbfDemo.inLoss) {
+                adcbfDemo.inLoss = true;
+                adcbfDemo.feedbackAvailable = false;
+                adcbfDemo.freezeAdaptation = true;
+                adcbfDemo.intermitTimer = 0;
+                adcbfDemo.noFBElapsed = 0;
+                adcbfDemo.Xhat.x = adcbfDemo.robot.x;
+                adcbfDemo.Xhat.y = adcbfDemo.robot.y;
+                const fbState = document.getElementById('adcbf-fb-state');
+                if (fbState) fbState.textContent = 'LOST';
+                const dropBtn = document.getElementById('adcbf-drop-btn');
+                if (dropBtn) dropBtn.textContent = '↩ Resume Feedback Now';
+            } else {
+                // Restore immediately
+                adcbfDemo.inLoss = false;
+                adcbfDemo.feedbackAvailable = true;
+                adcbfDemo.freezeAdaptation = false;
+                adcbfDemo.intermitTimer = 0;
+                adcbfDemo.noFBElapsed = 0;
+                const fbState = document.getElementById('adcbf-fb-state');
+                if (fbState) fbState.textContent = 'AVAILABLE';
+                const dropBtn = document.getElementById('adcbf-drop-btn');
+                if (dropBtn) dropBtn.textContent = '⚠️ Drop Feedback Now';
+            }
+        }
+
+        function rebuildADCBFNetwork() {
+            // Get current hyperparameter values from sliders
+            const hiddenDim = parseInt(document.getElementById('hidden-dim-adcbf').textContent);
+            const numBlocks = parseInt(document.getElementById('num-blocks-adcbf').textContent);
+            
+            // Create new network with updated architecture
+            const inputDim = 2;
+            const outputDim = 2;
+            adcbfDemo.dnn = new AdaptiveResNet(inputDim, outputDim, hiddenDim, numBlocks);
+            
+            // Reset observer states for clean start
+            adcbfDemo.hatX = { x: adcbfDemo.robot.x, y: adcbfDemo.robot.y };  // Reset estimated state
+            adcbfDemo.hatF = { x: 0, y: 0 };                                    // Reset estimated dynamics
+            adcbfDemo.intTilde = { x: 0, y: 0 };                                 // Reset ∫ x̃
+            adcbfDemo.tildeX0 = { x: 0, y: 0 };                                  // Set x̃(t0) = 0 as hatX matches x
+            adcbfDemo.hatF0 = { x: 0, y: 0 };                                    // ˆf(t0)
+            adcbfDemo.tildeXPrev = { x: 0, y: 0 };                               // Diagnostics only
+            
+            // Update parameter count display
+            const paramCount = adcbfDemo.dnn.getParameterCount();
+            const paramEl = document.getElementById('param-count-adcbf');
+            if (paramEl) paramEl.textContent = String(paramCount);
+            
+            // Render updated state
+            renderADCBFDemo();
+            
+            console.log(`DNN rebuilt: ${numBlocks} blocks × ${hiddenDim} neurons = ${paramCount} parameters`);
         }
 
 
@@ -6224,7 +7898,7 @@
                         <p><strong>CBF Safety Integration:</strong></p>
                         $$\\begin{align}
                         \\min_{u_i} &\\quad \\|u_i - u_i^{nom}\\|^2 \\\\
-                        \\text{s.t.} &\\quad 2(x_i - x_j) \\cdot u_i \\geq -\\frac{\\alpha}{2} h_{ij}, \\; \\forall j
+                        s.t. &\\quad 2(x_i - x_j) \\cdot u_i \\geq -\\frac{\\alpha}{2} h_{ij}, \\; \\forall j
                         \\end{align}$$
                     `
                 },
@@ -6378,7 +8052,7 @@
                         <p><strong>Multi-CBF Safety Integration:</strong></p>
                         $$\\begin{align}
                         \\min_{\\mathbf{u}_d} &\\quad \\|\\mathbf{u}_d - \\mathbf{u}_d^{\\text{nom}}\\|^2 \\\\
-                        \\text{s.t.} &\\quad \\dot{h}_{dd'} + \\alpha_{\\text{dog}} h_{dd'} \\geq 0 \\quad \\forall d' \\neq d \\\\
+                        s.t. &\\quad \\dot{h}_{dd'} + \\alpha_{\\text{dog}} h_{dd'} \\geq 0 \\quad \\forall d' \\neq d \\\\
                         &\\quad \\dot{h}_{ds} + \\alpha_{\\text{sheep}} h_{ds} \\geq 0 \\quad \\forall s \\in \\mathcal{S} \\\\
                         &\\quad \\|\\mathbf{u}_d\\| \\leq u_{\\text{max}}
                         \\end{align}$$
