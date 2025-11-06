@@ -1250,8 +1250,8 @@
                         </div>
                     </div>
                     <div class="control-group">
-                        <label>Communication Range: <span id="comm-range-value">80</span></label>
-                        <input type="range" id="comm-range" min="40" max="150" step="10" value="80">
+                        <label>Communication Range: <span id="consensus-comm-range-value">80</span></label>
+                        <input type="range" id="consensus-comm-range" min="40" max="150" step="10" value="80">
                     </div>
                     <div class="control-group" id="consensus-gain-control">
                         <label>Consensus Gain: <span id="consensus-gain-value">1.0</span></label>
@@ -1521,9 +1521,9 @@
 
                     <div class="controls">
                         <div class="control-group">
-                <label>Comm Range R: <span id="comm-range-val">120</span></label>
-                <input type="range" id="comm-range" min="40" max="150" step="5" value="120" 
-                                   oninput="connectivityDemo.commRange = parseFloat(this.value); document.getElementById('comm-range-val').textContent = this.value;">
+                <label>Comm Range R: <span id="connectivity-comm-range-val">120</span></label>
+                <input type="range" id="connectivity-comm-range" min="40" max="150" step="5" value="120" 
+                                   oninput="connectivityDemo.commRange = parseFloat(this.value); document.getElementById('connectivity-comm-range-val').textContent = this.value;">
                         </div>
                         <div class="control-group">
                             <label>ε (margin): <span id="epsilon-connectivity-val">0.1</span></label>
@@ -5243,9 +5243,9 @@
                 });
                 
                 // New consensus control listeners
-                document.getElementById('comm-range').addEventListener('input', (e) => {
+                document.getElementById('consensus-comm-range').addEventListener('input', (e) => {
                     multiAgentDemo.communicationRange = parseInt(e.target.value);
-                    document.getElementById('comm-range-value').textContent = e.target.value;
+                    document.getElementById('consensus-comm-range-value').textContent = e.target.value;
                     updateCommunicationTopology();
                 });
                 
