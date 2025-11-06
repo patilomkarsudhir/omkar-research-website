@@ -444,6 +444,7 @@
             <button class="tab-button active" onclick="switchTab('basic-demo', event)">Basic CBF Demo</button>
             <button class="tab-button" onclick="switchTab('hocbf-demo', event)">High-Order CBF</button>
             <button class="tab-button" onclick="switchTab('adaptive-cbf', event)">Adaptive CBFs</button>
+            <button class="tab-button" onclick="switchTab('matrix-cbf', event)">Matrix CBFs</button>
             <button class="tab-button" onclick="switchTab('multi-agent', event)">Multi-Agent Systems</button>
         </div>
 
@@ -1371,7 +1372,195 @@
                 </div>
             </div>
         </div>
-    </div>
+
+        <!-- Matrix CBFs Section -->
+        <div id="matrix-cbf" class="content-section">
+            <!-- Sub-tabs for Matrix CBFs -->
+            <div class="nav-tabs" style="margin-top: -10px; margin-bottom: 20px;">
+                <button class="subtab-button active" onclick="switchMatrixSubtab('mcbf-or-boolean', event)">Boolean OR Composition</button>
+                <button class="subtab-button" onclick="switchMatrixSubtab('mcbf-connectivity', event)">Connectivity Maintenance</button>
+            </div>
+
+            <!-- Elliptope/Spectrahedron Demo removed per request -->
+
+            <!-- Boolean OR Demo -->
+            <div id="mcbf-or-boolean" class="adaptive-subsection active">
+                <div class="theory-section">
+                    <h3>Indefinite Matrix CBFs: Boolean OR Composition</h3>
+                    <div class="math-formula">
+                        <p><strong>Safe Set via Maximum Eigenvalue:</strong></p>
+                        <p>\(\mathcal{C} = \{ \mathbf{x} \in \mathbb{R}^n \mid \mathbf{H}(\mathbf{x}) \not\prec 0 \} \Leftrightarrow \{ \mathbf{x} \mid \lambda_{\max}(\mathbf{H}(\mathbf{x})) \geq 0 \}\)</p>
+                        <p><strong>Indefinite MCBF Condition:</strong></p>
+                        <p>\(\dot{\mathbf{H}}(\mathbf{x}, \mathbf{u}) \succeq -\alpha(\lambda_{\max}(\mathbf{H})) \mathbf{I} - c_\perp (\lambda_{\max}(\mathbf{H}) \mathbf{I} - \mathbf{H}(\mathbf{x}))\)</p>
+                        <p><strong>Disjunctive Composition:</strong> For \(\mathbf{H} = \text{diag}(h_1, \ldots, h_p)\):</p>
+                        <p>\(\lambda_{\max}(\mathbf{H}) = \max_i h_i \geq 0 \Leftrightarrow \bigvee_{i=1}^p (h_i \geq 0)\)</p>
+                    </div>
+                    <p style="color: #94a3b8; margin-top: 15px; line-height: 1.6;">
+                        Indefinite MCBFs enable continuous safety filters for disjunctive (OR) constraints without soft-max relaxations.
+                        This demo shows a robot navigating through alternative "gates" where safety requires passing through <em>at least one</em> opening.
+                        The MCBF formulation maintains the exact safe set while ensuring control continuity at eigenvalue multiplicities.
+                    </p>
+                </div>
+
+                <div class="demo-card">
+                    <h3>OR-Boolean Corridor Navigation</h3>
+                    <div class="interaction-hint">
+                        Click to set goal. Robot must pass through at least one of three gates (Boolean OR constraint).
+                    </div>
+                    
+                    <div class="demo-canvas" id="mcbf-or-canvas" style="position: relative;">
+                        <div class="grid-background"></div>
+                        <svg id="mcbf-or-svg" width="100%" height="100%" style="position: absolute; top: 0; left: 0;"></svg>
+                    </div>
+
+                    <div class="status-display">
+                        <div class="status-item">
+                            <div id="lambda-max-or" class="status-value">0.00</div>
+                            <div class="status-label">λ_max(H)</div>
+                        </div>
+                        <div class="status-item">
+                            <div id="active-gate-or" class="status-value">—</div>
+                            <div class="status-label">Active Gate</div>
+                        </div>
+                        <div class="status-item">
+                            <div id="mcbf-status-or" class="status-value safe">SAFE</div>
+                            <div class="status-label">Safety Status</div>
+                        </div>
+                        <div class="status-item">
+                            <div id="control-mod-or" class="status-value">0%</div>
+                            <div class="status-label">Control Modification</div>
+                        </div>
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>c_⊥: <span id="cperp-or-val">0.5</span></label>
+                            <input type="range" id="cperp-or" min="0.0" max="2.0" step="0.1" value="0.5" 
+                                   oninput="orBooleanDemo.cPerp = parseFloat(this.value); document.getElementById('cperp-or-val').textContent = this.value;">
+                        </div>
+                        <div class="control-group">
+                            <label>Speed: <span id="speed-or-val">50</span></label>
+                            <input type="range" id="speed-or" min="10" max="100" step="5" value="50" 
+                                   oninput="orBooleanDemo.speed = parseFloat(this.value); document.getElementById('speed-or-val').textContent = this.value;">
+                        </div>
+                        <div class="control-group">
+                            <label>ε (wall band): <span id="epsilon-or-val">12</span></label>
+                            <input type="range" id="epsilon-or" min="0" max="40" step="1" value="12"
+                                   oninput="orBooleanDemo.epsilon = parseFloat(this.value); document.getElementById('epsilon-or-val').textContent = this.value;">
+                        </div>
+                        
+                    </div>
+
+                    <div class="controls" style="margin-top: 10px;">
+                        <button class="button" onclick="toggleORBooleanAnimation()">
+                            <span id="or-anim-btn">▶ Start</span>
+                        </button>
+                        <button class="button" onclick="resetORBooleanDemo()">↻ Reset</button>
+                        <button class="button" onclick="testORChallenge()">Challenge Scenario</button>
+                    </div>
+
+                    <div class="info-panel">
+                        <p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">
+                            <strong>Logic:</strong> Two-way crossing through gates only. Safety is the union: away from the wall by at least \(\varepsilon\) <em>or</em> inside any gate band.
+                            We encode this with \(\mathbf{H}=\mathrm{diag}(h_i)\), where \(h_i=\max(|x- x_{\text{wall}}| - \varepsilon,\; D_i)\) and \(D_i=\tfrac{w_i}{2} - |y - y_i|\).
+                            Projection uses the indefinite MCBF with Schur-based eigen handling for continuity at eigenvalue multiplicities.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connectivity Maintenance Demo -->
+            <div id="mcbf-connectivity" class="adaptive-subsection">
+                <div class="theory-section">
+                    <h3>Matrix CBFs for Network Connectivity</h3>
+                    <div class="math-formula">
+                        <p><strong>Laplacian Matrix:</strong> \(\mathbf{L}(\mathbf{x}) = \mathbf{D}(\mathbf{x}) - \mathbf{A}(\mathbf{x})\)</p>
+                        <p>where \(\mathbf{A}_{ij}\) is the adjacency weight and \(\mathbf{D}_{ii} = \sum_j \mathbf{A}_{ij}\).</p>
+                        <p><strong>Connectivity via Fiedler Eigenvalue:</strong></p>
+                        <p>Network is connected \(\Leftrightarrow \lambda_2(\mathbf{L}(\mathbf{x})) > 0\)</p>
+                        <p><strong>MCBF Construction:</strong></p>
+                        <p>\(\mathbf{H}(\mathbf{x}) = \mathbf{L}(\mathbf{x}) + \frac{\varepsilon}{p} \mathbf{1}\mathbf{1}^\top - \varepsilon \mathbf{I}\)</p>
+                        <p>Then \(\mathbf{H} \succeq 0\) ensures connectivity with margin \(\varepsilon > 0\).</p>
+                    </div>
+                    <p style="color: #94a3b8; margin-top: 15px; line-height: 1.6;">
+                        Multi-agent network connectivity can be maintained using MCBFs without the nonsmoothness issues of scalar eigenvalue-based CBFs.
+                        This demo shows agents maintaining communication links while tracking references.
+                        The MCBF formulation handles eigenvalue merging (when multiple eigenvalues become equal) continuously via Schur decomposition.
+                    </p>
+                </div>
+
+                <div class="demo-card">
+                    <h3>Multi-Agent Connectivity with MCBF</h3>
+                    <div class="interaction-hint">
+                        Drag agents or click to set waypoints. Agents maintain connectivity via MCBF while tracking goals.
+                    </div>
+                    
+                    <div class="demo-canvas" id="mcbf-connectivity-canvas" style="position: relative;">
+                        <div class="grid-background"></div>
+                        <svg id="mcbf-connectivity-svg" width="100%" height="100%" style="position: absolute; top: 0; left: 0;"></svg>
+                    </div>
+
+                    <div class="status-display">
+                        <div class="status-item">
+                            <div id="lambda2-connectivity" class="status-value">0.00</div>
+                            <div class="status-label">λ₂(L) (Fiedler)</div>
+                        </div>
+                        <div class="status-item">
+                            <div id="lambda-min-h-connectivity" class="status-value">0.00</div>
+                            <div class="status-label">λ_min(H)</div>
+                        </div>
+                        <div class="status-item">
+                            <div id="connected-status" class="status-value safe">CONNECTED</div>
+                            <div class="status-label">Network Status</div>
+                        </div>
+                        <div class="status-item">
+                            <div id="num-links-connectivity" class="status-value">0</div>
+                            <div class="status-label">Active Links</div>
+                        </div>
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-group">
+                <label>Comm Range R: <span id="comm-range-val">120</span></label>
+                <input type="range" id="comm-range" min="40" max="150" step="5" value="120" 
+                                   oninput="connectivityDemo.commRange = parseFloat(this.value); document.getElementById('comm-range-val').textContent = this.value;">
+                        </div>
+                        <div class="control-group">
+                            <label>ε (margin): <span id="epsilon-connectivity-val">0.1</span></label>
+                            <input type="range" id="epsilon-connectivity" min="0.01" max="0.5" step="0.01" value="0.1" 
+                                   oninput="connectivityDemo.epsilon = parseFloat(this.value); document.getElementById('epsilon-connectivity-val').textContent = this.value;">
+                        </div>
+                        <div class="control-group">
+                <label>c_α: <span id="calpha-connectivity-val">2.0</span></label>
+                <input type="range" id="calpha-connectivity" min="0.1" max="3.0" step="0.1" value="2.0" 
+                                   oninput="connectivityDemo.cAlpha = parseFloat(this.value); document.getElementById('calpha-connectivity-val').textContent = this.value;">
+                        </div>
+                    </div>
+
+                    <div class="controls" style="margin-top: 10px;">
+                        <button class="button" onclick="toggleConnectivityAnimation()">
+                            <span id="connectivity-anim-btn">▶ Start</span>
+                        </button>
+                        <button class="button" onclick="resetConnectivityDemo()">↻ Reset</button>
+                        <button class="button" onclick="testConnectivityChallenge()">Disperse Agents</button>
+                        <button class="button" onclick="cycleConnectivityAgents()">Change #Agents</button>
+                    </div>
+
+                    <div class="info-panel">
+                        <p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">
+                            <strong>Comparison to Scalar CBF:</strong> Scalar eigenvalue-based CBFs suffer from control chattering when eigenvalues merge
+                            (e.g., λ₂ and λ₃ become equal). The MCBF formulation avoids this by working directly with the matrix \(\mathbf{H}\),
+                            using Schur decomposition to handle multiplicities smoothly via orthogonal eigenspace projectors.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Multi-Agent Demo -->
+        <div id="multi-agent" class="content-section">
+            <div class="demo-card">
+                <h3>Multi-Robot Herding Simulation</h3>
 
     <script>
         // Global state for animations
@@ -1380,6 +1569,8 @@
             hocbf: false,
             rise: false,
             adcbf: false,
+            orboolean: false,
+            connectivity: false,
             multiagent: false
         };
 
@@ -1939,6 +2130,262 @@
             lockSheepInTarget: true      // When true, sheep that enter target region cannot leave (default: enabled)
         };
 
+        // ============= MATRIX CBF HELPER FUNCTIONS =============
+        
+        // Schur decomposition for robust eigenvalue computation
+        function schurDecomposition(A, n) {
+            // Simple QR algorithm for small matrices
+            // Returns {Q, T, eigenvalues} where A = Q T Q^T
+            const maxIter = 100;
+            let Q = createIdentityMatrix(n);
+            let T = copyMatrix(A, n);
+            
+            for (let iter = 0; iter < maxIter; iter++) {
+                const {Q: Qi, R} = qrDecompose(T, n);
+                T = matrixMultiply(R, Qi, n);
+                Q = matrixMultiply(Q, Qi, n);
+                
+                // Check for convergence (off-diagonal elements small)
+                let offDiagNorm = 0;
+                for (let i = 0; i < n; i++) {
+                    for (let j = 0; j < n; j++) {
+                        if (i !== j) offDiagNorm += Math.abs(T[i * n + j]);
+                    }
+                }
+                if (offDiagNorm < 1e-10) break;
+            }
+            
+            // Extract eigenvalues from diagonal (or 2x2 blocks)
+            const eigenvalues = [];
+            for (let i = 0; i < n; i++) {
+                eigenvalues.push(T[i * n + i]);
+            }
+            
+            return {Q, T, eigenvalues: eigenvalues.sort((a, b) => a - b)};
+        }
+        
+        // QR decomposition using Gram-Schmidt
+        function qrDecompose(A, n) {
+            const Q = new Array(n * n);
+            const R = new Array(n * n).fill(0);
+            
+            // Gram-Schmidt orthogonalization
+            for (let j = 0; j < n; j++) {
+                // Get column j
+                const v = new Array(n);
+                for (let i = 0; i < n; i++) v[i] = A[i * n + j];
+                
+                // Orthogonalize against previous columns
+                for (let k = 0; k < j; k++) {
+                    let dot = 0;
+                    for (let i = 0; i < n; i++) {
+                        dot += Q[i * n + k] * v[i];
+                    }
+                    R[k * n + j] = dot;
+                    for (let i = 0; i < n; i++) {
+                        v[i] -= dot * Q[i * n + k];
+                    }
+                }
+                
+                // Normalize
+                let norm = 0;
+                for (let i = 0; i < n; i++) norm += v[i] * v[i];
+                norm = Math.sqrt(norm);
+                R[j * n + j] = norm;
+                
+                if (norm > 1e-10) {
+                    for (let i = 0; i < n; i++) {
+                        Q[i * n + j] = v[i] / norm;
+                    }
+                } else {
+                    for (let i = 0; i < n; i++) {
+                        Q[i * n + j] = 0;
+                    }
+                }
+            }
+            
+            return {Q, R};
+        }
+        
+        function createIdentityMatrix(n) {
+            const I = new Array(n * n).fill(0);
+            for (let i = 0; i < n; i++) I[i * n + i] = 1;
+            return I;
+        }
+        
+        function copyMatrix(A, n) {
+            return A.slice(0, n * n);
+        }
+        
+        function matrixMultiply(A, B, n) {
+            const C = new Array(n * n).fill(0);
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    for (let k = 0; k < n; k++) {
+                        C[i * n + j] += A[i * n + k] * B[k * n + j];
+                    }
+                }
+            }
+            return C;
+        }
+        
+        function matrixVectorMultiply(A, v, n) {
+            const result = new Array(n).fill(0);
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    result[i] += A[i * n + j] * v[j];
+                }
+            }
+            return result;
+        }
+        
+        // Compute gradient of minimum eigenvalue using Schur decomposition
+        function computeEigenvalueGradient(H, dH_du, n, whichEigenvalue = 'min') {
+            const {Q, eigenvalues} = schurDecomposition(H, n);
+            const targetIdx = whichEigenvalue === 'min' ? 0 : n - 1;
+            const lambda = eigenvalues[targetIdx];
+            
+            // Eigenvector corresponding to target eigenvalue
+            const v = [];
+            for (let i = 0; i < n; i++) {
+                v.push(Q[i * n + targetIdx]);
+            }
+            
+            // Gradient: v^T (dH/du) v for each control component
+            const gradient = [];
+            for (let ctrl = 0; ctrl < dH_du.length; ctrl++) {
+                const dH = dH_du[ctrl];
+                const dH_v = matrixVectorMultiply(dH, v, n);
+                let grad = 0;
+                for (let i = 0; i < n; i++) {
+                    grad += v[i] * dH_v[i];
+                }
+                gradient.push(grad);
+            }
+            
+            return {gradient, lambda, eigenvector: v};
+        }
+        
+        // Project control onto MCBF constraint (semidefinite case)
+        function projectControlSemidefiniteMCBF(kd, H, dH_du, cAlpha, n, delta = 0.01) {
+            // Compute M(kd) = dH(kd) + cAlpha * H
+            const M = [];
+            for (let i = 0; i < n * n; i++) {
+                let sum = cAlpha * H[i];
+                for (let j = 0; j < dH_du.length; j++) {
+                    sum += dH_du[j][i] * kd[j];
+                }
+                M.push(sum);
+            }
+            
+            const {lambda: lambdaMin, gradient, eigenvector} = computeEigenvalueGradient(M, dH_du, n, 'min');
+            
+            // If already safe with margin, return nominal
+            if (lambdaMin >= delta) {
+                return {uSafe: [...kd], modification: 0, isMCBFActive: false};
+            }
+            
+            // Compute correction via gradient projection
+            const gradNormSq = gradient.reduce((sum, g) => sum + g * g, 0);
+            if (gradNormSq < 1e-10) {
+                // Gradient too small, can't correct - emergency stop
+                return {uSafe: [0, 0], modification: 100, isMCBFActive: true};
+            }
+            
+            const correction = (delta - lambdaMin) / gradNormSq;
+            const uSafe = kd.map((u, i) => u + correction * gradient[i]);
+            
+            const nominalMag = Math.hypot(...kd);
+            const diff = Math.hypot(...kd.map((u, i) => u - uSafe[i]));
+            const modification = nominalMag > 0 ? (diff / nominalMag) * 100 : 0;
+            
+            return {uSafe, modification, isMCBFActive: true};
+        }
+        
+        // Project control onto MCBF constraint (indefinite case - for OR)
+        function projectControlIndefiniteMCBF(kd, H, dH_du, cPerp, alpha_fn, n, delta = 0.01) {
+            const {eigenvalues} = schurDecomposition(H, n);
+            const lambdaMax = eigenvalues[n - 1];
+            
+            // M(u) = dH(u) + alpha(lambdaMax)*I + cPerp*(lambdaMax*I - H)
+            const M = [];
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    const idx = i * n + j;
+                    let val = cPerp * (lambdaMax * (i === j ? 1 : 0) - H[idx]);
+                    if (i === j) val += alpha_fn(lambdaMax);
+                    for (let k = 0; k < dH_du.length; k++) {
+                        val += dH_du[k][idx] * kd[k];
+                    }
+                    M.push(val);
+                }
+            }
+            
+            const {lambda: lambdaMin, gradient} = computeEigenvalueGradient(M, dH_du, n, 'min');
+            
+            if (lambdaMin >= delta) {
+                return {uSafe: [...kd], modification: 0, isMCBFActive: false, lambdaMax};
+            }
+            
+            const gradNormSq = gradient.reduce((sum, g) => sum + g * g, 0);
+            if (gradNormSq < 1e-10) {
+                return {uSafe: [0, 0], modification: 100, isMCBFActive: true, lambdaMax};
+            }
+            
+            const correction = (delta - lambdaMin) / gradNormSq;
+            const uSafe = kd.map((u, i) => u + correction * gradient[i]);
+            
+            const nominalMag = Math.hypot(...kd);
+            const diff = Math.hypot(...kd.map((u, i) => u - uSafe[i]));
+            const modification = nominalMag > 0 ? (diff / nominalMag) * 100 : 0;
+            
+            return {uSafe, modification, isMCBFActive: true, lambdaMax};
+        }
+        
+        // (Spectrahedron demo state removed per request)
+        
+        // ============= OR BOOLEAN DEMO STATE =============
+        let orBooleanDemo = {
+            robot: { x: 50, y: 150, goalX: 350, goalY: 150 },
+            trajectory: [],
+            gates: [
+                {y: 80, width: 30},   // Top gate
+                {y: 150, width: 30},  // Middle gate
+                {y: 220, width: 30}   // Bottom gate
+            ],
+            wallX: 200,
+            // Band around the wall where crossing requires being inside a gate (in pixels)
+            epsilon: 12,
+            cPerp: 0.5,
+            speed: 50,
+            dt: 0.016,
+            controlModification: 0,
+            isMCBFActive: false,
+            lambdaMax: 0,
+            activeGate: null,
+            nominalControl: null,
+            safeControl: null
+        };
+        
+        // ============= CONNECTIVITY DEMO STATE =============
+        let connectivityDemo = {
+            agents: [],
+            numAgents: 4,
+            commRange: 120,
+            epsilon: 0.1,
+            cAlpha: 2.0,
+            dt: 0.033,
+            safetyDistance: 25,
+            lambda2: 0,
+            lambdaMinH: 0,
+            isConnected: true,
+            numLinks: 0,
+            adjacency: [],
+            laplacian: [],
+            nominalControls: null,
+            safeControls: null
+        };
+
         // Function to switch between demo tabs
         function switchTab(tabName, event) {
             document.querySelectorAll('.content-section').forEach(section => {
@@ -1968,6 +2415,17 @@
                 } else {
                     if (activeSub.id === 'rise-cbf-demo') initRISEDemo();
                     if (activeSub.id === 'adcbf-demo') initADCBFDemo();
+                }
+            }
+            // Matrix CBFs parent tab initializes its currently active sub-demo
+            if (tabName === 'matrix-cbf') {
+                const parent = document.getElementById('matrix-cbf');
+                const activeSub = parent ? parent.querySelector('.adaptive-subsection.active') : null;
+                if (!activeSub) {
+                    initORBooleanDemo();
+                } else {
+                    if (activeSub.id === 'mcbf-or-boolean') initORBooleanDemo();
+                    if (activeSub.id === 'mcbf-connectivity') initConnectivityDemo();
                 }
             }
             if (tabName === 'multi-agent') initMultiAgentDemo();
@@ -2008,8 +2466,39 @@
             // Re-typeset math only within the subsection
             if (window.MathJax && window.MathJax.typesetPromise && targetSection) {
                 setTimeout(() => {
-                    window.MathJax.typesetPromise([targetSection]).catch(() => {});
-                }, 50);
+                    window.MathJax.typesetPromise([targetSection]).catch((err) => console.log('MathJax error:', err.message));
+                }, 100);
+            }
+        }
+
+        // Sub-tab switcher for Matrix CBFs
+        function switchMatrixSubtab(subId, event) {
+            const parent = document.getElementById('matrix-cbf');
+            if (!parent) return;
+
+            // Toggle subsection visibility
+            parent.querySelectorAll('.adaptive-subsection').forEach(s => s.classList.remove('active'));
+            const targetSection = document.getElementById(subId);
+            if (targetSection) targetSection.classList.add('active');
+
+            // Update subtab button active state
+            parent.querySelectorAll('.subtab-button').forEach(b => b.classList.remove('active'));
+            if (event && event.target && event.target.classList && event.target.classList.contains('subtab-button')) {
+                event.target.classList.add('active');
+            } else {
+                const btn = parent.querySelector(`.subtab-button[onclick*="${subId}"]`);
+                if (btn) btn.classList.add('active');
+            }
+
+            // Initialize the appropriate demo
+            if (subId === 'mcbf-or-boolean') initORBooleanDemo();
+            if (subId === 'mcbf-connectivity') initConnectivityDemo();
+
+            // Re-typeset math only within the subsection
+            if (window.MathJax && window.MathJax.typesetPromise && targetSection) {
+                setTimeout(() => {
+                    window.MathJax.typesetPromise([targetSection]).catch((err) => console.log('MathJax error:', err.message));
+                }, 100);
             }
         }
 
@@ -8125,6 +8614,518 @@
             if (window.MathJax && window.MathJax.typesetPromise) {
                 window.MathJax.typesetPromise([mathContent]).catch((err) => console.log('MathJax error:', err.message));
             }
+        }
+
+        // ============= MATRIX CBF DEMOS =============
+        
+        // (Spectrahedron demo functions removed per request)
+        
+        // ===== OR BOOLEAN DEMO =====
+        function initORBooleanDemo() {
+            const canvas = document.getElementById('mcbf-or-canvas');
+            if (!canvas) return;
+            
+            if (!canvas.dataset.initialized) {
+                canvas.addEventListener('click', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    orBooleanDemo.robot.goalX = e.clientX - rect.left;
+                    orBooleanDemo.robot.goalY = e.clientY - rect.top;
+                    renderORBooleanDemo();
+                });
+                canvas.dataset.initialized = 'true';
+            }
+            
+            renderORBooleanDemo();
+        }
+        
+        function renderORBooleanDemo() {
+            const svg = document.getElementById('mcbf-or-svg');
+            if (!svg) return;
+            
+            const canvas = document.getElementById('mcbf-or-canvas');
+            const h = canvas.clientHeight;
+            
+            svg.innerHTML = '';
+            
+            // Draw walls with gates
+            const wallX = orBooleanDemo.wallX;
+            
+            orBooleanDemo.gates.forEach((gate, i) => {
+                const topY = gate.y - gate.width/2;
+                const botY = gate.y + gate.width/2;
+                
+                // Wall segments
+                if (i === 0) {
+                    // Top wall segment
+                    svg.innerHTML += `<line x1="${wallX}" y1="0" x2="${wallX}" y2="${topY}" stroke="#64748b" stroke-width="3" />`;
+                }
+                svg.innerHTML += `<line x1="${wallX}" y1="${botY}" x2="${wallX}" y2="${i < orBooleanDemo.gates.length-1 ? orBooleanDemo.gates[i+1].y - orBooleanDemo.gates[i+1].width/2 : h}" stroke="#64748b" stroke-width="3" />`;
+                
+                // Gate opening
+                svg.innerHTML += `<line x1="${wallX}" y1="${topY}" x2="${wallX}" y2="${botY}" stroke="#10b981" stroke-width="3" stroke-dasharray="5,5" />`;
+                svg.innerHTML += `<text x="${wallX + 10}" y="${gate.y}" fill="#10b981" font-size="11">Gate ${i+1}</text>`;
+            });
+            
+            // Draw trajectory
+            if (orBooleanDemo.trajectory.length > 1) {
+                const pathData = orBooleanDemo.trajectory.map((p, i) => 
+                    `${i === 0 ? 'M' : 'L'} ${p.x},${p.y}`
+                ).join(' ');
+                svg.innerHTML += `<path d="${pathData}" fill="none" stroke="rgba(96, 165, 250, 0.4)" stroke-width="2" />`;
+            }
+            
+            // Draw goal
+            svg.innerHTML += `
+                <circle cx="${orBooleanDemo.robot.goalX}" cy="${orBooleanDemo.robot.goalY}" r="8" 
+                        fill="none" stroke="#a78bfa" stroke-width="2" class="goal-glow" />
+                <circle cx="${orBooleanDemo.robot.goalX}" cy="${orBooleanDemo.robot.goalY}" r="3" fill="#a78bfa" />
+            `;
+            
+            // Draw robot
+            const diagH = orBooleanDemo.lastHDiag || [0, 0, 0];
+            const isSafeOR = Math.max(...diagH) >= 0; // safe if any h_i >= 0
+            const robotColor = !isSafeOR ? '#ef4444' : (orBooleanDemo.isMCBFActive ? '#f59e0b' : '#10b981');
+            svg.innerHTML += `
+                <circle cx="${orBooleanDemo.robot.x}" cy="${orBooleanDemo.robot.y}" r="10" fill="${robotColor}" stroke="#1e293b" stroke-width="2" />
+                <circle cx="${orBooleanDemo.robot.x}" cy="${orBooleanDemo.robot.y}" r="3" fill="#1e293b" />
+            `;
+            
+            updateORBooleanStatus();
+        }
+        
+        function updateORBooleanStatus() {
+            // Display lambda_max(H) where H = diag(h_i); safe if max(h_i) >= 0 <=> lambda_max >= 0
+            document.getElementById('lambda-max-or').textContent = orBooleanDemo.lambdaMax.toFixed(2);
+            document.getElementById('lambda-max-or').className = `status-value ${orBooleanDemo.lambdaMax >= 0 ? 'safe' : 'unsafe'}`;
+
+            const diagH = orBooleanDemo.lastHDiag || [0, 0, 0];
+            const isSafeOR = Math.max(...diagH) >= 0;
+            const statusText = isSafeOR ? 'SAFE' : 'BLOCKED';
+            const statusClass = isSafeOR ? 'safe' : 'unsafe';
+            document.getElementById('mcbf-status-or').textContent = statusText;
+            document.getElementById('mcbf-status-or').className = `status-value ${statusClass}`;
+            
+            document.getElementById('active-gate-or').textContent = orBooleanDemo.activeGate !== null ? `#${orBooleanDemo.activeGate + 1}` : '—';
+            document.getElementById('control-mod-or').textContent = `${Math.round(orBooleanDemo.controlModification)}%`;
+        }
+        
+        function computeORBooleanH() {
+            // Symmetric two-way gate crossing:
+            // Safe set S = (|x - wallX| - epsilon >= 0) OR (inside any gate band)
+            // Encode with diagonal H entries per gate:
+            // h_i = max(h_far, D_i), where
+            //   h_far = |x - wallX| - epsilon (away from wall band),
+            //   D_i = gateHalf - |y - y_i| (vertical band of gate i).
+            const x = orBooleanDemo.robot.x;
+            const y = orBooleanDemo.robot.y;
+            const wallX = orBooleanDemo.wallX;
+            const eps = orBooleanDemo.epsilon ?? 12;
+            const Hdiag = [];
+            const h_far = Math.abs(x - wallX) - eps;
+            orBooleanDemo.gates.forEach((gate) => {
+                const half = gate.width / 2;
+                const Di = half - Math.abs(y - gate.y);
+                const h_i = Math.max(h_far, Di);
+                Hdiag.push(h_i);
+            });
+            // stash for active gate visualization
+            orBooleanDemo.lastHDiag = Hdiag.slice();
+            // For OR via indefinite MCBF, use H = diag(h_i)
+            return [
+                Hdiag[0], 0, 0,
+                0, Hdiag[1], 0,
+                0, 0, Hdiag[2]
+            ];
+        }
+        
+        function computeORBooleanDH() {
+            // Derivatives of diag(H) wrt (u_x, u_y) for h_i = max(h_far, D_i).
+            // h_far = |x - wallX| - epsilon, D_i = gateHalf - |y - y_i|.
+            // Gradients use subgradients at ties.
+            const x = orBooleanDemo.robot.x;
+            const y = orBooleanDemo.robot.y;
+            const wallX = orBooleanDemo.wallX;
+            const eps = orBooleanDemo.epsilon ?? 12;
+            const dH_ux = [0,0,0, 0,0,0, 0,0,0];
+            const dH_uy = [0,0,0, 0,0,0, 0,0,0];
+            const tol = 1e-6;
+            const dx = x - wallX;
+            const h_far = Math.abs(dx) - eps;
+            const dhfar_dx = dx === 0 ? 0 : Math.sign(dx);
+            const dhfar_dy = 0;
+            orBooleanDemo.gates.forEach((gate, i) => {
+                const dy = y - gate.y;
+                const Di = (gate.width / 2) - Math.abs(dy);
+                const dDi_dx = 0;
+                const dDi_dy = -(dy === 0 ? 0 : Math.sign(dy));
+
+                // h_i = max(h_far, D_i)
+                if (h_far > Di + tol) {
+                    dH_ux[i*3 + i] = dhfar_dx;
+                    dH_uy[i*3 + i] = dhfar_dy;
+                } else if (Di > h_far + tol) {
+                    dH_ux[i*3 + i] = dDi_dx;
+                    dH_uy[i*3 + i] = dDi_dy;
+                } else {
+                    // tie: average subgradient
+                    dH_ux[i*3 + i] = 0.5 * dhfar_dx + 0.5 * dDi_dx;
+                    dH_uy[i*3 + i] = 0.5 * dhfar_dy + 0.5 * dDi_dy;
+                }
+            });
+            return [dH_ux, dH_uy];
+        }
+        
+        function animateORBooleanDemo() {
+            if (!animations.orboolean) return;
+            
+            const dt = orBooleanDemo.dt;
+            const robot = orBooleanDemo.robot;
+            
+            // Nominal control toward goal
+            const dx = robot.goalX - robot.x;
+            const dy = robot.goalY - robot.y;
+            const dist = Math.hypot(dx, dy);
+            
+            let kd = [0, 0];
+            if (dist > 5) {
+                const nominalSpeed = orBooleanDemo.speed;
+                kd = [dx / dist * nominalSpeed, dy / dist * nominalSpeed];
+            }
+            
+            // Compute H (diagonal) and dH
+            const H = computeORBooleanH();
+            const dH_du = computeORBooleanDH();
+            
+            // Apply indefinite MCBF filter
+            // Use a linear class-K_e function α(λ) = k * λ (strictly increasing, α(0)=0)
+            const kAlpha = 0.5;
+            const alpha_fn = (lmax) => kAlpha * lmax;
+            const result = projectControlIndefiniteMCBF(kd, H, dH_du, orBooleanDemo.cPerp, alpha_fn, 3, 0.01);
+            
+            orBooleanDemo.nominalControl = kd;
+            orBooleanDemo.safeControl = result.uSafe;
+            orBooleanDemo.controlModification = result.modification;
+            orBooleanDemo.isMCBFActive = result.isMCBFActive;
+            orBooleanDemo.lambdaMax = result.lambdaMax;
+            
+            // Determine active gate (largest hi)
+            const diagH = orBooleanDemo.lastHDiag || [0,0,0];
+            let maxIdx = 0; let maxVal = -Infinity;
+            diagH.forEach((v, idx) => { if (v > maxVal) { maxVal = v; maxIdx = idx; } });
+            orBooleanDemo.activeGate = maxVal > -Infinity ? maxIdx : null;
+            
+            // Update robot state
+            robot.x += result.uSafe[0] * dt;
+            robot.y += result.uSafe[1] * dt;
+            
+            // Update trajectory
+            if (orBooleanDemo.trajectory.length === 0 || 
+                Math.hypot(robot.x - orBooleanDemo.trajectory[orBooleanDemo.trajectory.length-1].x,
+                          robot.y - orBooleanDemo.trajectory[orBooleanDemo.trajectory.length-1].y) > 3) {
+                orBooleanDemo.trajectory.push({x: robot.x, y: robot.y});
+                if (orBooleanDemo.trajectory.length > 200) orBooleanDemo.trajectory.shift();
+            }
+            
+            renderORBooleanDemo();
+            requestAnimationFrame(animateORBooleanDemo);
+        }
+        
+        function toggleORBooleanAnimation() {
+            animations.orboolean = !animations.orboolean;
+            const btn = document.getElementById('or-anim-btn');
+            if (animations.orboolean) {
+                btn.textContent = '⏸ Pause';
+                animateORBooleanDemo();
+            } else {
+                btn.textContent = '▶ Start';
+            }
+        }
+        
+        function resetORBooleanDemo() {
+            orBooleanDemo.robot = { x: 50, y: 150, goalX: 350, goalY: 150 };
+            orBooleanDemo.trajectory = [];
+            orBooleanDemo.controlModification = 0;
+            orBooleanDemo.isMCBFActive = false;
+            renderORBooleanDemo();
+        }
+        
+        function testORChallenge() {
+            orBooleanDemo.robot.x = 50;
+            orBooleanDemo.robot.y = 50;
+            orBooleanDemo.robot.goalX = 350;
+            orBooleanDemo.robot.goalY = 250;
+            orBooleanDemo.trajectory = [];
+            renderORBooleanDemo();
+        }
+        
+        // ===== CONNECTIVITY DEMO =====
+        function initConnectivityDemo() {
+            const canvas = document.getElementById('mcbf-connectivity-canvas');
+            if (!canvas) return;
+            
+            // Initialize agents if needed
+            if (connectivityDemo.agents.length === 0) {
+                // Place agents on a smaller-radius circle so initial graph is connected for commRange=80
+                const r0 = 50; // initial radius ensures adjacent distance ~70.7 < 80
+                const R = connectivityDemo.commRange;
+                // Choose goal radius so that adjacent chord length 2 rGoal sin(pi/n) <= R
+                const rGoalMax = (R / Math.SQRT2) - 2; // since n=4, sin(pi/4)=1/√2; add small safety margin
+                const rGoal = Math.max(30, Math.min(55, rGoalMax));
+                for (let i = 0; i < connectivityDemo.numAgents; i++) {
+                    const angle = (i / connectivityDemo.numAgents) * 2 * Math.PI;
+                    connectivityDemo.agents.push({
+                        x: 200 + r0 * Math.cos(angle),
+                        y: 150 + r0 * Math.sin(angle),
+                        // Keep goals on a slightly larger circle but within connected regime
+                        goalX: 200 + rGoal * Math.cos(angle + 0.4),
+                        goalY: 150 + rGoal * Math.sin(angle + 0.4)
+                    });
+                }
+            }
+            
+            if (!canvas.dataset.initialized) {
+                canvas.addEventListener('click', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const clickY = e.clientY - rect.top;
+                    // Set goal for nearest agent
+                    let nearest = 0;
+                    let minDist = Infinity;
+                    connectivityDemo.agents.forEach((agent, i) => {
+                        const dist = Math.hypot(agent.x - clickX, agent.y - clickY);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            nearest = i;
+                        }
+                    });
+                    connectivityDemo.agents[nearest].goalX = clickX;
+                    connectivityDemo.agents[nearest].goalY = clickY;
+                    renderConnectivityDemo();
+                });
+                canvas.dataset.initialized = 'true';
+            }
+            
+            renderConnectivityDemo();
+        }
+        
+        function renderConnectivityDemo() {
+            const svg = document.getElementById('mcbf-connectivity-svg');
+            if (!svg) return;
+            
+            svg.innerHTML = '';
+            
+            // Compute adjacency for visualization
+            const n = connectivityDemo.agents.length;
+            const R = connectivityDemo.commRange;
+            
+            // Draw communication links
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    const dist = Math.hypot(
+                        connectivityDemo.agents[i].x - connectivityDemo.agents[j].x,
+                        connectivityDemo.agents[i].y - connectivityDemo.agents[j].y
+                    );
+                    if (dist <= R) {
+                        svg.innerHTML += `<line x1="${connectivityDemo.agents[i].x}" y1="${connectivityDemo.agents[i].y}" 
+                                               x2="${connectivityDemo.agents[j].x}" y2="${connectivityDemo.agents[j].y}" 
+                                               stroke="rgba(96, 165, 250, 0.3)" stroke-width="1.5" />`;
+                    }
+                }
+            }
+            
+            // Draw agents and goals
+            connectivityDemo.agents.forEach((agent, i) => {
+                // Goal
+                svg.innerHTML += `<circle cx="${agent.goalX}" cy="${agent.goalY}" r="5" fill="none" stroke="#a78bfa" stroke-width="1.5" opacity="0.5" />`;
+                // Agent
+                const agentColor = connectivityDemo.isConnected ? '#10b981' : '#ef4444';
+                svg.innerHTML += `
+                    <circle cx="${agent.x}" cy="${agent.y}" r="8" fill="${agentColor}" stroke="#1e293b" stroke-width="2" />
+                    <text x="${agent.x}" y="${agent.y - 12}" fill="#e2e8f0" text-anchor="middle" font-size="10">${i+1}</text>
+                `;
+            });
+            
+            updateConnectivityStatus();
+        }
+        
+        function updateConnectivityStatus() {
+            document.getElementById('lambda2-connectivity').textContent = connectivityDemo.lambda2.toFixed(2);
+            document.getElementById('lambda2-connectivity').className = `status-value ${connectivityDemo.lambda2 > 0 ? 'safe' : 'unsafe'}`;
+            
+            document.getElementById('lambda-min-h-connectivity').textContent = connectivityDemo.lambdaMinH.toFixed(2);
+            document.getElementById('lambda-min-h-connectivity').className = `status-value ${connectivityDemo.lambdaMinH >= 0 ? 'safe' : 'unsafe'}`;
+            
+            const statusText = connectivityDemo.isConnected ? 'CONNECTED' : 'DISCONNECTED';
+            const statusClass = connectivityDemo.isConnected ? 'safe' : 'unsafe';
+            document.getElementById('connected-status').textContent = statusText;
+            document.getElementById('connected-status').className = `status-value ${statusClass}`;
+            
+            document.getElementById('num-links-connectivity').textContent = connectivityDemo.numLinks;
+        }
+        
+        function computeConnectivityMatrices() {
+            const n = connectivityDemo.agents.length;
+            const R = connectivityDemo.commRange;
+            const eps = connectivityDemo.epsilon;
+            
+            // Build adjacency matrix A
+            const A = new Array(n * n).fill(0);
+            let numLinks = 0;
+            
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    const dist = Math.hypot(
+                        connectivityDemo.agents[i].x - connectivityDemo.agents[j].x,
+                        connectivityDemo.agents[i].y - connectivityDemo.agents[j].y
+                    );
+                    if (dist <= R && dist > 0.1) {
+                        const weight = Math.exp(1 - (dist * dist) / (R * R)) - 1;
+                        A[i * n + j] = weight;
+                        A[j * n + i] = weight;
+                        numLinks++;
+                    }
+                }
+            }
+            
+            connectivityDemo.numLinks = numLinks;
+            
+            // Build degree matrix D and Laplacian L
+            const D = new Array(n * n).fill(0);
+            for (let i = 0; i < n; i++) {
+                let sum = 0;
+                for (let j = 0; j < n; j++) {
+                    sum += A[i * n + j];
+                }
+                D[i * n + i] = sum;
+            }
+            
+            const L = [];
+            for (let i = 0; i < n * n; i++) {
+                L.push(D[i] - A[i]);
+            }
+            
+            // Build H = L + (eps/n)*11^T - eps*I
+            const H = [];
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    const idx = i * n + j;
+                    H.push(L[idx] + eps / n - (i === j ? eps : 0));
+                }
+            }
+            
+            connectivityDemo.adjacency = A;
+            connectivityDemo.laplacian = L;
+            
+            // Compute eigenvalues
+            const {eigenvalues} = schurDecomposition(L, n);
+            connectivityDemo.lambda2 = n > 1 ? eigenvalues[1] : 0;
+            
+            const {eigenvalues: eigsH} = schurDecomposition(H, n);
+            connectivityDemo.lambdaMinH = eigsH[0];
+            connectivityDemo.isConnected = connectivityDemo.lambda2 > 0.01;
+            
+            return {H, L, A, n};
+        }
+        
+        function computeConnectivityHFromAgents(agents) {
+            // Reuse connectivity matrices computation to build H from arbitrary agent positions
+            const backup = connectivityDemo.agents;
+            connectivityDemo.agents = agents;
+            const {H} = computeConnectivityMatrices();
+            connectivityDemo.agents = backup;
+            return H;
+        }
+
+        function animateConnectivityDemo() {
+            if (!animations.connectivity) return;
+            
+            const dt = connectivityDemo.dt;
+            const n = connectivityDemo.agents.length;
+            if (n === 0) return;
+            
+            // Compute nominal controls (move to goal)
+            const uNom = new Array(2*n).fill(0);
+            connectivityDemo.agents.forEach((agent, i) => {
+                const dx = agent.goalX - agent.x;
+                const dy = agent.goalY - agent.y;
+                const dist = Math.hypot(dx, dy);
+                const speed = 30;
+                if (dist > 5) {
+                    uNom[2*i] = dx / dist * speed;
+                    uNom[2*i+1] = dy / dist * speed;
+                }
+            });
+            
+            // Build H and λ_min
+            const {H} = computeConnectivityMatrices();
+            const {eigenvalues} = schurDecomposition(H, n);
+            const lambdaMin = eigenvalues[0];
+            
+            // Finite-difference gradient of λ_min(H) wrt agent controls (since dx/dt = u)
+            const h = 1e-2;
+            const g = new Array(2*n).fill(0);
+            for (let k = 0; k < 2*n; k++) {
+                const agentsCopy = connectivityDemo.agents.map(a => ({...a}));
+                const idx = Math.floor(k/2);
+                const isX = (k % 2) === 0;
+                if (isX) agentsCopy[idx].x += h; else agentsCopy[idx].y += h;
+                const Hp = computeConnectivityHFromAgents(agentsCopy);
+                const {eigenvalues: evp} = schurDecomposition(Hp, n);
+                g[k] = (evp[0] - lambdaMin) / h;
+            }
+            
+            // Project uNom onto halfspace: g·u + cα λ_min ≥ δ
+            const cAlpha = connectivityDemo.cAlpha || 5.0;
+            const delta = 0.01;
+            let gDotUNom = 0, gNorm2 = 0;
+            for (let k = 0; k < 2*n; k++) { gDotUNom += g[k]*uNom[k]; gNorm2 += g[k]*g[k]; }
+            const rhs = delta - cAlpha * lambdaMin;
+            const uSafe = uNom.slice();
+            if (gNorm2 > 1e-9 && gDotUNom < rhs) {
+                const alpha = (rhs - gDotUNom) / gNorm2;
+                for (let k = 0; k < 2*n; k++) uSafe[k] += alpha * g[k];
+            }
+            
+            // Apply and update
+            connectivityDemo.agents.forEach((agent, i) => {
+                agent.x += uSafe[2*i] * dt;
+                agent.y += uSafe[2*i+1] * dt;
+            });
+            
+            renderConnectivityDemo();
+            requestAnimationFrame(animateConnectivityDemo);
+        }
+        
+        function toggleConnectivityAnimation() {
+            animations.connectivity = !animations.connectivity;
+            const btn = document.getElementById('connectivity-anim-btn');
+            if (animations.connectivity) {
+                btn.textContent = '⏸ Pause';
+                animateConnectivityDemo();
+            } else {
+                btn.textContent = '▶ Start';
+            }
+        }
+        
+        function resetConnectivityDemo() {
+            connectivityDemo.agents = [];
+            initConnectivityDemo();
+        }
+        
+        function testConnectivityChallenge() {
+            // Spread agents apart
+            connectivityDemo.agents.forEach((agent, i) => {
+                const angle = (i / connectivityDemo.agents.length) * 2 * Math.PI;
+                agent.x = 200 + 120 * Math.cos(angle);
+                agent.y = 150 + 120 * Math.sin(angle);
+            });
+            renderConnectivityDemo();
+        }
+        
+        function cycleConnectivityAgents() {
+            connectivityDemo.numAgents = (connectivityDemo.numAgents % 6) + 3;
+            connectivityDemo.agents = [];
+            initConnectivityDemo();
         }
 
         // Initialize the first demo on page load
