@@ -183,6 +183,11 @@
             margin-bottom: 30px;
         }
 
+        /* Force single-column stacking for selected sections */
+        .demo-grid.single-column {
+            grid-template-columns: 1fr;
+        }
+
         .demo-card {
             background: rgba(30, 41, 59, 0.8);
             border-radius: 20px;
@@ -450,7 +455,7 @@
 
         <!-- Basic CBF Demo -->
         <div id="basic-demo" class="content-section active">
-            <div class="demo-grid">
+            <div class="demo-grid single-column">
                 <div class="demo-card">
                     <h3>2D Point Robot with Obstacle Avoidance</h3>
                     <p style="color: #94a3b8; margin: 10px 0; font-size: 0.9rem;">
@@ -529,6 +534,18 @@
                 <div class="demo-card">
                     <h3>CBF Theory & Visualization</h3>
                     <div class="info-panel">
+                        <h4 style="margin-bottom:8px;">Introduction</h4>
+                        <p style="color:#94a3b8; line-height:1.7; margin-bottom:10px;">
+                            Control Barrier Functions provide a systematic framework for safety-critical control. The safe set $\mathcal{C}$ is defined by a differentiable barrier function $h(x)$, and forward invariance of $\mathcal{C}$ is enforced by filtering a nominal input through a minimal-intervention safety constraint. This maintains safety while preserving nominal performance whenever possible.
+                        </p>
+                        <ul style="color:#cbd5e1; line-height:1.8; margin-left:18px;">
+                            <li><strong>Key concepts:</strong> $\mathcal{C} = \{x : h(x) \ge 0\}$; enforce $\dot h(x) \ge -\alpha h(x)$ with $\alpha>0$; project nominal $u_d$ onto the admissible set to guarantee forward invariance.</li>
+                            <li><strong>Geometric interpretation:</strong> $\nabla h(x)$ is the outward normal to the level sets of $h$; admissible controls satisfy $\langle \nabla h(x), f(x)+g(x)u \rangle \ge -\alpha h(x)$, preventing trajectories from entering $\{h<0\}$.</li>
+                            <li><strong>Interactive experiments:</strong> place goals beyond obstacles; add obstacles to study multiple active constraints; vary $\alpha$ and safety margin to observe conservatism–performance trade-offs.</li>
+                            <li><strong>Implementation considerations:</strong> constraint infeasibility implies no input satisfies all barriers; increase margin or relax objectives. Discretization and actuator limits require additional margins.</li>
+                        </ul>
+                    </div>
+                    <div class="info-panel">
                         <h4>Control Barrier Function Mathematics:</h4>
                         <div class="math-formula">
                             <p><strong>Safety Set Definition:</strong></p>
@@ -575,6 +592,44 @@
                                 • $\alpha > 0$ controls how aggressively the system stays safe
                             </p>
                         </div>
+                        <div class="math-formula">
+                            <p><strong>Nominal-to-safe projection (QP):</strong></p>
+                            $$\begin{aligned}
+                            \mathbf{u}^*(\mathbf{x})=\arg\min_{\mathbf{u},\;\delta\ge 0}\;&\tfrac{1}{2}\,\|\mathbf{u}-\mathbf{u}_{\text{nom}}\|_2^2 + \tfrac{\rho}{2}\,\delta^2\\
+                            	ext{s.t. }\;&\nabla h_i(\mathbf{x})^T\mathbf{u} + \alpha\,h_i(\mathbf{x}) \ge -\delta,\quad \forall i\in\mathcal{I}_{\text{obs}}
+                            \end{aligned}$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                A small slack $\delta$ (penalized by $\rho\gg 1$) preserves feasibility when obstacles are very close; $\delta\to 0$ in nominal cases.
+                            </p>
+
+                            <p><strong>Single-obstacle closed-form projection:</strong></p>
+                            $$\mathbf{u}^* = \mathbf{u}_{\text{nom}} + \max\!\left\{0,\;\frac{-\alpha h - \nabla h^T\mathbf{u}_{\text{nom}}}{\|\nabla h\|_2^2}\right\}\,\nabla h$$
+                            <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                                The demo applies this idea iteratively across obstacles, yielding a fast approximation of the QP solution.
+                            </p>
+
+                            <p><strong>Design intuition:</strong></p>
+                            <ul style="color:#cbd5e1; margin-left: 18px; line-height: 1.7;">
+                                <li>$\alpha$: larger $\Rightarrow$ stronger braking near the boundary; smaller $\Rightarrow$ less conservative.</li>
+                                <li>Safety margin $r_{\text{safe}}$: enlarges $\mathcal{C}$’s buffer around obstacles for robustness to discretization.</li>
+                                <li>Slack weight $\rho$: trades tiny and rare constraint violations for continuity and feasibility.</li>
+                            </ul>
+
+                            <p><strong>Deadlock handling (practical):</strong></p>
+                            <p style="font-size: 0.9rem; color:#cbd5e1;">
+                                When multiple obstacles create opposing constraints, the projection can stall progress. The demo detects low progress with high modifications
+                                and injects a tiny one-time perturbation to escape local deadlocks while always respecting the CBF constraint.
+                            </p>
+                        </div>
+                        <div class="info-panel">
+                            <h4>References</h4>
+                            <ul style="color:#cbd5e1; line-height:1.8; margin-left:18px;">
+                                <li>[1] A. D. Ames, X. Xu, J. W. Grizzle, and P. Tabuada, “Control Barrier Function Based Quadratic Programs for Safety Critical Systems,” IEEE Transactions on Automatic Control, vol. 62, no. 8, pp. 3861–3876, 2017.</li>
+                                <li>[2] S. Prajna, A. Jadbabaie, and G. J. Pappas, “A Framework for Worst-Case and Stochastic Safety Verification Using Barrier Certificates,” IEEE Transactions on Automatic Control, vol. 52, no. 8, pp. 1415–1428, 2007. (see also HSCC 2004)</li>
+                                <li>[3] K. Nagumo, “Über die Lage der Integralkurven gewöhnlicher Differentialgleichungen,” Proceedings of the Physico-Mathematical Society of Japan, vol. 24, pp. 551–559, 1942. (Forward invariance)</li>
+                                <li>[4] A. D. Ames, “Control Barrier Functions: Theory and Applications,” in European Control Conference (ECC), 2019. (Survey)</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -582,7 +637,7 @@
 
         <!-- High-Order CBF Demo -->
         <div id="hocbf-demo" class="content-section">
-            <div class="demo-grid">
+            <div class="demo-grid single-column">
                 <div class="demo-card">
                     <h3>2D Double Integrator with HOCBF</h3>
                     <p style="color: #94a3b8; margin-bottom: 10px; font-size: 0.9rem;">
@@ -655,6 +710,18 @@
                 <div class="demo-card">
                     <h3>2D HOCBF Theory</h3>
                     <div class="info-panel">
+                        <h4 style="margin-bottom:8px;">Introduction</h4>
+                        <p style="color:#94a3b8; line-height:1.7; margin-bottom:10px;">
+                            High-Order Control Barrier Functions (HOCBFs) extend CBFs to systems with relative degree $r>1$ by constructing a sequence of barrier states and enforcing a differential inequality at the input level. For a double-integrator model, the constraint couples position and velocity so that admissible accelerations guarantee forward invariance while respecting actuation limits.
+                        </p>
+                        <ul style="color:#cbd5e1; line-height:1.8; margin-left:18px;">
+                            <li><strong>Key concepts:</strong> Define $\phi_0=h(x)$ and recursively $\phi_{k+1}=\dot \phi_k + \alpha_k\,\phi_k$ for class-$\mathcal{K}$ gains $\alpha_k>0$. Enforce $\phi_{r-1}(x,u)\ge 0$ to obtain an input constraint that guarantees $h\ge 0$.</li>
+                            <li><strong>Geometric interpretation:</strong> $\phi_0$ measures distance to the boundary; $\phi_1$ penalizes approach velocity; higher-order terms regulate how acceleration affects boundary approach.</li>
+                            <li><strong>Interactive experiments:</strong> vary speed and acceleration limits; tune $\alpha_1,\alpha_2$ to see earlier braking and different transient behavior; add obstacles to study multiple active constraints.</li>
+                            <li><strong>Implementation considerations:</strong> tight acceleration bounds can induce infeasibility; introduce slack penalties or increase safety margins. Discretization requires conservative tuning for stability.</li>
+                        </ul>
+                    </div>
+                    <div class="info-panel">
                         <h4>High-Order Control Barrier Functions in 2D:</h4>
                         <p style="color: #94a3b8; line-height: 1.6; margin-bottom: 15px;">
                             For double integrator dynamics $\ddot{\mathbf{p}} = \mathbf{u}$ where $\mathbf{p} \in \mathbb{R}^2$ and $\mathbf{u} \in \mathbb{R}^2$, 
@@ -721,6 +788,31 @@
                                 Minimal modification to nominal control $\mathbf{u}_{\text{nom}}$ while satisfying all obstacle constraints.
                             </p>
                         </div>
+                        <div class="math-formula">
+                            <p><strong>Formal HOCBF recursion (relative degree $r=2$):</strong></p>
+                            $$\psi_0(\mathbf{x})=h_0(\mathbf{x}),\quad \psi_1(\mathbf{x})=\dot{\psi}_0(\mathbf{x})+\alpha_1\big(\psi_0(\mathbf{x})\big)$$
+                            $$\psi_2(\mathbf{x},\mathbf{u})=\dot{\psi}_1(\mathbf{x},\mathbf{u})+\alpha_2\big(\psi_1(\mathbf{x})\big)\;\;\ge 0$$
+                            <p style="font-size: 0.9rem; color:#cbd5e1; margin: 5px 0;">
+                                Choosing class-$\mathcal{K}$ functions $\alpha_1,\alpha_2$ ensures forward invariance of $\{\psi_0\ge 0\}$ when $\psi_2\ge 0$ is enforced.
+                            </p>
+
+                            <p><strong>Acceleration bounds and feasibility:</strong></p>
+                            $$\begin{aligned}
+                            \min_{\mathbf{u},\delta\ge 0}\;&\tfrac{1}{2}\|\mathbf{u}-\mathbf{u}_{\text{nom}}\|_2^2 + \tfrac{\rho}{2}\delta^2\\
+                            	ext{s.t. }\;&\psi_2(\mathbf{x},\mathbf{u}) \ge -\delta,\quad \|\mathbf{u}\|_\infty \le u_{\max}
+                            \end{aligned}$$
+                            <p style="font-size: 0.9rem; color:#cbd5e1; margin: 5px 0;">
+                                The demo enforces the linear half-space equivalent of $\psi_2\ge 0$ and clips accelerations to emulate $\|\mathbf{u}\|$ limits.
+                            </p>
+                        </div>
+                        <div class="info-panel">
+                            <h4>References</h4>
+                            <ul style="color:#cbd5e1; line-height:1.8; margin-left:18px;">
+                                <li>[1] A. D. Ames, X. Xu, J. W. Grizzle, and P. Tabuada, “Control Barrier Function Based Quadratic Programs for Safety Critical Systems,” IEEE Transactions on Automatic Control, 2017.</li>
+                                <li>[2] W. Xiao and C. Belta, “Control Barrier Functions for Systems with High Relative Degree,” IEEE Control Systems Letters / CDC, 2021–2022.</li>
+                                <li>[3] C. Hsu, X. Xu, and A. D. Ames, “Control Barrier Functions Based Quadratic Programs with Application to Bipedal Robotic Walking,” American Control Conference, 2015.</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -736,7 +828,7 @@
 
             <!-- RISE-CBF Demo with Disturbance Observer (as subsection) -->
             <div id="rise-cbf-demo" class="adaptive-subsection active">
-                <div class="demo-grid">
+                <div class="demo-grid single-column">
                     <div class="demo-card">
                         <h3>2D Robot with RISE Disturbance Observer</h3>
                         <p style="color: #94a3b8; margin: 10px 0; font-size: 0.9rem;">
@@ -827,6 +919,18 @@
                     <div class="demo-card">
                         <h3>RISE Observer + Vector-Valued CBF Theory</h3>
                         <div class="info-panel">
+                            <h4 style="margin-bottom:8px;">Introduction</h4>
+                            <p style="color:#94a3b8; line-height:1.7; margin-bottom:10px;">
+                                Unknown disturbances and model errors enlarge worst-case CBF margins. A RISE (Robust Integral of the Sign of the Error) observer provides bounded, fast disturbance estimation that tightens admissible control constraints in real time. Vector-valued CBFs encode multiple barrier inequalities simultaneously for multi-obstacle environments.
+                            </p>
+                            <ul style="color:#cbd5e1; line-height:1.8; margin-left:18px;">
+                                <li><strong>Key concepts:</strong> Disturbance estimate $\hat d$ replaces conservative bounds by $\chi_i(x)=\min\{\bar d\,\|\nabla B_i\|,\; \nabla B_i^T\hat d+\tilde d_{UB}(t)\,\|\nabla B_i\|\}$; vector CBFs aggregate constraints $B_i(x)\ge 0$.</li>
+                                <li><strong>Geometric interpretation:</strong> The observer reconstructs the unknown drift direction; constraints align the control away from unsafe directions with margins proportional to local sensitivity $\|\nabla B_i\|$.</li>
+                                <li><strong>Interactive experiments:</strong> enable disturbances; tune $\alpha, k_d, \beta$; observe how improved estimation reduces control modification and maintains safety with less conservatism.</li>
+                                <li><strong>Implementation considerations:</strong> Gains that are too small slow convergence; overly large gains cause oscillations. Choose bounds $\tilde d_{UB}(t)$ consistent with sampling and noise characteristics.</li>
+                            </ul>
+                        </div>
+                        <div class="info-panel">
                             <h4>System Dynamics with Unknown Disturbances:</h4>
                             <div class="math-formula">
                                 <p><strong>Single Integrator with Disturbance:</strong></p>
@@ -889,6 +993,20 @@
                                     <li><strong>Multiple simultaneous constraints:</strong> Vector formulation handles $m$ obstacles naturally</li>
                                 </ul>
                             </div>
+                            <div class="math-formula">
+                                <p><strong>Why observer-aided CBFs reduce conservatism:</strong></p>
+                                <p style="font-size: 0.9rem; color:#cbd5e1;">Using a fixed worst-case bound $\bar d$ forces large control modifications near the boundary. The RISE estimate $\hat{\mathbf{d}}$ yields a tighter bound via
+                                $\chi_i(\mathbf{x})=\min\{\bar d\,\|\nabla B_i\|,\;\nabla B_i^T\hat{\mathbf{d}}+\tilde d_{UB}(t)\,\|\nabla B_i\|\}$, shrinking the admissible control set only as much as needed.</p>
+                                <p><strong>QP with slack (conceptual):</strong></p>
+                                $$\min_{\mathbf{u},\;\delta\ge 0}\;\tfrac{1}{2}\|\mathbf{u}-\mathbf{u}_{\text{nom}}\|_2^2 + \tfrac{\rho}{2}\delta^2\quad \text{s.t.}\quad \nabla B_i^T\mathbf{u} \le -\gamma_i - \chi_i + \delta.$$
+                                <p style="font-size: 0.9rem; color:#cbd5e1;">The implementation performs fast projected updates equivalent to KKT for one active constraint per step.</p>
+                            </div>
+                            <div class="info-panel">
+                                <h4>References</h4>
+                                <ul style="color:#cbd5e1; line-height:1.8; margin-left:18px;">
+                                    <li>A. Isaly, O. S. Patil, H. M. Sweatland, R. G. Sanfelice, and W. E. Dixon, “Adaptive Safety with a RISE-Based Disturbance Observer,” IEEE Transactions on Automatic Control, vol. 69, no. 7, pp. 4883–4890, 2024.</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -896,7 +1014,7 @@
 
             <!-- Adaptive DNN-CBF Demo (as subsection) -->
             <div id="adcbf-demo" class="adaptive-subsection">
-                <div class="demo-grid">
+                <div class="demo-grid single-column">
                     <div class="demo-card">
                         <h3>Adaptive Deep Neural Network Control Barrier Functions</h3>
                         <p style="color: #94a3b8; margin: 10px 0; font-size: 0.9rem;">
@@ -1093,6 +1211,18 @@
 
                     <div class="demo-card">
                         <h3>Theory: Adaptive DNN-CBF Framework</h3>
+                        <div class="info-panel">
+                            <h4 style="margin-bottom:8px;">Introduction</h4>
+                            <p style="color:#94a3b8; line-height:1.7; margin-bottom:10px;">
+                                An adaptive neural network approximates unknown drift $f(x)$ online, while the CBF enforces safety by constraining the closed-loop input. Parameter adaptation uses Jacobian information with regularization and clipping for numerical robustness. During intermittent feedback loss, safety is preserved by tightening constraints using a priori bounds on the state-estimation error.
+                            </p>
+                            <ul style="color:#cbd5e1; line-height:1.8; margin-left:18px;">
+                                <li><strong>Key concepts:</strong> Online approximation of $f(x)$ with weight updates; CBF constraint computed using $\hat f$; intermittent-feedback margins based on $\|x-\hat x\|$ bounds.</li>
+                                <li><strong>Geometric interpretation:</strong> The learned drift shifts the nominal vector field; the barrier condition ensures the corrected field remains outward-pointing on $\partial\mathcal{C}$.</li>
+                                <li><strong>Interactive experiments:</strong> enable unknown drift; vary learning rate and weight decay; move obstacles; toggle feedback loss to observe margin tightening and safe recovery.</li>
+                                <li><strong>Implementation considerations:</strong> Excessive learning rates can destabilize estimates; employ gradient clipping and weight decay. Freeze adaptation during feedback loss to avoid divergence.</li>
+                            </ul>
+                        </div>
                         <div class="theory-section" style="padding: 20px;">
                             <div class="math-formula">
                                 <p><strong>System Dynamics (Unknown $f$):</strong></p>
@@ -1131,7 +1261,23 @@
                                 </p>
                                 <p style="font-size: 0.9em; color: #94a3b8;">The implementation uses an efficient projection step equivalent to the KKT solution for a single active constraint per iteration.</p>
                             </div>
-                        
+                            <div class="math-formula">
+                                <p><strong>Intermittent feedback safety (loss-of-feedback):</strong></p>
+                                <p>During temporary sensor dropouts, an open-loop predictor $\hat{\mathbf{X}}$ evolves using the last available model; the state error bound satisfies</p>
+                                $$\|\tilde{\mathbf{X}}(t)\|_2 \le L_U\,t + \Delta_U \quad \text{for } t\in[0, T_{\text{loss}}],$$
+                                <p style="font-size: 0.9em; color:#94a3b8;">with tunable $L_U,\Delta_U$. The CBF constraint is tightened by a margin $\rho\,\|\nabla B_i\|\,\|\tilde{\mathbf{X}}\|$ to remain safe under prediction error.</p>
+                                <p><strong>Tightened constraint during loss:</strong></p>
+                                $$\nabla B_i(\hat{\mathbf{X}})^T\big(\Phi(\hat{\mathbf{X}},\hat{\boldsymbol{\theta}})+\mathbf{u}\big) + \gamma_i(\hat{\mathbf{X}}) + \rho\,\|\nabla B_i\|\,\|\tilde{\mathbf{X}}\| \le 0.$$
+                                <p style="font-size: 0.9em; color:#94a3b8;">When feedback resumes, the standard constraint with observer terms is restored and adaptation unfreezes.</p>
+                            </div>
+
+                            <div class="info-panel">
+                                <h4>References</h4>
+                                <ul style="color:#cbd5e1; line-height:1.8; margin-left:18px;">
+                                    <li>H. M. Sweatland, O. S. Patil, and W. E. Dixon, “Adaptive Deep Neural Network-Based Control Barrier Functions,” arXiv preprint arXiv:2406.14430, 2024.</li>
+                                </ul>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -1385,23 +1531,6 @@
 
             <!-- Boolean OR Demo -->
             <div id="mcbf-or-boolean" class="adaptive-subsection active">
-                <div class="theory-section">
-                    <h3>Indefinite Matrix CBFs: Boolean OR Composition</h3>
-                    <div class="math-formula">
-                        <p><strong>Safe Set via Maximum Eigenvalue:</strong></p>
-                        <p>\(\mathcal{C} = \{ \mathbf{x} \in \mathbb{R}^n \mid \mathbf{H}(\mathbf{x}) \not\prec 0 \} \Leftrightarrow \{ \mathbf{x} \mid \lambda_{\max}(\mathbf{H}(\mathbf{x})) \geq 0 \}\)</p>
-                        <p><strong>Indefinite MCBF Condition:</strong></p>
-                        <p>\(\dot{\mathbf{H}}(\mathbf{x}, \mathbf{u}) \succeq -\alpha(\lambda_{\max}(\mathbf{H})) \mathbf{I} - c_\perp (\lambda_{\max}(\mathbf{H}) \mathbf{I} - \mathbf{H}(\mathbf{x}))\)</p>
-                        <p><strong>Disjunctive Composition:</strong> For \(\mathbf{H} = \text{diag}(h_1, \ldots, h_p)\):</p>
-                        <p>\(\lambda_{\max}(\mathbf{H}) = \max_i h_i \geq 0 \Leftrightarrow \bigvee_{i=1}^p (h_i \geq 0)\)</p>
-                    </div>
-                    <p style="color: #94a3b8; margin-top: 15px; line-height: 1.6;">
-                        Indefinite MCBFs enable continuous safety filters for disjunctive (OR) constraints without soft-max relaxations.
-                        This demo shows a robot navigating through alternative "gates" where safety requires passing through <em>at least one</em> opening.
-                        The MCBF formulation maintains the exact safe set while ensuring control continuity at eigenvalue multiplicities.
-                    </p>
-                </div>
-
                 <div class="demo-card">
                     <h3>OR-Boolean Corridor Navigation</h3>
                     <div class="interaction-hint">
@@ -1467,28 +1596,56 @@
                         </p>
                     </div>
                 </div>
+                <div class="theory-section">
+                    <h3>Indefinite Matrix CBFs: Boolean OR Composition</h3>
+                    <div class="info-panel">
+                        <h4 style="margin-bottom:8px;">Introduction</h4>
+                        <p style="color:#94a3b8; line-height:1.7; margin-bottom:10px;">
+                            Sometimes being safe means satisfying <em>any one</em> of several conditions: “go through gate A, B, or C.” Matrix CBFs model this
+                            disjunctive logic smoothly, avoiding the abrupt switches you get from hard max/min. We project the control so a matrix inequality
+                            stays satisfied, which encodes the Boolean OR set exactly.
+                        </p>
+                        <ul style="color:#cbd5e1; line-height:1.8; margin-left:18px;">
+                            <li><strong>What you’ll learn:</strong> how OR logic can be expressed with eigenvalues, and how to maintain smooth, continuous controls near gate transitions.</li>
+                            <li><strong>Mental model:</strong> think of a scoreboard tracking all gates; as long as one gate is “green,” you’re safe, and the filter gently guides you toward one.</li>
+                            <li><strong>Try this:</strong> move the goal so the middle gate is blocked; increase c_⊥ to penalize hugging the wall; change ε (wall band) to see stricter rules.</li>
+                            <li><strong>Common gotchas:</strong> very small ε makes the safe band too thin; high speed demands larger safety margins to avoid infeasible constraints.</li>
+                        </ul>
+                    </div>
+                    <div class="math-formula">
+                        <p><strong>Safe Set via Maximum Eigenvalue:</strong></p>
+                        <p>\(\mathcal{C} = \{ \mathbf{x} \in \mathbb{R}^n \mid \mathbf{H}(\mathbf{x}) \not\prec 0 \} \Leftrightarrow \{ \mathbf{x} \mid \lambda_{\max}(\mathbf{H}(\mathbf{x})) \geq 0 \}\)</p>
+                        <p><strong>Indefinite MCBF Condition:</strong></p>
+                        <p>\(\dot{\mathbf{H}}(\mathbf{x}, \mathbf{u}) \succeq -\alpha(\lambda_{\max}(\mathbf{H})) \mathbf{I} - c_\perp (\lambda_{\max}(\mathbf{H}) \mathbf{I} - \mathbf{H}(\mathbf{x}))\)</p>
+                        <p><strong>Disjunctive Composition:</strong> For \(\mathbf{H} = \text{diag}(h_1, \ldots, h_p)\):</p>
+                        <p>\(\lambda_{\max}(\mathbf{H}) = \max_i h_i \geq 0 \Leftrightarrow \bigvee_{i=1}^p (h_i \geq 0)\)</p>
+                    </div>
+                    <p style="color: #94a3b8; margin-top: 15px; line-height: 1.6;">
+                        Indefinite MCBFs enable continuous safety filters for disjunctive (OR) constraints without soft-max relaxations.
+                        This demo shows a robot navigating through alternative "gates" where safety requires passing through <em>at least one</em> opening.
+                        The MCBF formulation maintains the exact safe set while ensuring control continuity at eigenvalue multiplicities.
+                    </p>
+                    <div class="math-formula">
+                        <p><strong>Projection via eigenvalue gradient:</strong></p>
+                        <p>Let \(\mathbf{M}(\mathbf{u}) = \dot{\mathbf{H}}(\mathbf{u}) + \alpha(\lambda_{\max})\,\mathbf{I} + c_\perp\,(\lambda_{\max}\,\mathbf{I}-\mathbf{H})\).</p>
+                        <p>Enforce \(\lambda_{\min}(\mathbf{M}(\mathbf{u})) \ge \delta\). For eigenvector \(\mathbf{v}\) of the minimal eigenvalue,</p>
+                        $$\frac{\partial\,\lambda_{\min}}{\partial u_j} = \mathbf{v}^T\,\frac{\partial\mathbf{M}}{\partial u_j}\,\mathbf{v}.$$
+                        <p>The minimum-norm correction is</p>
+                        $$\mathbf{u}^* = \mathbf{u}_{\text{nom}} + \frac{\delta - \lambda_{\min}}{\|\nabla_{\!\mathbf{u}}\lambda_{\min}\|_2^2}\,\nabla_{\!\mathbf{u}}\lambda_{\min},\quad \nabla_{\!\mathbf{u}}\lambda_{\min} = \big[\mathbf{v}^T\tfrac{\partial\mathbf{M}}{\partial u_j}\mathbf{v}\big]_j.$$
+                        <p style="font-size: 0.9rem; color:#cbd5e1;">The implementation computes this using a numerically robust Schur-based routine for small matrices.</p>
+                    </div>
+                    <div class="info-panel">
+                        <h4>References</h4>
+                        <ul style="color:#cbd5e1; line-height:1.8; margin-left:18px;">
+                            <li>P. Ong, Y. Xu, R. M. Bena, F. Jabbari, and A. D. Ames, “Matrix Control Barrier Functions,” arXiv preprint arXiv:2508.11795, 2025.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
             </div>
 
             <!-- Connectivity Maintenance Demo -->
             <div id="mcbf-connectivity" class="adaptive-subsection">
-                <div class="theory-section">
-                    <h3>Matrix CBFs for Network Connectivity</h3>
-                    <div class="math-formula">
-                        <p><strong>Laplacian Matrix:</strong> \(\mathbf{L}(\mathbf{x}) = \mathbf{D}(\mathbf{x}) - \mathbf{A}(\mathbf{x})\)</p>
-                        <p>where \(\mathbf{A}_{ij}\) is the adjacency weight and \(\mathbf{D}_{ii} = \sum_j \mathbf{A}_{ij}\).</p>
-                        <p><strong>Connectivity via Fiedler Eigenvalue:</strong></p>
-                        <p>Network is connected \(\Leftrightarrow \lambda_2(\mathbf{L}(\mathbf{x})) > 0\)</p>
-                        <p><strong>MCBF Construction:</strong></p>
-                        <p>\(\mathbf{H}(\mathbf{x}) = \mathbf{L}(\mathbf{x}) + \frac{\varepsilon}{p} \mathbf{1}\mathbf{1}^\top - \varepsilon \mathbf{I}\)</p>
-                        <p>Then \(\mathbf{H} \succeq 0\) ensures connectivity with margin \(\varepsilon > 0\).</p>
-                    </div>
-                    <p style="color: #94a3b8; margin-top: 15px; line-height: 1.6;">
-                        Multi-agent network connectivity can be maintained using MCBFs without the nonsmoothness issues of scalar eigenvalue-based CBFs.
-                        This demo shows agents maintaining communication links while tracking references.
-                        The MCBF formulation handles eigenvalue merging (when multiple eigenvalues become equal) continuously via Schur decomposition.
-                    </p>
-                </div>
-
                 <div class="demo-card">
                     <h3>Multi-Agent Connectivity with MCBF</h3>
                     <div class="interaction-hint">
@@ -1554,6 +1711,52 @@
                         </p>
                     </div>
                 </div>
+                <div class="theory-section">
+                    <h3>Matrix CBFs for Network Connectivity</h3>
+                    <div class="info-panel">
+                        <h4 style="margin-bottom:8px;">Introduction</h4>
+                        <p style="color:#94a3b8; line-height:1.7; margin-bottom:10px;">
+                            A robot team stays connected when information can flow across the whole group. Instead of directly constraining a single eigenvalue
+                            (which can be numerically tricky), Matrix CBFs keep a whole matrix positive semidefinite, yielding smooth controls even when
+                            eigenvalues merge.
+                        </p>
+                        <ul style="color:#cbd5e1; line-height:1.8; margin-left:18px;">
+                            <li><strong>What you’ll learn:</strong> the Laplacian’s role in connectivity, and how semidefinite constraints avoid chatter near eigenvalue crossings.</li>
+                            <li><strong>Mental model:</strong> imagine agents connected by springs; the MCBF keeps the “network stiffness” nonnegative so the structure doesn’t tear.</li>
+                            <li><strong>Try this:</strong> reduce communication range R and disperse agents; increase c_α or ε to make connectivity more robust; change #Agents.</li>
+                            <li><strong>Common gotchas:</strong> if R is too small, connectivity may be physically impossible; adjust speed or targets to remain feasible.</li>
+                        </ul>
+                    </div>
+                    <div class="math-formula">
+                        <p><strong>Laplacian Matrix:</strong> \(\mathbf{L}(\mathbf{x}) = \mathbf{D}(\mathbf{x}) - \mathbf{A}(\mathbf{x})\)</p>
+                        <p>where \(\mathbf{A}_{ij}\) is the adjacency weight and \(\mathbf{D}_{ii} = \sum_j \mathbf{A}_{ij}\).</p>
+                        <p><strong>Connectivity via Fiedler Eigenvalue:</strong></p>
+                        <p>Network is connected \(\Leftrightarrow \lambda_2(\mathbf{L}(\mathbf{x})) > 0\)</p>
+                        <p><strong>MCBF Construction:</strong></p>
+                        <p>\(\mathbf{H}(\mathbf{x}) = \mathbf{L}(\mathbf{x}) + \frac{\varepsilon}{p} \mathbf{1}\mathbf{1}^\top - \varepsilon \mathbf{I}\)</p>
+                        <p>Then \(\mathbf{H} \succeq 0\) ensures connectivity with margin \(\varepsilon > 0\).</p>
+                    </div>
+                    <p style="color: #94a3b8; margin-top: 15px; line-height: 1.6;">
+                        Multi-agent network connectivity can be maintained using MCBFs without the nonsmoothness issues of scalar eigenvalue-based CBFs.
+                        This demo shows agents maintaining communication links while tracking references.
+                        The MCBF formulation handles eigenvalue merging (when multiple eigenvalues become equal) continuously via Schur decomposition.
+                    </p>
+                    <div class="math-formula">
+                        <p><strong>Semidefinite MCBF constraint:</strong></p>
+                        <p>With \(\mathbf{H}(\mathbf{x})\) as above, enforce</p>
+                        $$\dot{\mathbf{H}}(\mathbf{x},\mathbf{u}) + c_\alpha\,\mathbf{H}(\mathbf{x}) \succeq \delta\,\mathbf{I}.$$
+                        <p>Projecting a nominal control onto this convex cone uses the same eigen-gradient idea:</p>
+                        $$\frac{\partial\,\lambda_{\min}}{\partial u_j} = \mathbf{v}^T\,\frac{\partial}{\partial u_j}\big(\dot{\mathbf{H}} + c_\alpha\,\mathbf{H}\big)\,\mathbf{v},\quad \lambda_{\min}\big(\dot{\mathbf{H}} + c_\alpha\mathbf{H}\big) \ge \delta.$$
+                        <p style="font-size: 0.9rem; color:#cbd5e1;">This avoids the non-smoothness of directly constraining $\lambda_2(\mathbf{L})$ and yields smooth, chatter-free controls.</p>
+                    </div>
+                    <div class="info-panel">
+                        <h4>References</h4>
+                        <ul>
+                            <li>P. Ong, Y. Xu, R. M. Bena, F. Jabbari, and A. D. Ames, “Matrix Control Barrier Functions,” arXiv preprint arXiv:2508.11795, 2025.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
             </div>
         </div>
 
@@ -9143,3 +9346,6 @@
     </script>
 </body>
 </html>
+
+
+
