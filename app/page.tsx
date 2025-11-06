@@ -140,7 +140,7 @@ export default function Page() {
 			<Section title="Interactive Demos">
 				<div className="grid gap-4 justify-center grid-cols-[repeat(auto-fit,minmax(180px,1fr))] sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
 					{demos.map((demo) => (
-						<Link href={demo.href} key={demo.href} className="group" passHref>
+						<a href={demo.href} key={demo.href} className="group">
 							{demo.name === "Neural ODE" ? (
 								<div className={`relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br ${demo.color} transition shadow-sm hover:shadow-md hover:brightness-110 dark:border-white/5 max-w-[210px] mx-auto h-48`}>
 									{/* Full-image background for Neural ODE */}
@@ -180,14 +180,14 @@ export default function Page() {
 									<div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/5 blur-xl group-hover:scale-125 transition" />
 								</div>
 							)}
-						</Link>
+						</a>
 					))}
 				</div>
 			</Section>
 			<Section title="Quick Tools and Accessories">
 				<p className="text-[var(--muted)] mb-6">Tools I made for my personal use but do not mind sharing with everyone.</p>
 				<div className="flex gap-4 flex-wrap">
-					<Link href="/convert-images.html" className="group" passHref>
+					<a href="/convert-images.html" className="group">
 						<div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-orange-500/20 to-orange-700/30 transition shadow-sm hover:shadow-md hover:brightness-110 dark:border-white/5 w-[210px] h-48">
 							<div className="h-28 sm:h-32 w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20">
 								<svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-orange-600 dark:text-orange-400">
@@ -206,8 +206,8 @@ export default function Page() {
 							<div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl" />
 							<div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/5 blur-xl group-hover:scale-125 transition" />
 						</div>
-					</Link>
-					<Link href="/latex_scratchpad.html" className="group" passHref>
+					</a>
+					<a href="/latex_scratchpad.html" className="group">
 						<div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-sky-500/20 to-sky-700/30 transition shadow-sm hover:shadow-md hover:brightness-110 dark:border-white/5 w-[210px] h-48">
 							<div className="h-28 sm:h-32 w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-sky-100 to-sky-200 dark:from-sky-900/20 dark:to-sky-800/20">
 								{/* Simple LaTeX wordmark-style icon */}
@@ -223,7 +223,7 @@ export default function Page() {
 							<div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl" />
 							<div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/5 blur-xl group-hover:scale-125 transition" />
 						</div>
-					</Link>
+					</a>
 				</div>
 			</Section>
 		</div>
