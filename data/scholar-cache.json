@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 445,
-      "recent": 443
+      "all": 447,
+      "recent": 445
     },
     "h-index": {
       "all": 12,
@@ -51,7 +51,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:2osOgNQ5qMEC",
       "authors": "OS Patil, A Isaly, B Xian, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1592-1597, 2021",
-      "cited": 38,
+      "cited": 39,
       "year": 2021
     },
     {
@@ -67,7 +67,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:hqOjcs7Dif8C",
       "authors": "RG Hart, EJ Griffis, OS Patil, WE Dixon",
       "venue": "IEEE Control Systems Letters 8, 13-18, 2023",
-      "cited": 18,
+      "cited": 19,
       "year": 2023
     },
     {
