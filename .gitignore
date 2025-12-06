@@ -28,4 +28,11 @@ scripts/update-scholar-*.log
 # Local dev-only components
 app/components/TestClient.tsx
 
+# Converted paper directories (temporary AI analysis files)
+*_converted/
+scripts/*.pdf
+
+# Empty/temporary scripts
+update_cbf_content.py
+
 .vercel
