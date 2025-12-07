@@ -1,9 +1,7 @@
 import Section from "../../components/Section";
 import Image from "next/image";
-import dynamic from "next/dynamic";
+import ResearchPublications from "../../components/ResearchPublications";
 import { Metadata } from "next";
-
-const ResearchPublications = dynamic(() => import("../../components/ResearchPublications"), { ssr: false });
 
 export const metadata: Metadata = {
   title: "Lyapunov-based Deep Neural Networks (LbDNNs) - Omkar Patil",

@@ -1,10 +1,8 @@
 import Section from "../components/Section";
 import Tabs from "../components/Tabs";
-import dynamic from "next/dynamic";
 import SelectedPubs from "./selected";
+import ScholarClient from "../components/ScholarClient";
 import { Metadata } from "next";
-
-const ScholarClient = dynamic(() => import("../components/ScholarClient"), { ssr: false });
 
 export const metadata: Metadata = {
   title: "Publications - Omkar Patil",
