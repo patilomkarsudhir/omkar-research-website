@@ -27,13 +27,17 @@ export default function DemosPage() {
       href: "/LbDNN Quadrotor.html",
     },
     {
-  name: "Control Barrier Functions Lab",
+	  name: "Control Barrier Functions Lab",
       href: "/CBF Lab.html",
     },
     {
       name: "Neural Alpha Beta Chess",
       href: "/neural_alpha_beta_chess_interactive.html",
     },
+	{
+	  name: "Multi-Agent Systems Lab",
+	  href: "/Multi-Agent Systems Lab.html",
+	},
   ];
 
   return (

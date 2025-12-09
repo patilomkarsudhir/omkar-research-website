@@ -58,16 +58,22 @@ const demos = [
 		thumb: "/LbDNN Quadrotor Pic.png",
 	},
 	{
-		name: "Neural ODE",
-		href: "/neural_ODE.html",
-		color: "from-indigo-500/20 to-indigo-700/30",
-		thumb: "/Neural ODEs.png",
+		name: "Multi-Agent Systems Lab",
+		href: "/Multi-Agent Systems Lab.html",
+		color: "from-sky-500/20 to-sky-700/30",
+		thumb: "/Multi Agent Pic.png",
 	},
 	{
 		name: "Control Barrier Functions Lab",
 		href: "/CBF Lab.html",
 		color: "from-amber-500/20 to-amber-700/30",
 		thumb: "/CBF Lab Pic.png",
+	},
+	{
+		name: "Neural ODE",
+		href: "/neural_ODE.html",
+		color: "from-indigo-500/20 to-indigo-700/30",
+		thumb: "/Neural ODEs.png",
 	},
 	{
 		name: "Neural Alpha Beta Chess",
