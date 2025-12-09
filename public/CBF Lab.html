@@ -596,7 +596,7 @@
                             <p><strong>Nominal-to-safe projection (QP):</strong></p>
                             $$\begin{aligned}
                             \mathbf{u}^*(\mathbf{x})=\arg\min_{\mathbf{u},\;\delta\ge 0}\;&\tfrac{1}{2}\,\|\mathbf{u}-\mathbf{u}_{\text{nom}}\|_2^2 + \tfrac{\rho}{2}\,\delta^2\\
-                            	ext{s.t. }\;&\nabla h_i(\mathbf{x})^T\mathbf{u} + \alpha\,h_i(\mathbf{x}) \ge -\delta,\quad \forall i\in\mathcal{I}_{\text{obs}}
+                            \text{s.t. }\;&\nabla h_i(\mathbf{x})^T\mathbf{u} + \alpha\,h_i(\mathbf{x}) \ge -\delta,\quad \forall i\in\mathcal{I}_{\text{obs}}
                             \end{aligned}$$
                             <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
                                 A small slack $\delta$ (penalized by $\rho\gg 1$) preserves feasibility when obstacles are very close; $\delta\to 0$ in nominal cases.
@@ -799,7 +799,7 @@
                             <p><strong>Acceleration bounds and feasibility:</strong></p>
                             $$\begin{aligned}
                             \min_{\mathbf{u},\delta\ge 0}\;&\tfrac{1}{2}\|\mathbf{u}-\mathbf{u}_{\text{nom}}\|_2^2 + \tfrac{\rho}{2}\delta^2\\
-                            	ext{s.t. }\;&\psi_2(\mathbf{x},\mathbf{u}) \ge -\delta,\quad \|\mathbf{u}\|_\infty \le u_{\max}
+                            \text{s.t. }\;&\psi_2(\mathbf{x},\mathbf{u}) \ge -\delta,\quad \|\mathbf{u}\|_\infty \le u_{\max}
                             \end{aligned}$$
                             <p style="font-size: 0.9rem; color:#cbd5e1; margin: 5px 0;">
                                 The demo enforces the linear half-space equivalent of $\psi_2\ge 0$ and clips accelerations to emulate $\|\mathbf{u}\|$ limits.
@@ -977,7 +977,7 @@
                                 <p><strong>Minimum-modification control (conceptually QP):</strong></p>
                                 $$\begin{align}
                                 \mathbf{u}^* = \arg\min_{\mathbf{u}} &\quad \|\mathbf{u} - \mathbf{u}_{\text{nom}}\|^2 \\
-                                	ext{subject to} &\quad \nabla B_i(\mathbf{x})^T\,\mathbf{u} \le -\gamma_i(\mathbf{x}) - \chi_i(\mathbf{x}),\quad i=1,\ldots,m
+                                \text{subject to} &\quad \nabla B_i(\mathbf{x})^T\,\mathbf{u} \le -\gamma_i(\mathbf{x}) - \chi_i(\mathbf{x}),\quad i=1,\ldots,m
                                 \end{align}$$
                                 <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
                                     Minimally modify nominal control $\mathbf{u}_{\text{nom}}$ while satisfying all $m$ vector CBF constraints.
@@ -1642,7 +1642,6 @@
                     </div>
                 </div>
             </div>
-            </div>
 
             <!-- Connectivity Maintenance Demo -->
             <div id="mcbf-connectivity" class="adaptive-subsection">
@@ -1756,7 +1755,6 @@
                         </ul>
                     </div>
                 </div>
-            </div>
             </div>
         </div>
 
@@ -9239,6 +9237,109 @@
             return H;
         }
 
+        // Compute symbolic gradient of λ_min(H) w.r.t. agent positions
+        // Uses the eigenvalue sensitivity formula: ∂λ/∂p_k = v^T (∂H/∂p_k) v
+        // where v is the eigenvector corresponding to λ_min
+        function computeConnectivityGradient(agents, H, n) {
+            const R = connectivityDemo.commRange;
+            const R2 = R * R;
+            
+            // Get eigenvector for λ_min via Schur decomposition
+            const {Q, eigenvalues} = schurDecomposition(H, n);
+            const lambdaMin = eigenvalues[0];
+            
+            // Extract eigenvector v corresponding to λ_min (first column of Q)
+            const v = [];
+            for (let i = 0; i < n; i++) {
+                v.push(Q[i * n + 0]);
+            }
+            
+            // Precompute edge weights and distances for efficiency
+            const weights = new Array(n * n).fill(0);
+            const dxArr = new Array(n * n).fill(0);
+            const dyArr = new Array(n * n).fill(0);
+            
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    const dx_ij = agents[i].x - agents[j].x;
+                    const dy_ij = agents[i].y - agents[j].y;
+                    const dist2 = dx_ij * dx_ij + dy_ij * dy_ij;
+                    const dist = Math.sqrt(dist2);
+                    
+                    if (dist <= R && dist > 0.1) {
+                        const w = Math.exp(1 - dist2 / R2) - 1;
+                        weights[i * n + j] = w;
+                        weights[j * n + i] = w;
+                        dxArr[i * n + j] = dx_ij;
+                        dxArr[j * n + i] = -dx_ij;
+                        dyArr[i * n + j] = dy_ij;
+                        dyArr[j * n + i] = -dy_ij;
+                    }
+                }
+            }
+            
+            // Compute gradient for each agent's x and y coordinates
+            // g[2*k] = ∂λ_min/∂x_k, g[2*k+1] = ∂λ_min/∂y_k
+            const g = new Array(2 * n).fill(0);
+            
+            for (let k = 0; k < n; k++) {
+                // Build ∂L/∂x_k and ∂L/∂y_k matrices (sparse, only affects rows/cols involving agent k)
+                // Then compute v^T (∂L/∂x_k) v and v^T (∂L/∂y_k) v
+                
+                let grad_x = 0;
+                let grad_y = 0;
+                
+                // For Laplacian L = D - A:
+                // L_ii = sum_{j≠i} w_ij (degree)
+                // L_ij = -w_ij for i≠j
+                //
+                // w_ij = exp(1 - d²/R²) - 1, so ∂w_ij/∂x_k = (w_ij + 1) * (-2/R²) * (x_i - x_j) * (δ_ik - δ_jk)
+                //
+                // For agent k, edges (k,j) are affected:
+                // ∂w_kj/∂x_k = -(w_kj + 1) * 2 * (x_k - x_j) / R²
+                
+                for (let j = 0; j < n; j++) {
+                    if (j === k) continue;
+                    
+                    const w_kj = weights[k * n + j];
+                    if (w_kj === 0) continue; // No edge
+                    
+                    // dx_kj = x_k - x_j, dy_kj = y_k - y_j
+                    const dx_kj = dxArr[k * n + j];
+                    const dy_kj = dyArr[k * n + j];
+                    
+                    // w_kj = exp(1 - d²/R²) - 1, so exp(1 - d²/R²) = w_kj + 1
+                    // ∂w_kj/∂x_k = (w_kj + 1) * (-2/R²) * (x_k - x_j)
+                    const expTerm = w_kj + 1; // = exp(1 - d²/R²)
+                    const dw_dx = -2 * expTerm * dx_kj / R2;
+                    const dw_dy = -2 * expTerm * dy_kj / R2;
+                    
+                    // Effect on Laplacian entries:
+                    // ∂L_kk/∂x_k += ∂w_kj/∂x_k (degree term)
+                    // ∂L_jj/∂x_k += ∂w_jk/∂x_k = ∂w_kj/∂x_k (degree term for j)
+                    // ∂L_kj/∂x_k = -∂w_kj/∂x_k
+                    // ∂L_jk/∂x_k = -∂w_jk/∂x_k = -∂w_kj/∂x_k
+                    
+                    // Contribution to v^T (∂L/∂x_k) v:
+                    // = v_k * (∂L_kk/∂x_k) * v_k + v_j * (∂L_jj/∂x_k) * v_j
+                    //   + v_k * (∂L_kj/∂x_k) * v_j + v_j * (∂L_jk/∂x_k) * v_k
+                    // = dw_dx * (v_k² + v_j²) + (-dw_dx) * v_k * v_j + (-dw_dx) * v_j * v_k
+                    // = dw_dx * (v_k² + v_j² - 2 * v_k * v_j)
+                    // = dw_dx * (v_k - v_j)²
+                    
+                    const v_diff_sq = (v[k] - v[j]) * (v[k] - v[j]);
+                    
+                    grad_x += dw_dx * v_diff_sq;
+                    grad_y += dw_dy * v_diff_sq;
+                }
+                
+                g[2 * k] = grad_x;
+                g[2 * k + 1] = grad_y;
+            }
+            
+            return {g, lambdaMin, eigenvector: v};
+        }
+
         function animateConnectivityDemo() {
             if (!animations.connectivity) return;
             
@@ -9259,23 +9360,9 @@
                 }
             });
             
-            // Build H and λ_min
+            // Build H and compute symbolic gradient of λ_min w.r.t. agent positions
             const {H} = computeConnectivityMatrices();
-            const {eigenvalues} = schurDecomposition(H, n);
-            const lambdaMin = eigenvalues[0];
-            
-            // Finite-difference gradient of λ_min(H) wrt agent controls (since dx/dt = u)
-            const h = 1e-2;
-            const g = new Array(2*n).fill(0);
-            for (let k = 0; k < 2*n; k++) {
-                const agentsCopy = connectivityDemo.agents.map(a => ({...a}));
-                const idx = Math.floor(k/2);
-                const isX = (k % 2) === 0;
-                if (isX) agentsCopy[idx].x += h; else agentsCopy[idx].y += h;
-                const Hp = computeConnectivityHFromAgents(agentsCopy);
-                const {eigenvalues: evp} = schurDecomposition(Hp, n);
-                g[k] = (evp[0] - lambdaMin) / h;
-            }
+            const {g, lambdaMin} = computeConnectivityGradient(connectivityDemo.agents, H, n);
             
             // Project uNom onto halfspace: g·u + cα λ_min ≥ δ
             const cAlpha = connectivityDemo.cAlpha || 5.0;
