@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 450,
-      "recent": 448
+      "all": 451,
+      "recent": 449
     },
     "h-index": {
       "all": 12,
@@ -159,6 +159,14 @@
       "year": 2022
     },
     {
+      "title": "Adaptive deep neural network-based control barrier functions",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Zph67rFs4hoC",
+      "authors": "HM Sweatland, OS Patil, WE Dixon",
+      "venue": "arXiv preprint arXiv:2406.14430, 2024",
+      "cited": 4,
+      "year": 2024
+    },
+    {
       "title": "Bounds on deep neural network partial derivatives with respect to parameters",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:dhFuZR0502QC",
       "authors": "OS Patil, BC Fallin, CF Nino, RG Hart, WE Dixon",
@@ -179,14 +187,6 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:4DMP91E08xMC",
       "authors": "CF Nino, OS Patil, SC Edwards, ZI Bell, WE Dixon",
       "venue": "2024 IEEE 63rd Conference on Decision and Control (CDC), 5274-5279, 2024",
-      "cited": 3,
-      "year": 2024
-    },
-    {
-      "title": "Adaptive deep neural network-based control barrier functions",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Zph67rFs4hoC",
-      "authors": "HM Sweatland, OS Patil, WE Dixon",
-      "venue": "arXiv preprint arXiv:2406.14430, 2024",
       "cited": 3,
       "year": 2024
     },
