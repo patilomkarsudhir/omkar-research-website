@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 460,
-      "recent": 458
+      "all": 467,
+      "recent": 465
     },
     "h-index": {
       "all": 12,
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 81,
+      "cited": 82,
       "year": 2021
     },
     {
@@ -59,7 +59,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:W7OEmFMy1HYC",
       "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
       "venue": "2022 IEEE 61st Conference on Decision and Control (CDC), 3487-3492, 2022",
-      "cited": 35,
+      "cited": 36,
       "year": 2022
     },
     {
@@ -107,7 +107,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Se3iqnhoufwC",
       "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
       "venue": "IFAC-PapersOnLine 56 (2), 6851-6856, 2023",
-      "cited": 12,
+      "cited": 13,
       "year": 2023
     },
     {
@@ -159,6 +159,14 @@
       "year": 2022
     },
     {
+      "title": "Bounds on deep neural network partial derivatives with respect to parameters",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:dhFuZR0502QC",
+      "authors": "OS Patil, BC Fallin, CF Nino, RG Hart, WE Dixon",
+      "venue": "arXiv preprint arXiv:2503.21007, 2025",
+      "cited": 4,
+      "year": 2025
+    },
+    {
       "title": "Adaptive deep neural network-based control barrier functions",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Zph67rFs4hoC",
       "authors": "HM Sweatland, OS Patil, WE Dixon",
@@ -167,12 +175,12 @@
       "year": 2024
     },
     {
-      "title": "Bounds on deep neural network partial derivatives with respect to parameters",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:dhFuZR0502QC",
-      "authors": "OS Patil, BC Fallin, CF Nino, RG Hart, WE Dixon",
-      "venue": "arXiv preprint arXiv:2503.21007, 2025",
-      "cited": 3,
-      "year": 2025
+      "title": "Lyapunov-Based Dropout Deep Neural Network (Lb-DDNN) Controller",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:LkGwnXOMwfcC",
+      "authors": "S Akbari, EJ Griffis, OS Patil, WE Dixon",
+      "venue": "arXiv preprint arXiv:2310.19938, 2023",
+      "cited": 4,
+      "year": 2023
     },
     {
       "title": "Lyapunov-Based Graph Neural Networks for Adaptive Control of Multi-Agent Systems",
@@ -195,14 +203,6 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:UebtZRa9Y70C",
       "authors": "CF Nino, OS Patil, WE Dixon",
       "venue": "IEEE Control Systems Letters 7, 3663-3668, 2023",
-      "cited": 3,
-      "year": 2023
-    },
-    {
-      "title": "Lyapunov-Based Dropout Deep Neural Network (Lb-DDNN) Controller",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:LkGwnXOMwfcC",
-      "authors": "S Akbari, EJ Griffis, OS Patil, WE Dixon",
-      "venue": "arXiv preprint arXiv:2310.19938, 2023",
       "cited": 3,
       "year": 2023
     },
@@ -231,10 +231,26 @@
       "year": 2025
     },
     {
+      "title": "Lyapunov-Based Deep Neural Networks for Adaptive Control of Stochastic Nonlinear Systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:M3ejUd6NZC8C",
+      "authors": "S Akbari, CF Nino, OS Patil, WE Dixon",
+      "venue": "arXiv preprint arXiv:2412.21095, 2024",
+      "cited": 2,
+      "year": 2024
+    },
+    {
       "title": "Lyapunov-based adaptive deep system identification for approximate dynamic programming",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TQgYirikUcIC",
       "authors": "WA Makumi, OS Patil, WE Dixon",
       "venue": "Automatica 180, 112462, 2025",
+      "cited": 1,
+      "year": 2025
+    },
+    {
+      "title": "LyLA-Therm: Lyapunov-based Langevin Adaptive Thermodynamic Neural Network Controller",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:e5wmG9Sq2KIC",
+      "authors": "S Akbari, OS Patil, WE Dixon",
+      "venue": "arXiv preprint arXiv:2508.14989, 2025",
       "cited": 1,
       "year": 2025
     },
@@ -252,22 +268,6 @@
       "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
       "venue": "IEEE Access, 2025",
       "cited": 1,
-      "year": 2025
-    },
-    {
-      "title": "Lyapunov-Based Deep Neural Networks for Adaptive Control of Stochastic Nonlinear Systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:M3ejUd6NZC8C",
-      "authors": "S Akbari, CF Nino, OS Patil, WE Dixon",
-      "venue": "arXiv preprint arXiv:2412.21095, 2024",
-      "cited": 1,
-      "year": 2024
-    },
-    {
-      "title": "LyLA-Therm: Lyapunov-based Langevin Adaptive Thermodynamic Neural Network Controller",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:e5wmG9Sq2KIC",
-      "authors": "S Akbari, OS Patil, WE Dixon",
-      "venue": "arXiv preprint arXiv:2508.14989, 2025",
-      "cited": 0,
       "year": 2025
     },
     {
