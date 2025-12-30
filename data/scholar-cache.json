@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 470,
-      "recent": 468
+      "all": 475,
+      "recent": 473
     },
     "h-index": {
       "all": 12,
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 82,
+      "cited": 83,
       "year": 2021
     },
     {
@@ -59,7 +59,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:W7OEmFMy1HYC",
       "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
       "venue": "2022 IEEE 61st Conference on Decision and Control (CDC), 3487-3492, 2022",
-      "cited": 36,
+      "cited": 37,
       "year": 2022
     },
     {
@@ -71,19 +71,19 @@
       "year": 2023
     },
     {
+      "title": "Accelerated gradient approach for deep neural network-based adaptive control of unknown nonlinear systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
+      "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
+      "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
+      "cited": 17,
+      "year": 2024
+    },
+    {
       "title": "Adaptive safety with a rise-based disturbance observer",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:MXK_kJrjxJIC",
       "authors": "A Isaly, OS Patil, HM Sweatland, RG Sanfelice, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 69 (7), 4883-4890, 2024",
       "cited": 17,
-      "year": 2024
-    },
-    {
-      "title": "Accelerated gradient approach for deep neural network-based adaptive control of unknown nonlinear systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
-      "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
-      "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
-      "cited": 16,
       "year": 2024
     },
     {
@@ -159,6 +159,14 @@
       "year": 2022
     },
     {
+      "title": "Lyapunov-Based Dropout Deep Neural Network (Lb-DDNN) Controller",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:LkGwnXOMwfcC",
+      "authors": "S Akbari, EJ Griffis, OS Patil, WE Dixon",
+      "venue": "arXiv preprint arXiv:2310.19938, 2023",
+      "cited": 5,
+      "year": 2023
+    },
+    {
       "title": "Bounds on deep neural network partial derivatives with respect to parameters",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:dhFuZR0502QC",
       "authors": "OS Patil, BC Fallin, CF Nino, RG Hart, WE Dixon",
@@ -181,14 +189,6 @@
       "venue": "arXiv preprint arXiv:2406.14430, 2024",
       "cited": 4,
       "year": 2024
-    },
-    {
-      "title": "Lyapunov-Based Dropout Deep Neural Network (Lb-DDNN) Controller",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:LkGwnXOMwfcC",
-      "authors": "S Akbari, EJ Griffis, OS Patil, WE Dixon",
-      "venue": "arXiv preprint arXiv:2310.19938, 2023",
-      "cited": 4,
-      "year": 2023
     },
     {
       "title": "Distributed Target Tracking under Partial Feedback using Lyapunov-based Deep Neural Networks",
@@ -271,6 +271,14 @@
       "year": 2025
     },
     {
+      "title": "Simultaneous Online System Identification and Control using Composite Adaptive Lyapunov-Based Deep Neural Networks",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:aqlVkmm33-oC",
+      "authors": "OS Patil, EJ Griffis, WA Makumi, W Dixon",
+      "venue": "",
+      "cited": 1,
+      "year": 0
+    },
+    {
       "title": "Adaptive Output Feedback Control Using Lyapunov-Based Deep Recurrent Neural Networks (Lb-DRNNs)",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:R3hNpaxXUhUC",
       "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
@@ -309,14 +317,6 @@
       "venue": "IFAC-PapersOnLine 53 (2), 6340-6345, 2020",
       "cited": 0,
       "year": 2020
-    },
-    {
-      "title": "Simultaneous Online System Identification and Control using Composite Adaptive Lyapunov-Based Deep Neural Networks",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:aqlVkmm33-oC",
-      "authors": "OS Patil, EJ Griffis, WA Makumi, W Dixon",
-      "venue": "",
-      "cited": 0,
-      "year": 0
     }
   ],
   "source": "live-script",
