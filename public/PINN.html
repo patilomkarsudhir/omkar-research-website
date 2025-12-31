@@ -4066,10 +4066,15 @@
                 this.collocationCount = parseInt(document.getElementById("collocationValue").value) || 50;
                 this.physicsWeight = parseFloat(document.getElementById("physicsWeightValue").value) || 1.0;
                 
-                // Regenerate data and networks with updated parameters
+                // Regenerate data with updated parameters
                 this.generateTrainingData();
-                this.regularNN = this.createCurrentNN(this.hiddenSize);
-                this.pinn = this.createCurrentPINN();
+                
+                // Only recreate the network being trained (keep the other one independent)
+                if (isPINN) {
+                    this.pinn = this.createCurrentPINN();
+                } else {
+                    this.regularNN = this.createCurrentNN(this.hiddenSize);
+                }
                 this.setupCollocation();
                 
                 // Wave equation specific training tips (updated with actual parameters)
