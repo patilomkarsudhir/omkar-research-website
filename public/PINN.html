@@ -2403,9 +2403,8 @@
             }
 
             getInitialPhysicsParams() {
-                // Better initialization: use true wave speed from system
-                const trueWaveSpeed = this.waveSpeed || 1.5;
-                return { param1: trueWaveSpeed, param2: 0.0 }; // Initialize with true wave speed
+                // Generic initialization (do not depend on the true parameter value)
+                return { param1: 1.0, param2: 0.0 };
             }
 
             getEquationDisplay() {
@@ -2476,16 +2475,6 @@
                 }
                 
                 return data;
-            }
-
-            sampleCollocation(m, T = 20) {
-                const points = [];
-                for (let i = 0; i < m; i++) {
-                    const t = Math.random() * T;
-                    const x = Math.random() * this.L;
-                    points.push({ x, t });
-                }
-                return points;
             }
 
             // Generate metrics evaluation grid for consistent performance assessment
@@ -3254,16 +3243,9 @@
                 // Enhanced initialization with mathematical insights
                 if (physicalSystem) {
                     const initialParams = physicalSystem.getInitialPhysicsParams();
-                    
-                    // INSIGHT 1: Better parameter initialization for wave equations
-                    if (physicalSystem.constructor.name === 'WaveEquationSystem') {
-                        // Initialize c closer to true value (true c = 1.5)
-                        // Add small random perturbation to avoid local minima
-                        const trueC = physicalSystem.getCurrentTrueParams().param1; // param1 is wave speed c
-                        this.param1 = ADNode.variable(trueC * (0.8 + 0.4 * Math.random()), "param1");
-                    } else {
-                        this.param1 = ADNode.variable(initialParams.param1, "param1");
-                    }
+
+                    // Initialize with system-provided initial guess (avoid depending on true parameter values)
+                    this.param1 = ADNode.variable(initialParams.param1, "param1");
                     this.param2 = ADNode.variable(initialParams.param2, "param2");
                 } else {
                     this.param1 = ADNode.variable(1.0, "param1");
@@ -3388,13 +3370,9 @@
                 let regularizationTerm = 0;
                 if (this.physicalSystem && this.physicalSystem.constructor.name === 'WaveEquationSystem') {
                     // INSIGHT 24: Energy conservation penalty using physical energy computation
-                    const energyPenalty = this.physicalSystem.computeEnergyPenalty(this);
+                    const physicsParams = { param1: this.param1.value, param2: this.param2.value };
+                    const energyPenalty = this.physicalSystem.computeEnergyPenalty(activePoints, this, physicsParams);
                     regularizationTerm += energyPenalty;
-                    
-                    // Legacy energy conservation penalty - wave energy should be conserved in ideal case
-                    const c_param = this.param1.value; // param1 is wave speed c directly
-                    const legacyEnergyPenalty = Math.abs(c_param - 1.5) * this.regularization.energyConservation;
-                    regularizationTerm += legacyEnergyPenalty;
                     
                     // Parameter smoothness - discourage rapid parameter changes
                     const paramVariation = Math.abs(this.param1.value - this.physicalSystem.getCurrentTrueParams().param1);
@@ -3478,6 +3456,12 @@
             }
 
             updatePhysicsParameters([gP1, gP2], lr, beta1 = 0.9, beta2 = 0.999, eps = 1e-8) {
+                // Track gradient magnitudes for adaptive schedules
+                if (this.gradStats && this.gradStats.paramGrads) {
+                    this.gradStats.paramGrads.push(Math.abs(gP1));
+                    if (this.gradStats.paramGrads.length > 200) this.gradStats.paramGrads.shift();
+                }
+
                 // INSIGHT 14: Adaptive learning rates based on gradient statistics and system type
                 let physicsLR;
                 if (this.physicalSystem && this.physicalSystem.constructor.name === 'WaveEquationSystem') {
@@ -3541,28 +3525,15 @@
                         const maxBound = 10.0;  // Allow fast waves
                         const clampedVal = Math.max(minBound, Math.min(maxBound, newVal));
                         
-                        // INSIGHT 18: Soft parameter constraints with penalty
-                        let finalVal = clampedVal;
-                        if (this.physicalSystem && this.physicalSystem.constructor.name === 'WaveEquationSystem') {
-                            const trueC = this.physicalSystem.getCurrentTrueParams().param1; // Should be 1.5 for wave speed c
-                            const deviation = Math.abs(clampedVal - trueC);
-                            
-                            // Apply soft constraint: if deviation is large, pull back toward true value
-                            if (deviation > trueC * 0.5) { // More than 50% deviation
-                                const pullBack = 0.1 * (trueC - clampedVal);
-                                finalVal = clampedVal + pullBack;
-                            }
-                        }
-                        
-                        this.param1 = ADNode.variable(finalVal, "param1");
+                        this.param1 = ADNode.variable(clampedVal, "param1");
                         
                         // Debug boundary conditions
                         if (this.physicalSystem && this.physicalSystem.constructor.name === 'WaveEquationSystem' && Math.random() < 0.01) {
-                            if (Math.abs(finalVal - minBound) < 0.05) {
-                                console.warn(`⚠️ Wave speed near lower bound: c²=${finalVal.toFixed(3)} (min=${minBound})`);
+                            if (Math.abs(clampedVal - minBound) < 0.05) {
+                                console.warn(`⚠️ Wave speed near lower bound: c=${clampedVal.toFixed(3)} (min=${minBound})`);
                             }
-                            if (Math.abs(finalVal - maxBound) < 0.05) {
-                                console.warn(`⚠️ Wave speed near upper bound: c²=${finalVal.toFixed(3)} (max=${maxBound})`);
+                            if (Math.abs(clampedVal - maxBound) < 0.05) {
+                                console.warn(`⚠️ Wave speed near upper bound: c=${clampedVal.toFixed(3)} (max=${maxBound})`);
                             }
                         }
                     } else {
@@ -4012,7 +3983,9 @@
 
             generateTrainingData() {
                 this.trainingData = []; this.collocationPoints = [];
-                const T = 20;
+                const T = (this.currentSystem && this.currentSystem.is2D && typeof this.currentSystem.T === "number")
+                    ? this.currentSystem.T
+                    : 20;
                 
                 // Use system-owned samplers for better separation of concerns
                 // Systems now handle their own domain-specific sampling logic
@@ -4033,7 +4006,9 @@
             setupCollocation() {
                 // Regenerate collocation points with current count setting
                 this.collocationPoints = [];
-                const T = 20;
+                const T = (this.currentSystem && this.currentSystem.is2D && typeof this.currentSystem.T === "number")
+                    ? this.currentSystem.T
+                    : 20;
                 
                 if (this.currentSystem.is2D) {
                     this.collocationPoints = this.currentSystem.sampleCollocation(this.collocationCount, T);
@@ -4086,7 +4061,7 @@
                     console.log(`✅ Physics weight: ${this.physicsWeight}`);
                     console.log(`✅ Learning rate: ${this.lr}`);
                     console.log(`✅ Data points: ${this.dataPoints}`);
-                    console.log("📊 Monitor: Wave speed parameter should converge to ~1.5");
+                    console.log("📊 Monitor: Wave speed parameter should stabilize during training");
                 }
                 
                 this.isTraining = true; this.pauseRequested = false; this.currentEpoch = 0;
@@ -4146,22 +4121,29 @@
                             const augTemporal = inputs.temporalData.concat(bcT, icT);
                             const augTargets = targets.concat(bcY, icY);
                             gNN = net.computeGradients(augSpatial, augTemporal, augTargets);
+
+                            // Keep reported loss consistent with the data actually used to update NN params
+                            const trainingDataStructured = { spatial: augSpatial, temporal: augTemporal, targets: augTargets };
+                            const gPhys = net.computePhysicsGradients(this.collocationPoints);
+                            net.updateParameters(gNN, currentLR);
+                            net.updatePhysicsParameters(gPhys, currentLR);
+                            history.push(Math.max(1e-8, net.totalLoss(trainingDataStructured, this.collocationPoints, [], [])));
+                            
+                            if (epoch % stepEvery === 0 || epoch === this.epochs - 1) {
+                                this.updateLossChart(history, isPINN);
+                                this.updateMetrics();
+                                this.updateTrainingProgress(epoch + 1, this.epochs, history[history.length - 1]);
+                                this.showStatus(`Training ${isPINN ? "AD-PINN" : "Regular NN"}... Epoch ${epoch + 1}/${this.epochs}`, "training");
+                                await new Promise((r) => setTimeout(r, 10)); // Increased delay for performance
+                            }
+                            continue;
                         } else {
                             gNN = net.computeGradients(inputs, targets);
                         }
                         const gPhys = net.computePhysicsGradients(this.collocationPoints);
                         net.updateParameters(gNN, currentLR);
                         net.updatePhysicsParameters(gPhys, currentLR);
-                        
-                        // Include boundary and initial conditions for 2D PINN
-                        if (this.currentSystem.is2D) {
-                            const BC = this.currentSystem.getBoundaryConditions();
-                            const IC = this.currentSystem.getInitialConditions();
-                            const trainingDataStructured = { spatial: inputs.spatialData, temporal: inputs.temporalData, targets };
-                            history.push(Math.max(1e-8, net.totalLoss(trainingDataStructured, this.collocationPoints, BC, IC)));
-                        } else {
-                            history.push(Math.max(1e-8, net.totalLoss(this.trainingData, this.collocationPoints)));
-                        }
+                        history.push(Math.max(1e-8, net.totalLoss(this.trainingData, this.collocationPoints)));
                     } else {
                         let g;
                         if (this.currentSystem.is2D) {
@@ -4226,7 +4208,10 @@
             }
 
             updateMetrics() {
-                const T = 20, N = 50;
+                const T = (this.currentSystem && this.currentSystem.is2D && typeof this.currentSystem.T === "number")
+                    ? this.currentSystem.T
+                    : 20;
+                const N = 50;
                 let nnMse = 0, pinnMse = 0, nnPhys = 0, pinnPhys = 0;
                 
                 if (this.currentSystem.is2D) {
