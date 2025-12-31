@@ -1,0 +1,416 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Welcome to Overleaf --- just edit your LaTeX on the left,
+% and we'll compile it for you on the right. If you open the
+% 'Share' menu, you can invite other users to edit at the same
+% time. See www.overleaf.com/learn for more info. Enjoy!
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[10pt, letterpaper]{article}
+
+% Packages:
+\usepackage[
+    ignoreheadfoot, % set margins without considering header and footer
+    top=2 cm, % seperation between body and page edge from the top
+    bottom=2 cm, % seperation between body and page edge from the bottom
+    left=2 cm, % seperation between body and page edge from the left
+    right=2 cm, % seperation between body and page edge from the right
+    footskip=1.0 cm, % seperation between body and footer
+    % showframe % for debugging 
+]{geometry} % for adjusting page geometry
+\usepackage{titlesec} % for customizing section titles
+\usepackage{tabularx} % for making tables with fixed width columns
+\usepackage{array} % tabularx requires this
+\usepackage[dvipsnames]{xcolor} % for coloring text
+\definecolor{primaryColor}{RGB}{0, 79, 144} % define primary color
+\usepackage{enumitem} % for customizing lists
+\usepackage{fontawesome5} % for using icons
+\usepackage{amsmath} % for math
+\usepackage[
+    pdftitle={Omkar Sudhir Patil's CV},
+    pdfauthor={Omkar Sudhir Patil},
+    pdfcreator={LaTeX with RenderCV},
+    colorlinks=true,
+    urlcolor=primaryColor
+]{hyperref} % for links, metadata and bookmarks
+\usepackage[pscoord]{eso-pic} % for floating text on the page
+\usepackage{calc} % for calculating lengths
+\usepackage{bookmark} % for bookmarks
+\usepackage{lastpage} % for getting the total number of pages
+\usepackage{changepage} % for one column entries (adjustwidth environment)
+\usepackage{paracol} % for two and three column entries
+\usepackage{ifthen} % for conditional statements
+\usepackage{needspace} % for avoiding page brake right after the section title
+\usepackage{iftex} % check if engine is pdflatex, xetex or luatex
+
+\usepackage[backend=biber,style=ieee,sorting=none,uniquename=init,defernumbers=true]{biblatex}
+
+
+\addbibresource{books.bib}
+\addbibresource{journal.bib}
+\addbibresource{conf.bib}
+\addbibresource{underreview.bib}
+
+% Ensure that generate pdf is machine readable/ATS parsable:
+\ifPDFTeX
+    \input{glyphtounicode}
+    \pdfgentounicode=1
+    % \usepackage[T1]{fontenc} % this breaks sb2nov
+    \usepackage[utf8]{inputenc}
+    \usepackage{lmodern}
+\fi
+
+
+
+% Some settings:
+\AtBeginEnvironment{adjustwidth}{\partopsep0pt} % remove space before adjustwidth environment
+\pagestyle{empty} % no header or footer
+\setcounter{secnumdepth}{0} % no section numbering
+\setlength{\parindent}{0pt} % no indentation
+\setlength{\topskip}{0pt} % no top skip
+\setlength{\columnsep}{0cm} % set column seperation
+\makeatletter
+\let\ps@customFooterStyle\ps@plain % Copy the plain style to customFooterStyle
+\patchcmd{\ps@customFooterStyle}{\thepage}{
+    \color{gray}\textit{\small Omkar Sudhir Patil - Page \thepage{} of \pageref*{LastPage}}
+}{}{} % replace number by desired string
+\makeatother
+\pagestyle{customFooterStyle}
+
+\titleformat{\section}{\needspace{4\baselineskip}\bfseries\large}{}{0pt}{}[\vspace{1pt}\titlerule]
+
+\titlespacing{\section}{
+    % left space:
+    -1pt
+}{
+    % top space:
+    0.3 cm
+}{
+    % bottom space:
+    0.2 cm
+} % section title spacing
+
+\renewcommand\labelitemi{$\circ$} % custom bullet points
+\newenvironment{highlights}{
+    \begin{itemize}[
+        topsep=0.10 cm,
+        parsep=0.10 cm,
+        partopsep=0pt,
+        itemsep=0pt,
+        leftmargin=0.4 cm + 10pt
+    ]
+}{
+    \end{itemize}
+} % new environment for highlights
+
+\newenvironment{highlightsforbulletentries}{
+    \begin{itemize}[
+        topsep=0.10 cm,
+        parsep=0.10 cm,
+        partopsep=0pt,
+        itemsep=0pt,
+        leftmargin=10pt
+    ]
+}{
+    \end{itemize}
+} % new environment for highlights for bullet entries
+
+
+\newenvironment{onecolentry}{
+    \begin{adjustwidth}{
+        0.2 cm + 0.00001 cm
+    }{
+        0.2 cm + 0.00001 cm
+    }
+}{
+    \end{adjustwidth}
+} % new environment for one column entries
+
+\newenvironment{twocolentry}[2][]{
+    \onecolentry
+    \def\secondColumn{#2}
+    \setcolumnwidth{\fill, 4.5 cm}
+    \begin{paracol}{2}
+}{
+    \switchcolumn \raggedleft \secondColumn
+    \end{paracol}
+    \endonecolentry
+} % new environment for two column entries
+
+\newenvironment{header}{
+    \setlength{\topsep}{0pt}\par\kern\topsep\centering\linespread{1.5}
+}{
+    \par\kern\topsep
+} % new environment for the header
+
+\newcommand{\placelastupdatedtext}{% \placetextbox{<horizontal pos>}{<vertical pos>}{<stuff>}
+  \AddToShipoutPictureFG*{% Add <stuff> to current page foreground
+    \put(
+        \LenToUnit{\paperwidth-2 cm-0.2 cm+0.05cm},
+        \LenToUnit{\paperheight-1.0 cm}
+    ){\vtop{{\null}\makebox[0pt][c]{
+        \small\color{gray}\textit{}\hspace{\widthof{}}
+    }}}%
+  }%
+}%
+
+% save the original href command in a new command:
+\let\hrefWithoutArrow\href
+
+% new command for external links:
+\renewcommand{\href}[2]{\hrefWithoutArrow{#1}{\ifthenelse{\equal{#2}{}}{ }{#2 }\raisebox{.15ex}{\footnotesize \faExternalLink*}}}
+
+
+\begin{document}
+    \newcommand{\AND}{\unskip
+        \cleaders\copy\ANDbox\hskip\wd\ANDbox
+        \ignorespaces
+    }
+    \newsavebox\ANDbox
+    \sbox\ANDbox{}
+
+    \placelastupdatedtext
+    \begin{header}
+        \textbf{\fontsize{24 pt}{24 pt}\selectfont Omkar Sudhir Patil}
+
+        \vspace{0.3 cm}
+
+        \normalsize
+        \mbox{\hrefWithoutArrow{mailto:omkarpatil64328@gmail.com}{\color{black}{\footnotesize\faEnvelope[regular]}\hspace*{0.13cm}omkarpatil64328@gmail.com}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{tel:+1-352-222-1713}{\color{black}{\footnotesize\faPhone*}\hspace*{0.13cm}(352) 222-1713}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{https://linkedin.com/in/omkar-patil-024}{\color{black}{\footnotesize\faLinkedinIn}\hspace*{0.13cm}omkar-patil-024}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{https://omkarsudhirpatil.com}{\color{black}{\footnotesize\faGlobe}\hspace*{0.13cm}omkarsudhirpatil.com}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{https://github.com/patilomkarsudhir}{\color{black}{\footnotesize\faGithub}\hspace*{0.13cm}patilomkarsudhir}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{https://scholar.google.com/citations?user=EtkfNQMAAAAJ&hl=en}{\color{black}{\footnotesize\faGraduationCap}\hspace*{0.13cm}Google Scholar}}%
+    \end{header}
+
+    \vspace{0.3 cm - 0.3 cm}
+
+
+    \section{Education}
+
+
+
+        
+        \begin{twocolentry}{
+            
+            
+        \textit{08/20/19 to 05/09/23}}
+            \textbf{University of Florida}
+
+            \textit{PhD in Mechanical Engineering (GPA: 3.97/4.0)}
+            
+            \textit{Gainesville, FL 32611}
+        \end{twocolentry}
+
+        \vspace{0.05 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+                \setlength{\itemsep}{0pt} % Adjusts spacing between items
+                \item \textbf{Advisor:} Dr. Warren E. Dixon
+                \item \textbf{Dissertation:} Implicit and Deep Learning-Based Control Methods for Uncertain Nonlinear Systems
+            \end{highlights}
+        \end{onecolentry}
+
+
+        \vspace{0.05 cm}
+
+        \begin{twocolentry}{
+            
+            
+        \textit{08/20/19 to 08/09/22}}
+            \textbf{University of Florida}
+
+            \textit{MS in Mechanical Engineering}
+            
+            \textit{Gainesville, FL 32611}
+        \end{twocolentry}
+
+
+        \vspace{0.05 cm}
+
+        \begin{twocolentry}{
+            
+            
+        \textit{07/23/14 to 11/08/18}}
+            \textbf{Indian Institute of Technology Delhi}
+
+            \textit{B.Tech in Production and Industrial Engineering}
+            
+            \textit{Hauz Khas, New Delhi, Delhi 110016, India}
+        \end{twocolentry}
+
+
+
+
+    
+    \section{Experience}
+
+
+
+        
+        \begin{twocolentry}{
+            
+            
+        \textit{10/10/25 to present}}
+            \textbf{Research Assistant Scientist}
+            
+            \textit{University of Florida, Department of Mechanical \& Aerospace Engineering}
+            
+            \textit{MAE-A 231, 939 Sweetwater Drive, Gainesville, FL 32611}
+        \end{twocolentry}
+
+        \vspace{0.05 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+                \setlength{\itemsep}{0pt}
+                \item Research on mathematical frameworks for compositional control synthesis via Lyapunov methods for nonlinear dynamical systems
+                \item Investigating control approaches utilizing Hamiltonian formulations and differential geometric structures for asymptotic stability analysis
+                \item Co-authoring textbook ``Lyapunov-Based Deep Learning for Autonomy'' with Springer (anticipated completion May 2026)
+            \end{highlights}
+        \end{onecolentry}
+
+
+        \vspace{0.05 cm}
+
+        \begin{twocolentry}{
+            
+            
+        \textit{05/15/23 to 10/09/25}}
+            \textbf{Postdoctoral Research Associate}
+            
+            \textit{University of Florida, Department of Mechanical \& Aerospace Engineering}
+            
+            \textit{MAE-A 231, 939 Sweetwater Drive, Gainesville, FL 32611}
+        \end{twocolentry}
+
+        \vspace{0.05 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+                \setlength{\itemsep}{0pt}
+                \item Developed Lyapunov-based deep neural network control algorithms with online parameter adaptation using gradient-based weight update laws
+                \item Published 14 peer-reviewed journal papers (including IEEE Trans. Automatic Control, IEEE Trans. Neural Networks and Learning Systems, Automatica) and 7 conference papers during this period
+                \item Implemented MATLAB and Python software packages for Lyapunov-based neural network controllers and projection-based parameter adaptation algorithms
+            \end{highlights}
+        \end{onecolentry}
+
+
+        \vspace{0.05 cm}
+
+        \begin{twocolentry}{
+            
+            
+        \textit{09/05/19 to 05/15/23}}
+            \textbf{Graduate Research Assistant}
+            
+            \textit{University of Florida, Nonlinear Controls and Robotics Group}
+            
+            \textit{MAE-A 231, 939 Sweetwater Drive, Gainesville, FL 32611}
+        \end{twocolentry}
+
+        \vspace{0.05 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+                \setlength{\itemsep}{0pt}
+                \item Analyzed exponential stability properties of robust integral of the sign of the error (RISE) feedback control using Lyapunov analysis techniques
+                \item Derived Lyapunov-based adaptive parameter update laws for multilayer neural network approximators with arbitrary depth using backpropagation-inspired gradient computations
+                \item Published 3 peer-reviewed journal papers (IEEE Trans. Automatic Control, IEEE Control Systems Letters) and 6 conference papers (IEEE CDC, ACC, IFAC) during this period
+            \end{highlights}
+        \end{onecolentry}
+
+
+        \vspace{0.05 cm}
+
+        \begin{twocolentry}{
+            
+            
+        \textit{07/01/18 to 04/15/19}}
+            \textbf{Project Associate}
+            
+            \textit{Indian Institute of Technology Delhi, Department of Electrical Engineering}
+            
+            \textit{Hauz Khas, New Delhi, Delhi 110016, India}
+        \end{twocolentry}
+
+        \vspace{0.05 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+                \setlength{\itemsep}{0pt}
+                \item Contributed to Tata Consultancy Services (TCS) sponsored project on design, fabrication, modeling and control of aerial manipulator system for pick and delivery applications
+                \item Developed singularity-free hierarchical controller using Barrier Lyapunov Function (BLF) based mathematical modeling and design approach
+                \item Published 2 conference papers (ACC, IFAC) during this period
+            \end{highlights}
+        \end{onecolentry}
+
+
+\section{Publications}
+
+\nocite{*}
+
+\subsection*{Books}
+\printbibliography[type=book, heading=none]
+
+\subsection*{Journal Papers}
+\printbibliography[type=article, heading=none, nottype=inproceedings, nottype=book, notkeyword=underreview]
+
+\subsection*{Conference Papers}
+\printbibliography[type=inproceedings, heading=none]
+
+\subsection*{Under Review}
+\printbibliography[keyword=underreview, heading=none, resetnumbers=false]
+
+\section{Awards}
+
+\begin{itemize}
+    \item \textbf{Graduate Student Research Award}, 2023, for outstanding research as a graduate student in the Department of Mechanical and Aerospace Engineering, University of Florida
+    \item \textbf{BOSS Award}, 2018, for the best hardcore experimental project in Mechanical Engineering discipline, IIT Delhi
+\end{itemize}
+
+\section{Teaching Experience}
+
+\begin{itemize}
+\item{Teaching Assistant, Vibrations (EML4220), University of Florida, Spring 2020}
+\item{Developer of Interactive Research Demonstrations, including web-based tutorials on Lyapunov-based deep neural networks, control barrier functions, and physics-informed neural networks (available at \href{https://omkarsudhirpatil.com}{omkarsudhirpatil.com})}
+\end{itemize}
+
+\section{Technical Skills}
+
+\textbf{Machine Learning \& Deep Learning:} PyTorch, TensorFlow, JAX, Hugging Face Transformers, LLM fine-tuning, Physics-Informed Neural Networks (PINNs), neural network training and optimization
+
+\textbf{High-Performance Computing:} CUDA, GPU programming, distributed training, cluster computing (SLURM), parallel computing, multi-node training
+
+\textbf{Programming Languages:} Python, MATLAB, C/C++, Julia, JavaScript
+
+\textbf{Scientific Computing:} NumPy, SciPy, scikit-learn, control systems libraries, optimization frameworks
+
+\textbf{Web Development \& Visualization:} JavaScript, D3.js, Three.js, HTML/CSS, interactive educational tools, scientific visualization
+
+\textbf{Development Tools:} Git, Docker, Jupyter, VS Code, LaTeX, continuous integration
+
+
+\section{Peer Review Service}
+
+\textbf{Journals:} Nature Communications, IEEE Transactions on Automatic Control, Automatica, IEEE Control Systems Letters, IEEE Transactions on Control Systems Technology, IEEE Transactions on Signal Processing, IEEE/ASME Transactions on Mechatronics, IEEE Transactions on Neural Networks and Learning Systems, International Journal of Adaptive Control and Signal Processing
+
+\textbf{Conferences:} Advances on Neural Information Processing Systems (NeurIPS), International Conference on Learning and Representations (ICLR), International Conference on Machine Learning (ICML), AAAI Conference on Artificial Intelligence (AAAI), IEEE Conference on Decision and Control, American Control Conference, IFAC World Congress
+
+    
+
+    
+
+\end{document}

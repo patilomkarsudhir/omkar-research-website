@@ -1,30 +1,8 @@
 [
-  {
-    "title": "Lyapunov-derived control and adaptive update laws for inner and outer layer weights of a deep neural network",
-    "authors": "O. S. Patil, D. M. Le, M. L. Greene, W. E. Dixon",
-    "venue": "IEEE Control Systems Letters",
-    "year": 2021,
-    "links": { "pdf": "", "code": "", "video": "" }
-  },
-  {
-    "title": "Lyapunov-based adaptive deep system identification for approximate dynamic programming",
-    "authors": "W. A. Makumi, O. S. Patil, W. E. Dixon",
-    "venue": "Automatica",
-    "year": 2025,
-    "links": { "pdf": "", "code": "", "video": "" }
-  },
-  {
-    "title": "Adaptive safety with a RISE-based disturbance observer",
-    "authors": "A. Isaly, O. S. Patil, H. M. Sweatland, R. G. Sanfelice, W. E. Dixon",
-    "venue": "IEEE Transactions on Automatic Control",
-    "year": 2024,
-    "links": { "pdf": "", "code": "", "video": "" }
-  },
-  {
-    "title": "Collaborative spacecraft servicing under partial feedback using Lyapunov-based deep neural networks",
-    "authors": "C. F. Nino, O. S. Patil, C. D. Petersen, S. Phillips, W. E. Dixon",
-    "venue": "The Journal of the Astronautical Sciences",
-    "year": 2025,
-    "links": { "pdf": "", "code": "", "video": "" }
-  }
+  "Lyapunov-derived control and adaptive update laws for inner and outer layer weights of a deep neural network",
+  "Adaptive control of time-varying parameter systems with asymptotic tracking",
+  "Adaptive safety with a RISE-based disturbance observer",
+  "Lyapunov-based adaptive deep system identification for approximate dynamic programming",
+  "Collaborative spacecraft servicing under partial feedback using Lyapunov-based deep neural networks",
+  "Exponential stability with RISE controllers"
 ]

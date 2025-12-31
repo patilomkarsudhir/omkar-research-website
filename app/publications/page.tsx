@@ -25,8 +25,8 @@ export default function Page() {
       <Section title="Publications" subtitle="Two views. Live from Scholar and a curated Selected tab.">
         <Tabs
           tabs={[
-            { key: "selected", label: "Selected", content: <SelectedPubs /> },
             { key: "all", label: "All (Google Scholar)", content: <ScholarClient user={user} /> },
+            { key: "selected", label: "Selected", content: <SelectedPubs /> },
           ]}
         />
       </Section>

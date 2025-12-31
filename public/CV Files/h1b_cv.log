@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.30)  6 DEC 2025 01:05
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.30)  8 DEC 2025 16:33
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**"c:/Users/patilomkarsudhir/OneDrive - University of Florida/Desktop/Website/omkar-site-remade/omkar-research-site-remade/public/CV Files/academic_cv"
-(c:/Users/patilomkarsudhir/OneDrive - University of Florida/Desktop/Website/omkar-site-remade/omkar-research-site-remade/public/CV Files/academic_cv.tex
+**"c:/Users/patilomkarsudhir/OneDrive - University of Florida/Desktop/Website/omkar-site-remade/omkar-research-site-remade/public/CV Files/h1b_cv"
+(c:/Users/patilomkarsudhir/OneDrive - University of Florida/Desktop/Website/omkar-site-remade/omkar-research-site-remade/public/CV Files/h1b_cv.tex
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-04-14>
 (c:/texlive/2025/texmf-dist/tex/latex/base/article.cls
@@ -633,8 +633,8 @@ Package biblatex Warning: Load 'inputenc' before biblatex.
 LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 164.
 (c:/texlive/2025/texmf-dist/tex/latex/lm/ot1lmr.fd
 File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-) (./academic_cv.aux)
-\openout1 = `academic_cv.aux'.
+) (./h1b_cv.aux)
+\openout1 = `h1b_cv.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 164.
 LaTeX Font Info:    ... okay on input line 164.
@@ -712,11 +712,11 @@ File: english.lbx 2024/03/21 v3.20 biblatex localization (PK/MW)
 Package biblatex Info: Input encoding 'utf8' detected.
 Package biblatex Info: Automatic encoding selection.
 (biblatex)             Assuming data encoding 'utf8'.
-\openout3 = `academic_cv.bcf'.
+\openout3 = `h1b_cv.bcf'.
 
 Package biblatex Info: Trying to load bibliographic data...
-Package biblatex Info: ... file 'academic_cv.bbl' found.
- (./academic_cv.bbl)
+Package biblatex Info: ... file 'h1b_cv.bbl' found.
+ (./h1b_cv.bbl)
 Package biblatex Info: Reference section=0 on input line 164.
 Package biblatex Info: Reference segment=0 on input line 164.
 \ANDbox=\box66
@@ -728,40 +728,32 @@ LaTeX Font Info:    Trying to load font information for U+fontawesomebrands0 on 
  (c:/texlive/2025/texmf-dist/tex/latex/fontawesome5/ufontawesomebrands0.fd)
 LaTeX Font Info:    Font shape `U/fontawesomebrands0/solid/n' in size <8> not available
 (Font)              Font shape `U/fontawesomebrands0/regular/n' tried instead on input line 187.
-LaTeX Font Info:    Trying to load font information for OML+lmm on input line 223.
+LaTeX Font Info:    Trying to load font information for OML+lmm on input line 225.
  (c:/texlive/2025/texmf-dist/tex/latex/lm/omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 223.
+LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 225.
  (c:/texlive/2025/texmf-dist/tex/latex/lm/omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 223.
+LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 225.
  (c:/texlive/2025/texmf-dist/tex/latex/lm/omxlmex.fd
 File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 223.
+(Font)              <10> on input line 225.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 223.
+(Font)              <7> on input line 225.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 223.
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 314.
- (c:/texlive/2025/texmf-dist/tex/latex/lm/ts1lmr.fd
-File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-)
-Overfull \hbox (5.28531pt too wide) in paragraph at lines 314--315
-[]\OT1/lmr/m/n/10 ``Feedback-based Deep Learn-ing for Un-cer-tain Dy-nam-i-cal Sys-tems," \OT1/lmr/m/it/10 US Air Force Re-search Lab-o-ra-tory \OT1/lmr/m/n/10 (Funded,
- []
-
+(Font)              <5> on input line 225.
 
 
 [1
 
-{c:/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{c:/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{c:/texlive/2025/texmf-dist/fonts/enc/dvips/fontawesome5/fa5free1.enc}{c:/texlive/2025/texmf-dist/fonts/enc/dvips/fontawesome5/fa5free2.enc}{c:/texlive/2025/texmf-dist/fonts/enc/dvips/fontawesome5/fa5brands0.enc}{c:/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{c:/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}]
+{c:/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{c:/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{c:/texlive/2025/texmf-dist/fonts/enc/dvips/fontawesome5/fa5free1.enc}{c:/texlive/2025/texmf-dist/fonts/enc/dvips/fontawesome5/fa5free2.enc}{c:/texlive/2025/texmf-dist/fonts/enc/dvips/fontawesome5/fa5brands0.enc}{c:/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}]
 
 [2]
-LaTeX Font Info:    Trying to load font information for OT1+lmtt on input line 340.
+LaTeX Font Info:    Trying to load font information for OT1+lmtt on input line 375.
  (c:/texlive/2025/texmf-dist/tex/latex/lm/ot1lmtt.fd
 File: ot1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
@@ -770,28 +762,28 @@ File: ot1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 
 [4] 
 enddocument/afterlastpage (AED): lastpage setting LastPage.
-(./academic_cv.aux)
+(./h1b_cv.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-04-14>
  ***********
-Package logreq Info: Writing requests to 'academic_cv.run.xml'.
-\openout1 = `academic_cv.run.xml'.
+Package logreq Info: Writing requests to 'h1b_cv.run.xml'.
+\openout1 = `h1b_cv.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 23305 strings out of 469608
- 429532 string characters out of 5474779
- 1243437 words of memory out of 5000000
- 49817 multiletter control sequences out of 15000+600000
- 665836 words of font info for 64 fonts, out of 8000000 for 9000
+ 23257 strings out of 469608
+ 428393 string characters out of 5474779
+ 1245422 words of memory out of 5000000
+ 49781 multiletter control sequences out of 15000+600000
+ 665471 words of font info for 63 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,10n,79p,1338b,1480s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,10n,79p,1333b,1482s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2025/texmf-dist/fonts/type1/public/fontawesome5/FontAwesome5Brands-Regular.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/fontawesome5/FontAwesome5Free-Regular.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/fontawesome5/FontAwesome5Free-Solid.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx12.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmri10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmri9.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmsy10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmtt10.pfb>
-Output written on academic_cv.pdf (4 pages, 212848 bytes).
+Output written on h1b_cv.pdf (4 pages, 210226 bytes).
 PDF statistics:
- 206 PDF objects out of 1000 (max. 8388607)
- 176 compressed objects within 2 object streams
- 59 named destinations out of 1000 (max. 500000)
- 81 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 186 PDF objects out of 1000 (max. 8388607)
+ 157 compressed objects within 2 object streams
+ 52 named destinations out of 1000 (max. 500000)
+ 57 words of extra memory for PDF output out of 10000 (max. 10000000)
 

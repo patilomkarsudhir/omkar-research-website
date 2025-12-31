@@ -1,0 +1,1757 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global/global}
+    \entry{DeepLearningBook}{book}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=773f4248babaf7ea3d5b4bc11ab0c12e}{%
+           family={Griffis},
+           familyi={G\bibinitperiod},
+           given={E.},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {In development with Springer (anticipated completion May 2026)}%
+      }
+      \strng{namehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{fullhash}{97607c1fbb6397e001757a4a9e686948}
+      \strng{fullhashraw}{97607c1fbb6397e001757a4a9e686948}
+      \strng{bibnamehash}{97607c1fbb6397e001757a4a9e686948}
+      \strng{authorbibnamehash}{97607c1fbb6397e001757a4a9e686948}
+      \strng{authornamehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{authorfullhash}{97607c1fbb6397e001757a4a9e686948}
+      \strng{authorfullhashraw}{97607c1fbb6397e001757a4a9e686948}
+      \field{extraname}{1}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Lyapunov-Based Deep Learning for Autonomy}
+      \true{nocite}
+    \endentry
+    \entry{Patil.Sun.ea2022}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=ff7a7e41b9c49df9a1842bbf5c867ffb}{%
+           family={Sun},
+           familyi={S\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=3fd690292890b0d08be362bfbe0fd8cd}{%
+           family={Bhasin},
+           familyi={B\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{fullhash}{0199135b24f223baabc7e96a3fa68712}
+      \strng{fullhashraw}{0199135b24f223baabc7e96a3fa68712}
+      \strng{bibnamehash}{0199135b24f223baabc7e96a3fa68712}
+      \strng{authorbibnamehash}{0199135b24f223baabc7e96a3fa68712}
+      \strng{authornamehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{authorfullhash}{0199135b24f223baabc7e96a3fa68712}
+      \strng{authorfullhashraw}{0199135b24f223baabc7e96a3fa68712}
+      \field{extraname}{2}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Trans. Autom. Control}
+      \field{number}{9}
+      \field{title}{Adaptive Control of Time-Varying Parameter Systems with Asymptotic Tracking}
+      \field{volume}{67}
+      \field{year}{2022}
+      \true{nocite}
+      \field{pages}{4809\bibrangedash 4815}
+      \range{pages}{7}
+      \keyw{DNN,RT2,theory,AI,Runhan}
+    \endentry
+    \entry{Patil.Le.ea2022}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=ec6ed6ae2de8f49f018a87e16d244db2}{%
+           family={Le},
+           familyi={L\bibinitperiod},
+           given={D.},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=1784f6e1bf03ad2bf2f2aea9725bd4b3}{%
+           family={Greene},
+           familyi={G\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{fullhash}{3b44785a6d64550d6ee8b6a10b213ad2}
+      \strng{fullhashraw}{3b44785a6d64550d6ee8b6a10b213ad2}
+      \strng{bibnamehash}{3b44785a6d64550d6ee8b6a10b213ad2}
+      \strng{authorbibnamehash}{3b44785a6d64550d6ee8b6a10b213ad2}
+      \strng{authornamehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{authorfullhash}{3b44785a6d64550d6ee8b6a10b213ad2}
+      \strng{authorfullhashraw}{3b44785a6d64550d6ee8b6a10b213ad2}
+      \field{extraname}{3}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Control Syst Lett.}
+      \field{title}{Lyapunov-Derived Control and Adaptive Update Laws for Inner and Outer Layer Weights of a Deep Neural Network}
+      \field{volume}{6}
+      \field{year}{2022}
+      \true{nocite}
+      \field{pages}{1855\bibrangedash 1860}
+      \range{pages}{6}
+      \keyw{DNN,RT2,theory,AI,DucLePub}
+    \endentry
+    \entry{Patil.Isaly.ea2022}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=6658bbe82933995356ddf34b4408e112}{%
+           family={Isaly},
+           familyi={I\bibinitperiod},
+           given={A.},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=3987c8613325079c4e353866e24b76b9}{%
+           family={Xian},
+           familyi={X\bibinitperiod},
+           given={B.},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{fullhash}{f2f1cdde9ad4d9957868f897ffaa7bdd}
+      \strng{fullhashraw}{f2f1cdde9ad4d9957868f897ffaa7bdd}
+      \strng{bibnamehash}{f2f1cdde9ad4d9957868f897ffaa7bdd}
+      \strng{authorbibnamehash}{f2f1cdde9ad4d9957868f897ffaa7bdd}
+      \strng{authornamehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{authorfullhash}{f2f1cdde9ad4d9957868f897ffaa7bdd}
+      \strng{authorfullhashraw}{f2f1cdde9ad4d9957868f897ffaa7bdd}
+      \field{extraname}{4}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Control Syst. Lett.}
+      \field{title}{Exponential Stability with {RISE} Controllers}
+      \field{volume}{6}
+      \field{year}{2022}
+      \true{nocite}
+      \field{pages}{1592\bibrangedash 1597}
+      \range{pages}{6}
+      \keyw{RT2,theory,RISE}
+    \endentry
+    \entry{Patil.Kamalapurkar.ea2023}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=aad6a4207aa1a3920985b1f7d59cdce5}{%
+           family={Kamalapurkar},
+           familyi={K\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{fullhash}{471a7414929ecbf4896d319f11e3d892}
+      \strng{fullhashraw}{471a7414929ecbf4896d319f11e3d892}
+      \strng{bibnamehash}{471a7414929ecbf4896d319f11e3d892}
+      \strng{authorbibnamehash}{471a7414929ecbf4896d319f11e3d892}
+      \strng{authornamehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{authorfullhash}{471a7414929ecbf4896d319f11e3d892}
+      \strng{authorfullhashraw}{471a7414929ecbf4896d319f11e3d892}
+      \field{extraname}{5}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Trans. Autom. Control}
+      \field{title}{A Saturated {RISE} Controller with Exponential Stability Guarantees}
+      \field{year}{2025}
+      \true{nocite}
+    \endentry
+    \entry{patil2024lyapunov}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=ec6ed6ae2de8f49f018a87e16d244db2}{%
+           family={Le},
+           familyi={L\bibinitperiod},
+           given={D.},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=773f4248babaf7ea3d5b4bc11ab0c12e}{%
+           family={Griffis},
+           familyi={G\bibinitperiod},
+           given={E.},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=514ffcaa2a3fe75909624c04e009c3a6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{fullhash}{6224af062f80156a95e0735cb65be3b4}
+      \strng{fullhashraw}{6224af062f80156a95e0735cb65be3b4}
+      \strng{bibnamehash}{6224af062f80156a95e0735cb65be3b4}
+      \strng{authorbibnamehash}{6224af062f80156a95e0735cb65be3b4}
+      \strng{authornamehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{authorfullhash}{6224af062f80156a95e0735cb65be3b4}
+      \strng{authorfullhashraw}{6224af062f80156a95e0735cb65be3b4}
+      \field{extraname}{6}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Access}
+      \field{title}{Lyapunov-Based Deep Residual Neural Network ({R}es{N}et) Adaptive Control}
+      \field{year}{2025}
+      \true{nocite}
+    \endentry
+    \entry{patil2025bounds}{article}{}{}
+      \name{author}{5}{}{%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=6bbdae7c21d739474a4f387ce53539ae}{%
+           family={Fallin},
+           familyi={F\bibinitperiod},
+           given={Brandon\bibnamedelima C},
+           giveni={B\bibinitperiod\bibinitdelim C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6f7e514db9c276db0cc7a04e10571fc0}{%
+           family={Nino},
+           familyi={N\bibinitperiod},
+           given={Cristian\bibnamedelima F},
+           giveni={C\bibinitperiod\bibinitdelim F\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=967d63a3f0ef302324f90b8ae47d0a99}{%
+           family={Hart},
+           familyi={H\bibinitperiod},
+           given={Rebecca\bibnamedelima G},
+           giveni={R\bibinitperiod\bibinitdelim G\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f635516912e28cca74e55e8e59940483}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={Warren\bibnamedelima E},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{fullhash}{260f6fa7be8582da6b2bcfa859d21dcb}
+      \strng{fullhashraw}{260f6fa7be8582da6b2bcfa859d21dcb}
+      \strng{bibnamehash}{260f6fa7be8582da6b2bcfa859d21dcb}
+      \strng{authorbibnamehash}{260f6fa7be8582da6b2bcfa859d21dcb}
+      \strng{authornamehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{authorfullhash}{260f6fa7be8582da6b2bcfa859d21dcb}
+      \strng{authorfullhashraw}{260f6fa7be8582da6b2bcfa859d21dcb}
+      \field{extraname}{7}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{arXiv preprint arXiv:2503.21007}
+      \field{title}{Bounds on Deep Neural Network Partial Derivatives with Respect to Parameters}
+      \field{year}{2025}
+      \true{nocite}
+    \endentry
+    \entry{Isaly.Patil.ea2024}{article}{}{}
+      \name{author}{5}{}{%
+        {{un=0,uniquepart=base,hash=6658bbe82933995356ddf34b4408e112}{%
+           family={Isaly},
+           familyi={I\bibinitperiod},
+           given={A.},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=9f0e206f7ecd10f90223951a84cd6e65}{%
+           family={Sweatland},
+           familyi={S\bibinitperiod},
+           given={H.},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=c5338cb50d7493455f151e854ae36b1c}{%
+           family={Sanfelice},
+           familyi={S\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{70a9a0aa5f4aa0ba2847f09b69098c3f}
+      \strng{fullhash}{9fec6f7223fdf6cff49f3ec784274628}
+      \strng{fullhashraw}{9fec6f7223fdf6cff49f3ec784274628}
+      \strng{bibnamehash}{9fec6f7223fdf6cff49f3ec784274628}
+      \strng{authorbibnamehash}{9fec6f7223fdf6cff49f3ec784274628}
+      \strng{authornamehash}{70a9a0aa5f4aa0ba2847f09b69098c3f}
+      \strng{authorfullhash}{9fec6f7223fdf6cff49f3ec784274628}
+      \strng{authorfullhashraw}{9fec6f7223fdf6cff49f3ec784274628}
+      \field{extraname}{1}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Trans. Autom. Control}
+      \field{number}{7}
+      \field{title}{Adaptive Safety with a {RISE}-Based Disturbance Observer}
+      \field{volume}{69}
+      \field{year}{2024}
+      \true{nocite}
+      \field{pages}{4883\bibrangedash 4890}
+      \range{pages}{8}
+      \keyw{RT1,RT2,theory,jointPI}
+    \endentry
+    \entry{Griffis.Patil.ea2023a}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=773f4248babaf7ea3d5b4bc11ab0c12e}{%
+           family={Griffis},
+           familyi={G\bibinitperiod},
+           given={E.},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=05210bc29456a30ade4925c65f341830}{%
+           family={Bell},
+           familyi={B\bibinitperiod},
+           given={Z.},
+           giveni={Z\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{63ee73ab153743a3cee8590026efd74d}
+      \strng{fullhash}{e46021584c4302007f478dc63e8c93de}
+      \strng{fullhashraw}{e46021584c4302007f478dc63e8c93de}
+      \strng{bibnamehash}{e46021584c4302007f478dc63e8c93de}
+      \strng{authorbibnamehash}{e46021584c4302007f478dc63e8c93de}
+      \strng{authornamehash}{63ee73ab153743a3cee8590026efd74d}
+      \strng{authorfullhash}{e46021584c4302007f478dc63e8c93de}
+      \strng{authorfullhashraw}{e46021584c4302007f478dc63e8c93de}
+      \field{extraname}{1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Control Syst. Lett.}
+      \field{title}{Lyapunov-Based Long Short-Term Memory ({L}b-{LSTM}) Neural Network-Based Control}
+      \field{volume}{7}
+      \field{year}{2023}
+      \true{nocite}
+      \field{pages}{2976\bibrangedash 2981}
+      \range{pages}{6}
+    \endentry
+    \entry{Nino.Patil.ea2023}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=1,uniquepart=given,hash=4e26536f2e872c8afd9b84badcc29a50}{%
+           family={Nino},
+           familyi={N\bibinitperiod},
+           given={C.},
+           giveni={C\bibinitperiod},
+           givenun=1}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{1e5d3e7b25dad6cce333d3039b581543}
+      \strng{fullhash}{1f85e8b34fedd16347690e834c41b556}
+      \strng{fullhashraw}{1f85e8b34fedd16347690e834c41b556}
+      \strng{bibnamehash}{1f85e8b34fedd16347690e834c41b556}
+      \strng{authorbibnamehash}{1f85e8b34fedd16347690e834c41b556}
+      \strng{authornamehash}{1e5d3e7b25dad6cce333d3039b581543}
+      \strng{authorfullhash}{1f85e8b34fedd16347690e834c41b556}
+      \strng{authorfullhashraw}{1f85e8b34fedd16347690e834c41b556}
+      \field{extraname}{1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Control Systems Letters}
+      \field{title}{Second-Order Heterogeneous Multi-Agent Target Tracking without Relative Velocities}
+      \field{volume}{7}
+      \field{year}{2023}
+      \true{nocite}
+      \field{pages}{3663\bibrangedash 3668}
+      \range{pages}{6}
+    \endentry
+    \entry{Griffis.Patil.ea2023b}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=773f4248babaf7ea3d5b4bc11ab0c12e}{%
+           family={Griffis},
+           familyi={G\bibinitperiod},
+           given={E.},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=a206c8e0508adb6bb85783120187e1d1}{%
+           family={Hart},
+           familyi={H\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{63ee73ab153743a3cee8590026efd74d}
+      \strng{fullhash}{b5e3cdcb28f1c11a09668bd504dd8ff4}
+      \strng{fullhashraw}{b5e3cdcb28f1c11a09668bd504dd8ff4}
+      \strng{bibnamehash}{b5e3cdcb28f1c11a09668bd504dd8ff4}
+      \strng{authorbibnamehash}{b5e3cdcb28f1c11a09668bd504dd8ff4}
+      \strng{authornamehash}{63ee73ab153743a3cee8590026efd74d}
+      \strng{authorfullhash}{b5e3cdcb28f1c11a09668bd504dd8ff4}
+      \strng{authorfullhashraw}{b5e3cdcb28f1c11a09668bd504dd8ff4}
+      \field{extraname}{2}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Control Syst. Lett.}
+      \field{title}{Lyapunov-Based Long Short-Term Memory ({L}b-{LSTM}) Neural Network-Based Adaptive Observer}
+      \field{volume}{8}
+      \field{year}{2024}
+      \true{nocite}
+      \field{pages}{97\bibrangedash 102}
+      \range{pages}{6}
+    \endentry
+    \entry{Hart.Griffis.ea2023}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=a206c8e0508adb6bb85783120187e1d1}{%
+           family={Hart},
+           familyi={H\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=773f4248babaf7ea3d5b4bc11ab0c12e}{%
+           family={Griffis},
+           familyi={G\bibinitperiod},
+           given={E.},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{c6190736f08106fc790bd72b8f2f2297}
+      \strng{fullhash}{4a74c0c443f8cbfc6631a56db4eaef84}
+      \strng{fullhashraw}{4a74c0c443f8cbfc6631a56db4eaef84}
+      \strng{bibnamehash}{4a74c0c443f8cbfc6631a56db4eaef84}
+      \strng{authorbibnamehash}{4a74c0c443f8cbfc6631a56db4eaef84}
+      \strng{authornamehash}{c6190736f08106fc790bd72b8f2f2297}
+      \strng{authorfullhash}{4a74c0c443f8cbfc6631a56db4eaef84}
+      \strng{authorfullhashraw}{4a74c0c443f8cbfc6631a56db4eaef84}
+      \field{extraname}{1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Control Syst. Lett.}
+      \field{title}{Lyapunov-based Physics-Informed Long Short-Term Memory {(LSTM)} Neural Network-Based Adaptive Control}
+      \field{volume}{8}
+      \field{year}{2024}
+      \true{nocite}
+      \field{pages}{13\bibrangedash 18}
+      \range{pages}{6}
+    \endentry
+    \entry{Le.Patil.ea2022}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=1,uniquepart=given,hash=ec6ed6ae2de8f49f018a87e16d244db2}{%
+           family={Le},
+           familyi={L\bibinitperiod},
+           given={D.},
+           giveni={D\bibinitperiod},
+           givenun=1}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=4e26536f2e872c8afd9b84badcc29a50}{%
+           family={Nino},
+           familyi={N\bibinitperiod},
+           given={C.},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{7cb3ed0010e892db21b3920f8c3b2e69}
+      \strng{fullhash}{d9c12f5003888193e27f2aa090f127a1}
+      \strng{fullhashraw}{d9c12f5003888193e27f2aa090f127a1}
+      \strng{bibnamehash}{d9c12f5003888193e27f2aa090f127a1}
+      \strng{authorbibnamehash}{d9c12f5003888193e27f2aa090f127a1}
+      \strng{authornamehash}{7cb3ed0010e892db21b3920f8c3b2e69}
+      \strng{authorfullhash}{d9c12f5003888193e27f2aa090f127a1}
+      \strng{authorfullhashraw}{d9c12f5003888193e27f2aa090f127a1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Trans. Neural Netw. Learn. Syst.}
+      \field{title}{Accelerated Gradient Approach for Deep Neural Network-Based Adaptive Control of Unknown Nonlinear Systems}
+      \field{year}{2025}
+      \true{nocite}
+    \endentry
+    \entry{Nino.Patil.ea2025d}{article}{}{}
+      \name{author}{5}{}{%
+        {{un=1,uniquepart=given,hash=e9e8c1bbbbc143cc63105ee23dd8d4e9}{%
+           family={Nino},
+           familyi={N\bibinitperiod},
+           given={C.\bibnamedelimi F.},
+           giveni={C\bibinitperiod\bibinitdelim F\bibinitperiod},
+           givenun=1}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=99904f2693d0c0132de57115438b876c}{%
+           family={Petersen},
+           familyi={P\bibinitperiod},
+           given={C.\bibnamedelimi D.},
+           giveni={C\bibinitperiod\bibinitdelim D\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=abcb983ae5a1d0331d2197913f63a077}{%
+           family={Phillips},
+           familyi={P\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{593ce2ddb84ff237310905cb29c243bc}
+      \strng{fullhash}{13a2fa4de9d747d7c9717340d8e52431}
+      \strng{fullhashraw}{13a2fa4de9d747d7c9717340d8e52431}
+      \strng{bibnamehash}{13a2fa4de9d747d7c9717340d8e52431}
+      \strng{authorbibnamehash}{13a2fa4de9d747d7c9717340d8e52431}
+      \strng{authornamehash}{593ce2ddb84ff237310905cb29c243bc}
+      \strng{authorfullhash}{13a2fa4de9d747d7c9717340d8e52431}
+      \strng{authorfullhashraw}{13a2fa4de9d747d7c9717340d8e52431}
+      \field{extraname}{1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{The Journal of the Astronautical Sciences}
+      \field{title}{Collaborative spacecraft servicing under partial feedback using {L}yapunov-based deep neural networks}
+      \field{year}{2025}
+      \true{nocite}
+      \keyw{RT2,jointAF,jointPI,networkpub,aeropub}
+    \endentry
+    \entry{Nino.Patil.Insinger.eatoappear}{article}{}{}
+      \name{author}{5}{}{%
+        {{un=1,uniquepart=given,hash=4e26536f2e872c8afd9b84badcc29a50}{%
+           family={Nino},
+           familyi={N\bibinitperiod},
+           given={C.},
+           giveni={C\bibinitperiod},
+           givenun=1}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=099c1a7128e55f9a344c6bdc4c60e0fb}{%
+           family={Insinger},
+           familyi={I\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=eee27f95084bf7185ef1a02d0eb5655e}{%
+           family={Eisman},
+           familyi={E\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{1e5d3e7b25dad6cce333d3039b581543}
+      \strng{fullhash}{3a2298a96598f98b697894e0a84d3c7c}
+      \strng{fullhashraw}{3a2298a96598f98b697894e0a84d3c7c}
+      \strng{bibnamehash}{3a2298a96598f98b697894e0a84d3c7c}
+      \strng{authorbibnamehash}{3a2298a96598f98b697894e0a84d3c7c}
+      \strng{authornamehash}{1e5d3e7b25dad6cce333d3039b581543}
+      \strng{authorfullhash}{3a2298a96598f98b697894e0a84d3c7c}
+      \strng{authorfullhashraw}{3a2298a96598f98b697894e0a84d3c7c}
+      \field{extraname}{2}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Control Syst. Lett.}
+      \field{title}{Online ResNet-Based Adaptive Control for Nonlinear Target Tracking}
+      \field{year}{2025}
+      \true{nocite}
+      \keyw{RT2,robotpub,learning,theory}
+    \endentry
+    \entry{Nino.Patil.eatoappear}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=1,uniquepart=given,hash=4e26536f2e872c8afd9b84badcc29a50}{%
+           family={Nino},
+           familyi={N\bibinitperiod},
+           given={C.},
+           giveni={C\bibinitperiod},
+           givenun=1}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=716be682a1fa874d9ce69341c7511b56}{%
+           family={Edwards},
+           familyi={E\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{1e5d3e7b25dad6cce333d3039b581543}
+      \strng{fullhash}{e78da29e3e99ba898a4bbd3aa0c65e47}
+      \strng{fullhashraw}{e78da29e3e99ba898a4bbd3aa0c65e47}
+      \strng{bibnamehash}{e78da29e3e99ba898a4bbd3aa0c65e47}
+      \strng{authorbibnamehash}{e78da29e3e99ba898a4bbd3aa0c65e47}
+      \strng{authornamehash}{1e5d3e7b25dad6cce333d3039b581543}
+      \strng{authorfullhash}{e78da29e3e99ba898a4bbd3aa0c65e47}
+      \strng{authorfullhashraw}{e78da29e3e99ba898a4bbd3aa0c65e47}
+      \field{extraname}{3}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Control Syst. Lett.}
+      \field{title}{Distributed {RISE}-based Control for Exponential Heterogeneous Multi-Agent Target Tracking of Second-Order Nonlinear Systems}
+      \field{year}{2025}
+      \true{nocite}
+      \keyw{RISE,RT2,RT3,network,robotpub}
+    \endentry
+    \entry{Makumi.Patil.ea2024}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=96eb1caa422154e520c537b4effb77fc}{%
+           family={Makumi},
+           familyi={M\bibinitperiod},
+           given={W.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Elsevier}%
+      }
+      \strng{namehash}{8f45fe412fa5586494e906ca5ecaeb17}
+      \strng{fullhash}{b82b5f0cea3c37ef4085efee7424e285}
+      \strng{fullhashraw}{b82b5f0cea3c37ef4085efee7424e285}
+      \strng{bibnamehash}{b82b5f0cea3c37ef4085efee7424e285}
+      \strng{authorbibnamehash}{b82b5f0cea3c37ef4085efee7424e285}
+      \strng{authornamehash}{8f45fe412fa5586494e906ca5ecaeb17}
+      \strng{authorfullhash}{b82b5f0cea3c37ef4085efee7424e285}
+      \strng{authorfullhashraw}{b82b5f0cea3c37ef4085efee7424e285}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Automatica}
+      \field{title}{Lyapunov-based Adaptive Deep Learning for Approximate Dynamic Programming}
+      \field{volume}{180}
+      \field{year}{2025}
+      \true{nocite}
+      \field{pages}{112462}
+      \range{pages}{1}
+    \endentry
+    \entry{Griffis.Patil.ea2024}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=773f4248babaf7ea3d5b4bc11ab0c12e}{%
+           family={Griffis},
+           familyi={G\bibinitperiod},
+           given={E.},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=96eb1caa422154e520c537b4effb77fc}{%
+           family={Makumi},
+           familyi={M\bibinitperiod},
+           given={W.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{63ee73ab153743a3cee8590026efd74d}
+      \strng{fullhash}{496aee4e532a705f72b9859a3f3b47ce}
+      \strng{fullhashraw}{496aee4e532a705f72b9859a3f3b47ce}
+      \strng{bibnamehash}{496aee4e532a705f72b9859a3f3b47ce}
+      \strng{authorbibnamehash}{496aee4e532a705f72b9859a3f3b47ce}
+      \strng{authornamehash}{63ee73ab153743a3cee8590026efd74d}
+      \strng{authorfullhash}{496aee4e532a705f72b9859a3f3b47ce}
+      \strng{authorfullhashraw}{496aee4e532a705f72b9859a3f3b47ce}
+      \field{extraname}{3}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Trans. Autom. Control}
+      \field{title}{Adaptive Output Feedback Control Using Lyapunov-Based Deep Recurrent Neural Networks ({Lb-DRNNs})}
+      \field{year}{2025}
+      \true{nocite}
+    \endentry
+    \entry{Patil.Le.ea.2022}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=b7eef90192548c12b0d4d43ac2eb4b99}{%
+           family={Le},
+           familyi={L\bibinitperiod},
+           given={D.\bibnamedelimi M.},
+           giveni={D\bibinitperiod\bibinitdelim M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=773f4248babaf7ea3d5b4bc11ab0c12e}{%
+           family={Griffis},
+           familyi={G\bibinitperiod},
+           given={E.},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{fullhash}{f1acacdf1fbc1ef9da31d2099039a7de}
+      \strng{fullhashraw}{f1acacdf1fbc1ef9da31d2099039a7de}
+      \strng{bibnamehash}{f1acacdf1fbc1ef9da31d2099039a7de}
+      \strng{authorbibnamehash}{f1acacdf1fbc1ef9da31d2099039a7de}
+      \strng{authornamehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{authorfullhash}{f1acacdf1fbc1ef9da31d2099039a7de}
+      \strng{authorfullhashraw}{f1acacdf1fbc1ef9da31d2099039a7de}
+      \field{extraname}{8}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proc. IEEE Conf. Decis. Control}
+      \field{title}{Deep Residual Neural Network {(ResNet)}-Based Adaptive Control: A {L}yapunov-Based Approach}
+      \field{year}{2022}
+      \true{nocite}
+      \keyw{AI,RT2,learning,theory,DucLePub}
+    \endentry
+    \entry{Patil.Stubbs.ea.2022}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=27573ee0dbaa8eae461316d2b046502d}{%
+           family={Stubbs},
+           familyi={S\bibinitperiod},
+           given={K.},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=923eb4a4541287ff97c9202aa0fa7120}{%
+           family={Amy},
+           familyi={A\bibinitperiod},
+           given={P.},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{fullhash}{366e56996446d3f11ea09bef4b2aee7d}
+      \strng{fullhashraw}{366e56996446d3f11ea09bef4b2aee7d}
+      \strng{bibnamehash}{366e56996446d3f11ea09bef4b2aee7d}
+      \strng{authorbibnamehash}{366e56996446d3f11ea09bef4b2aee7d}
+      \strng{authornamehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{authorfullhash}{366e56996446d3f11ea09bef4b2aee7d}
+      \strng{authorfullhashraw}{366e56996446d3f11ea09bef4b2aee7d}
+      \field{extraname}{9}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proc. IEEE Conf. Decis. Control}
+      \field{title}{Exponential Stability with {RISE} Controllers for Uncertain Nonlinear Systems with Unknown Time-Varying State Delays}
+      \field{year}{2022}
+      \true{nocite}
+      \keyw{RT2,learning,theory,delay}
+    \endentry
+    \entry{patil2020lyapunov}{inproceedings}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=e0827c9acdf833e0353a7f6f321f7b4e}{%
+           family={Bhasin},
+           familyi={B\bibinitperiod},
+           given={Shubhendu},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{285762a04ef362fcb3b8b27f8bdac5f7}
+      \strng{fullhash}{285762a04ef362fcb3b8b27f8bdac5f7}
+      \strng{fullhashraw}{285762a04ef362fcb3b8b27f8bdac5f7}
+      \strng{bibnamehash}{285762a04ef362fcb3b8b27f8bdac5f7}
+      \strng{authorbibnamehash}{285762a04ef362fcb3b8b27f8bdac5f7}
+      \strng{authornamehash}{285762a04ef362fcb3b8b27f8bdac5f7}
+      \strng{authorfullhash}{285762a04ef362fcb3b8b27f8bdac5f7}
+      \strng{authorfullhashraw}{285762a04ef362fcb3b8b27f8bdac5f7}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{IFAC World Congr.}
+      \field{title}{Lyapunov Based Hierarchical Trajectory Control of an Autonomous Ground Vehicle Subjected to Slip}
+      \field{year}{2020}
+      \true{nocite}
+    \endentry
+    \entry{Le.Patil.ea.2022a}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{un=1,uniquepart=given,hash=b7eef90192548c12b0d4d43ac2eb4b99}{%
+           family={Le},
+           familyi={L\bibinitperiod},
+           given={D.\bibnamedelimi M.},
+           giveni={D\bibinitperiod\bibinitdelim M\bibinitperiod},
+           givenun=1}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=4e26536f2e872c8afd9b84badcc29a50}{%
+           family={Nino},
+           familyi={N\bibinitperiod},
+           given={C.},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{1ea411a109edd5949aac26d591a9d840}
+      \strng{fullhash}{b2de2dc22463d8663ea94e20e8db5646}
+      \strng{fullhashraw}{b2de2dc22463d8663ea94e20e8db5646}
+      \strng{bibnamehash}{b2de2dc22463d8663ea94e20e8db5646}
+      \strng{authorbibnamehash}{b2de2dc22463d8663ea94e20e8db5646}
+      \strng{authornamehash}{1ea411a109edd5949aac26d591a9d840}
+      \strng{authorfullhash}{b2de2dc22463d8663ea94e20e8db5646}
+      \strng{authorfullhashraw}{b2de2dc22463d8663ea94e20e8db5646}
+      \field{extraname}{1}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proc. IEEE Conf. Decis. Control}
+      \field{title}{Accelerated Gradient Approach For Neural Network-based Adaptive Control Of Nonlinear Systems}
+      \field{year}{2022}
+      \true{nocite}
+      \keyw{AI,RT2,learning,theory,DucLePub}
+    \endentry
+    \entry{Le.Patil.ea.2022}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{un=1,uniquepart=given,hash=b7eef90192548c12b0d4d43ac2eb4b99}{%
+           family={Le},
+           familyi={L\bibinitperiod},
+           given={D.\bibnamedelimi M.},
+           giveni={D\bibinitperiod\bibinitdelim M\bibinitperiod},
+           givenun=1}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=923eb4a4541287ff97c9202aa0fa7120}{%
+           family={Amy},
+           familyi={A\bibinitperiod},
+           given={P.},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{1ea411a109edd5949aac26d591a9d840}
+      \strng{fullhash}{daa7ffc1a9fdc49e75b07067d90ba5d4}
+      \strng{fullhashraw}{daa7ffc1a9fdc49e75b07067d90ba5d4}
+      \strng{bibnamehash}{daa7ffc1a9fdc49e75b07067d90ba5d4}
+      \strng{authorbibnamehash}{daa7ffc1a9fdc49e75b07067d90ba5d4}
+      \strng{authornamehash}{1ea411a109edd5949aac26d591a9d840}
+      \strng{authorfullhash}{daa7ffc1a9fdc49e75b07067d90ba5d4}
+      \strng{authorfullhashraw}{daa7ffc1a9fdc49e75b07067d90ba5d4}
+      \field{extraname}{2}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proc. Am. Control Conf.}
+      \field{month}{6}
+      \field{title}{Integral Concurrent Learning-Based Accelerated Gradient Adaptive Control of Uncertain {E}uler-{L}agrange Systems}
+      \field{year}{2022}
+      \true{nocite}
+      \keyw{RT2,robotpub,learning,theory,DucLePub}
+    \endentry
+    \entry{Isaly.Patil.ea2021}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=6658bbe82933995356ddf34b4408e112}{%
+           family={Isaly},
+           familyi={I\bibinitperiod},
+           given={A.},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=c5338cb50d7493455f151e854ae36b1c}{%
+           family={Sanfelice},
+           familyi={S\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{70a9a0aa5f4aa0ba2847f09b69098c3f}
+      \strng{fullhash}{7ac9acd7d1c06b3a6e2bcd384735637d}
+      \strng{fullhashraw}{7ac9acd7d1c06b3a6e2bcd384735637d}
+      \strng{bibnamehash}{7ac9acd7d1c06b3a6e2bcd384735637d}
+      \strng{authorbibnamehash}{7ac9acd7d1c06b3a6e2bcd384735637d}
+      \strng{authornamehash}{70a9a0aa5f4aa0ba2847f09b69098c3f}
+      \strng{authorfullhash}{7ac9acd7d1c06b3a6e2bcd384735637d}
+      \strng{authorfullhashraw}{7ac9acd7d1c06b3a6e2bcd384735637d}
+      \field{extraname}{2}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proc. Am. Control Conf.}
+      \field{title}{Adaptive Safety With Multiple Barrier Functions Using Integral Concurrent Learning}
+      \field{year}{2021}
+      \true{nocite}
+      \field{pages}{3719\bibrangedash 3724}
+      \range{pages}{6}
+      \keyw{RT2,jointPI,learning,theory}
+    \endentry
+    \entry{dasgupta:2018}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=88982b3e1b916e09cf2feb315bf87498}{%
+           family={Dasgupta},
+           familyi={D\bibinitperiod},
+           given={Ranjan},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=19f180f4eb54548c9ba13ca6dc1d1a84}{%
+           family={Roy},
+           familyi={R\bibinitperiod},
+           given={Sayan\bibnamedelima Basu},
+           giveni={S\bibinitperiod\bibinitdelim B\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=e0827c9acdf833e0353a7f6f321f7b4e}{%
+           family={Bhasin},
+           familyi={B\bibinitperiod},
+           given={Shubhendu},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{c5d4b391d99574efb65cdea3c81c526e}
+      \strng{fullhash}{3ac6966c319c3dfec3ea1f464ae4d3a6}
+      \strng{fullhashraw}{3ac6966c319c3dfec3ea1f464ae4d3a6}
+      \strng{bibnamehash}{3ac6966c319c3dfec3ea1f464ae4d3a6}
+      \strng{authorbibnamehash}{3ac6966c319c3dfec3ea1f464ae4d3a6}
+      \strng{authornamehash}{c5d4b391d99574efb65cdea3c81c526e}
+      \strng{authorfullhash}{3ac6966c319c3dfec3ea1f464ae4d3a6}
+      \strng{authorfullhashraw}{3ac6966c319c3dfec3ea1f464ae4d3a6}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proc. Am. Control Conf.}
+      \field{title}{A Singularity-free Hierarchical Nonlinear Quad-Rotorcraft Control using Saturation and Barrier {L}yapunov Function}
+      \field{year}{2019}
+      \true{nocite}
+    \endentry
+    \entry{Griffis.Patil.ea.2023}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=773f4248babaf7ea3d5b4bc11ab0c12e}{%
+           family={Griffis},
+           familyi={G\bibinitperiod},
+           given={E.},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=96eb1caa422154e520c537b4effb77fc}{%
+           family={Makumi},
+           familyi={M\bibinitperiod},
+           given={W.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{63ee73ab153743a3cee8590026efd74d}
+      \strng{fullhash}{496aee4e532a705f72b9859a3f3b47ce}
+      \strng{fullhashraw}{496aee4e532a705f72b9859a3f3b47ce}
+      \strng{bibnamehash}{496aee4e532a705f72b9859a3f3b47ce}
+      \strng{authorbibnamehash}{496aee4e532a705f72b9859a3f3b47ce}
+      \strng{authornamehash}{63ee73ab153743a3cee8590026efd74d}
+      \strng{authorfullhash}{496aee4e532a705f72b9859a3f3b47ce}
+      \strng{authorfullhashraw}{496aee4e532a705f72b9859a3f3b47ce}
+      \field{extraname}{4}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{IFAC World Congr.}
+      \field{title}{Deep Recurrent Neural Network-Based Observer for Uncertain Nonlinear Systems}
+      \field{year}{2023}
+      \true{nocite}
+      \keyw{RT2,theory,learning,AI}
+    \endentry
+    \entry{Hart.Patil.ea.2022a}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=a206c8e0508adb6bb85783120187e1d1}{%
+           family={Hart},
+           familyi={H\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=773f4248babaf7ea3d5b4bc11ab0c12e}{%
+           family={Griffis},
+           familyi={G\bibinitperiod},
+           given={E.},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{c6190736f08106fc790bd72b8f2f2297}
+      \strng{fullhash}{057fbeb044dcbc8cea144753d737cc65}
+      \strng{fullhashraw}{057fbeb044dcbc8cea144753d737cc65}
+      \strng{bibnamehash}{057fbeb044dcbc8cea144753d737cc65}
+      \strng{authorbibnamehash}{057fbeb044dcbc8cea144753d737cc65}
+      \strng{authornamehash}{c6190736f08106fc790bd72b8f2f2297}
+      \strng{authorfullhash}{057fbeb044dcbc8cea144753d737cc65}
+      \strng{authorfullhashraw}{057fbeb044dcbc8cea144753d737cc65}
+      \field{extraname}{2}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proc. IEEE Conf. Decis. Control}
+      \field{title}{Lyapunov-Based Deep Physics-Informed Neural Network-Based Adaptive Control}
+      \field{year}{2023}
+      \true{nocite}
+    \endentry
+    \entry{Nino.Patil.ea2023a}{inproceedings}{}{}
+      \name{author}{5}{}{%
+        {{un=1,uniquepart=given,hash=4e26536f2e872c8afd9b84badcc29a50}{%
+           family={Nino},
+           familyi={N\bibinitperiod},
+           given={C.},
+           giveni={C\bibinitperiod},
+           givenun=1}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=e25d90fd633fe6304191f4688b251c78}{%
+           family={Philor},
+           familyi={P\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=05210bc29456a30ade4925c65f341830}{%
+           family={Bell},
+           familyi={B\bibinitperiod},
+           given={Z.},
+           giveni={Z\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{1e5d3e7b25dad6cce333d3039b581543}
+      \strng{fullhash}{37a09674a72cadedcb4d0680fdbc3948}
+      \strng{fullhashraw}{37a09674a72cadedcb4d0680fdbc3948}
+      \strng{bibnamehash}{37a09674a72cadedcb4d0680fdbc3948}
+      \strng{authorbibnamehash}{37a09674a72cadedcb4d0680fdbc3948}
+      \strng{authornamehash}{1e5d3e7b25dad6cce333d3039b581543}
+      \strng{authorfullhash}{37a09674a72cadedcb4d0680fdbc3948}
+      \strng{authorfullhashraw}{37a09674a72cadedcb4d0680fdbc3948}
+      \field{extraname}{4}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proc. IEEE Conf. Decis. Control}
+      \field{title}{Deep Adaptive Indirect Herding of Multiple Target Agents with Unknown Interaction Dynamics}
+      \field{year}{2023}
+      \true{nocite}
+    \endentry
+    \entry{Nino.Patil.ea2025}{inproceedings}{}{}
+      \name{author}{5}{}{%
+        {{un=1,uniquepart=given,hash=e9e8c1bbbbc143cc63105ee23dd8d4e9}{%
+           family={Nino},
+           familyi={N\bibinitperiod},
+           given={C.\bibnamedelimi F.},
+           giveni={C\bibinitperiod\bibinitdelim F\bibinitperiod},
+           givenun=1}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=1005761d852f500f0fc2af2557aaf180}{%
+           family={Edwards},
+           familyi={E\bibinitperiod},
+           given={S.\bibnamedelimi C.},
+           giveni={S\bibinitperiod\bibinitdelim C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=3f21e84d01a0c0b0fa1c9c84ea7cd30d}{%
+           family={Bell},
+           familyi={B\bibinitperiod},
+           given={Z.\bibnamedelimi I.},
+           giveni={Z\bibinitperiod\bibinitdelim I\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{593ce2ddb84ff237310905cb29c243bc}
+      \strng{fullhash}{08d6794525c96e60c41138e985be62de}
+      \strng{fullhashraw}{08d6794525c96e60c41138e985be62de}
+      \strng{bibnamehash}{08d6794525c96e60c41138e985be62de}
+      \strng{authorbibnamehash}{08d6794525c96e60c41138e985be62de}
+      \strng{authornamehash}{593ce2ddb84ff237310905cb29c243bc}
+      \strng{authorfullhash}{08d6794525c96e60c41138e985be62de}
+      \strng{authorfullhashraw}{08d6794525c96e60c41138e985be62de}
+      \field{extraname}{2}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proc. Am. Control Conf.}
+      \field{title}{Distributed target tracking under partial feedback using {L}yapunov-based deep neural networks}
+      \field{year}{2025}
+      \true{nocite}
+    \endentry
+    \entry{Nino.Patil.ea2025a}{inproceedings}{}{}
+      \name{author}{5}{}{%
+        {{un=1,uniquepart=given,hash=e9e8c1bbbbc143cc63105ee23dd8d4e9}{%
+           family={Nino},
+           familyi={N\bibinitperiod},
+           given={C.\bibnamedelimi F.},
+           giveni={C\bibinitperiod\bibinitdelim F\bibinitperiod},
+           givenun=1}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=99904f2693d0c0132de57115438b876c}{%
+           family={Petersen},
+           familyi={P\bibinitperiod},
+           given={C.\bibnamedelimi D.},
+           giveni={C\bibinitperiod\bibinitdelim D\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=abcb983ae5a1d0331d2197913f63a077}{%
+           family={Phillips},
+           familyi={P\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{593ce2ddb84ff237310905cb29c243bc}
+      \strng{fullhash}{13a2fa4de9d747d7c9717340d8e52431}
+      \strng{fullhashraw}{13a2fa4de9d747d7c9717340d8e52431}
+      \strng{bibnamehash}{13a2fa4de9d747d7c9717340d8e52431}
+      \strng{authorbibnamehash}{13a2fa4de9d747d7c9717340d8e52431}
+      \strng{authornamehash}{593ce2ddb84ff237310905cb29c243bc}
+      \strng{authorfullhash}{13a2fa4de9d747d7c9717340d8e52431}
+      \strng{authorfullhashraw}{13a2fa4de9d747d7c9717340d8e52431}
+      \field{extraname}{3}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proc. AAS/AIAA Sp. Flight Mech. Meet.}
+      \field{title}{Collaborative spacecraft servicing under partial feedback using {L}yapunov-based deep neural networks}
+      \field{year}{2025}
+      \true{nocite}
+      \keyw{RT2,jointAF,jointPI,networkpub,aeropub}
+    \endentry
+    \entry{Wu.Patil.ea2025}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=6b1da9f8985789afeb993c58dfa1c05b}{%
+           family={Wu},
+           familyi={W\bibinitperiod},
+           given={W.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=9f0e206f7ecd10f90223951a84cd6e65}{%
+           family={Sweatland},
+           familyi={S\bibinitperiod},
+           given={H.},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{672406d2aa6ea7be1147531709f1d495}
+      \strng{fullhash}{37713502eefa0f7c2bad4c3f8b4e9b35}
+      \strng{fullhashraw}{37713502eefa0f7c2bad4c3f8b4e9b35}
+      \strng{bibnamehash}{37713502eefa0f7c2bad4c3f8b4e9b35}
+      \strng{authorbibnamehash}{37713502eefa0f7c2bad4c3f8b4e9b35}
+      \strng{authornamehash}{672406d2aa6ea7be1147531709f1d495}
+      \strng{authorfullhash}{37713502eefa0f7c2bad4c3f8b4e9b35}
+      \strng{authorfullhashraw}{37713502eefa0f7c2bad4c3f8b4e9b35}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proc. IEEE Conf. Decis. Control}
+      \field{title}{Control Contraction Metric-Based Deep Neural Network Adaptive Control}
+      \field{year}{2025}
+      \true{nocite}
+    \endentry
+    \entry{Kolhe.Patil.ea2025}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=ee5477795b0bbc9fd71472094ce38dbd}{%
+           family={Kolhe},
+           familyi={K\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=4d93961f7243e8dff5e3d5cbc19c1a2d}{%
+           family={Fu},
+           familyi={F\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{2ebdce6c12828c88afa56418b7501b0d}
+      \strng{fullhash}{a9b1f76d3c773fa636b9758ce22b8af9}
+      \strng{fullhashraw}{a9b1f76d3c773fa636b9758ce22b8af9}
+      \strng{bibnamehash}{a9b1f76d3c773fa636b9758ce22b8af9}
+      \strng{authorbibnamehash}{a9b1f76d3c773fa636b9758ce22b8af9}
+      \strng{authornamehash}{2ebdce6c12828c88afa56418b7501b0d}
+      \strng{authorfullhash}{a9b1f76d3c773fa636b9758ce22b8af9}
+      \strng{authorfullhashraw}{a9b1f76d3c773fa636b9758ce22b8af9}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proc. IEEE Conf. Decis. Control}
+      \field{title}{Integral Concurrent Learning Control Barrier Functions for Signal Temporal Logic Tasks under Unknown Dynamics}
+      \field{year}{2025}
+      \true{nocite}
+    \endentry
+    \entry{Patil.Griffis.ea2024}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=773f4248babaf7ea3d5b4bc11ab0c12e}{%
+           family={Griffis},
+           familyi={G\bibinitperiod},
+           given={E.},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=96eb1caa422154e520c537b4effb77fc}{%
+           family={Makumi},
+           familyi={M\bibinitperiod},
+           given={W.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.\bibnamedelimi E.},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{fullhash}{697eb7258c5df64f98b2447274e7e1c2}
+      \strng{fullhashraw}{697eb7258c5df64f98b2447274e7e1c2}
+      \strng{bibnamehash}{697eb7258c5df64f98b2447274e7e1c2}
+      \strng{authorbibnamehash}{697eb7258c5df64f98b2447274e7e1c2}
+      \strng{authornamehash}{6aff64c5ff70307586ef354a81b94db8}
+      \strng{authorfullhash}{697eb7258c5df64f98b2447274e7e1c2}
+      \strng{authorfullhashraw}{697eb7258c5df64f98b2447274e7e1c2}
+      \field{extraname}{10}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Trans. Autom. Control}
+      \field{note}{Preprint: \url{https://arxiv.org/abs/2311.13056}}
+      \field{title}{Simultaneous Online System Identification and Control using Composite Adaptive {L}yapunov-Based Deep Neural Networks}
+      \field{year}{2025, under review}
+      \true{nocite}
+      \keyw{underreview}
+    \endentry
+    \entry{Sweatland.Patil.ea2024}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=9f0e206f7ecd10f90223951a84cd6e65}{%
+           family={Sweatland},
+           familyi={S\bibinitperiod},
+           given={H.},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{e2ab2b51619a9b76f34bd479d255a207}
+      \strng{fullhash}{00d00e9ccee4f8796b705ae1caa15bdf}
+      \strng{fullhashraw}{00d00e9ccee4f8796b705ae1caa15bdf}
+      \strng{bibnamehash}{00d00e9ccee4f8796b705ae1caa15bdf}
+      \strng{authorbibnamehash}{00d00e9ccee4f8796b705ae1caa15bdf}
+      \strng{authornamehash}{e2ab2b51619a9b76f34bd479d255a207}
+      \strng{authorfullhash}{00d00e9ccee4f8796b705ae1caa15bdf}
+      \strng{authorfullhashraw}{00d00e9ccee4f8796b705ae1caa15bdf}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Trans. Autom. Control}
+      \field{note}{Preprint: \url{https://arxiv.org/abs/2406.14430}}
+      \field{title}{Adaptive Deep Neural Network-Based Control Barrier Functions}
+      \field{year}{under review}
+      \true{nocite}
+      \keyw{underreview}
+    \endentry
+    \entry{akbari2023lyapunov}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=ceb044252aa0be1ba184d32da5a0a5c9}{%
+           family={Akbari},
+           familyi={A\bibinitperiod},
+           given={Saiedeh},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=eff46ee0640b079283ce3965c33e5153}{%
+           family={Griffis},
+           familyi={G\bibinitperiod},
+           given={Emily\bibnamedelima J},
+           giveni={E\bibinitperiod\bibinitdelim J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=f635516912e28cca74e55e8e59940483}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={Warren\bibnamedelima E},
+           giveni={W\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{315d9f50183f70df62a17c5bbea2a3e8}
+      \strng{fullhash}{327566b9797dbcd8d96d548b40c1157d}
+      \strng{fullhashraw}{327566b9797dbcd8d96d548b40c1157d}
+      \strng{bibnamehash}{327566b9797dbcd8d96d548b40c1157d}
+      \strng{authorbibnamehash}{327566b9797dbcd8d96d548b40c1157d}
+      \strng{authornamehash}{315d9f50183f70df62a17c5bbea2a3e8}
+      \strng{authorfullhash}{327566b9797dbcd8d96d548b40c1157d}
+      \strng{authorfullhashraw}{327566b9797dbcd8d96d548b40c1157d}
+      \field{extraname}{1}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Automatica}
+      \field{note}{Preprint: \url{https://arxiv.org/abs/2310.19938}}
+      \field{title}{Lyapunov-Based Dropout Deep Neural Network {(Lb-DDNN)} Controller}
+      \field{year}{under review}
+      \true{nocite}
+      \keyw{underreview}
+    \endentry
+    \entry{Fallin.Nino.ea2025}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=459246644ccf1fab9ee8147300e0a750}{%
+           family={Fallin},
+           familyi={F\bibinitperiod},
+           given={B.},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=4e26536f2e872c8afd9b84badcc29a50}{%
+           family={Nino},
+           familyi={N\bibinitperiod},
+           given={C.},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{809d09461ab6aa8eebcfacd5fbbffde6}
+      \strng{fullhash}{120a2396d19b6de5a48e3b4cd64a3291}
+      \strng{fullhashraw}{120a2396d19b6de5a48e3b4cd64a3291}
+      \strng{bibnamehash}{120a2396d19b6de5a48e3b4cd64a3291}
+      \strng{authorbibnamehash}{120a2396d19b6de5a48e3b4cd64a3291}
+      \strng{authornamehash}{809d09461ab6aa8eebcfacd5fbbffde6}
+      \strng{authorfullhash}{120a2396d19b6de5a48e3b4cd64a3291}
+      \strng{authorfullhashraw}{120a2396d19b6de5a48e3b4cd64a3291}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Trans. Autom. Control}
+      \field{note}{Preprint: \url{https://arxiv.org/abs/2503.15360}}
+      \field{title}{Lyapunov-based Graph Neural Networks for Adaptive Control of Multi-Agent Systems}
+      \field{year}{under review}
+      \true{nocite}
+      \keyw{underreview}
+    \endentry
+    \entry{Akbari.Nino.ea2025}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=db49aada67f073fb3651be1884a56348}{%
+           family={Akbari},
+           familyi={A\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=4e26536f2e872c8afd9b84badcc29a50}{%
+           family={Nino},
+           familyi={N\bibinitperiod},
+           given={C.},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{49d13a6fd795bd947b7f92d49a867737}
+      \strng{fullhash}{1f9d2b9bf70b7134b68e20c7c05970e0}
+      \strng{fullhashraw}{1f9d2b9bf70b7134b68e20c7c05970e0}
+      \strng{bibnamehash}{1f9d2b9bf70b7134b68e20c7c05970e0}
+      \strng{authorbibnamehash}{1f9d2b9bf70b7134b68e20c7c05970e0}
+      \strng{authornamehash}{49d13a6fd795bd947b7f92d49a867737}
+      \strng{authorfullhash}{1f9d2b9bf70b7134b68e20c7c05970e0}
+      \strng{authorfullhashraw}{1f9d2b9bf70b7134b68e20c7c05970e0}
+      \field{extraname}{2}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Trans. Autom. Control}
+      \field{note}{Preprint: \url{https://arxiv.org/abs/2412.21095}}
+      \field{title}{Lyapunov-based Deep Neural Networks for Adaptive Control of Stochastic Nonlinear Systems}
+      \field{year}{under review}
+      \true{nocite}
+      \keyw{underreview}
+    \endentry
+    \entry{Hart.Patil.ea2025}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=a206c8e0508adb6bb85783120187e1d1}{%
+           family={Hart},
+           familyi={H\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=05210bc29456a30ade4925c65f341830}{%
+           family={Bell},
+           familyi={B\bibinitperiod},
+           given={Z.},
+           giveni={Z\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{c6190736f08106fc790bd72b8f2f2297}
+      \strng{fullhash}{f589a3eb3f980d11454d2370a16e0207}
+      \strng{fullhashraw}{f589a3eb3f980d11454d2370a16e0207}
+      \strng{bibnamehash}{f589a3eb3f980d11454d2370a16e0207}
+      \strng{authorbibnamehash}{f589a3eb3f980d11454d2370a16e0207}
+      \strng{authornamehash}{c6190736f08106fc790bd72b8f2f2297}
+      \strng{authorfullhash}{f589a3eb3f980d11454d2370a16e0207}
+      \strng{authorfullhashraw}{f589a3eb3f980d11454d2370a16e0207}
+      \field{extraname}{3}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Control Syst. Lett.}
+      \field{note}{Preprint: \url{https://arxiv.org/abs/2505.10678}}
+      \field{title}{Concurrent Learning for System Identification and Control Using Lyapunov-Based Deep Neural Networks}
+      \field{year}{under review}
+      \true{nocite}
+      \keyw{underreview}
+    \endentry
+    \entry{Hart.Patil.ea2026}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=a206c8e0508adb6bb85783120187e1d1}{%
+           family={Hart},
+           familyi={H\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=05210bc29456a30ade4925c65f341830}{%
+           family={Bell},
+           familyi={B\bibinitperiod},
+           given={Z.},
+           giveni={Z\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{c6190736f08106fc790bd72b8f2f2297}
+      \strng{fullhash}{f589a3eb3f980d11454d2370a16e0207}
+      \strng{fullhashraw}{f589a3eb3f980d11454d2370a16e0207}
+      \strng{bibnamehash}{f589a3eb3f980d11454d2370a16e0207}
+      \strng{authorbibnamehash}{f589a3eb3f980d11454d2370a16e0207}
+      \strng{authornamehash}{c6190736f08106fc790bd72b8f2f2297}
+      \strng{authorfullhash}{f589a3eb3f980d11454d2370a16e0207}
+      \strng{authorfullhashraw}{f589a3eb3f980d11454d2370a16e0207}
+      \field{extraname}{4}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Trans. Autom. Control}
+      \field{note}{Preprint: \url{https://arxiv.org/abs/2505.10678}}
+      \field{title}{Lyapunov-Based Concurrent Learning for DNN Parameter Identifiability Without Persistent Excitation}
+      \field{year}{under review}
+      \true{nocite}
+      \keyw{underreview}
+    \endentry
+    \entry{Akbari.Nino.ea2026}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=db49aada67f073fb3651be1884a56348}{%
+           family={Akbari},
+           familyi={A\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f4e0383df725dc146e05f28fa68495fe}{%
+           family={\textbf{O.\bibnamedelimi Patil}},
+           familyi={O\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{un=0,uniquepart=base,hash=6a52c4e2e7986029245ad423d62cbac6}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={W.E.},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{49d13a6fd795bd947b7f92d49a867737}
+      \strng{fullhash}{21fd062beb9cc3d10eb0e2789e93619f}
+      \strng{fullhashraw}{21fd062beb9cc3d10eb0e2789e93619f}
+      \strng{bibnamehash}{21fd062beb9cc3d10eb0e2789e93619f}
+      \strng{authorbibnamehash}{21fd062beb9cc3d10eb0e2789e93619f}
+      \strng{authornamehash}{49d13a6fd795bd947b7f92d49a867737}
+      \strng{authorfullhash}{21fd062beb9cc3d10eb0e2789e93619f}
+      \strng{authorfullhashraw}{21fd062beb9cc3d10eb0e2789e93619f}
+      \field{extraname}{3}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Trans. Autom. Control}
+      \field{note}{Preprint: \url{https://arxiv.org/abs/2508.14989}}
+      \field{title}{{LyLA}-Therm: {L}yapunov-based {L}angevin Adaptive Thermodynamic Neural Network Controller}
+      \field{year}{under review}
+      \true{nocite}
+      \keyw{underreview}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+
