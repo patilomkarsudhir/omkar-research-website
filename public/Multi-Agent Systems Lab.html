@@ -458,7 +458,7 @@
                 <h3 id="demo-title">Swarm Formations & Cooperative Control</h3>
                 <p id="demo-description" style="color: #94a3b8; margin: 10px 0; font-size: 0.9rem;">
                     Explore various multi-agent formations, consensus algorithms, and distributed control strategies. 
-                    Agents coordinate using graph-based communication while maintaining collision-free navigation via Control Barrier Functions.
+                    Agents coordinate using neighbor-to-neighbor (graph-based) feedback laws to achieve agreement and formation objectives; a CBF-based safety filter can optionally modify controls to prevent collisions.
                     <strong>Use the dropdown to select different formation challenges and consensus methods.</strong>
                 </p>
                 <div class="demo-canvas" id="multiagent-canvas" style="height: 400px;">
@@ -643,41 +643,43 @@
                 </div>
                 
                 <div class="info-panel">
-                    <h4 id="math-title">Multi-Agent CBF Mathematics:</h4>
+                    <h4 id="math-title">Networked Multi-Agent Systems Mathematics:</h4>
                     <div class="math-formula" id="math-content">
-                        <p><strong>Inter-Agent Distance Constraint:</strong></p>
-                        $$h_{ij}(x_i, x_j) = \|x_i - x_j\|^2 - d_{safe}^2 \geq 0$$
+                        <p><strong>Agent Model (typical in these demos):</strong></p>
+                        $$\dot{\mathbf{p}}_i = \mathbf{u}_i, \quad i \in \{1,\dots,N\}, \quad \mathbf{p}_i \in \mathbb{R}^2$$
                         <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                            Agents $i$ and $j$ must maintain squared distance greater than safety threshold.
+                            Each agent chooses a local control input $\mathbf{u}_i$ using only neighbor information.
                         </p>
-                        
-                        <p><strong>Lie Derivative for Agent $i$:</strong></p>
-                        $$\dot{h}_{ij} = \nabla_{x_i} h_{ij} \cdot \dot{x}_i + \nabla_{x_j} h_{ij} \cdot \dot{x}_j$$
-                        $$= 2(x_i - x_j) \cdot u_i + 2(x_j - x_i) \cdot u_j$$
-                        $$= 2(x_i - x_j) \cdot (u_i - u_j)$$
-                        
-                        <p><strong>Distributed CBF Constraint:</strong></p>
-                        $$\dot{h}_{ij} + \alpha h_{ij} \geq 0$$
-                        $$2(x_i - x_j) \cdot (u_i - u_j) + \alpha h_{ij} \geq 0$$
-                        
-                        <p><strong>Decentralized Implementation:</strong></p>
-                        $$2(x_i - x_j) \cdot u_i \geq -\frac{\alpha}{2} h_{ij} + 2(x_i - x_j) \cdot u_j^{nom}$$
+
+                        <p><strong>Communication Graph:</strong></p>
+                        $$\mathcal{G}=(\mathcal{V},\mathcal{E}),\; \mathcal{V}=\{1,\dots,N\},\; (i,j)\in\mathcal{E} \Leftrightarrow j\in\mathcal{N}_i$$
+                        $$\mathbf{A}=[a_{ij}],\; \mathbf{D}=\mathrm{diag}\!\left(\sum_j a_{ij}\right),\; \mathbf{L}=\mathbf{D}-\mathbf{A}$$
                         <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                            Each agent assumes others follow nominal control $u_j^{nom}$ and takes half responsibility.
+                            The Laplacian $\mathbf{L}$ encodes who talks to whom; connectivity is reflected by $\lambda_2(\mathbf{L})$ for undirected graphs.
                         </p>
-                        
-                        <p><strong>QP Formulation for Agent $i$:</strong></p>
+
+                        <p><strong>Consensus (agreement):</strong></p>
+                        $$\mathbf{u}_i^{\mathrm{nom}} = -\sum_{j\in\mathcal{N}_i} a_{ij}\,(\mathbf{p}_i-\mathbf{p}_j) \quad \Longleftrightarrow \quad \dot{\mathbf{p}} = -(\mathbf{L}\otimes \mathbf{I}_2)\,\mathbf{p}$$
+                        $$\mathbf{e} = \bigl(\mathbf{I}_N - \tfrac{1}{N}\mathbf{1}\mathbf{1}^\top\bigr)\otimes \mathbf{I}_2\;\mathbf{p}, \quad \|\mathbf{e}\|\to 0\ \text{if }\mathcal{G}\text{ is connected (undirected)}$$
+
+                        <p><strong>Formation (shape via relative offsets):</strong></p>
+                        $$V(\mathbf{p}) = \tfrac{1}{2}\sum_{(i,j)\in\mathcal{E}}\left\| (\mathbf{p}_i-\mathbf{p}_j) - \mathbf{r}_{ij} \right\|^2$$
+                        $$\mathbf{u}_i^{\mathrm{nom}} = -\nabla_{\mathbf{p}_i} V = -\sum_{j\in\mathcal{N}_i}\left((\mathbf{p}_i-\mathbf{p}_j)-\mathbf{r}_{ij}\right)$$
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                            Different formations correspond to different desired edge vectors $\mathbf{r}_{ij}$.
+                        </p>
+
+                        <p><strong>Safety Layer (secondary): collision avoidance as a CBF filter:</strong></p>
+                        $$h_{ij}(\mathbf{p}_i,\mathbf{p}_j)=\|\mathbf{p}_i-\mathbf{p}_j\|^2-d_{safe}^2 \ge 0,\quad \dot{h}_{ij}+\alpha h_{ij}\ge 0$$
                         $$\begin{align}
-                        \min_{u_i} &\quad \|u_i - u_i^{nom}\|^2 \\
-                        s.t. &\quad 2(x_i - x_j) \cdot u_i \geq -\frac{\alpha}{2} h_{ij}, \; \forall j \neq i
+                        \min_{\mathbf{u}_i}\ &\|\mathbf{u}_i-\mathbf{u}_i^{\mathrm{nom}}\|^2\\
+                        \mathrm{s.t.}\ &\dot{h}_{ij}(\mathbf{p},\mathbf{u})+\alpha h_{ij}(\mathbf{p})\ge 0,\ \forall j\in\mathcal{N}_i
                         \end{align}$$
-                        
+
                         <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.2);">
-                            <strong>Key Features:</strong><br>
-                            • Distributed: each agent computes own control<br>
-                            • Scalable: $O(n)$ constraints per agent for $n$ agents<br>
-                            • Reciprocal: both agents share avoidance responsibility<br>
-                            • Real-time: efficient QP solution for large swarms
+                            <strong>Takeaway:</strong><br>
+                            • The “core” behavior is graph-based ($\mathbf{L}$, neighbor sets, agreement/formation objectives)<br>
+                            • Safety constraints (CBFs) act as a minimally-invasive filter on top of nominal coordination laws
                         </p>
                     </div>
                 </div>
@@ -1661,7 +1663,7 @@
                 document.getElementById('demo-title').textContent = 'Swarm Formations & Cooperative Control';
                 document.getElementById('demo-description').innerHTML = `
                     Explore various multi-agent formations, consensus algorithms, and distributed control strategies. 
-                    Agents coordinate using graph-based communication while maintaining collision-free navigation via Control Barrier Functions.
+                    Agents coordinate using neighbor-to-neighbor (graph-based) feedback laws to achieve agreement and formation objectives; a CBF-based safety filter can optionally modify controls to prevent collisions.
                     <strong>Use the dropdown to select different formation challenges and consensus methods.</strong>
                 `;
                 initMultiAgentDemo();
@@ -7824,32 +7826,49 @@
                 mathTitle.textContent = mathFormulations[formationType].title;
                 mathContent.innerHTML = mathFormulations[formationType].content;
             } else {
-                // Default CBF mathematics for basic formations
-                mathTitle.textContent = 'Multi-Agent CBF Mathematics:';
+                // Default mathematics for basic formations (graph/formation-first; CBF as secondary safety filter)
+                mathTitle.textContent = 'Swarm Formations & Graph-Based Control:';
                 mathContent.innerHTML = `
                     <p><strong>Problem Statement:</strong></p>
                     <p style="font-size: 0.95rem; color: #e2e8f0; margin: 10px 0; line-height: 1.4;">
-                        <em>Multi-agent collision avoidance</em> addresses the fundamental safety challenge in systems where multiple 
-                        autonomous agents operate in shared spaces. The problem is ensuring that agents can pursue their individual 
-                        objectives (reaching goals, following trajectories) while guaranteeing they never collide with each other. 
-                        Traditional approaches often compromise between safety and performance, but Control Barrier Functions (CBFs) 
-                        provide mathematical guarantees of safety while minimally modifying desired behaviors.
+                        <em>Formation control</em> studies how $N$ agents can achieve a desired geometric pattern (line, circle, diamond, swaps/rotations, etc.)
+                        using only local interactions over a communication graph. The core goal is decentralized coordination: each agent computes
+                        $u_i$ using neighbor information $\mathcal{N}_i$ so the swarm converges to a coordinated configuration.
                     </p>
-                    
-                    <p><strong>Inter-Agent Distance Constraint:</strong></p>
-                    $$h_{ij}(x_i, x_j) = \\|x_i - x_j\\|^2 - d_{safe}^2 \\geq 0$$
+
+                    <p><strong>Communication Graph:</strong></p>
+                    $$\\mathcal{G}=(\\mathcal{V},\\mathcal{E}),\\; \\mathcal{V}=\\{1,\\dots,N\\},\\; j\\in\\mathcal{N}_i \\Leftrightarrow (i,j)\\in\\mathcal{E}$$
+                    $$\\mathbf{A}=[a_{ij}],\\; \\mathbf{D}=\\mathrm{diag}\\!\\left(\\sum_j a_{ij}\\right),\\; \\mathbf{L}=\\mathbf{D}-\\mathbf{A}$$
                     <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                        Agents $i$ and $j$ must maintain squared distance greater than safety threshold.
+                        The Laplacian $\\mathbf{L}$ captures how local coupling spreads information through the network.
                     </p>
-                    
-                    <p><strong>CBF Constraint:</strong></p>
-                    $$\\dot{h}_{ij} + \\alpha h_{ij} \\geq 0$$
-                    $$2(x_i - x_j) \\cdot (u_i - u_j) + \\alpha h_{ij} \\geq 0$$
-                    
-                    <p><strong>Decentralized Implementation:</strong></p>
-                    $$2(x_i - x_j) \\cdot u_i \\geq -\\frac{\\alpha}{2} h_{ij}$$
+
+                    <p><strong>Nominal Formation Tracking (common template):</strong></p>
+                    $$\\dot{\\mathbf{x}}_i = \\mathbf{u}_i, \\quad \\mathbf{u}_i^{\\mathrm{nom}} = -k_p(\\mathbf{x}_i-\\mathbf{x}_i^{\\star}) - k_c\\sum_{j\\in\\mathcal{N}_i} a_{ij}(\\mathbf{x}_i-\\mathbf{x}_j)$$
                     <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
-                        Each agent ensures half of the safety constraint independently, enabling distributed operation.
+                        $\\mathbf{x}_i^{\\star}$ encodes the desired formation (targets/relative offsets). The graph term promotes coordinated motion.
+                    </p>
+
+                    <p><strong>Formation Energy View:</strong></p>
+                    $$V(\\mathbf{x})=\\tfrac{1}{2}\\sum_{i=1}^N\\|\\mathbf{x}_i-\\mathbf{x}_i^{\\star}\\|^2 + \\tfrac{\\beta}{4}\\sum_{(i,j)\\in\\mathcal{E}} a_{ij}\\|\\mathbf{x}_i-\\mathbf{x}_j\\|^2$$
+                    <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                        Many decentralized formation controllers can be interpreted as (approximate) gradient descent on an objective like $V$.
+                    </p>
+
+                    <p><strong>Swaps / Rotations (assignment perspective):</strong></p>
+                    $$\\mathbf{x}_i^{\\star} \\leftarrow \\mathbf{g}_{\\pi(i)} \\quad \\text{for a permutation } \\pi \\text{ (e.g., rotate/clockwise exchange)}$$
+                    <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                        Scenarios like “pass through” and “exchange” correspond to changing the mapping from agents to goal points.
+                    </p>
+
+                    <p><strong>Safety Layer (secondary): collision avoidance as a CBF filter:</strong></p>
+                    $$h_{ij}(\\mathbf{x}_i,\\mathbf{x}_j)=\\|\\mathbf{x}_i-\\mathbf{x}_j\\|^2-d_{safe}^2 \\ge 0,\\quad \\dot{h}_{ij}+\\alpha h_{ij}\\ge 0$$
+                    $$\\begin{align}
+                    \\min_{\\mathbf{u}_i}\ &\\|\\mathbf{u}_i-\\mathbf{u}_i^{\\mathrm{nom}}\\|^2\\\\
+                    \\mathrm{s.t.}\ &\\dot{h}_{ij}(\\mathbf{x},\\mathbf{u})+\\alpha h_{ij}(\\mathbf{x})\\ge 0,\\ \\forall j\\in\\mathcal{N}_i
+                    \\end{align}$$
+                    <p style="font-size: 0.9rem; color: #cbd5e1; margin: 5px 0;">
+                        The formation/coordination law is the primary behavior; CBF constraints minimally modify it only when safety is at risk.
                     </p>
                 `;
             }
