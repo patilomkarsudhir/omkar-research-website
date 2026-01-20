@@ -59,7 +59,7 @@ export default function ResearchPublications({ category, title }: ResearchPublic
         // If no cached data, try to fetch from API
         if (publications.length === 0) {
           try {
-            const res = await fetch(`/api/scholar?user=${encodeURIComponent(user)}`, { cache: "no-store" });
+            const res = await fetch(`/api/scholar?user=${encodeURIComponent(user)}`);
             if (res.ok) {
               const data = await res.json();
               publications = data.publications || [];

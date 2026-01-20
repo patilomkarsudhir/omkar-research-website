@@ -5,6 +5,12 @@ import { loadPaperMapping, getPdfUrl, normalizeForMatching } from "../publicatio
 type Metrics = Record<string, { all: number; recent: number }>;
 type Pub = { title: string; link?: string | null; authors?: string; venue?: string; cited?: number; year?: number };
 
+interface CachedScholarData {
+  metrics?: Metrics;
+  publications?: Pub[];
+  _ts?: number;
+}
+
 export default function ScholarClient({ user }: { user: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -13,23 +19,40 @@ export default function ScholarClient({ user }: { user: string }) {
   const [q, setQ] = useState("");
   const [year, setYear] = useState<number | "">("");
   const [paperMapping, setPaperMapping] = useState<Record<string, string>>({});
+
+  const cacheKey = `scholar_cache:${user}`;
+  // Keep client refreshes infrequent; CDN and server also cache.
+  const maxAgeMs = 6 * 60 * 60 * 1000; // 6 hours
+
   async function sync(force = false) {
     try {
       setLoading(true); setError(null);
       const url = `/api/scholar?user=${encodeURIComponent(user)}${force ? `&force=1&bust=${Date.now()}` : ""}`;
-      const res = await fetch(url, { cache: "no-store" });
+      const res = await fetch(url, force ? { cache: "no-store" } : undefined);
       if (!res.ok) throw new Error(`Sync failed: ${res.status}`);
       const data = await res.json();
       setMetrics(data.metrics || null);
       setPubs(data.publications || []);
-      localStorage.setItem(`scholar_cache:${user}`, JSON.stringify(data));
+      const payload: CachedScholarData = { ...data, _ts: Date.now() };
+      localStorage.setItem(cacheKey, JSON.stringify(payload));
     } catch (e: any) { setError(e.message || "Failed to sync."); }
     finally { setLoading(false); }
   }
   useEffect(() => {
-    const cached = localStorage.getItem(`scholar_cache:${user}`);
-    if (cached) { try { const data = JSON.parse(cached); setMetrics(data.metrics || null); setPubs(data.publications || []); } catch {} }
-    sync(false);
+    const cached = localStorage.getItem(cacheKey);
+    let cachedTs = 0;
+    if (cached) {
+      try {
+        const data = JSON.parse(cached) as CachedScholarData;
+        cachedTs = typeof data._ts === "number" ? data._ts : 0;
+        setMetrics(data.metrics || null);
+        setPubs(data.publications || []);
+      } catch {}
+    }
+
+    if (!cachedTs || Date.now() - cachedTs > maxAgeMs) {
+      sync(false);
+    }
     
     // Load paper mapping
     loadPaperMapping().then(setPaperMapping).catch(console.warn);

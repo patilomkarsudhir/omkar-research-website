@@ -35,6 +35,10 @@ function fetchWithUA(url) {
   });
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 /**
  * Parse metrics from Scholar page
  */
@@ -104,11 +108,28 @@ async function fetchScholarData(userId) {
   const url = `https://scholar.google.com/citations?hl=en&user=${userId}&cstart=0&pagesize=100`;
   
   console.log(`Fetching data from: ${url}`);
-  
-  const response = await fetchWithUA(url);
-  
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+
+  // Gentle retry on transient blocking. Do not hammer Scholar.
+  const maxAttempts = 3;
+  let response;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    response = await fetchWithUA(url);
+    if (response.ok) break;
+
+    const status = response.status;
+    const retryAfterRaw = response.headers.get('retry-after');
+    const retryAfterSeconds = retryAfterRaw ? parseInt(retryAfterRaw, 10) : NaN;
+
+    if (status === 429 && attempt < maxAttempts) {
+      const backoffSeconds = Number.isFinite(retryAfterSeconds)
+        ? Math.max(60, retryAfterSeconds)
+        : 60 * attempt;
+      console.warn(`⚠️  HTTP 429 (rate limited). Backing off for ${backoffSeconds}s before retry ${attempt + 1}/${maxAttempts}...`);
+      await sleep(backoffSeconds * 1000);
+      continue;
+    }
+
+    throw new Error(`HTTP ${status}: ${response.statusText}`);
   }
   
   const html = await response.text();
@@ -208,11 +229,12 @@ async function main() {
     if (error.message.includes('blocked')) {
       console.error('💡 Tips to avoid blocking:');
       console.error('   - Wait a few minutes and try again');
-      console.error('   - Try using a VPN');
       console.error('   - Run the script less frequently');
     }
-    
-    process.exit(1);
+
+    // Avoid abrupt exit (can trigger undici/libuv assertion on Windows after failed fetches).
+    process.exitCode = 1;
+    return;
   }
 }
 

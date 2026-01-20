@@ -17,12 +17,8 @@ export default function HeroMetricsClient() {
         setLoading(true);
         setError(null);
         
-        const res = await fetch('/api/scholar?user=EtkfNQMAAAAJ', { 
-          cache: "no-store",
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
+        // Avoid bypassing CDN caching; reduces upstream scrape pressure.
+        const res = await fetch('/api/scholar?user=EtkfNQMAAAAJ');
         
         if (res.ok) {
           const data = await res.json();
