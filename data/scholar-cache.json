@@ -1,12 +1,12 @@
 {
   "metrics": {
     "citations": {
-      "all": 475,
-      "recent": 473
+      "all": 494,
+      "recent": 489
     },
     "h-index": {
       "all": 12,
-      "recent": 12
+      "recent": 11
     },
     "i10-index": {
       "all": 13,
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 83,
+      "cited": 86,
       "year": 2021
     },
     {
@@ -31,20 +31,20 @@
       "year": 2021
     },
     {
-      "title": "Lyapunov-based long short-term memory (Lb-LSTM) neural network-based control",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ufrVoPGSRksC",
-      "authors": "EJ Griffis, OS Patil, ZI Bell, WE Dixon",
-      "venue": "IEEE Control Systems Letters 7, 2976-2981, 2023",
-      "cited": 42,
-      "year": 2023
-    },
-    {
       "title": "Adaptive control of time-varying parameter systems with asymptotic tracking",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:u-x6o8ySG0sC",
       "authors": "OS Patil, R Sun, S Bhasin, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 67 (9), 4809-4815, 2022",
-      "cited": 41,
+      "cited": 44,
       "year": 2022
+    },
+    {
+      "title": "Lyapunov-based long short-term memory (Lb-LSTM) neural network-based control",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ufrVoPGSRksC",
+      "authors": "EJ Griffis, OS Patil, ZI Bell, WE Dixon",
+      "venue": "IEEE Control Systems Letters 7, 2976-2981, 2023",
+      "cited": 43,
+      "year": 2023
     },
     {
       "title": "Exponential stability with RISE controllers",
@@ -59,7 +59,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:W7OEmFMy1HYC",
       "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
       "venue": "2022 IEEE 61st Conference on Decision and Control (CDC), 3487-3492, 2022",
-      "cited": 37,
+      "cited": 38,
       "year": 2022
     },
     {
@@ -67,7 +67,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:hqOjcs7Dif8C",
       "authors": "RG Hart, EJ Griffis, OS Patil, WE Dixon",
       "venue": "IEEE Control Systems Letters 8, 13-18, 2023",
-      "cited": 19,
+      "cited": 20,
       "year": 2023
     },
     {
@@ -75,7 +75,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
       "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
       "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
-      "cited": 17,
+      "cited": 19,
       "year": 2024
     },
     {
@@ -95,20 +95,20 @@
       "year": 2023
     },
     {
+      "title": "Deep recurrent neural network-based observer for uncertain nonlinear systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Se3iqnhoufwC",
+      "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
+      "venue": "IFAC-PapersOnLine 56 (2), 6851-6856, 2023",
+      "cited": 14,
+      "year": 2023
+    },
+    {
       "title": "A singularity-free hierarchical nonlinear quad-rotorcraft control using saturation and barrier lyapunov function",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:u5HHmVD_uO8C",
       "authors": "R Dasgupta, SB Roy, OS Patil, S Bhasin",
       "venue": "2019 American Control Conference (ACC), 3075-3080, 2019",
       "cited": 14,
       "year": 2019
-    },
-    {
-      "title": "Deep recurrent neural network-based observer for uncertain nonlinear systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Se3iqnhoufwC",
-      "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
-      "venue": "IFAC-PapersOnLine 56 (2), 6851-6856, 2023",
-      "cited": 13,
-      "year": 2023
     },
     {
       "title": "Integral concurrent learning-based accelerated gradient adaptive control of uncertain Euler-Lagrange systems",
@@ -159,6 +159,22 @@
       "year": 2022
     },
     {
+      "title": "Lyapunov-Based Graph Neural Networks for Adaptive Control of Multi-Agent Systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:QIV2ME_5wuYC",
+      "authors": "BC Fallin, CF Nino, OS Patil, ZI Bell, WE Dixon",
+      "venue": "arXiv preprint arXiv:2503.15360, 2025",
+      "cited": 6,
+      "year": 2025
+    },
+    {
+      "title": "Adaptive deep neural network-based control barrier functions",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Zph67rFs4hoC",
+      "authors": "HM Sweatland, OS Patil, WE Dixon",
+      "venue": "arXiv preprint arXiv:2406.14430, 2024",
+      "cited": 5,
+      "year": 2024
+    },
+    {
       "title": "Lyapunov-Based Dropout Deep Neural Network (Lb-DDNN) Controller",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:LkGwnXOMwfcC",
       "authors": "S Akbari, EJ Griffis, OS Patil, WE Dixon",
@@ -175,19 +191,19 @@
       "year": 2025
     },
     {
-      "title": "Lyapunov-Based Graph Neural Networks for Adaptive Control of Multi-Agent Systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:QIV2ME_5wuYC",
-      "authors": "BC Fallin, CF Nino, OS Patil, ZI Bell, WE Dixon",
-      "venue": "arXiv preprint arXiv:2503.15360, 2025",
-      "cited": 4,
+      "title": "Online ResNet-Based Adaptive Control for Nonlinear Target Tracking",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:mVmsd5A6BfQC",
+      "authors": "CF Nino, OS Patil, JC Insinger, MR Eisman, WE Dixon",
+      "venue": "IEEE Control Systems Letters, 2025",
+      "cited": 3,
       "year": 2025
     },
     {
-      "title": "Adaptive deep neural network-based control barrier functions",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Zph67rFs4hoC",
-      "authors": "HM Sweatland, OS Patil, WE Dixon",
-      "venue": "arXiv preprint arXiv:2406.14430, 2024",
-      "cited": 4,
+      "title": "Lyapunov-Based Deep Neural Networks for Adaptive Control of Stochastic Nonlinear Systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:M3ejUd6NZC8C",
+      "authors": "S Akbari, CF Nino, OS Patil, WE Dixon",
+      "venue": "arXiv preprint arXiv:2412.21095, 2024",
+      "cited": 3,
       "year": 2024
     },
     {
@@ -207,10 +223,10 @@
       "year": 2023
     },
     {
-      "title": "Online ResNet-Based Adaptive Control for Nonlinear Target Tracking",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:mVmsd5A6BfQC",
-      "authors": "CF Nino, OS Patil, JC Insinger, MR Eisman, WE Dixon",
-      "venue": "IEEE Control Systems Letters, 2025",
+      "title": "Lyapunov-Based Deep Residual Neural Network (ResNet) Adaptive Control",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
+      "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
+      "venue": "IEEE Access, 2025",
       "cited": 2,
       "year": 2025
     },
@@ -229,14 +245,6 @@
       "venue": "IEEE Transactions on Automatic Control, 2025",
       "cited": 2,
       "year": 2025
-    },
-    {
-      "title": "Lyapunov-Based Deep Neural Networks for Adaptive Control of Stochastic Nonlinear Systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:M3ejUd6NZC8C",
-      "authors": "S Akbari, CF Nino, OS Patil, WE Dixon",
-      "venue": "arXiv preprint arXiv:2412.21095, 2024",
-      "cited": 2,
-      "year": 2024
     },
     {
       "title": "Lyapunov-based adaptive deep system identification for approximate dynamic programming",
@@ -263,10 +271,10 @@
       "year": 2025
     },
     {
-      "title": "Lyapunov-Based Deep Residual Neural Network (ResNet) Adaptive Control",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
-      "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
-      "venue": "IEEE Access, 2025",
+      "title": "Distributed RISE-based Control for Exponential Heterogeneous Multi-Agent Target Tracking of Second-Order Nonlinear Systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:HDshCWvjkbEC",
+      "authors": "CF Nino, OS Patil, SC Edwards, WE Dixon",
+      "venue": "arXiv preprint arXiv:2503.14418, 2025",
       "cited": 1,
       "year": 2025
     },
@@ -291,14 +299,6 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:9ZlFYXVOiuMC",
       "authors": "CF Nino, OS Patil, SC Edwards, WE Dixon",
       "venue": "IEEE Control Systems Letters, 2025",
-      "cited": 0,
-      "year": 2025
-    },
-    {
-      "title": "Distributed RISE-based Control for Exponential Heterogeneous Multi-Agent Target Tracking of Second-Order Nonlinear Systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:HDshCWvjkbEC",
-      "authors": "CF Nino, OS Patil, SC Edwards, WE Dixon",
-      "venue": "arXiv preprint arXiv:2503.14418, 2025",
       "cited": 0,
       "year": 2025
     },
