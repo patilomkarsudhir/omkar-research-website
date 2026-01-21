@@ -148,6 +148,16 @@ export const Component: React.FC<ComponentProps> = ({ title, children }) => {
   - Test edge cases (singularities, boundary conditions)
   - Validate against analytical solutions where available
 
+### Standalone HTML Pages (public/ folder)
+Standalone HTML demo pages in `/public/` require manual inclusion of the Vercel Analytics script since they don't go through the Next.js layout. **Always add this script to the `<head>` of any new standalone HTML files:**
+
+```html
+<!-- Vercel Analytics -->
+<script defer src="/_vercel/insights/script.js"></script>
+```
+
+This ensures visitor tracking works consistently across the entire site, including interactive demos.
+
 ## Mathematical Verification & Testing
 
 ### Rigorous Testing Standards
