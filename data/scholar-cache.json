@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 496,
-      "recent": 491
+      "all": 513,
+      "recent": 508
     },
     "h-index": {
       "all": 12,
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 86,
+      "cited": 88,
       "year": 2021
     },
     {
@@ -27,7 +27,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:9yKSN-GCB0IC",
       "authors": "A Isaly, OS Patil, RG Sanfelice, WE Dixon",
       "venue": "2021 American Control Conference (ACC), 3719-3724, 2021",
-      "cited": 46,
+      "cited": 47,
       "year": 2021
     },
     {
@@ -35,7 +35,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ufrVoPGSRksC",
       "authors": "EJ Griffis, OS Patil, ZI Bell, WE Dixon",
       "venue": "IEEE Control Systems Letters 7, 2976-2981, 2023",
-      "cited": 44,
+      "cited": 45,
       "year": 2023
     },
     {
@@ -51,7 +51,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:2osOgNQ5qMEC",
       "authors": "OS Patil, A Isaly, B Xian, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1592-1597, 2021",
-      "cited": 41,
+      "cited": 42,
       "year": 2021
     },
     {
@@ -59,7 +59,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:W7OEmFMy1HYC",
       "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
       "venue": "2022 IEEE 61st Conference on Decision and Control (CDC), 3487-3492, 2022",
-      "cited": 38,
+      "cited": 39,
       "year": 2022
     },
     {
@@ -67,7 +67,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:hqOjcs7Dif8C",
       "authors": "RG Hart, EJ Griffis, OS Patil, WE Dixon",
       "venue": "IEEE Control Systems Letters 8, 13-18, 2023",
-      "cited": 20,
+      "cited": 22,
       "year": 2023
     },
     {
@@ -75,7 +75,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
       "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
       "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
-      "cited": 19,
+      "cited": 20,
       "year": 2024
     },
     {
@@ -83,7 +83,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:MXK_kJrjxJIC",
       "authors": "A Isaly, OS Patil, HM Sweatland, RG Sanfelice, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 69 (7), 4883-4890, 2024",
-      "cited": 17,
+      "cited": 18,
       "year": 2024
     },
     {
@@ -99,7 +99,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Se3iqnhoufwC",
       "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
       "venue": "IFAC-PapersOnLine 56 (2), 6851-6856, 2023",
-      "cited": 14,
+      "cited": 15,
       "year": 2023
     },
     {
@@ -159,6 +159,14 @@
       "year": 2022
     },
     {
+      "title": "Adaptive deep neural network-based control barrier functions",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Zph67rFs4hoC",
+      "authors": "HM Sweatland, OS Patil, WE Dixon",
+      "venue": "arXiv preprint arXiv:2406.14430, 2024",
+      "cited": 7,
+      "year": 2024
+    },
+    {
       "title": "Lyapunov-Based Graph Neural Networks for Adaptive Control of Multi-Agent Systems",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:QIV2ME_5wuYC",
       "authors": "BC Fallin, CF Nino, OS Patil, ZI Bell, WE Dixon",
@@ -167,12 +175,12 @@
       "year": 2025
     },
     {
-      "title": "Adaptive deep neural network-based control barrier functions",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Zph67rFs4hoC",
-      "authors": "HM Sweatland, OS Patil, WE Dixon",
-      "venue": "arXiv preprint arXiv:2406.14430, 2024",
+      "title": "Bounds on deep neural network partial derivatives with respect to parameters",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:dhFuZR0502QC",
+      "authors": "OS Patil, BC Fallin, CF Nino, RG Hart, WE Dixon",
+      "venue": "arXiv preprint arXiv:2503.21007, 2025",
       "cited": 5,
-      "year": 2024
+      "year": 2025
     },
     {
       "title": "Lyapunov-Based Dropout Deep Neural Network (Lb-DDNN) Controller",
@@ -183,11 +191,11 @@
       "year": 2023
     },
     {
-      "title": "Bounds on deep neural network partial derivatives with respect to parameters",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:dhFuZR0502QC",
-      "authors": "OS Patil, BC Fallin, CF Nino, RG Hart, WE Dixon",
-      "venue": "arXiv preprint arXiv:2503.21007, 2025",
-      "cited": 4,
+      "title": "Lyapunov-Based Deep Residual Neural Network (ResNet) Adaptive Control",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
+      "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
+      "venue": "IEEE Access, 2025",
+      "cited": 3,
       "year": 2025
     },
     {
@@ -223,10 +231,10 @@
       "year": 2023
     },
     {
-      "title": "Lyapunov-Based Deep Residual Neural Network (ResNet) Adaptive Control",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
-      "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
-      "venue": "IEEE Access, 2025",
+      "title": "Lyapunov-based adaptive deep system identification for approximate dynamic programming",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TQgYirikUcIC",
+      "authors": "WA Makumi, OS Patil, WE Dixon",
+      "venue": "Automatica 180, 112462, 2025",
       "cited": 2,
       "year": 2025
     },
@@ -247,18 +255,18 @@
       "year": 2025
     },
     {
-      "title": "Lyapunov-based adaptive deep system identification for approximate dynamic programming",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TQgYirikUcIC",
-      "authors": "WA Makumi, OS Patil, WE Dixon",
-      "venue": "Automatica 180, 112462, 2025",
-      "cited": 1,
-      "year": 2025
-    },
-    {
       "title": "LyLA-Therm: Lyapunov-based Langevin Adaptive Thermodynamic Neural Network Controller",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:e5wmG9Sq2KIC",
       "authors": "S Akbari, OS Patil, WE Dixon",
       "venue": "arXiv preprint arXiv:2508.14989, 2025",
+      "cited": 1,
+      "year": 2025
+    },
+    {
+      "title": "Adaptive Output Feedback Control Using Lyapunov-Based Deep Recurrent Neural Networks (Lb-DRNNs)",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:R3hNpaxXUhUC",
+      "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
+      "venue": "IEEE Transactions on Automatic Control, 2025",
       "cited": 1,
       "year": 2025
     },
@@ -287,10 +295,18 @@
       "year": 0
     },
     {
-      "title": "Adaptive Output Feedback Control Using Lyapunov-Based Deep Recurrent Neural Networks (Lb-DRNNs)",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:R3hNpaxXUhUC",
-      "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
-      "venue": "IEEE Transactions on Automatic Control, 2025",
+      "title": "Integral Concurrent Learning Control Barrier Functions for Signal Temporal Logic Tasks under Unknown Dynamics",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:j3f4tGmQtD8C",
+      "authors": "SS Kolhe, OS Patil, WE Dixon, J Fu",
+      "venue": "2025 IEEE 64th Conference on Decision and Control (CDC), 1688-1695, 2025",
+      "cited": 0,
+      "year": 2025
+    },
+    {
+      "title": "Contraction Metric-based Deep Neural Network Adaptive Control",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:4JMBOYKVnBMC",
+      "authors": "W Wu, OS Patil, HM Sweatland, WE Dixon",
+      "venue": "2025 IEEE 64th Conference on Decision and Control (CDC), 2614-2619, 2025",
       "cited": 0,
       "year": 2025
     },
