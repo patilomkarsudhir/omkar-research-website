@@ -1,16 +1,16 @@
 {
   "metrics": {
     "citations": {
-      "all": 513,
-      "recent": 508
+      "all": 516,
+      "recent": 511
     },
     "h-index": {
       "all": 12,
       "recent": 11
     },
     "i10-index": {
-      "all": 13,
-      "recent": 13
+      "all": 14,
+      "recent": 14
     }
   },
   "publications": [
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 88,
+      "cited": 89,
       "year": 2021
     },
     {
@@ -43,7 +43,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:u-x6o8ySG0sC",
       "authors": "OS Patil, R Sun, S Bhasin, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 67 (9), 4809-4815, 2022",
-      "cited": 44,
+      "cited": 45,
       "year": 2022
     },
     {
@@ -119,18 +119,18 @@
       "year": 2022
     },
     {
-      "title": "Lyapunov-based long short-term memory (Lb-LSTM) neural network-based adaptive observer",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:0EnyYjriUFMC",
-      "authors": "EJ Griffis, OS Patil, RG Hart, WE Dixon",
-      "venue": "IEEE Control Systems Letters 8, 97-102, 2023",
-      "cited": 9,
-      "year": 2023
-    },
-    {
       "title": "Deep adaptive indirect herding of multiple target agents with unknown interaction dynamics",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:5nxA0vEk-isC",
       "authors": "CF Nino, OS Patil, JN Philor, ZI Bell, WE Dixon",
       "venue": "2023 62nd IEEE Conference on Decision and Control (CDC), 2509-2514, 2023",
+      "cited": 10,
+      "year": 2023
+    },
+    {
+      "title": "Lyapunov-based long short-term memory (Lb-LSTM) neural network-based adaptive observer",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:0EnyYjriUFMC",
+      "authors": "EJ Griffis, OS Patil, RG Hart, WE Dixon",
+      "venue": "IEEE Control Systems Letters 8, 97-102, 2023",
       "cited": 9,
       "year": 2023
     },
@@ -263,7 +263,7 @@
       "year": 2025
     },
     {
-      "title": "Adaptive Output Feedback Control Using Lyapunov-Based Deep Recurrent Neural Networks (Lb-DRNNs)",
+      "title": "Adaptive output feedback control using Lyapunov-based deep recurrent neural networks (Lb-DRNNs)",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:R3hNpaxXUhUC",
       "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control, 2025",
@@ -293,6 +293,14 @@
       "venue": "",
       "cited": 1,
       "year": 0
+    },
+    {
+      "title": "Concurrent Learning for System Identification and Control Using Lyapunov-Based Deep Neural Networks",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:r0BpntZqJG4C",
+      "authors": "RG Hart, OS Patil, ZI Bell, WE Dixon",
+      "venue": "IEEE Control Systems Letters 9, 2957-2962, 2025",
+      "cited": 0,
+      "year": 2025
     },
     {
       "title": "Integral Concurrent Learning Control Barrier Functions for Signal Temporal Logic Tasks under Unknown Dynamics",
