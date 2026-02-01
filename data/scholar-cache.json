@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 518,
-      "recent": 513
+      "all": 520,
+      "recent": 515
     },
     "h-index": {
       "all": 12,
@@ -27,7 +27,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:9yKSN-GCB0IC",
       "authors": "A Isaly, OS Patil, RG Sanfelice, WE Dixon",
       "venue": "2021 American Control Conference (ACC), 3719-3724, 2021",
-      "cited": 47,
+      "cited": 48,
       "year": 2021
     },
     {
@@ -207,6 +207,14 @@
       "year": 2025
     },
     {
+      "title": "System Identification and Control Using Lyapunov-Based Deep Neural Networks without Persistent Excitation: A Concurrent Learning Approach",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ZeXyd9-uunAC",
+      "authors": "RG Hart, OS Patil, ZI Bell, WE Dixon",
+      "venue": "arXiv preprint arXiv:2505.10678, 2025",
+      "cited": 3,
+      "year": 2025
+    },
+    {
       "title": "Lyapunov-Based Deep Neural Networks for Adaptive Control of Stochastic Nonlinear Systems",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:M3ejUd6NZC8C",
       "authors": "S Akbari, CF Nino, OS Patil, WE Dixon",
@@ -235,14 +243,6 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TQgYirikUcIC",
       "authors": "WA Makumi, OS Patil, WE Dixon",
       "venue": "Automatica 180, 112462, 2025",
-      "cited": 2,
-      "year": 2025
-    },
-    {
-      "title": "System Identification and Control Using Lyapunov-Based Deep Neural Networks without Persistent Excitation: A Concurrent Learning Approach",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ZeXyd9-uunAC",
-      "authors": "RG Hart, OS Patil, ZI Bell, WE Dixon",
-      "venue": "arXiv preprint arXiv:2505.10678, 2025",
       "cited": 2,
       "year": 2025
     },
