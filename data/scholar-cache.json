@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 520,
-      "recent": 515
+      "all": 522,
+      "recent": 517
     },
     "h-index": {
       "all": 12,
@@ -143,6 +143,14 @@
       "year": 2023
     },
     {
+      "title": "Exponential stability with rise controllers for uncertain nonlinear systems with unknown time-varying state delays",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:eQOLeE2rZwMC",
+      "authors": "OS Patil, KJ Stubbs, PM Amy, WE Dixon",
+      "venue": "2022 IEEE 61st conference on decision and control (CDC), 6431-6435, 2022",
+      "cited": 9,
+      "year": 2022
+    },
+    {
       "title": "Accelerated gradient approach for neural network adaptive control of nonlinear systems",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:YsMSGLbcyi4C",
       "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
@@ -157,14 +165,6 @@
       "venue": "arXiv preprint arXiv:2406.14430, 2024",
       "cited": 8,
       "year": 2024
-    },
-    {
-      "title": "Exponential stability with rise controllers for uncertain nonlinear systems with unknown time-varying state delays",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:eQOLeE2rZwMC",
-      "authors": "OS Patil, KJ Stubbs, PM Amy, WE Dixon",
-      "venue": "2022 IEEE 61st conference on decision and control (CDC), 6431-6435, 2022",
-      "cited": 8,
-      "year": 2022
     },
     {
       "title": "Lyapunov-Based Graph Neural Networks for Adaptive Control of Multi-Agent Systems",
@@ -195,7 +195,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
       "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
       "venue": "IEEE Access, 2025",
-      "cited": 3,
+      "cited": 4,
       "year": 2025
     },
     {
@@ -293,6 +293,22 @@
       "venue": "",
       "cited": 1,
       "year": 0
+    },
+    {
+      "title": "PokeNet: Learning Kinematic Models of Articulated Objects from Human Observations",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:iH-uZ7U-co4C",
+      "authors": "A Gupta, W Gu, O Patil, JK Lee, N Gopalan",
+      "venue": "arXiv preprint arXiv:2602.02741, 2026",
+      "cited": 0,
+      "year": 2026
+    },
+    {
+      "title": "Riemannian Lyapunov Optimizer: A Unified Framework for Optimization",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:bEWYMUwI8FkC",
+      "authors": "Y Wang, OS Patil, WE Dixon",
+      "venue": "arXiv preprint arXiv:2601.22284, 2026",
+      "cited": 0,
+      "year": 2026
     },
     {
       "title": "Concurrent Learning for System Identification and Control Using Lyapunov-Based Deep Neural Networks",
