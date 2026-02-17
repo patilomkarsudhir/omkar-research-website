@@ -100,49 +100,76 @@ export default function FunStuffClient() {
 
           <div>
             <h3 className="text-xl font-semibold text-white/95 mb-4">Indian Classical Music</h3>
-            <p className="text-[var(--muted)] mb-6">
-              A raga is a melodic framework for improvisation (part scale, part mood, part grammar). This interactive tool includes both a generator and guided tutorials.
-            </p>
+            <div className="text-[var(--muted)] mb-6 space-y-4">
+              <p>
+                Imagine a musical system over 2,000 years old where there are no fixed compositions to memorize. Instead, musicians learn <em>ragas</em>: melodic blueprints that tell you which notes to use, which to emphasize, which sequences are forbidden, and what emotional mood to evoke. A morning raga sounds different from an evening one. A raga for longing differs from one for celebration.
+              </p>
+              <p>
+                Unlike Western scales, a raga is not just a set of notes. It comes with rules: certain phrases are signature moves, certain transitions are forbidden, and certain notes must be ornamented with microtonal bends called <em>andolan</em>. Master musicians spend decades internalizing these constraints, then improvise freely within them, often for hours at a stretch.
+              </p>
+              <p>
+                I built this tool to explore how these ancient rules can be encoded algorithmically, and to help anyone, regardless of background, experience what makes ragas so captivating.
+              </p>
+            </div>
 
             <a
               href="/raga-generator.html"
-              className="group block rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-colors"
+              className="group block rounded-xl overflow-hidden bg-gradient-to-br from-amber-900/40 via-orange-900/30 to-rose-900/40 border border-amber-500/20 hover:border-amber-400/40 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10"
             >
-              <div className="p-6">
-                <div className="flex items-start justify-between gap-6">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <h4 className="text-lg font-semibold text-white/95">Raga Generator + Tutorials</h4>
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full border border-white/10 text-[var(--accent)]">
-                        Beginner-friendly
-                      </span>
+              <div className="flex flex-col md:flex-row">
+                {/* Decorative visual panel */}
+                <div className="relative md:w-48 h-32 md:h-auto bg-gradient-to-br from-amber-600/30 via-orange-500/20 to-rose-600/30 flex items-center justify-center overflow-hidden">
+                  <div className="absolute inset-0 opacity-30">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border border-amber-400/40 rounded-full" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 border border-orange-400/40 rounded-full" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 border border-rose-400/40 rounded-full" />
+                  </div>
+                  <div className="relative z-10 text-center">
+                    <div className="text-4xl mb-1">🎶</div>
+                    <div className="text-xs font-medium text-amber-200/80 tracking-wider uppercase">Interactive</div>
+                  </div>
+                </div>
+
+                {/* Content panel */}
+                <div className="flex-1 p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <h4 className="text-lg font-bold text-amber-100">Raga Generator + Tutorials</h4>
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          No prior knowledge needed
+                        </span>
+                      </div>
+                      <p className="text-sm text-white/70 group-hover:text-white/90 transition-colors">
+                        Choose from 15+ ragas spanning morning devotion to midnight romance. The generator plays endless, never-repeating melodies that follow each raga's grammar. Switch to Tutorials mode to see the scale, learn characteristic phrases, and practice on an interactive keyboard with visual feedback.
+                      </p>
                     </div>
-                    <p className="text-sm text-[var(--muted)] group-hover:text-white/80 transition-colors max-w-2xl">
-                      Pick a raga, hear it rendered with Indian-instrument style synthesis, then learn how it works via raga characteristics, a phrase library, and an interactive practice keyboard.
-                    </p>
+
+                    <div className="flex-shrink-0 text-amber-400 hidden md:block">
+                      <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </div>
                   </div>
 
-                  <div className="flex-shrink-0 text-[var(--accent)]">
-                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+                    <div className="rounded-lg bg-black/20 border border-amber-500/20 px-3 py-2 text-amber-100/90">
+                      Procedural melodies
+                    </div>
+                    <div className="rounded-lg bg-black/20 border border-amber-500/20 px-3 py-2 text-amber-100/90">
+                      Phrase library
+                    </div>
+                    <div className="rounded-lg bg-black/20 border border-amber-500/20 px-3 py-2 text-amber-100/90">
+                      Practice keyboard
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-amber-400 group-hover:text-amber-300 transition-colors">
+                    <span>Launch the raga generator</span>
+                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
                   </div>
-                </div>
-
-                <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                  <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white/85">
-                    Guided tutorials
-                  </div>
-                  <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white/85">
-                    Phrase library (pakad)
-                  </div>
-                  <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white/85">
-                    Interactive practice
-                  </div>
-                </div>
-
-                <div className="mt-5 text-sm font-medium text-[var(--accent)]">
-                  Open raga-generator
                 </div>
               </div>
             </a>
