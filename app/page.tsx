@@ -196,11 +196,12 @@ export default function Page() {
 					<a href="/bulletcad.html" className="group">
 						<div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-red-500/20 to-red-700/30 transition shadow-sm hover:shadow-md hover:brightness-110 dark:border-white/5 w-[210px] h-48">
 							<div className="h-28 sm:h-32 w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/20 dark:to-red-800/20">
-								<svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-red-600 dark:text-red-400">
-									<path d="M3 9L12 3L21 9V21H3V9Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-									<path d="M9 12H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-									<path d="M9 16H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-								</svg>
+								<img
+									src="/BulletCAD.png"
+									alt="BulletCAD"
+									className="h-full w-full object-cover object-center scale-[1.01] transition-transform duration-500 group-hover:scale-[1.05]"
+									loading="lazy"
+								/>
 							</div>
 							<div className="p-3 flex items-start gap-3">
 								<div className="flex-1">
