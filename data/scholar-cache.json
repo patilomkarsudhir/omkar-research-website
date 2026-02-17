@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 526,
-      "recent": 521
+      "all": 527,
+      "recent": 522
     },
     "h-index": {
       "all": 12,
@@ -119,20 +119,20 @@
       "year": 2023
     },
     {
+      "title": "Deep adaptive indirect herding of multiple target agents with unknown interaction dynamics",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:5nxA0vEk-isC",
+      "authors": "CF Nino, OS Patil, JN Philor, ZI Bell, WE Dixon",
+      "venue": "2023 62nd IEEE Conference on Decision and Control (CDC), 2509-2514, 2023",
+      "cited": 11,
+      "year": 2023
+    },
+    {
       "title": "Integral concurrent learning-based accelerated gradient adaptive control of uncertain Euler-Lagrange systems",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Y0pCki6q_DkC",
       "authors": "DM Le, OS Patil, PM Amy, WE Dixon",
       "venue": "2022 American Control Conference (ACC), 806-811, 2022",
       "cited": 11,
       "year": 2022
-    },
-    {
-      "title": "Deep adaptive indirect herding of multiple target agents with unknown interaction dynamics",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:5nxA0vEk-isC",
-      "authors": "CF Nino, OS Patil, JN Philor, ZI Bell, WE Dixon",
-      "venue": "2023 62nd IEEE Conference on Decision and Control (CDC), 2509-2514, 2023",
-      "cited": 10,
-      "year": 2023
     },
     {
       "title": "Composite adaptive Lyapunov-based deep neural network (Lb-DNN) controller",
