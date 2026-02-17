@@ -94,6 +94,23 @@ export default function FunStuffClient() {
               />
             </div>
           </div>
+
+          <div>
+            <h3 className="text-xl font-semibold text-white/95 mb-6">Raga Generator</h3>
+            <p className="text-[var(--muted)] mb-6">Explore the mathematical foundations of Indian classical music through interactive raga generation and melodic improvisation.</p>
+            <a
+              href="/raga-generator.html"
+              className="inline-flex items-center gap-3 px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg transition-all duration-200"
+            >
+              <div className="space-y-1">
+                <h4 className="font-semibold text-white/95">Raga Generator</h4>
+                <p className="text-sm text-[var(--muted)]">Melodic frameworks of Indian classical music. Learn ragas, compose variations, and improvise like a classical master.</p>
+              </div>
+              <svg className="w-5 h-5 text-white/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </a>
+          </div>
         </div>
       </Section>
 
