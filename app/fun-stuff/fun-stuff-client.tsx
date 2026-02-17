@@ -33,14 +33,15 @@ export default function FunStuffClient() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Klein Bottle */}
               <div className="flex flex-col items-center">
-                <div className="bg-white/5 rounded-lg p-6 w-full h-64 flex items-center justify-center hover:bg-white/10 transition-colors mb-4">
-                  <Image
-                    src="/Klein Bottle.jpg"
-                    alt="Klein Bottle"
-                    width={250}
-                    height={250}
-                    className="rounded object-contain"
-                  />
+                <div className="bg-white/5 rounded-lg p-4 w-full h-64 flex items-center justify-center hover:bg-white/10 transition-colors mb-4 overflow-hidden">
+                  <div className="relative w-full h-full">
+                    <Image
+                      src="/Klein Bottle.jpg"
+                      alt="Klein Bottle"
+                      fill
+                      className="rounded object-contain"
+                    />
+                  </div>
                 </div>
                 <h4 className="text-lg font-semibold text-white/95 mb-2">Klein Bottle</h4>
                 <p className="text-sm text-center text-[var(--muted)]">A non-orientable surface without boundary, where inside and outside merge into architectural elegance.</p>
@@ -48,14 +49,15 @@ export default function FunStuffClient() {
 
               {/* Tensegrity 1 */}
               <div className="flex flex-col items-center">
-                <div className="bg-white/5 rounded-lg p-6 w-full h-64 flex items-center justify-center hover:bg-white/10 transition-colors mb-4">
-                  <Image
-                    src="/Tensegrity 1.jpg"
-                    alt="Tensegrity Structure"
-                    width={250}
-                    height={250}
-                    className="rounded object-contain"
-                  />
+                <div className="bg-white/5 rounded-lg p-4 w-full h-64 flex items-center justify-center hover:bg-white/10 transition-colors mb-4 overflow-hidden">
+                  <div className="relative w-full h-full">
+                    <Image
+                      src="/Tensegrity 1.jpg"
+                      alt="Tensegrity Structure"
+                      fill
+                      className="rounded object-contain"
+                    />
+                  </div>
                 </div>
                 <h4 className="text-lg font-semibold text-white/95 mb-2">Tensegrity</h4>
                 <p className="text-sm text-center text-[var(--muted)]">Tensional integrity in balance: discontinuous compression and continuous tension creating strength through equilibrium.</p>
@@ -63,14 +65,15 @@ export default function FunStuffClient() {
 
               {/* Voronoi Ball */}
               <div className="flex flex-col items-center">
-                <div className="bg-white/5 rounded-lg p-6 w-full h-64 flex items-center justify-center hover:bg-white/10 transition-colors mb-4">
-                  <Image
-                    src="/Voronoi Ball.jpg"
-                    alt="Voronoi Ball"
-                    width={250}
-                    height={250}
-                    className="rounded object-contain"
-                  />
+                <div className="bg-white/5 rounded-lg p-4 w-full h-64 flex items-center justify-center hover:bg-white/10 transition-colors mb-4 overflow-hidden">
+                  <div className="relative w-full h-full">
+                    <Image
+                      src="/Voronoi Ball.jpg"
+                      alt="Voronoi Ball"
+                      fill
+                      className="rounded object-contain"
+                    />
+                  </div>
                 </div>
                 <h4 className="text-lg font-semibold text-white/95 mb-2">Voronoi Ball</h4>
                 <p className="text-sm text-center text-[var(--muted)]">Cellular geometry dividing space into regions of geometric proximity. Nature's tessellation principle materialized.</p>
