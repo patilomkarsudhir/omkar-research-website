@@ -39,7 +39,7 @@ export default function FunStuffClient() {
                     alt="Klein Bottle"
                     width={250}
                     height={250}
-                    className="rounded object-cover w-full h-full"
+                    className="rounded object-contain"
                   />
                 </div>
                 <h4 className="text-lg font-semibold text-white/95 mb-2">Klein Bottle</h4>
@@ -54,7 +54,7 @@ export default function FunStuffClient() {
                     alt="Tensegrity Structure"
                     width={250}
                     height={250}
-                    className="rounded object-cover w-full h-full"
+                    className="rounded object-contain"
                   />
                 </div>
                 <h4 className="text-lg font-semibold text-white/95 mb-2">Tensegrity</h4>
@@ -69,7 +69,7 @@ export default function FunStuffClient() {
                     alt="Voronoi Ball"
                     width={250}
                     height={250}
-                    className="rounded object-cover w-full h-full"
+                    className="rounded object-contain"
                   />
                 </div>
                 <h4 className="text-lg font-semibold text-white/95 mb-2">Voronoi Ball</h4>
