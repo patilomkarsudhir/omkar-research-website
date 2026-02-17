@@ -212,6 +212,8 @@
                 <button class="feature-btn" id="f-cut">Cut</button>
                 <button class="feature-btn" id="f-fillet">Fillet</button>
                 <button class="feature-btn" id="f-chamfer">Chamfer</button>
+                <button class="feature-btn" id="f-move-sketch">Move Sketch</button>
+                <button class="feature-btn" id="f-rotate-sketch">Rotate Sketch</button>
             </div>
         </div>
 
@@ -749,6 +751,10 @@ class BulletCADApp {
         // Sketch UX: hover + rubber-band previews
         this.sketchHover = { group: null, marker: null, geom: null, mat: null };
         this.sketchDraft = { obj: null, geometry: null, material: null, kind: null };
+
+        // Sketch plane proxy for transformation
+        this.sketchPlaneProxy = null;
+        this.isTransformingSketchPlane = false;
 
         // Step 9: sketch selection + dimensions
         this.sketchSelection = [];
@@ -1841,6 +1847,168 @@ class BulletCADApp {
         return new THREE.Vector2(d.dot(sp.u), d.dot(sp.v));
     }
 
+    // Sketch plane proxy methods for moving/rotating sketches
+    createSketchPlaneProxy() {
+        if (this.sketchPlaneProxy) {
+            this.scene.remove(this.sketchPlaneProxy);
+        }
+        
+        const sp = this.sketchPlane || this.getDefaultSketchPlane();
+        
+        // Create a visible proxy object representing the sketch plane
+        const proxyGroup = new THREE.Group();
+        proxyGroup.name = 'sketch-plane-proxy';
+        
+        // Create axes helper to show orientation
+        const axesSize = 15;
+        const axesHelper = new THREE.AxesHelper(axesSize);
+        proxyGroup.add(axesHelper);
+        
+        // Create a semi-transparent plane mesh
+        const planeGeom = new THREE.PlaneGeometry(30, 30);
+        const planeMat = new THREE.MeshBasicMaterial({
+            color: 0xf97316,
+            transparent: true,
+            opacity: 0.2,
+            side: THREE.DoubleSide,
+            depthTest: false,
+        });
+        const planeMesh = new THREE.Mesh(planeGeom, planeMat);
+        planeMesh.renderOrder = 100;
+        proxyGroup.add(planeMesh);
+        
+        // Position and orient the proxy to match the sketch plane
+        proxyGroup.position.copy(sp.origin);
+        
+        // Set rotation from u, v, w vectors
+        const rotMatrix = new THREE.Matrix4().makeBasis(sp.u.clone().normalize(), sp.v.clone().normalize(), sp.w.clone().normalize());
+        proxyGroup.quaternion.setFromRotationMatrix(rotMatrix);
+        
+        this.scene.add(proxyGroup);
+        this.sketchPlaneProxy = proxyGroup;
+        
+        return proxyGroup;
+    }
+
+    removeSketchPlaneProxy() {
+        if (this.sketchPlaneProxy) {
+            this.scene.remove(this.sketchPlaneProxy);
+            this.sketchPlaneProxy.traverse(child => {
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(m => m.dispose());
+                    } else {
+                        child.material.dispose();
+                    }
+                }
+            });
+            this.sketchPlaneProxy = null;
+        }
+        this.isTransformingSketchPlane = false;
+    }
+
+    startSketchPlaneTransform(mode = 'translate') {
+        if (!this.sketchPlane) {
+            this.toast('No active sketch plane to move', 'warning');
+            return;
+        }
+        
+        // Create proxy if needed
+        if (!this.sketchPlaneProxy) {
+            this.createSketchPlaneProxy();
+        }
+        
+        this.isTransformingSketchPlane = true;
+        this.transform.setMode(mode);
+        this.transform.attach(this.sketchPlaneProxy);
+        
+        const action = mode === 'translate' ? 'Move' : 'Rotate';
+        this.setHUD(`${action} sketch plane. Drag to transform, Enter/Esc to finish.`, 'sketch');
+        this.toast(`${action} sketch plane - drag to transform`, 'info');
+    }
+
+    updateSketchPlaneFromProxy() {
+        if (!this.sketchPlaneProxy || !this.sketchPlane) return;
+        
+        // Extract new origin from proxy position
+        const newOrigin = this.sketchPlaneProxy.position.clone();
+        
+        // Extract new u, v, w vectors from proxy rotation
+        const rotMatrix = new THREE.Matrix4().makeRotationFromQuaternion(this.sketchPlaneProxy.quaternion);
+        const newU = new THREE.Vector3(1, 0, 0).applyMatrix4(rotMatrix).normalize();
+        const newV = new THREE.Vector3(0, 1, 0).applyMatrix4(rotMatrix).normalize();
+        const newW = new THREE.Vector3(0, 0, 1).applyMatrix4(rotMatrix).normalize();
+        
+        // Update sketch plane
+        this.sketchPlane.origin.copy(newOrigin);
+        this.sketchPlane.u.copy(newU);
+        this.sketchPlane.v.copy(newV);
+        this.sketchPlane.w.copy(newW);
+        
+        // Update sketch visualization
+        this.updateSketchViz();
+        
+        // Regenerate all sketch line geometries
+        this.regenerateSketchGeometry();
+    }
+
+    regenerateSketchGeometry() {
+        for (const ent of this.sketchLines || []) {
+            if (!ent || !ent.line) continue;
+            
+            let newPoints = [];
+            if (ent.type === 'line') {
+                newPoints = [
+                    this.sketchToWorld(ent.p1),
+                    this.sketchToWorld(ent.p2),
+                ];
+            } else if (ent.type === 'rect') {
+                const p1 = ent.p1;
+                const p2 = ent.p2;
+                newPoints = [
+                    this.sketchToWorld(new THREE.Vector2(p1.x, p1.y)),
+                    this.sketchToWorld(new THREE.Vector2(p2.x, p1.y)),
+                    this.sketchToWorld(new THREE.Vector2(p2.x, p2.y)),
+                    this.sketchToWorld(new THREE.Vector2(p1.x, p2.y)),
+                    this.sketchToWorld(new THREE.Vector2(p1.x, p1.y)),
+                ];
+            } else if (ent.type === 'circle') {
+                const curve = new THREE.EllipseCurve(
+                    ent.center.x, ent.center.y,
+                    ent.radius, ent.radius,
+                    0, 2 * Math.PI, false, 0
+                );
+                newPoints = curve.getPoints(CONFIG.SKETCH_CIRCLE_POINTS).map(
+                    p => this.sketchToWorld(new THREE.Vector2(p.x, p.y))
+                );
+            }
+            
+            if (newPoints.length > 0) {
+                const oldGeom = ent.line.geometry;
+                ent.line.geometry = new THREE.BufferGeometry().setFromPoints(newPoints);
+                ent.geometry = ent.line.geometry;
+                oldGeom?.dispose?.();
+            }
+        }
+        
+        // Update point selection visuals if any
+        this.updateSketchPointSelectionVisuals();
+    }
+
+    finishSketchPlaneTransform() {
+        this.transform.detach();
+        this.removeSketchPlaneProxy();
+        this.isTransformingSketchPlane = false;
+        
+        if (this.sketchMode) {
+            this.setHUD('Sketch plane updated. Continue sketching.', 'sketch');
+        } else {
+            this.hudEl.className = 'hud';
+        }
+        this.toast('Sketch plane updated', 'success');
+    }
+
     hasBodySelection() {
         return (this.selection || []).some(p => p?.kind === 'body' && p?.obj?.mesh);
     }
@@ -2208,7 +2376,11 @@ class BulletCADApp {
         this.transform = new THREE.TransformControls(this.camera, this.renderer.domElement);
         this.transform.addEventListener('dragging-changed', e => (this.orbit.enabled = !e.value));
         this.transform.addEventListener('objectChange', () => {
-            if (this.selectedObj) this.updateProps();
+            if (this.isTransformingSketchPlane && this.sketchPlaneProxy) {
+                this.updateSketchPlaneFromProxy();
+            } else if (this.selectedObj) {
+                this.updateProps();
+            }
         });
         this.scene.add(this.transform);
 
@@ -2674,6 +2846,7 @@ class BulletCADApp {
         this.clearSketchSelection();
         this.sketchConstraints = [];
         this.clearSketchViz();
+        this.removeSketchPlaneProxy();
 
         this.clearSketchHoverViz();
 
@@ -4123,6 +4296,15 @@ DATA;
 
         if (e.target.tagName === 'INPUT') return;
 
+        // Handle sketch plane transformation finish
+        if (this.isTransformingSketchPlane) {
+            if (key === 'enter' || key === 'escape') {
+                e.preventDefault();
+                this.finishSketchPlaneTransform();
+                return;
+            }
+        }
+
         if (e.key === 'Shift') {
             this.shiftDown = true;
             this.updateTransformSnapping();
@@ -4273,6 +4455,12 @@ DATA;
                 confirmLabel: 'Apply',
                 confirm: () => this.doChamfer(),
             });
+        });
+        document.getElementById('f-move-sketch').addEventListener('click', () => {
+            this.startSketchPlaneTransform('translate');
+        });
+        document.getElementById('f-rotate-sketch').addEventListener('click', () => {
+            this.startSketchPlaneTransform('rotate');
         });
 
         document.getElementById('extrude-ok').addEventListener('click', () => {
