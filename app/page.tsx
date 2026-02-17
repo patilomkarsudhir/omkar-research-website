@@ -193,6 +193,24 @@ export default function Page() {
 			<Section title="Quick Tools and Accessories">
 				<p className="text-[var(--muted)] mb-6">Tools I made for my personal use but do not mind sharing with everyone.</p>
 				<div className="flex gap-4 flex-wrap">
+					<a href="/bulletcad.html" className="group">
+						<div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-red-500/20 to-red-700/30 transition shadow-sm hover:shadow-md hover:brightness-110 dark:border-white/5 w-[210px] h-48">
+							<div className="h-28 sm:h-32 w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/20 dark:to-red-800/20">
+								<svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-red-600 dark:text-red-400">
+									<path d="M3 9L12 3L21 9V21H3V9Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+									<path d="M9 12H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+									<path d="M9 16H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+								</svg>
+							</div>
+							<div className="p-3 flex items-start gap-3">
+								<div className="flex-1">
+									<h3 className="text-base font-semibold tracking-tight">BulletCAD</h3>
+								</div>
+							</div>
+							<div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl" />
+							<div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/5 blur-xl group-hover:scale-125 transition" />
+						</div>
+					</a>
 					<a href="/convert-images.html" className="group">
 						<div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-orange-500/20 to-orange-700/30 transition shadow-sm hover:shadow-md hover:brightness-110 dark:border-white/5 w-[210px] h-48">
 							<div className="h-28 sm:h-32 w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20">

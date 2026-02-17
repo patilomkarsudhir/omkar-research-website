@@ -1,0 +1,4302 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BulletCAD</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/STLExporter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three-bvh-csg@0.0.16/build/index.umd.cjs"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, sans-serif; background: #111; color: #fff; overflow: hidden; }
+        
+        .app { display: grid; grid-template-columns: 240px 1fr 260px; grid-template-rows: 50px 1fr 28px; height: 100vh; }
+        
+        .header { grid-column: 1/-1; background: #1a1a1a; display: flex; align-items: center; padding: 0 16px; gap: 16px; border-bottom: 1px solid #333; }
+        .logo { font-weight: 700; font-size: 16px; color: #f97316; }
+        
+        .toolbar { display: flex; gap: 4px; flex: 1; }
+        .tool-group { display: flex; gap: 2px; padding: 0 8px; border-right: 1px solid #333; }
+        .tool-btn { width: 36px; height: 36px; background: transparent; border: none; border-radius: 6px; color: #999; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .tool-btn:hover { background: #2a2a2a; color: #fff; }
+        .tool-btn.active { background: #f97316; color: #fff; }
+        .tool-btn:disabled { opacity: 0.3; cursor: default; }
+        .tool-btn svg { width: 18px; height: 18px; }
+
+        .segmented { display: flex; background: #252525; border: 1px solid #333; border-radius: 8px; overflow: hidden; height: 36px; align-items: stretch; }
+        .seg-btn { padding: 0 10px; background: transparent; border: none; color: #999; cursor: pointer; font-size: 12px; }
+        .seg-btn:hover { background: #2a2a2a; color: #fff; }
+        .seg-btn.active { background: rgba(249,115,22,0.25); color: #f97316; }
+        
+        .btn { padding: 8px 16px; border-radius: 6px; border: none; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-primary { background: #f97316; color: #fff; }
+        .btn-primary:hover { background: #fb923c; }
+        
+        .render-modes { display: flex; gap: 4px; }
+        .render-btn { width: 28px; height: 28px; background: transparent; border: 1px solid #333; border-radius: 4px; color: #999; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+        .render-btn:hover { background: #252525; color: #fff; }
+        .render-btn.active { background: #f97316; border-color: #f97316; color: #fff; }
+        
+        .panel { background: #1a1a1a; border-right: 1px solid #333; overflow-y: auto; }
+        .panel-right { border-right: none; border-left: 1px solid #333; }
+        
+        .section { padding: 12px; border-bottom: 1px solid #333; }
+        .section-title { font-size: 11px; color: #666; text-transform: uppercase; margin-bottom: 10px; }
+        
+        .prim-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .prim-btn { aspect-ratio: 1; background: #252525; border: 1px solid #333; border-radius: 8px; color: #999; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 10px; }
+        .prim-btn:hover { background: #f97316; border-color: #f97316; color: #fff; }
+        .prim-btn svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+        
+        .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .feature-btn { padding: 10px; background: #252525; border: 1px solid #333; border-radius: 6px; color: #999; cursor: pointer; font-size: 11px; text-align: center; }
+        .feature-btn:hover { border-color: #f97316; color: #fff; }
+        .feature-btn:disabled { opacity: 0.4; cursor: default; }
+
+        
+        
+        .tree-item { padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; color: #999; display: flex; align-items: center; gap: 8px; margin: 2px 0; }
+        .tree-item:hover { background: #252525; color: #fff; }
+        .tree-item.selected { background: rgba(249,115,22,0.2); color: #f97316; }
+
+        .feature-item { padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; color: #999; display: flex; align-items: center; gap: 8px; margin: 2px 0; }
+        .feature-item:hover { background: #252525; color: #fff; }
+        .feature-item.selected { background: rgba(249,115,22,0.2); color: #f97316; }
+        
+        .viewport { background: #0a0a0a; position: relative; }
+        #canvas { width: 100%; height: 100%; display: block; }
+        
+        .hud { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8); padding: 8px 12px; border-radius: 6px; font-size: 12px; display: none; }
+        .hud.active { display: block; }
+        .hud.sketch { border: 1px solid #8b5cf6; color: #8b5cf6; }
+        .hud.face { border: 1px solid #06b6d4; color: #06b6d4; }
+
+        .numhud { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); padding: 8px 10px; border-radius: 6px; font-size: 12px; display: none; border: 1px solid #333; min-width: 240px; }
+        .numhud.active { display: block; }
+        .numhud-title { font-size: 11px; color: #bbb; margin-bottom: 6px; display: flex; justify-content: space-between; gap: 8px; }
+        .numhud-hint { font-size: 10px; color: #666; }
+        .numhud-row { display: grid; grid-template-columns: 16px 1fr 16px 1fr 16px 1fr; gap: 6px; align-items: center; }
+        .numhud-row label { font-family: monospace; font-size: 11px; color: #888; }
+        .numhud-row input { width: 100%; padding: 6px; background: #252525; border: 1px solid #333; border-radius: 4px; color: #fff; font-size: 11px; font-family: monospace; }
+        .numhud-row input:focus { border-color: #f97316; outline: none; }
+        
+        .coords { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 6px 10px; border-radius: 4px; font-size: 11px; font-family: monospace; color: #666; }
+        
+        .status { grid-column: 1/-1; background: #1a1a1a; display: flex; align-items: center; padding: 0 16px; font-size: 11px; color: #666; gap: 20px; border-top: 1px solid #333; }
+        
+        .toast-container { position: fixed; top: 60px; right: 16px; z-index: 1000; }
+        .toast { background: #252525; border-left: 3px solid #f97316; padding: 10px 16px; margin-bottom: 8px; border-radius: 4px; font-size: 13px; animation: slideIn 0.2s ease; }
+        .toast.success { border-color: #22c55e; }
+        .toast.error { border-color: #ef4444; }
+        .toast.warning { border-color: #f59e0b; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal.active { display: flex; }
+        .modal-box { background: #1a1a1a; border-radius: 12px; padding: 20px; width: 320px; }
+        .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+        .modal-input { width: 100%; padding: 10px; background: #252525; border: 1px solid #333; border-radius: 6px; color: #fff; font-size: 14px; margin-bottom: 12px; }
+        .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+        .modal-btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; }
+        .modal-cancel { background: #333; color: #fff; }
+        .modal-confirm { background: #f97316; color: #fff; }
+
+        .empty { padding: 30px; text-align: center; color: #555; font-size: 12px; }
+
+        .prop-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .prop-label { font-size: 11px; color: #666; width: 50px; }
+        .prop-inputs { display: flex; gap: 4px; flex: 1; }
+        .prop-input { flex: 1; padding: 6px; background: #252525; border: 1px solid #333; border-radius: 4px; color: #fff; font-size: 11px; font-family: monospace; width: 100%; }
+        .prop-input:focus { border-color: #f97316; outline: none; }
+
+        .color-row { display: flex; align-items: center; gap: 10px; }
+        .color-swatch { width: 32px; height: 32px; border-radius: 6px; border: 2px solid #444; cursor: pointer; }
+        .color-hex { font-family: monospace; font-size: 11px; color: #888; }
+        input[type="color"] { opacity: 0; position: absolute; pointer-events: none; }
+        
+        .material-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid #333; }
+        .material-row { display: grid; grid-template-columns: 60px 1fr; gap: 8px; margin-bottom: 10px; align-items: center; }
+        .material-label { font-size: 10px; color: #666; text-transform: uppercase; }
+        .material-input { padding: 4px; background: #252525; border: 1px solid #333; border-radius: 4px; color: #fff; font-size: 10px; }
+        .material-input:focus { border-color: #f97316; outline: none; }
+        
+        .geometry-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid #333; }
+        .geometry-stat { display: grid; grid-template-columns: 80px 1fr; gap: 8px; margin-bottom: 8px; font-size: 11px; }
+        .geometry-label { color: #666; }
+        .geometry-value { color: #f97316; font-family: monospace; font-weight: 600; }
+    </style>
+</head>
+
+<body>
+<div class="app">
+    <header class="header">
+        <div class="logo">⬡ BulletCAD</div>
+        <div class="toolbar">
+            <div class="tool-group">
+                <button class="tool-btn active" id="t-select" title="Select (V)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7 17 2.5-7.5L20 10 3 3z"/></svg>
+                </button>
+                <button class="tool-btn" id="t-face" title="Select Face (F)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 12h16M12 4v16"/></svg>
+                </button>
+                <button class="tool-btn" id="t-move" title="Move (G)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
+                </button>
+                <button class="tool-btn" id="t-rotate" title="Rotate (R)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-6-8.5"/><path d="M21 3v5h-5"/></svg>
+                </button>
+                <button class="tool-btn" id="t-scale" title="Scale (S)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m6 6v-5m0 5h-5M3 16v5h5M21 8V3h-5M3 8V3h5"/></svg>
+                </button>
+            </div>
+
+            <div class="tool-group" title="Selection Mode">
+                <div class="segmented" id="sel-mode">
+                    <button class="seg-btn active" data-selmode="body" title="Body selection (V)">Body</button>
+                    <button class="seg-btn" data-selmode="face" title="Face selection (F)">Face</button>
+                    <button class="seg-btn" data-selmode="edge" title="Edge selection (E)">Edge</button>
+                    <button class="seg-btn" data-selmode="vertex" title="Vertex selection (X)">Vtx</button>
+                </div>
+            </div>
+
+            <div class="tool-group">
+                <button class="tool-btn" id="t-line" title="Line (L)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 19L19 5"/></svg></button>
+                <button class="tool-btn" id="t-rect" title="Rectangle (B)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16"/></svg></button>
+                <button class="tool-btn" id="t-circle" title="Circle (C)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg></button>
+                <button class="tool-btn" id="t-measure" title="Measure (M)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20L20 4"/><path d="M8 4h12v12"/></svg></button>
+            </div>
+
+            <div class="tool-group">
+                <button class="tool-btn" id="t-undo" title="Undo (Ctrl+Z)" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/></svg></button>
+                <button class="tool-btn" id="t-redo" title="Redo (Ctrl+Y)" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 019-9 9 9 0 016 2.3l3 2.7"/></svg></button>
+            </div>
+
+            <div class="tool-group" title="Render Mode">
+                <div class="render-modes">
+                    <button class="render-btn active" id="render-shaded" title="Shaded">◯</button>
+                    <button class="render-btn" id="render-wireframe" title="Wireframe">⬚</button>
+                    <button class="render-btn" id="render-edges" title="Edges">◻</button>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" id="btn-save">Save</button>
+        <button class="btn btn-primary" id="btn-load">Load</button>
+        <button class="btn btn-primary" id="btn-import">Import STL</button>
+        <button class="btn btn-primary" id="btn-export">Export STL</button>
+        <button class="btn btn-primary" id="btn-export-step">Export STEP</button>
+        <input type="file" id="stl-file-input" accept=".stl" style="display:none" />
+    </header>
+
+    <aside class="panel">
+        <div class="section">
+            <div class="section-title">Primitives</div>
+            <div class="prim-grid">
+                <button class="prim-btn" data-prim="box"><svg viewBox="0 0 24 24"><path d="M21 16V8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v9"/></svg>Box</button>
+                <button class="prim-btn" data-prim="sphere"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3"/></svg>Sphere</button>
+                <button class="prim-btn" data-prim="cylinder"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/></svg>Cyl</button>
+                <button class="prim-btn" data-prim="cone"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="19" rx="8" ry="3"/><path d="M4 19L12 4l8 15"/></svg>Cone</button>
+                <button class="prim-btn" data-prim="torus"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="4"/><ellipse cx="12" cy="12" rx="4" ry="1.5"/></svg>Torus</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Operations</div>
+            <div class="feature-grid">
+                <button class="feature-btn" id="f-extrude">Extrude</button>
+                <button class="feature-btn" id="f-cut">Cut</button>
+                <button class="feature-btn" id="f-fillet">Fillet</button>
+                <button class="feature-btn" id="f-chamfer">Chamfer</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Features</div>
+            <div id="features"><div class="empty">No features yet.</div></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Objects</div>
+            <div id="tree"><div class="empty">No objects. Create a primitive.</div></div>
+        </div>
+    </aside>
+
+    <main class="viewport">
+        <canvas id="canvas"></canvas>
+        <div class="hud" id="hud"></div>
+        <div class="numhud" id="numhud" aria-hidden="true">
+            <div class="numhud-title">
+                <span id="numhud-title">Transform</span>
+                <span class="numhud-hint">Enter=Apply · Esc=Hide</span>
+            </div>
+            <div class="numhud-row">
+                <label for="numhud-x">X</label><input id="numhud-x" inputmode="decimal" placeholder="0" />
+                <label for="numhud-y">Y</label><input id="numhud-y" inputmode="decimal" placeholder="0" />
+                <label for="numhud-z">Z</label><input id="numhud-z" inputmode="decimal" placeholder="0" />
+            </div>
+        </div>
+        <div class="coords" id="coords">X: 0 Y: 0 Z: 0</div>
+    </main>
+
+    <aside class="panel panel-right">
+        <div class="section">
+            <div class="section-title">Properties</div>
+            <div id="props"><div class="empty">Select an object</div></div>
+        </div>
+    </aside>
+
+    <footer class="status">
+        <span>Objects: <strong id="s-obj">0</strong></span>
+        <span>Selected: <strong id="s-sel">None</strong></span>
+    </footer>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<div class="modal" id="m-extrude">
+    <div class="modal-box">
+        <div class="modal-title">Extrude</div>
+        <input type="number" class="modal-input" id="extrude-val" value="20" placeholder="Distance (mm)" />
+        <div class="modal-actions">
+            <button class="modal-btn modal-cancel" onclick="closeModal('m-extrude')">Cancel</button>
+            <button class="modal-btn modal-confirm" id="extrude-ok">Extrude</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="m-cut">
+    <div class="modal-box">
+        <div class="modal-title">Cut</div>
+        <input type="number" class="modal-input" id="cut-val" value="20" placeholder="Cut depth (mm)" />
+        <div class="modal-actions">
+            <button class="modal-btn modal-cancel" onclick="closeModal('m-cut')">Cancel</button>
+            <button class="modal-btn modal-confirm" id="cut-ok">Cut</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="m-fillet">
+    <div class="modal-box">
+        <div class="modal-title">Fillet</div>
+        <input type="number" class="modal-input" id="fillet-val" value="2" placeholder="Radius (mm)" />
+        <div class="modal-actions">
+            <button class="modal-btn modal-cancel" onclick="closeModal('m-fillet')">Cancel</button>
+            <button class="modal-btn modal-confirm" id="fillet-ok">Apply</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="m-chamfer">
+    <div class="modal-box">
+        <div class="modal-title">Chamfer</div>
+        <input type="number" class="modal-input" id="chamfer-val" value="2" placeholder="Distance (mm)" />
+        <div class="modal-actions">
+            <button class="modal-btn modal-cancel" onclick="closeModal('m-chamfer')">Cancel</button>
+            <button class="modal-btn modal-confirm" id="chamfer-ok">Apply</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="m-sketch-dim">
+    <div class="modal-box">
+        <div class="modal-title" id="skdim-title">Sketch Dimension</div>
+        <input type="number" class="modal-input" id="skdim-a" placeholder="Value" />
+        <input type="number" class="modal-input" id="skdim-b" placeholder="Value" style="display:none" />
+        <div class="modal-actions">
+            <button class="modal-btn modal-cancel" onclick="closeModal('m-sketch-dim')">Cancel</button>
+            <button class="modal-btn modal-confirm" id="skdim-ok">Apply</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// CSG Library for Boolean Operations (based on csg.js by Evan Wallace)
+const CSG = (function() {
+    const EPSILON = 1e-5;
+
+    class Vector {
+        constructor(x = 0, y = 0, z = 0) {
+            this.x = x; this.y = y; this.z = z;
+        }
+        clone() { return new Vector(this.x, this.y, this.z); }
+        negated() { return new Vector(-this.x, -this.y, -this.z); }
+        plus(a) { return new Vector(this.x + a.x, this.y + a.y, this.z + a.z); }
+        minus(a) { return new Vector(this.x - a.x, this.y - a.y, this.z - a.z); }
+        times(a) { return new Vector(this.x * a, this.y * a, this.z * a); }
+        dividedBy(a) { return new Vector(this.x / a, this.y / a, this.z / a); }
+        dot(a) { return this.x * a.x + this.y * a.y + this.z * a.z; }
+        lerp(a, t) { return this.plus(a.minus(this).times(t)); }
+        length() { return Math.sqrt(this.dot(this)); }
+        unit() { return this.dividedBy(this.length()); }
+        cross(a) {
+            return new Vector(
+                this.y * a.z - this.z * a.y,
+                this.z * a.x - this.x * a.z,
+                this.x * a.y - this.y * a.x
+            );
+        }
+    }
+
+    class Vertex {
+        constructor(pos, normal) {
+            this.pos = new Vector(pos.x, pos.y, pos.z);
+            this.normal = new Vector(normal.x, normal.y, normal.z);
+        }
+        clone() { return new Vertex(this.pos.clone(), this.normal.clone()); }
+        flip() { this.normal = this.normal.negated(); }
+        interpolate(other, t) {
+            return new Vertex(this.pos.lerp(other.pos, t), this.normal.lerp(other.normal, t));
+        }
+    }
+
+    class Plane {
+        constructor(normal, w) {
+            this.normal = normal;
+            this.w = w;
+        }
+        clone() { return new Plane(this.normal.clone(), this.w); }
+        flip() { this.normal = this.normal.negated(); this.w = -this.w; }
+
+        splitPolygon(polygon, coplanarFront, coplanarBack, front, back) {
+            const COPLANAR = 0, FRONT = 1, BACK = 2, SPANNING = 3;
+            let polygonType = 0;
+            const types = [];
+            for (let i = 0; i < polygon.vertices.length; i++) {
+                const t = this.normal.dot(polygon.vertices[i].pos) - this.w;
+                const type = (t < -EPSILON) ? BACK : (t > EPSILON) ? FRONT : COPLANAR;
+                polygonType |= type;
+                types.push(type);
+            }
+            switch (polygonType) {
+                case COPLANAR:
+                    (this.normal.dot(polygon.plane.normal) > 0 ? coplanarFront : coplanarBack).push(polygon);
+                    break;
+                case FRONT:
+                    front.push(polygon);
+                    break;
+                case BACK:
+                    back.push(polygon);
+                    break;
+                case SPANNING:
+                    const f = [], b = [];
+                    for (let i = 0; i < polygon.vertices.length; i++) {
+                        const j = (i + 1) % polygon.vertices.length;
+                        const ti = types[i], tj = types[j];
+                        const vi = polygon.vertices[i], vj = polygon.vertices[j];
+                        if (ti !== BACK) f.push(vi);
+                        if (ti !== FRONT) b.push(ti !== BACK ? vi.clone() : vi);
+                        if ((ti | tj) === SPANNING) {
+                            const t = (this.w - this.normal.dot(vi.pos)) / this.normal.dot(vj.pos.minus(vi.pos));
+                            const v = vi.interpolate(vj, t);
+                            f.push(v);
+                            b.push(v.clone());
+                        }
+                    }
+                    if (f.length >= 3) front.push(new Polygon(f, polygon.shared));
+                    if (b.length >= 3) back.push(new Polygon(b, polygon.shared));
+                    break;
+            }
+        }
+
+        static fromPoints(a, b, c) {
+            const n = b.minus(a).cross(c.minus(a)).unit();
+            return new Plane(n, n.dot(a));
+        }
+    }
+
+    class Polygon {
+        constructor(vertices, shared) {
+            this.vertices = vertices;
+            this.shared = shared;
+            this.plane = Plane.fromPoints(vertices[0].pos, vertices[1].pos, vertices[2].pos);
+        }
+        clone() {
+            return new Polygon(this.vertices.map(v => v.clone()), this.shared);
+        }
+        flip() {
+            this.vertices.reverse().forEach(v => v.flip());
+            this.plane.flip();
+        }
+    }
+
+    class Node {
+        constructor(polygons) {
+            this.plane = null;
+            this.front = null;
+            this.back = null;
+            this.polygons = [];
+            if (polygons) this.build(polygons);
+        }
+        clone() {
+            const node = new Node();
+            node.plane = this.plane && this.plane.clone();
+            node.front = this.front && this.front.clone();
+            node.back = this.back && this.back.clone();
+            node.polygons = this.polygons.map(p => p.clone());
+            return node;
+        }
+        invert() {
+            for (let i = 0; i < this.polygons.length; i++) this.polygons[i].flip();
+            this.plane && this.plane.flip();
+            this.front && this.front.invert();
+            this.back && this.back.invert();
+            const temp = this.front; this.front = this.back; this.back = temp;
+        }
+        clipPolygons(polygons) {
+            if (!this.plane) return polygons.slice();
+            let front = [], back = [];
+            for (let i = 0; i < polygons.length; i++) {
+                this.plane.splitPolygon(polygons[i], front, back, front, back);
+            }
+            if (this.front) front = this.front.clipPolygons(front);
+            if (this.back) back = this.back.clipPolygons(back);
+            else back = [];
+            return front.concat(back);
+        }
+        clipTo(bsp) {
+            this.polygons = bsp.clipPolygons(this.polygons);
+            if (this.front) this.front.clipTo(bsp);
+            if (this.back) this.back.clipTo(bsp);
+        }
+        allPolygons() {
+            let polygons = this.polygons.slice();
+            if (this.front) polygons = polygons.concat(this.front.allPolygons());
+            if (this.back) polygons = polygons.concat(this.back.allPolygons());
+            return polygons;
+        }
+        build(polygons) {
+            if (!polygons.length) return;
+            if (!this.plane) this.plane = polygons[0].plane.clone();
+            const front = [], back = [];
+            for (let i = 0; i < polygons.length; i++) {
+                this.plane.splitPolygon(polygons[i], this.polygons, this.polygons, front, back);
+            }
+            if (front.length) {
+                if (!this.front) this.front = new Node();
+                this.front.build(front);
+            }
+            if (back.length) {
+                if (!this.back) this.back = new Node();
+                this.back.build(back);
+            }
+        }
+    }
+
+    class CSG {
+        constructor() { this.polygons = []; }
+        clone() {
+            const csg = new CSG();
+            csg.polygons = this.polygons.map(p => p.clone());
+            return csg;
+        }
+        toPolygons() { return this.polygons; }
+
+        union(csg) {
+            const a = new Node(this.clone().polygons);
+            const b = new Node(csg.clone().polygons);
+            a.clipTo(b);
+            b.clipTo(a);
+            b.invert();
+            b.clipTo(a);
+            b.invert();
+            a.build(b.allPolygons());
+            return CSG.fromPolygons(a.allPolygons());
+        }
+
+        subtract(csg) {
+            const a = new Node(this.clone().polygons);
+            const b = new Node(csg.clone().polygons);
+            a.invert();
+            a.clipTo(b);
+            b.clipTo(a);
+            b.invert();
+            b.clipTo(a);
+            b.invert();
+            a.build(b.allPolygons());
+            a.invert();
+            return CSG.fromPolygons(a.allPolygons());
+        }
+
+        intersect(csg) {
+            const a = new Node(this.clone().polygons);
+            const b = new Node(csg.clone().polygons);
+            a.invert();
+            b.clipTo(a);
+            b.invert();
+            a.clipTo(b);
+            b.clipTo(a);
+            a.build(b.allPolygons());
+            a.invert();
+            return CSG.fromPolygons(a.allPolygons());
+        }
+
+        inverse() {
+            const csg = this.clone();
+            csg.polygons.forEach(p => p.flip());
+            return csg;
+        }
+
+        static fromPolygons(polygons) {
+            const csg = new CSG();
+            csg.polygons = polygons;
+            return csg;
+        }
+
+        static fromGeometry(geom, matrix) {
+            const polys = [];
+            const posAttr = geom.attributes.position;
+            const normAttr = geom.attributes.normal;
+            const idx = geom.index;
+
+            const tempVert = new THREE.Vector3();
+            const tempNorm = new THREE.Vector3();
+            const normalMatrix = matrix ? new THREE.Matrix3().getNormalMatrix(matrix) : null;
+
+            const getVertex = (i) => {
+                tempVert.set(posAttr.getX(i), posAttr.getY(i), posAttr.getZ(i));
+                if (matrix) tempVert.applyMatrix4(matrix);
+                tempNorm.set(normAttr.getX(i), normAttr.getY(i), normAttr.getZ(i));
+                if (normalMatrix) tempNorm.applyMatrix3(normalMatrix).normalize();
+                return new Vertex(
+                    { x: tempVert.x, y: tempVert.y, z: tempVert.z },
+                    { x: tempNorm.x, y: tempNorm.y, z: tempNorm.z }
+                );
+            };
+
+            if (idx) {
+                for (let i = 0; i < idx.count; i += 3) {
+                    const a = idx.getX(i), b = idx.getX(i + 1), c = idx.getX(i + 2);
+                    polys.push(new Polygon([getVertex(a), getVertex(b), getVertex(c)]));
+                }
+            } else {
+                for (let i = 0; i < posAttr.count; i += 3) {
+                    polys.push(new Polygon([getVertex(i), getVertex(i + 1), getVertex(i + 2)]));
+                }
+            }
+            return CSG.fromPolygons(polys);
+        }
+
+        toGeometry() {
+            const positions = [];
+            const normals = [];
+            for (const poly of this.polygons) {
+                const verts = poly.vertices;
+                for (let i = 2; i < verts.length; i++) {
+                    positions.push(verts[0].pos.x, verts[0].pos.y, verts[0].pos.z);
+                    positions.push(verts[i - 1].pos.x, verts[i - 1].pos.y, verts[i - 1].pos.z);
+                    positions.push(verts[i].pos.x, verts[i].pos.y, verts[i].pos.z);
+                    normals.push(verts[0].normal.x, verts[0].normal.y, verts[0].normal.z);
+                    normals.push(verts[i - 1].normal.x, verts[i - 1].normal.y, verts[i - 1].normal.z);
+                    normals.push(verts[i].normal.x, verts[i].normal.y, verts[i].normal.z);
+                }
+            }
+            const geom = new THREE.BufferGeometry();
+            geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geom.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+            return geom;
+        }
+    }
+
+    return CSG;
+})();
+</script>
+
+<script>
+const CONFIG = Object.freeze({
+    DEFAULT_BOX_SIZE: 20,
+    DEFAULT_SPHERE_RADIUS: 12,
+    DEFAULT_CYLINDER_RADIUS: 10,
+    DEFAULT_CYLINDER_HEIGHT: 25,
+    DEFAULT_CONE_RADIUS: 12,
+    DEFAULT_CONE_HEIGHT: 25,
+    DEFAULT_TORUS_RADIUS: 12,
+    DEFAULT_TORUS_TUBE: 4,
+    DEFAULT_PLANE_SIZE: 40,
+    DEFAULT_EXTRUDE_DEPTH: 20,
+    DEFAULT_FILLET_RADIUS: 2,
+    DEFAULT_CHAMFER_DISTANCE: 2,
+    GRID_SIZE: 200,
+    GRID_DIVISIONS: 20,
+    PRIMITIVE_SPACING: 25,
+    PRIMITIVE_GRID_WIDTH: 100,
+    GEOMETRY_SEGMENTS: 64,
+    GEOMETRY_SEGMENTS_TORUS_RADIAL: 32,
+    GEOMETRY_SEGMENTS_TORUS_TUBULAR: 96,
+    SKETCH_CIRCLE_POINTS: 50,
+    SKETCH_LINE_COLOR: 0x8b5cf6,
+    SKETCH_SELECT_COLOR: 0xf97316,
+    SKETCH_PICK_THRESHOLD: 0.25,
+    SKETCH_POINT_PICK_THRESHOLD: 0.6,
+    SKETCH_SNAP_GRID: 1,
+    SKETCH_SNAP_THRESHOLD: 0.75,
+    SKETCH_INFER_HV_THRESHOLD: 0.75,
+    BEVEL_SEGMENTS: 8,
+    TOAST_DURATION: 2500,
+    FILLET_CHAMFER_MAX_RATIO: 0.9,
+
+    // Step 12: measure tool
+    MEASURE_MARKER_RADIUS: 0.9,
+
+    // Step 13: transform snapping (Shift)
+    TRANSFORM_TRANSLATE_SNAP: 1,
+    TRANSFORM_ROTATE_SNAP_DEG: 15,
+    TRANSFORM_SCALE_SNAP: 0.1,
+
+    // Step 15: persistence
+    STORAGE_KEY: 'bulletcad.project.v1',
+});
+
+class BulletCADApp {
+    constructor() {
+        // DOM
+        this.canvas = document.getElementById('canvas');
+        this.hudEl = document.getElementById('hud');
+        this.numHudEl = document.getElementById('numhud');
+        this.numHudTitleEl = document.getElementById('numhud-title');
+        this.numHudXEl = document.getElementById('numhud-x');
+        this.numHudYEl = document.getElementById('numhud-y');
+        this.numHudZEl = document.getElementById('numhud-z');
+        this.coordsEl = document.getElementById('coords');
+        this.toastsEl = document.getElementById('toasts');
+        this.treeEl = document.getElementById('tree');
+        this.featuresEl = document.getElementById('features');
+        this.propsEl = document.getElementById('props');
+        this.statusObjEl = document.getElementById('s-obj');
+        this.statusSelEl = document.getElementById('s-sel');
+        this.stlFileInputEl = document.getElementById('stl-file-input');
+
+        // Save/Load buttons
+        this.saveBtnEl = document.getElementById('btn-save');
+        this.loadBtnEl = document.getElementById('btn-load');
+
+        // Sketch dimension modal
+        this.skdimTitleEl = document.getElementById('skdim-title');
+        this.skdimAEl = document.getElementById('skdim-a');
+        this.skdimBEl = document.getElementById('skdim-b');
+
+        // Three
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.orbit = null;
+        this.transform = null;
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
+
+        // Scene state
+        this.objects = [];
+        this.selectedObj = null;
+        this.selectedFace = null;
+        this.currentTool = 'select';
+
+        // Step 12: measure tool
+        this.measure = { points: [], markers: [], line: null, value: null };
+
+        // Step 13: transform snapping
+        this.shiftDown = false;
+
+        // Step 14: isolate selection
+        this.isolate = { active: false, prev: new Map() };
+
+        // Step 1: selection
+        this.selectionMode = 'body'; // body | face | edge | vertex
+        this.selection = [];
+        this.hoverSelection = null;
+        this.pickEdgeThresholdPx = 8;
+        this.pickVertexThresholdPx = 10;
+
+        // Step 2: highlights
+        this.highlight = {
+            group: null,
+            hover: { outline: null, face: null, vertex: null },
+            selected: { outlines: [], face: null, vertex: null },
+        };
+
+        // History
+        this.undoStack = [];
+        this.redoStack = [];
+        this.objCounter = 0;
+
+        // Step 11: feature tree (non-parametric history)
+        this.features = [];
+        this.featureCounter = 0;
+        this.selectedFeatureId = null;
+
+        // Step 4: command system
+        this.activeCommand = null;
+
+        // Step 5: previews for multi-step commands
+        this.preview = { mesh: null };
+
+        // Step 6: numeric HUD state
+        this.numericHudKind = null; // move | rotate | scale
+
+        // Sketch (baseline)
+        this.sketchMode = false;
+        this.sketchPoints = [];
+        this.sketchLines = [];
+        this.sketchPlane = null; // { origin: Vector3, u: Vector3, v: Vector3, w: Vector3, offset: number }
+
+        // Sketch UX: pick a plane/face first
+        this.pendingSketchPlanePick = false;
+        this.sketchViz = { group: null, plane: null, grid: null };
+
+        // Sketch UX: hover + rubber-band previews
+        this.sketchHover = { group: null, marker: null, geom: null, mat: null };
+        this.sketchDraft = { obj: null, geometry: null, material: null, kind: null };
+
+        // Step 9: sketch selection + dimensions
+        this.sketchSelection = [];
+
+        // Step 10: sketch constraints/relations
+        this.sketchPointSelection = []; // [{ entity, ref }]
+        this.sketchConstraints = []; // [{ type, ... }]
+        this.sketchPointViz = { group: null, geom: null, mat: null };
+
+        // Bind handlers
+        this.onCanvasClick = this.onCanvasClick.bind(this);
+        this.onCanvasMove = this.onCanvasMove.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
+        this.onKeyUp = this.onKeyUp.bind(this);
+        this.onResize = this.onResize.bind(this);
+        this.animate = this.animate.bind(this);
+    }
+
+    // Step 12 helpers
+    clearMeasure() {
+        if (!this.scene) return;
+        this.measure.value = null;
+        this.measure.points = [];
+
+        if (this.measure.line) {
+            this.scene.remove(this.measure.line);
+            this.measure.line.geometry?.dispose?.();
+            this.measure.line.material?.dispose?.();
+            this.measure.line = null;
+        }
+        for (const m of this.measure.markers || []) {
+            this.scene.remove(m);
+            m.geometry?.dispose?.();
+            m.material?.dispose?.();
+        }
+        this.measure.markers = [];
+        this.setHUD('', null);
+    }
+
+    addMeasurePoint(p3) {
+        if (!this.scene || !p3) return;
+        const geom = new THREE.SphereGeometry(CONFIG.MEASURE_MARKER_RADIUS, 16, 16);
+        const mat = new THREE.MeshBasicMaterial({ color: 0x06b6d4, transparent: true, opacity: 0.9, depthTest: false });
+        const s = new THREE.Mesh(geom, mat);
+        s.position.copy(p3);
+        this.scene.add(s);
+        this.measure.markers.push(s);
+        this.measure.points.push(p3.clone());
+
+        if (this.measure.points.length === 2) {
+            const [a, b] = this.measure.points;
+            const d = a.distanceTo(b);
+            this.measure.value = d;
+
+            // Dispose previous measure line if exists
+            if (this.measure.line) {
+                this.scene.remove(this.measure.line);
+                this.measure.line.geometry?.dispose?.();
+                this.measure.line.material?.dispose?.();
+            }
+            const lineGeom = new THREE.BufferGeometry().setFromPoints([a, b]);
+            const lineMat = new THREE.LineBasicMaterial({ color: 0x06b6d4, transparent: true, opacity: 0.9, depthTest: false });
+            const line = new THREE.Line(lineGeom, lineMat);
+            this.scene.add(line);
+            this.measure.line = line;
+
+            this.setHUD(`Measure: ${d.toFixed(3)} mm (Esc to clear)`, 'face');
+            // Keep last point as start for chaining
+            this.measure.points = [b.clone()];
+            // Dispose old markers except the last one for chaining
+            const lastMarker = this.measure.markers[this.measure.markers.length - 1];
+            for (let i = 0; i < this.measure.markers.length - 1; i++) {
+                const m = this.measure.markers[i];
+                this.scene.remove(m);
+                m.geometry?.dispose?.();
+                m.material?.dispose?.();
+            }
+            this.measure.markers = lastMarker ? [lastMarker] : [];
+        } else {
+            this.setHUD('Measure: pick second point… (Esc to clear)', 'face');
+        }
+    }
+
+    getWorldPointFromMouse() {
+        const picked = this.pickAtMouse();
+        if (picked?.point) return picked.point.clone();
+
+        // fallback: sketch plane if sketch mode, else ground plane
+        if (this.sketchMode) {
+            if (!this.sketchPlane) this.sketchPlane = this.selectedFace ? this.computeSketchPlaneFromSelectedFace() : this.getDefaultSketchPlane();
+            const sp = this.sketchPlane || this.getDefaultSketchPlane();
+            const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(sp.w, sp.origin);
+            const pt = new THREE.Vector3();
+            const hit = this.raycaster.ray.intersectPlane(plane, pt);
+            if (hit) return pt.clone();
+            return null;
+        }
+
+        const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        const pt = new THREE.Vector3();
+        const hit = this.raycaster.ray.intersectPlane(plane, pt);
+        return hit ? pt.clone() : null;
+    }
+
+    // Step 13 helpers
+    updateTransformSnapping() {
+        if (!this.transform) return;
+        const enable = !!this.shiftDown;
+        if (!enable) {
+            this.transform.setTranslationSnap(null);
+            this.transform.setRotationSnap(null);
+            this.transform.setScaleSnap(null);
+            return;
+        }
+        this.transform.setTranslationSnap(CONFIG.TRANSFORM_TRANSLATE_SNAP);
+        this.transform.setRotationSnap(THREE.MathUtils.degToRad(CONFIG.TRANSFORM_ROTATE_SNAP_DEG));
+        this.transform.setScaleSnap(CONFIG.TRANSFORM_SCALE_SNAP);
+    }
+
+    // Step 14 helpers
+    toggleIsolate() {
+        const selected = this.getSelectedBodies();
+        if (!this.isolate.active) {
+            if (!selected || selected.length === 0) {
+                this.toast('Select bodies to isolate', 'warning');
+                return;
+            }
+            this.isolate.prev = new Map();
+            for (const o of this.objects || []) this.isolate.prev.set(o.id, !!o.mesh.visible);
+
+            const selectedIds = new Set(selected.map(o => o.id));
+            for (const o of this.objects || []) o.mesh.visible = selectedIds.has(o.id);
+            this.isolate.active = true;
+            this.toast('Isolate ON (press I to toggle)', 'info');
+            return;
+        }
+
+        for (const o of this.objects || []) {
+            const prev = this.isolate.prev.get(o.id);
+            o.mesh.visible = prev == null ? true : prev;
+        }
+        this.isolate.active = false;
+        this.isolate.prev = new Map();
+        this.toast('Isolate OFF', 'info');
+    }
+
+    // Step 15 helpers
+    geometryToData(geometry) {
+        if (!geometry) return null;
+        const g = geometry.clone();
+        g.computeVertexNormals?.();
+
+        const out = { index: null, attributes: {} };
+        const idx = g.index?.array ? Array.from(g.index.array) : (Array.isArray(g.index) ? g.index : null);
+        out.index = idx;
+
+        const attrs = g.attributes || {};
+        for (const key of Object.keys(attrs)) {
+            const a = attrs[key];
+            if (!a?.array || !a?.itemSize) continue;
+            out.attributes[key] = { itemSize: a.itemSize, array: Array.from(a.array) };
+        }
+        return out;
+    }
+
+    dataToGeometry(data) {
+        if (!data?.attributes?.position) return null;
+        const g = new THREE.BufferGeometry();
+        for (const [name, spec] of Object.entries(data.attributes || {})) {
+            if (!spec?.array || !spec?.itemSize) continue;
+            const arr = new Float32Array(spec.array);
+            g.setAttribute(name, new THREE.BufferAttribute(arr, spec.itemSize));
+        }
+        if (Array.isArray(data.index) && data.index.length > 0) g.setIndex(data.index);
+        g.computeBoundingSphere();
+        return g;
+    }
+
+    serializeProject() {
+        const objects = (this.objects || []).map(o => {
+            const mesh = o.mesh;
+            const mat = mesh.material;
+            return {
+                id: o.id,
+                name: o.name,
+                type: o.type,
+                params: o.params || {},
+                transform: {
+                    position: { x: mesh.position.x, y: mesh.position.y, z: mesh.position.z },
+                    rotation: { x: mesh.rotation.x, y: mesh.rotation.y, z: mesh.rotation.z },
+                    scale: { x: mesh.scale.x, y: mesh.scale.y, z: mesh.scale.z },
+                    visible: !!mesh.visible,
+                },
+                material: {
+                    color: mat?.color ? mat.color.getHex() : 0xffffff,
+                    roughness: mat?.roughness ?? 0.5,
+                    metalness: mat?.metalness ?? 0.1,
+                },
+                geometry: this.geometryToData(mesh.geometry),
+            };
+        });
+
+        return {
+            version: 1,
+            objCounter: this.objCounter,
+            featureCounter: this.featureCounter,
+            objects,
+            features: this.features || [],
+        };
+    }
+
+    resetModel() {
+        // Exit sketch mode if active to clean up sketch resources
+        if (this.sketchMode) {
+            this.exitSketchMode();
+        }
+        
+        this.clearPreview();
+        this.clearMeasure();
+
+        for (const o of this.objects || []) {
+            if (o?.wireframeHelper) {
+                try {
+                    o.wireframeHelper.parent?.remove(o.wireframeHelper);
+                    o.wireframeHelper.geometry?.dispose?.();
+                    o.wireframeHelper.material?.dispose?.();
+                } catch (_) { /* ignore */ }
+                o.wireframeHelper = null;
+            }
+            this.scene?.remove(o.mesh);
+            o.mesh.geometry?.dispose?.();
+            o.mesh.material?.dispose?.();
+        }
+        this.objects = [];
+        this.selection = [];
+        this.selectedObj = null;
+        this.selectedFace = null;
+        this.features = [];
+        this.featureCounter = 0;
+        this.selectedFeatureId = null;
+        this.undoStack = [];
+        this.redoStack = [];
+        this.updateUndoButtons?.();
+        this.updateUI();
+        this.updateHighlights();
+    }
+
+    saveProject() {
+        try {
+            const data = this.serializeProject();
+            localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(data));
+            this.toast('Saved', 'success');
+        } catch (err) {
+            console.error('Save failed:', err);
+            this.toast('Save failed: ' + (err?.message ?? String(err)), 'error');
+        }
+    }
+
+    loadProject() {
+        try {
+            const raw = localStorage.getItem(CONFIG.STORAGE_KEY);
+            if (!raw) {
+                this.toast('No saved project found', 'warning');
+                return;
+            }
+            const data = JSON.parse(raw);
+            if (!data?.objects) {
+                this.toast('Invalid save data', 'error');
+                return;
+            }
+
+            this.resetModel();
+            this.objCounter = data.objCounter || 0;
+            this.featureCounter = data.featureCounter || 0;
+            this.features = Array.isArray(data.features) ? data.features : [];
+
+            for (const o of data.objects) {
+                const g = this.dataToGeometry(o.geometry);
+                if (!g) continue;
+                const m = new THREE.MeshStandardMaterial({
+                    color: o.material?.color ?? 0xffffff,
+                    roughness: o.material?.roughness ?? 0.5,
+                    metalness: o.material?.metalness ?? 0.1,
+                });
+                const mesh = new THREE.Mesh(g, m);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+
+                const t = o.transform || {};
+                mesh.position.set(t.position?.x ?? 0, t.position?.y ?? 0, t.position?.z ?? 0);
+                mesh.rotation.set(t.rotation?.x ?? 0, t.rotation?.y ?? 0, t.rotation?.z ?? 0);
+                mesh.scale.set(t.scale?.x ?? 1, t.scale?.y ?? 1, t.scale?.z ?? 1);
+                mesh.visible = t.visible ?? true;
+
+                const obj = { id: o.id, name: o.name, type: o.type, mesh, params: o.params || {} };
+                mesh.userData.obj = obj;
+                this.scene.add(mesh);
+                this.objects.push(obj);
+                this.applyRenderModeToObject(obj);
+            }
+
+            this.updateUI();
+            this.toast('Loaded', 'success');
+        } catch (err) {
+            console.error('Load failed:', err);
+            this.toast('Load failed: ' + (err?.message ?? String(err)), 'error');
+        }
+    }
+
+    getDefaultSketchPlane() {
+        return {
+            origin: new THREE.Vector3(0, 0, 0),
+            u: new THREE.Vector3(1, 0, 0),
+            v: new THREE.Vector3(0, 0, 1),
+            w: new THREE.Vector3(0, 1, 0),
+            offset: 0.1,
+        };
+    }
+
+    createSketchPlaneAtWorldPoint(worldPoint) {
+        const base = this.getDefaultSketchPlane();
+        base.origin = worldPoint ? worldPoint.clone() : base.origin;
+        base.offset = 0.15;
+        return base;
+    }
+
+    ensureSketchHoverViz() {
+        if (!this.scene) return;
+        if (!this.sketchHover.group) {
+            const g = new THREE.Group();
+            g.name = 'sketch-hover';
+            this.scene.add(g);
+            this.sketchHover.group = g;
+        }
+        if (!this.sketchHover.geom) this.sketchHover.geom = new THREE.SphereGeometry(0.45, 12, 12);
+        if (!this.sketchHover.mat) this.sketchHover.mat = new THREE.MeshBasicMaterial({
+            color: 0x06b6d4,
+            transparent: true,
+            opacity: 0.9,
+            depthTest: false,
+        });
+        if (!this.sketchHover.marker) {
+            const m = new THREE.Mesh(this.sketchHover.geom, this.sketchHover.mat);
+            m.visible = false;
+            m.renderOrder = 20;
+            this.sketchHover.group.add(m);
+            this.sketchHover.marker = m;
+        }
+    }
+
+    setSketchHoverMarkerWorld(worldPoint, { visible = true } = {}) {
+        if (!this.scene) return;
+        this.ensureSketchHoverViz();
+        if (!this.sketchHover.marker) return;
+        if (!worldPoint) {
+            this.sketchHover.marker.visible = false;
+            return;
+        }
+        this.sketchHover.marker.position.copy(worldPoint);
+        this.sketchHover.marker.visible = !!visible;
+    }
+
+    clearSketchHoverViz() {
+        if (!this.scene) return;
+        if (this.sketchHover.marker) this.sketchHover.marker.visible = false;
+        if (this.sketchHover.group) this.scene.remove(this.sketchHover.group);
+        this.sketchHover.group = null;
+        this.sketchHover.marker = null;
+        this.sketchHover.geom?.dispose?.();
+        this.sketchHover.mat?.dispose?.();
+        this.sketchHover.geom = null;
+        this.sketchHover.mat = null;
+    }
+
+    clearSketchDraft() {
+        if (!this.scene) return;
+        const o = this.sketchDraft.obj;
+        if (o) this.scene.remove(o);
+        this.sketchDraft.geometry?.dispose?.();
+        this.sketchDraft.material?.dispose?.();
+        this.sketchDraft = { obj: null, geometry: null, material: null, kind: null };
+    }
+
+    ensureSketchDraft(kind) {
+        if (!this.scene) return;
+        if (this.sketchDraft.obj && this.sketchDraft.kind === kind) return;
+        this.clearSketchDraft();
+        const material = new THREE.LineBasicMaterial({
+            color: 0x06b6d4,
+            transparent: true,
+            opacity: 0.8,
+            depthTest: false,
+        });
+        const geometry = new THREE.BufferGeometry();
+        const line = new THREE.Line(geometry, material);
+        line.renderOrder = 9;
+        line.frustumCulled = false;
+        line.name = 'sketch-draft';
+        this.scene.add(line);
+        this.sketchDraft = { obj: line, geometry, material, kind };
+    }
+
+    getSketchCursor2D({ disableSnap = false } = {}) {
+        if (!this.raycaster?.ray) return null;
+        if (!this.sketchPlane) this.sketchPlane = this.selectedFace ? this.computeSketchPlaneFromSelectedFace() : this.getDefaultSketchPlane();
+        const sp = this.sketchPlane || this.getDefaultSketchPlane();
+        const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(sp.w, sp.origin);
+        const pt = new THREE.Vector3();
+        const hit = this.raycaster.ray.intersectPlane(plane, pt);
+        if (!hit) return null;
+        const raw = this.worldToSketch(pt);
+        let p = this.snapSketchPoint(raw, { disableSnap });
+        p = this.applySketchInference(p, { disableSnap });
+        return p;
+    }
+
+    updateSketchRubberBand({ disableSnap = false } = {}) {
+        if (!this.scene || !this.sketchMode) return;
+        if (!['line', 'rect', 'circle'].includes(this.currentTool)) {
+            this.clearSketchDraft();
+            return;
+        }
+
+        const p = this.getSketchCursor2D({ disableSnap });
+        if (!p) {
+            this.setSketchHoverMarkerWorld(null);
+            this.clearSketchDraft();
+            return;
+        }
+
+        // Always show snapped cursor point in sketch
+        this.setSketchHoverMarkerWorld(this.sketchToWorld(p), { visible: true });
+
+        if ((this.sketchPoints || []).length !== 1) {
+            this.clearSketchDraft();
+            return;
+        }
+
+        const a = this.sketchPoints[0];
+        const b = p;
+        const kind = this.currentTool;
+        this.ensureSketchDraft(kind);
+
+        let pointsW = [];
+        if (kind === 'line') {
+            pointsW = [this.sketchToWorld(a), this.sketchToWorld(b)];
+        } else if (kind === 'rect') {
+            pointsW = [
+                this.sketchToWorld(new THREE.Vector2(a.x, a.y)),
+                this.sketchToWorld(new THREE.Vector2(b.x, a.y)),
+                this.sketchToWorld(new THREE.Vector2(b.x, b.y)),
+                this.sketchToWorld(new THREE.Vector2(a.x, b.y)),
+                this.sketchToWorld(new THREE.Vector2(a.x, a.y)),
+            ];
+        } else {
+            const r = Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
+            const curve = new THREE.EllipseCurve(a.x, a.y, r, r, 0, 2 * Math.PI, false, 0);
+            pointsW = curve.getPoints(CONFIG.SKETCH_CIRCLE_POINTS).map(pt2 => this.sketchToWorld(new THREE.Vector2(pt2.x, pt2.y)));
+        }
+
+        const oldGeom = this.sketchDraft.obj.geometry;
+        const newGeom = new THREE.BufferGeometry().setFromPoints(pointsW);
+        this.sketchDraft.obj.geometry = newGeom;
+        this.sketchDraft.geometry = newGeom;
+        oldGeom?.dispose?.();
+    }
+
+    ensureSketchViz() {
+        if (!this.scene) return;
+        if (!this.sketchViz.group) {
+            const g = new THREE.Group();
+            g.name = 'sketch-viz';
+            this.scene.add(g);
+            this.sketchViz.group = g;
+        }
+        if (!this.sketchViz.plane) {
+            const geom = new THREE.PlaneGeometry(200, 200);
+            const mat = new THREE.MeshBasicMaterial({
+                color: CONFIG.SKETCH_LINE_COLOR,
+                transparent: true,
+                opacity: 0.08,
+                side: THREE.DoubleSide,
+                depthTest: false,
+                depthWrite: false,
+            });
+            const m = new THREE.Mesh(geom, mat);
+            m.renderOrder = 5;
+            this.sketchViz.group.add(m);
+            this.sketchViz.plane = m;
+        }
+        if (!this.sketchViz.grid) {
+            const grid = new THREE.GridHelper(200, 40, 0x444444, 0x222222);
+            grid.material.transparent = true;
+            grid.material.opacity = 0.45;
+            grid.material.depthTest = false;
+            grid.renderOrder = 6;
+            this.sketchViz.group.add(grid);
+            this.sketchViz.grid = grid;
+        }
+    }
+
+    updateSketchViz() {
+        if (!this.scene) return;
+        this.ensureSketchViz();
+        const sp = this.sketchPlane || this.getDefaultSketchPlane();
+        const pos = sp.origin.clone().addScaledVector(sp.w, sp.offset);
+        const u = sp.u.clone().normalize();
+        const v = sp.v.clone().normalize();
+        const w = sp.w.clone().normalize();
+
+        // PlaneGeometry is XY with +Z normal => map x->u, y->v, z->w
+        const planeQ = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(u, v, w));
+        // GridHelper is XZ with +Y normal => map x->u, z->v, y->w
+        const gridQ = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(u, w, v));
+
+        if (this.sketchViz.plane) {
+            this.sketchViz.plane.position.copy(pos);
+            this.sketchViz.plane.quaternion.copy(planeQ);
+        }
+        if (this.sketchViz.grid) {
+            this.sketchViz.grid.position.copy(pos);
+            this.sketchViz.grid.quaternion.copy(gridQ);
+        }
+    }
+
+    clearSketchViz() {
+        if (!this.scene) return;
+        const g = this.sketchViz.group;
+        if (g) this.scene.remove(g);
+        if (this.sketchViz.plane) {
+            this.sketchViz.plane.geometry?.dispose?.();
+            this.sketchViz.plane.material?.dispose?.();
+        }
+        if (this.sketchViz.grid) {
+            this.sketchViz.grid.geometry?.dispose?.();
+            this.sketchViz.grid.material?.dispose?.();
+        }
+        this.sketchViz = { group: null, plane: null, grid: null };
+    }
+
+    startSketchSession({ plane, tool = null } = {}) {
+        // Clear any existing sketch entities from scene
+        for (const ent of this.sketchLines || []) {
+            if (ent?.line) this.scene?.remove(ent.line);
+            ent?.geometry?.dispose?.();
+            ent?.line?.material?.dispose?.();
+        }
+
+        this.sketchMode = true;
+        this.pendingSketchPlanePick = false;
+        this.sketchPoints = [];
+        this.sketchLines = [];
+        this.sketchPlane = plane || this.getDefaultSketchPlane();
+        this.clearSketchSelection();
+        this.sketchConstraints = [];
+        this.updateSketchViz();
+        this.ensureSketchHoverViz();
+        this.setSketchHoverMarkerWorld(null);
+
+        this.setHUD('Sketch: pick points (Esc to exit)', 'sketch');
+        if (tool) this.setTool(tool);
+    }
+
+    pickFaceAtMouse() {
+        const meshes = this.objects.map(o => o.mesh);
+        if (meshes.length === 0) return null;
+        const hits = this.raycaster.intersectObjects(meshes);
+        const hit = hits[0];
+        if (!hit?.object) return null;
+        const obj = hit.object.userData.obj;
+        if (!obj) return null;
+        return {
+            obj,
+            faceIdx: hit.faceIndex,
+            point: hit.point.clone(),
+            normal: hit.face?.normal?.clone?.() ?? new THREE.Vector3(0, 1, 0),
+        };
+    }
+
+    computeSketchPlaneFromSelectedFace() {
+        if (!this.selectedFace?.obj?.mesh) return this.getDefaultSketchPlane();
+
+        const origin = this.selectedFace.point.clone();
+        const w = this.selectedFace.normal.clone();
+        w.transformDirection(this.selectedFace.obj.mesh.matrixWorld);
+        w.normalize();
+
+        const worldUp = new THREE.Vector3(0, 1, 0);
+        const worldRight = new THREE.Vector3(1, 0, 0);
+        let u = new THREE.Vector3().crossVectors(worldUp, w);
+        if (u.lengthSq() < 1e-6) u = new THREE.Vector3().crossVectors(worldRight, w);
+        u.normalize();
+        const v = new THREE.Vector3().crossVectors(w, u).normalize();
+
+        return { origin, u, v, w, offset: 0.15 };
+    }
+
+    getSketchPoint2(entity, ref) {
+        if (!entity || !ref) return null;
+        if (entity.type === 'circle') {
+            if (ref === 'center') return entity.center?.clone?.() ?? null;
+            return null;
+        }
+        if (entity.type === 'rect') {
+            const p1 = entity.p1;
+            const p2 = entity.p2;
+            if (!p1 || !p2) return null;
+            if (ref === 'p1') return p1.clone();
+            if (ref === 'p2') return p2.clone();
+            if (ref === 'p2x_p1y') return new THREE.Vector2(p2.x, p1.y);
+            if (ref === 'p1x_p2y') return new THREE.Vector2(p1.x, p2.y);
+            return null;
+        }
+        // line
+        if (ref === 'p1') return entity.p1?.clone?.() ?? null;
+        if (ref === 'p2') return entity.p2?.clone?.() ?? null;
+        return null;
+    }
+
+    setSketchPoint2(entity, ref, p2) {
+        if (!entity || !ref || !p2) return false;
+        if (entity.type === 'circle') {
+            if (ref !== 'center') return false;
+            entity.center = p2.clone();
+            return true;
+        }
+        if (entity.type === 'rect') {
+            if (!entity.p1 || !entity.p2) return false;
+            if (ref === 'p1') {
+                entity.p1 = p2.clone();
+                return true;
+            }
+            if (ref === 'p2') {
+                entity.p2 = p2.clone();
+                return true;
+            }
+            if (ref === 'p2x_p1y') {
+                entity.p2 = new THREE.Vector2(p2.x, entity.p2.y);
+                entity.p1 = new THREE.Vector2(entity.p1.x, p2.y);
+                return true;
+            }
+            if (ref === 'p1x_p2y') {
+                entity.p1 = new THREE.Vector2(p2.x, entity.p1.y);
+                entity.p2 = new THREE.Vector2(entity.p2.x, p2.y);
+                return true;
+            }
+            return false;
+        }
+        // line
+        if (ref === 'p1') {
+            entity.p1 = p2.clone();
+            return true;
+        }
+        if (ref === 'p2') {
+            entity.p2 = p2.clone();
+            return true;
+        }
+        return false;
+    }
+
+    getSketchSelectablePointRefs(entity) {
+        if (!entity) return [];
+        if (entity.type === 'circle') return [{ entity, ref: 'center' }];
+        if (entity.type === 'rect') {
+            return [
+                { entity, ref: 'p1' },
+                { entity, ref: 'p2' },
+                { entity, ref: 'p2x_p1y' },
+                { entity, ref: 'p1x_p2y' },
+            ];
+        }
+        return [{ entity, ref: 'p1' }, { entity, ref: 'p2' }];
+    }
+
+    pickSketchPointAt(p2) {
+        if (!p2) return null;
+        let best = null;
+        let bestD2 = Infinity;
+        const th = CONFIG.SKETCH_POINT_PICK_THRESHOLD;
+        const th2 = th * th;
+        for (const ent of this.sketchLines || []) {
+            const refs = this.getSketchSelectablePointRefs(ent);
+            for (const r of refs) {
+                const sp = this.getSketchPoint2(r.entity, r.ref);
+                if (!sp) continue;
+                const dx = sp.x - p2.x;
+                const dy = sp.y - p2.y;
+                const d2 = dx * dx + dy * dy;
+                if (d2 < bestD2) {
+                    bestD2 = d2;
+                    best = r;
+                }
+            }
+        }
+        if (best && bestD2 <= th2) return best;
+        return null;
+    }
+
+    updateSketchPointMarkers() {
+        if (!this.scene) return;
+        if (!this.sketchPointViz.group) {
+            this.sketchPointViz.group = new THREE.Group();
+            this.sketchPointViz.group.name = 'sketch-point-selection';
+            this.scene.add(this.sketchPointViz.group);
+        }
+        if (!this.sketchPointViz.geom) this.sketchPointViz.geom = new THREE.SphereGeometry(0.35, 10, 10);
+        if (!this.sketchPointViz.mat) this.sketchPointViz.mat = new THREE.MeshBasicMaterial({ color: CONFIG.SKETCH_SELECT_COLOR });
+
+        const g = this.sketchPointViz.group;
+        while (g.children.length) {
+            const c = g.children.pop();
+            c.geometry?.dispose?.();
+            c.material?.dispose?.();
+        }
+
+        for (const s of this.sketchPointSelection || []) {
+            const p = this.getSketchPoint2(s.entity, s.ref);
+            if (!p) continue;
+            const m = new THREE.Mesh(this.sketchPointViz.geom.clone(), this.sketchPointViz.mat.clone());
+            m.position.copy(this.sketchToWorld(p));
+            g.add(m);
+        }
+    }
+
+    clearSketchPointSelection() {
+        this.sketchPointSelection = [];
+        this.updateSketchPointMarkers();
+    }
+
+    setSketchPointSelection(pointRef) {
+        this.sketchPointSelection = pointRef ? [pointRef] : [];
+        this.updateSketchPointMarkers();
+    }
+
+    toggleSketchPointSelection(pointRef) {
+        if (!pointRef?.entity || !pointRef?.ref) return;
+        const key = pointRef.entity.line?.id + ':' + pointRef.ref;
+        const exists = (this.sketchPointSelection || []).some(s => (s?.entity?.line?.id + ':' + s?.ref) === key);
+        this.sketchPointSelection = exists
+            ? (this.sketchPointSelection || []).filter(s => (s?.entity?.line?.id + ':' + s?.ref) !== key)
+            : [...(this.sketchPointSelection || []), pointRef];
+        this.updateSketchPointMarkers();
+    }
+
+    solveSketchConstraints() {
+        if (!this.sketchConstraints || this.sketchConstraints.length === 0) return;
+        // small fixed-point loop
+        for (let iter = 0; iter < 3; iter++) {
+            for (const c of this.sketchConstraints) {
+                if (!c) continue;
+                if (c.type === 'horizontal') {
+                    const ent = c.entity;
+                    if (ent?.type !== 'line' || !ent.p1 || !ent.p2) continue;
+                    ent.p2 = new THREE.Vector2(ent.p2.x, ent.p1.y);
+                } else if (c.type === 'vertical') {
+                    const ent = c.entity;
+                    if (ent?.type !== 'line' || !ent.p1 || !ent.p2) continue;
+                    ent.p2 = new THREE.Vector2(ent.p1.x, ent.p2.y);
+                } else if (c.type === 'coincident') {
+                    const a = c.a;
+                    const b = c.b;
+                    const pa = this.getSketchPoint2(a?.entity, a?.ref);
+                    if (!pa) continue;
+                    this.setSketchPoint2(b?.entity, b?.ref, pa);
+                }
+            }
+        }
+
+        // refresh entities that might have changed
+        const touched = new Set();
+        for (const c of this.sketchConstraints) {
+            if (c?.entity?.line?.id) touched.add(c.entity.line.id);
+            if (c?.a?.entity?.line?.id) touched.add(c.a.entity.line.id);
+            if (c?.b?.entity?.line?.id) touched.add(c.b.entity.line.id);
+        }
+        for (const ent of this.sketchLines || []) {
+            if (touched.has(ent?.line?.id)) this.refreshSketchEntity(ent);
+        }
+        this.updateSketchPointMarkers();
+        this.updateSketchSelectionVisuals();
+    }
+
+    hasSketchConstraint(type, entity) {
+        return (this.sketchConstraints || []).some(c => c?.type === type && c?.entity?.line?.id === entity?.line?.id);
+    }
+
+    applyLineConstraint(type) {
+        const ent = (this.sketchSelection || [])[0];
+        if (!this.sketchMode || this.currentTool !== 'select') return;
+        if (!ent || ent.type !== 'line') {
+            this.toast('Select a sketch line', 'warning');
+            return;
+        }
+        if (this.hasSketchConstraint(type, ent)) {
+            this.toast('Constraint already applied', 'info');
+            return;
+        }
+        this.sketchConstraints.push({ type, entity: ent });
+        this.solveSketchConstraints();
+        this.toast((type === 'horizontal' ? 'Horizontal' : 'Vertical') + ' constraint added', 'success');
+    }
+
+    applyCoincidentConstraintFromSelection() {
+        if (!this.sketchMode || this.currentTool !== 'select') return;
+        if ((this.sketchPointSelection || []).length !== 2) {
+            this.toast('Select two sketch points', 'warning');
+            return;
+        }
+        const a = this.sketchPointSelection[0];
+        const b = this.sketchPointSelection[1];
+        this.sketchConstraints.push({ type: 'coincident', a, b });
+        this.solveSketchConstraints();
+        this.toast('Coincident constraint added', 'success');
+    }
+
+    getSketchEntityLabel(entity) {
+        if (!entity) return 'Sketch';
+        if (entity.type === 'rect') return 'Rectangle';
+        if (entity.type === 'circle') return 'Circle';
+        return 'Line';
+    }
+
+    updateSketchSelectionVisuals() {
+        const selected = new Set((this.sketchSelection || []).map(s => s?.line?.id));
+        for (const s of this.sketchLines || []) {
+            const mat = s?.line?.material;
+            if (!mat?.color) continue;
+            const isSelected = selected.has(s.line.id);
+            mat.color.setHex(isSelected ? CONFIG.SKETCH_SELECT_COLOR : (s.baseColor ?? CONFIG.SKETCH_LINE_COLOR));
+        }
+        this.updateSketchPointMarkers();
+    }
+
+    clearSketchSelection() {
+        this.sketchSelection = [];
+        this.clearSketchPointSelection();
+        this.updateSketchSelectionVisuals();
+    }
+
+    toggleSketchSelection(entity) {
+        if (!entity?.line) return;
+        const id = entity.line.id;
+        const exists = (this.sketchSelection || []).some(s => s?.line?.id === id);
+        this.sketchSelection = exists
+            ? (this.sketchSelection || []).filter(s => s?.line?.id !== id)
+            : [...(this.sketchSelection || []), entity];
+        this.updateSketchSelectionVisuals();
+    }
+
+    setSketchSelection(entity) {
+        this.sketchSelection = entity ? [entity] : [];
+        this.updateSketchSelectionVisuals();
+    }
+
+    pickSketchEntityAtMouse() {
+        const lines = (this.sketchLines || []).map(s => s?.line).filter(Boolean);
+        if (lines.length === 0) return null;
+
+        const hits = this.raycaster.intersectObjects(lines, true);
+        if (!hits || hits.length === 0) return null;
+        const hitObj = hits[0].object;
+        const ent = (this.sketchLines || []).find(s => s?.line === hitObj);
+        return ent || null;
+    }
+
+    refreshSketchEntity(entity) {
+        if (!entity?.line || !this.scene) return;
+        const oldGeom = entity.line.geometry;
+
+        if (entity.type === 'rect') {
+            const p1 = entity.p1;
+            const p2 = entity.p2;
+            const points = [
+                this.sketchToWorld(new THREE.Vector2(p1.x, p1.y)),
+                this.sketchToWorld(new THREE.Vector2(p2.x, p1.y)),
+                this.sketchToWorld(new THREE.Vector2(p2.x, p2.y)),
+                this.sketchToWorld(new THREE.Vector2(p1.x, p2.y)),
+                this.sketchToWorld(new THREE.Vector2(p1.x, p1.y)),
+            ];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            entity.geometry = geometry;
+            entity.line.geometry = geometry;
+        } else if (entity.type === 'circle') {
+            const curve = new THREE.EllipseCurve(entity.center.x, entity.center.y, entity.radius, entity.radius, 0, 2 * Math.PI, false, 0);
+            const points = curve.getPoints(CONFIG.SKETCH_CIRCLE_POINTS).map(p => this.sketchToWorld(new THREE.Vector2(p.x, p.y)));
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            entity.geometry = geometry;
+            entity.line.geometry = geometry;
+        } else {
+            const points = [
+                this.sketchToWorld(new THREE.Vector2(entity.p1.x, entity.p1.y)),
+                this.sketchToWorld(new THREE.Vector2(entity.p2.x, entity.p2.y)),
+            ];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            entity.geometry = geometry;
+            entity.line.geometry = geometry;
+        }
+
+        oldGeom?.dispose?.();
+    }
+
+    configureSketchDimModalFor(entity) {
+        if (!entity) return;
+        const title = this.getSketchEntityLabel(entity) + ' Dimension';
+        if (this.skdimTitleEl) this.skdimTitleEl.textContent = title;
+
+        const a = this.skdimAEl;
+        const b = this.skdimBEl;
+        if (!a || !b) return;
+
+        b.style.display = 'none';
+        a.value = '';
+        b.value = '';
+
+        if (entity.type === 'rect') {
+            const w = Math.abs(entity.p2.x - entity.p1.x);
+            const h = Math.abs(entity.p2.y - entity.p1.y);
+            a.placeholder = 'Width (mm)';
+            b.placeholder = 'Height (mm)';
+            a.value = w.toFixed(2);
+            b.value = h.toFixed(2);
+            b.style.display = '';
+        } else if (entity.type === 'circle') {
+            a.placeholder = 'Radius (mm)';
+            a.value = (entity.radius ?? 1).toFixed(2);
+        } else {
+            const dx = entity.p2.x - entity.p1.x;
+            const dy = entity.p2.y - entity.p1.y;
+            const len = Math.sqrt(dx * dx + dy * dy);
+            a.placeholder = 'Length (mm)';
+            a.value = len.toFixed(2);
+        }
+    }
+
+    applySketchDimFromModal(entity) {
+        if (!entity || !this.skdimAEl || !this.skdimBEl) return false;
+        const parse = (el) => {
+            const t = (el.value ?? '').toString().trim();
+            const n = parseFloat(t);
+            return Number.isFinite(n) ? n : null;
+        };
+        const a = parse(this.skdimAEl);
+        const b = parse(this.skdimBEl);
+        if (a == null || a <= 0) {
+            this.toast('Enter a positive value', 'warning');
+            return false;
+        }
+
+        if (entity.type === 'rect') {
+            if (b == null || b <= 0) {
+                this.toast('Enter width and height', 'warning');
+                return false;
+            }
+            const sx = Math.sign(entity.p2.x - entity.p1.x) || 1;
+            const sy = Math.sign(entity.p2.y - entity.p1.y) || 1;
+            entity.p2 = new THREE.Vector2(entity.p1.x + sx * a, entity.p1.y + sy * b);
+        } else if (entity.type === 'circle') {
+            entity.radius = a;
+        } else {
+            const dir = entity.p2.clone().sub(entity.p1);
+            const len = dir.length();
+            if (len < 1e-6) {
+                entity.p2 = entity.p1.clone().add(new THREE.Vector2(a, 0));
+            } else {
+                dir.multiplyScalar(a / len);
+                entity.p2 = entity.p1.clone().add(dir);
+            }
+        }
+        this.refreshSketchEntity(entity);
+        this.updateSketchSelectionVisuals();
+        this.solveSketchConstraints();
+        return true;
+    }
+
+    startSketchDimCommand(entity) {
+        if (!this.sketchMode) return;
+        if (!entity) return;
+
+        const modalId = 'm-sketch-dim';
+        this.configureSketchDimModalFor(entity);
+
+        this.startCommand({
+            name: 'sketch-dim',
+            title: 'Sketch Dimension',
+            hudKind: 'sketch',
+            hint: 'Enter=Apply, Esc=Cancel',
+            modalId,
+            start: () => {
+                this.openModal(modalId);
+                setTimeout(() => this.skdimAEl?.focus?.(), 0);
+            },
+            confirm: () => {
+                const ok = this.applySketchDimFromModal(entity);
+                if (!ok) {
+                    // keep command active by restarting it
+                    this.activeCommand = null;
+                    this.startSketchDimCommand(entity);
+                    return;
+                }
+                this.closeModal(modalId);
+                this.toast(this.getSketchEntityLabel(entity) + ' updated', 'success');
+            },
+            cancel: () => {
+                this.closeModal(modalId);
+            },
+        });
+    }
+
+    sketchToWorld(p2) {
+        const sp = this.sketchPlane || this.getDefaultSketchPlane();
+        return sp.origin.clone()
+            .addScaledVector(sp.u, p2.x)
+            .addScaledVector(sp.v, p2.y)
+            .addScaledVector(sp.w, sp.offset);
+    }
+
+    worldToSketch(p3) {
+        const sp = this.sketchPlane || this.getDefaultSketchPlane();
+        const d = p3.clone().sub(sp.origin);
+        return new THREE.Vector2(d.dot(sp.u), d.dot(sp.v));
+    }
+
+    hasBodySelection() {
+        return (this.selection || []).some(p => p?.kind === 'body' && p?.obj?.mesh);
+    }
+
+    getSelectedBodies() {
+        const bodies = (this.selection || []).filter(p => p?.kind === 'body' && p?.obj?.mesh).map(p => p.obj);
+        if (bodies.length > 0) return bodies;
+        return this.selectedObj?.mesh ? [this.selectedObj] : [];
+    }
+
+    showNumericHUD(kind) {
+        if (!this.numHudEl) return;
+        this.numericHudKind = kind;
+
+        const title = kind === 'move' ? 'Move Δ (mm)' : kind === 'rotate' ? 'Rotate Δ (deg)' : 'Scale × (factor)';
+        if (this.numHudTitleEl) this.numHudTitleEl.textContent = title;
+
+        const defaults = kind === 'scale' ? { x: '1', y: '1', z: '1' } : { x: '0', y: '0', z: '0' };
+        if (this.numHudXEl) this.numHudXEl.placeholder = defaults.x;
+        if (this.numHudYEl) this.numHudYEl.placeholder = defaults.y;
+        if (this.numHudZEl) this.numHudZEl.placeholder = defaults.z;
+
+        this.numHudEl.classList.add('active');
+        this.numHudEl.setAttribute('aria-hidden', 'false');
+        setTimeout(() => this.numHudXEl?.focus?.(), 0);
+    }
+
+    hideNumericHUD() {
+        if (!this.numHudEl) return;
+        this.numericHudKind = null;
+        this.numHudEl.classList.remove('active');
+        this.numHudEl.setAttribute('aria-hidden', 'true');
+    }
+
+    clearNumericHUDInputs() {
+        if (this.numHudXEl) this.numHudXEl.value = '';
+        if (this.numHudYEl) this.numHudYEl.value = '';
+        if (this.numHudZEl) this.numHudZEl.value = '';
+    }
+
+    parseNumericHUDVector(kind) {
+        const parse = (val) => {
+            const t = (val ?? '').toString().trim();
+            if (!t) return null;
+            const n = parseFloat(t);
+            return Number.isFinite(n) ? n : null;
+        };
+        const x = parse(this.numHudXEl?.value);
+        const y = parse(this.numHudYEl?.value);
+        const z = parse(this.numHudZEl?.value);
+        if (x == null && y == null && z == null) {
+            return kind === 'scale' ? { x: 1, y: 1, z: 1 } : { x: 0, y: 0, z: 0 };
+        }
+        return {
+            x: x == null ? (kind === 'scale' ? 1 : 0) : x,
+            y: y == null ? (kind === 'scale' ? 1 : 0) : y,
+            z: z == null ? (kind === 'scale' ? 1 : 0) : z,
+        };
+    }
+
+    applyNumericHUD() {
+        const kind = this.numericHudKind;
+        if (!kind) return;
+        const targets = this.getSelectedBodies();
+        if (targets.length === 0) {
+            this.toast('Select a body first', 'warning');
+            return;
+        }
+        const v = this.parseNumericHUDVector(kind);
+        if (!v) return;
+
+        if (kind === 'move') {
+            targets.forEach(obj => {
+                obj.mesh.position.x += v.x;
+                obj.mesh.position.y += v.y;
+                obj.mesh.position.z += v.z;
+            });
+            this.toast(`Moved Δ(${v.x}, ${v.y}, ${v.z})`, 'success');
+        } else if (kind === 'rotate') {
+            const rx = THREE.MathUtils.degToRad(v.x);
+            const ry = THREE.MathUtils.degToRad(v.y);
+            const rz = THREE.MathUtils.degToRad(v.z);
+            targets.forEach(obj => {
+                obj.mesh.rotation.x += rx;
+                obj.mesh.rotation.y += ry;
+                obj.mesh.rotation.z += rz;
+            });
+            this.toast(`Rotated Δ(${v.x}°, ${v.y}°, ${v.z}°)`, 'success');
+        } else if (kind === 'scale') {
+            targets.forEach(obj => {
+                obj.mesh.scale.x *= v.x;
+                obj.mesh.scale.y *= v.y;
+                obj.mesh.scale.z *= v.z;
+            });
+            this.toast(`Scaled ×(${v.x}, ${v.y}, ${v.z})`, 'success');
+        }
+
+        this.updateProps();
+        this.updateTree();
+        this.clearNumericHUDInputs();
+    }
+
+    clearPreview() {
+        if (!this.preview?.mesh) return;
+        const m = this.preview.mesh;
+        this.scene?.remove(m);
+        m.geometry?.dispose?.();
+        m.material?.dispose?.();
+        this.preview.mesh = null;
+    }
+
+    setPreviewMesh(mesh) {
+        this.clearPreview();
+        if (!mesh) return;
+        this.preview.mesh = mesh;
+        this.scene.add(mesh);
+    }
+
+    buildExtrudePreviewMesh(depth) {
+        if (!this.scene) return null;
+
+        let d = parseFloat(depth);
+        if (isNaN(d) || d === 0) d = CONFIG.DEFAULT_EXTRUDE_DEPTH;
+        const sign = Math.sign(d) || 1;
+        const absDepth = Math.abs(d);
+        if (absDepth < 0.1) return null;
+
+        const previewMat = new THREE.MeshStandardMaterial({
+            color: 0xf97316,
+            transparent: true,
+            opacity: 0.25,
+            roughness: 0.5,
+            metalness: 0.1,
+            depthWrite: false,
+        });
+
+        const sp = this.sketchPlane || (this.selectedFace ? this.computeSketchPlaneFromSelectedFace() : this.getDefaultSketchPlane());
+
+        // Preview from sketch
+        if (this.sketchLines.length > 0) {
+            const sketch = this.sketchLines[this.sketchLines.length - 1];
+            let geometry;
+            if (sketch.type === 'rect') {
+                const w = Math.abs(sketch.p2.x - sketch.p1.x);
+                const dz = Math.abs(sketch.p2.y - sketch.p1.y);
+                geometry = new THREE.BoxGeometry(w, absDepth, dz);
+            } else if (sketch.type === 'circle') {
+                geometry = new THREE.CylinderGeometry(sketch.radius, sketch.radius, absDepth, CONFIG.GEOMETRY_SEGMENTS);
+            } else {
+                previewMat.dispose();
+                return null;
+            }
+            const mesh = new THREE.Mesh(geometry, previewMat);
+            mesh.castShadow = false;
+            mesh.receiveShadow = false;
+
+            const center2 = sketch.type === 'rect'
+                ? new THREE.Vector2((sketch.p1.x + sketch.p2.x) / 2, (sketch.p1.y + sketch.p2.y) / 2)
+                : sketch.center.clone();
+            const centerW = (this.sketchPlane ? this.sketchToWorld(center2) : sp.origin.clone().addScaledVector(sp.u, center2.x).addScaledVector(sp.v, center2.y).addScaledVector(sp.w, sp.offset));
+            mesh.position.copy(centerW);
+            mesh.position.addScaledVector(sp.w, (sign * absDepth) / 2);
+            mesh.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), sp.w));
+            return mesh;
+        }
+
+        // Preview from selected face (fallback)
+        if (this.selectedFace) {
+            const faceNormal = this.selectedFace.normal.clone();
+            faceNormal.transformDirection(this.selectedFace.obj.mesh.matrixWorld);
+            faceNormal.normalize();
+            const facePoint = this.selectedFace.point.clone();
+
+            const baseGeometry = this.selectedFace.obj.mesh.geometry;
+            baseGeometry.computeBoundingBox();
+            const bb = baseGeometry.boundingBox;
+            const width = bb.max.x - bb.min.x;
+            const depthBB = bb.max.z - bb.min.z;
+            const geometry = new THREE.BoxGeometry(width * 0.8, absDepth, depthBB * 0.8);
+            const mesh = new THREE.Mesh(geometry, previewMat);
+            mesh.castShadow = false;
+            mesh.receiveShadow = false;
+            mesh.position.copy(facePoint);
+            mesh.position.addScaledVector(faceNormal, (sign * absDepth) / 2);
+            mesh.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), faceNormal));
+            return mesh;
+        }
+
+        previewMat.dispose();
+        return null;
+    }
+
+    startExtrudeCommand({ title = 'Extrude' } = {}) {
+        const modalId = 'm-extrude';
+        const input = document.getElementById('extrude-val');
+        const updatePreview = () => {
+            const mesh = this.buildExtrudePreviewMesh(input?.value);
+            if (mesh) this.setPreviewMesh(mesh);
+            else this.clearPreview();
+        };
+
+        let onInput = null;
+        this.startCommand({
+            name: 'extrude',
+            title,
+            hudKind: 'face',
+            hint: 'Enter=OK, Esc=Cancel',
+            modalId,
+            start: () => {
+                this.openModal(modalId);
+                updatePreview();
+                if (input) {
+                    onInput = () => updatePreview();
+                    input.addEventListener('input', onInput);
+                    setTimeout(() => input.focus(), 0);
+                }
+            },
+            confirm: () => {
+                if (input && onInput) input.removeEventListener('input', onInput);
+                this.clearPreview();
+                this.doExtrude();
+            },
+            cancel: () => {
+                if (input && onInput) input.removeEventListener('input', onInput);
+                this.clearPreview();
+                this.closeModal(modalId);
+            },
+        });
+    }
+
+    setHUD(text, kind = null) {
+        this.hudEl.textContent = text;
+        if (!kind) {
+            this.hudEl.className = 'hud';
+            return;
+        }
+        this.hudEl.className = 'hud active ' + kind;
+    }
+
+    startCommand(command) {
+        if (!command || typeof command !== 'object') return;
+        if (this.activeCommand && this.activeCommand !== command) {
+            try {
+                this.activeCommand.cancel?.();
+            } catch {
+                // ignore
+            }
+        }
+        this.activeCommand = command;
+        try {
+            command.start?.();
+        } catch (err) {
+            console.error('Command start failed:', err);
+            this.toast('Command failed: ' + (err?.message ?? String(err)), 'error');
+            this.activeCommand = null;
+            this.setHUD('', null);
+            return;
+        }
+
+        const hint = command.hint || 'Enter=OK, Esc=Cancel';
+        this.setHUD((command.title || command.name || 'Command') + ' — ' + hint, command.hudKind || 'face');
+    }
+
+    cancelActiveCommand() {
+        if (!this.activeCommand) return;
+        const cmd = this.activeCommand;
+        this.activeCommand = null;
+        try {
+            cmd.cancel?.();
+        } catch (err) {
+            console.error('Command cancel failed:', err);
+        }
+        this.setHUD('', null);
+    }
+
+    confirmActiveCommand() {
+        if (!this.activeCommand) return;
+        const cmd = this.activeCommand;
+        this.activeCommand = null;
+        try {
+            cmd.confirm?.();
+        } catch (err) {
+            console.error('Command confirm failed:', err);
+            this.toast('Command failed: ' + (err?.message ?? String(err)), 'error');
+        }
+        this.setHUD('', null);
+    }
+
+    startModalCommand({ modalId, title, hudKind = 'face', confirmLabel = 'OK', confirm }) {
+        if (!modalId || typeof confirm !== 'function') return;
+        this.startCommand({
+            name: 'modal:' + modalId,
+            title,
+            hudKind,
+            hint: 'Enter=' + confirmLabel + ', Esc=Cancel',
+            start: () => this.openModal(modalId),
+            confirm: () => {
+                confirm();
+                this.closeModal(modalId);
+            },
+            cancel: () => this.closeModal(modalId),
+            modalId,
+        });
+    }
+
+    onModalCancel(modalId) {
+        if (this.activeCommand?.modalId === modalId) {
+            this.cancelActiveCommand();
+            return true;
+        }
+        this.closeModal(modalId);
+        return false;
+    }
+
+    toast(msg, type = 'info') {
+        const t = document.createElement('div');
+        t.className = 'toast ' + type;
+        t.textContent = msg;
+        this.toastsEl.appendChild(t);
+        setTimeout(() => t.remove(), CONFIG.TOAST_DURATION);
+    }
+
+    openModal(id) {
+        document.getElementById(id).classList.add('active');
+    }
+
+    closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    initThree() {
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x0a0a0a);
+
+        // Step 9: improve picking for sketch lines
+        this.raycaster.params.Line = this.raycaster.params.Line || {};
+        this.raycaster.params.Line.threshold = CONFIG.SKETCH_PICK_THRESHOLD;
+
+        if (this.sketchPointViz.group) {
+            this.scene.remove(this.sketchPointViz.group);
+            this.sketchPointViz.group = null;
+        }
+
+        const w = Math.max(1, this.canvas.clientWidth || 0);
+        const h = Math.max(1, this.canvas.clientHeight || 0);
+
+        this.camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 5000);
+        this.camera.position.set(80, 60, 80);
+
+        this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
+        this.renderer.setSize(w, h);
+        this.renderer.shadowMap.enabled = true;
+
+        this.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(50, 100, 50);
+        dirLight.castShadow = true;
+        this.scene.add(dirLight);
+
+        this.scene.add(new THREE.GridHelper(CONFIG.GRID_SIZE, CONFIG.GRID_DIVISIONS, 0x444444, 0x222222));
+
+        this.orbit = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+        this.orbit.enableDamping = true;
+
+        this.transform = new THREE.TransformControls(this.camera, this.renderer.domElement);
+        this.transform.addEventListener('dragging-changed', e => (this.orbit.enabled = !e.value));
+        this.transform.addEventListener('objectChange', () => {
+            if (this.selectedObj) this.updateProps();
+        });
+        this.scene.add(this.transform);
+
+        this.highlight.group = new THREE.Group();
+        this.highlight.group.name = 'Highlight';
+        this.scene.add(this.highlight.group);
+    }
+
+    createMaterial(color = 0xf97316) {
+        return new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.1 });
+    }
+
+    setSelectionMode(mode) {
+        this.selectionMode = mode;
+        const wrap = document.getElementById('sel-mode');
+        if (wrap) wrap.querySelectorAll('.seg-btn').forEach(b => b.classList.toggle('active', b.dataset.selmode === mode));
+    }
+
+    updateSelectionStatus() {
+        if (!this.selection || this.selection.length === 0) {
+            this.statusSelEl.textContent = 'None';
+            return;
+        }
+        const primary = this.selection[this.selection.length - 1];
+        if (!primary?.obj) {
+            this.statusSelEl.textContent = 'None';
+            return;
+        }
+        if (this.selection.length === 1) {
+            if (primary.kind === 'face' && typeof primary.faceIdx === 'number') {
+                this.statusSelEl.textContent = primary.obj.name + ' (Face ' + primary.faceIdx + ')';
+            } else if (primary.kind && primary.kind !== 'body') {
+                this.statusSelEl.textContent = primary.obj.name + ' (' + primary.kind + ')';
+            } else {
+                this.statusSelEl.textContent = primary.obj.name;
+            }
+            return;
+        }
+        this.statusSelEl.textContent = this.selection.length + ' selected (primary: ' + primary.obj.name + ')';
+    }
+
+    isBodySelected(obj) {
+        return this.selection.some(p => p?.kind === 'body' && p?.obj?.id === obj?.id);
+    }
+
+    setBodySelection(pick) {
+        this.selection = pick ? [pick] : [];
+        this.selectedFace = null;
+        this.selectObject(pick?.obj ?? null);
+        this.updateSelectionStatus();
+    }
+
+    addBodyToSelection(pick) {
+        if (!pick?.obj) return;
+        if (!this.isBodySelected(pick.obj)) this.selection.push(pick);
+        this.selectedFace = null;
+        this.selectObject(pick.obj);
+        this.updateSelectionStatus();
+    }
+
+    toggleBodySelection(pick) {
+        if (!pick?.obj) return;
+        const exists = this.isBodySelected(pick.obj);
+        if (exists) {
+            this.selection = this.selection.filter(p => !(p?.kind === 'body' && p?.obj?.id === pick.obj.id));
+            const primary = this.selection[this.selection.length - 1];
+            this.selectObject(primary?.obj ?? null);
+        } else {
+            this.selection.push(pick);
+            this.selectObject(pick.obj);
+        }
+        this.selectedFace = null;
+        this.updateSelectionStatus();
+        this.updateHighlights();
+    }
+
+    clearSelection() {
+        this.selection = [];
+        this.hoverSelection = null;
+        this.selectedFace = null;
+        this.selectObject(null);
+        this.updateSelectionStatus();
+        this.updateHighlights();
+    }
+
+    selectObject(obj) {
+        if (this.selectedObj && this.selectedObj.mesh && this.selectedObj.mesh.material?.emissive) {
+            this.selectedObj.mesh.material.emissive.setHex(0x000000);
+        }
+
+        this.selectedObj = obj;
+        this.selectedFace = null;
+
+        if (obj) {
+            if (obj.mesh.material && obj.mesh.material.emissive) obj.mesh.material.emissive.setHex(0x333333);
+            if (['move', 'rotate', 'scale'].includes(this.currentTool)) this.transform.attach(obj.mesh);
+        } else {
+            this.transform.detach();
+        }
+
+        this.updateSelectionStatus();
+
+        this.updateTree();
+        this.updateProps();
+        this.updateHighlights();
+    }
+
+    selectFace(obj, faceIdx, point, normal) {
+        this.selectedObj = obj;
+        this.selectedFace = { obj, faceIdx, point: point.clone(), normal: normal.clone() };
+        this.setHUD('Face selected. Press K to sketch or click Extrude.', 'face');
+        this.selection = [{ kind: 'face', obj, faceIdx, point: point.clone(), normal: normal.clone() }];
+        this.updateSelectionStatus();
+        this.updateProps();
+        this.updateHighlights();
+    }
+
+    disposeHighlightVisual(v) {
+        if (!v) return;
+        this.highlight.group.remove(v);
+        v.geometry?.dispose?.();
+        v.material?.dispose?.();
+    }
+
+    getFaceTriangleGeometry(mesh, faceIndex) {
+        const geom = mesh.geometry;
+        const pos = geom.getAttribute('position');
+        if (!pos) return null;
+        const tri = new THREE.BufferGeometry();
+        const verts = new Float32Array(9);
+        const index = geom.index;
+        if (index) {
+            const a = index.getX(faceIndex * 3);
+            const b = index.getX(faceIndex * 3 + 1);
+            const c = index.getX(faceIndex * 3 + 2);
+            verts[0] = pos.getX(a); verts[1] = pos.getY(a); verts[2] = pos.getZ(a);
+            verts[3] = pos.getX(b); verts[4] = pos.getY(b); verts[5] = pos.getZ(b);
+            verts[6] = pos.getX(c); verts[7] = pos.getY(c); verts[8] = pos.getZ(c);
+        } else {
+            const a = faceIndex * 3;
+            const b = faceIndex * 3 + 1;
+            const c = faceIndex * 3 + 2;
+            if (c >= pos.count) return null;
+            verts[0] = pos.getX(a); verts[1] = pos.getY(a); verts[2] = pos.getZ(a);
+            verts[3] = pos.getX(b); verts[4] = pos.getY(b); verts[5] = pos.getZ(b);
+            verts[6] = pos.getX(c); verts[7] = pos.getY(c); verts[8] = pos.getZ(c);
+        }
+        tri.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+        tri.computeVertexNormals();
+        return tri;
+    }
+
+    // Build a geometry containing all triangles coplanar with the picked triangle.
+    // This makes face highlighting look like a full quad on BoxGeometry instead of a diagonal half.
+    getCoplanarFaceGeometry(mesh, faceIndex, { normalDotThreshold = 0.999, planeEps = null } = {}) {
+        const geom = mesh?.geometry;
+        const pos = geom?.getAttribute?.('position');
+        if (!geom || !pos) return null;
+
+        // Determine a reasonable epsilon from geometry scale
+        if (planeEps == null) {
+            geom.computeBoundingBox?.();
+            const bb = geom.boundingBox;
+            const size = bb ? new THREE.Vector3().subVectors(bb.max, bb.min).length() : 1;
+            planeEps = Math.max(1e-4, size * 1e-4);
+        }
+
+        const getTriVertsLocal = (triIndex) => {
+            const idx = geom.index;
+            if (idx) {
+                const a = idx.getX(triIndex * 3);
+                const b = idx.getX(triIndex * 3 + 1);
+                const c = idx.getX(triIndex * 3 + 2);
+                return [
+                    new THREE.Vector3(pos.getX(a), pos.getY(a), pos.getZ(a)),
+                    new THREE.Vector3(pos.getX(b), pos.getY(b), pos.getZ(b)),
+                    new THREE.Vector3(pos.getX(c), pos.getY(c), pos.getZ(c)),
+                ];
+            }
+
+            const a = triIndex * 3;
+            const b = triIndex * 3 + 1;
+            const c = triIndex * 3 + 2;
+            if (c >= pos.count) return null;
+            return [
+                new THREE.Vector3(pos.getX(a), pos.getY(a), pos.getZ(a)),
+                new THREE.Vector3(pos.getX(b), pos.getY(b), pos.getZ(b)),
+                new THREE.Vector3(pos.getX(c), pos.getY(c), pos.getZ(c)),
+            ];
+        };
+
+        const baseVerts = getTriVertsLocal(faceIndex);
+        if (!baseVerts) return null;
+        const basePlane = new THREE.Plane().setFromCoplanarPoints(baseVerts[0], baseVerts[1], baseVerts[2]);
+        const baseNormal = basePlane.normal.clone().normalize();
+
+        const triCount = geom.index ? (geom.index.count / 3) : (pos.count / 3);
+        const out = [];
+        const v0 = new THREE.Vector3();
+        const v1 = new THREE.Vector3();
+        const v2 = new THREE.Vector3();
+        const n = new THREE.Vector3();
+
+        for (let t = 0; t < triCount; t++) {
+            const verts = getTriVertsLocal(t);
+            if (!verts) continue;
+            v0.copy(verts[0]);
+            v1.copy(verts[1]);
+            v2.copy(verts[2]);
+
+            // Coplanarity check
+            const d0 = Math.abs(basePlane.distanceToPoint(v0));
+            const d1 = Math.abs(basePlane.distanceToPoint(v1));
+            const d2 = Math.abs(basePlane.distanceToPoint(v2));
+            if (d0 > planeEps || d1 > planeEps || d2 > planeEps) continue;
+
+            // Normal alignment check
+            n.subVectors(v1, v0).cross(new THREE.Vector3().subVectors(v2, v0)).normalize();
+            if (Math.abs(n.dot(baseNormal)) < normalDotThreshold) continue;
+
+            out.push(v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
+        }
+
+        if (out.length === 0) return null;
+        const faceGeom = new THREE.BufferGeometry();
+        faceGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(out), 3));
+        faceGeom.computeVertexNormals();
+        return faceGeom;
+    }
+
+    updateHighlights() {
+        this.disposeHighlightVisual(this.highlight.hover.outline);
+        this.disposeHighlightVisual(this.highlight.hover.face);
+        this.disposeHighlightVisual(this.highlight.hover.vertex);
+        (this.highlight.selected.outlines || []).forEach(o => this.disposeHighlightVisual(o));
+        this.disposeHighlightVisual(this.highlight.selected.face);
+        this.disposeHighlightVisual(this.highlight.selected.vertex);
+        this.highlight.hover = { outline: null, face: null, vertex: null };
+        this.highlight.selected = { outlines: [], face: null, vertex: null };
+
+        const addOutline = (mesh, color, opacity) => {
+            mesh.updateMatrixWorld(true);
+            const edgesGeom = new THREE.EdgesGeometry(mesh.geometry, 15);
+            const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity });
+            const outline = new THREE.LineSegments(edgesGeom, mat);
+            // IMPORTANT: set local matrix, not only matrixWorld.
+            // Scene updateMatrixWorld() recomputes matrixWorld from parent*matrix every frame.
+            outline.matrix.copy(mesh.matrixWorld);
+            outline.matrixWorld.copy(mesh.matrixWorld);
+            outline.matrixAutoUpdate = false;
+            outline.matrixWorldNeedsUpdate = false;
+            this.highlight.group.add(outline);
+            return outline;
+        };
+
+        const addFaceMarker = (mesh, faceIndex, color, opacity) => {
+            if (faceIndex == null || faceIndex < 0) return null;
+            mesh.updateMatrixWorld(true);
+            const tri = this.getCoplanarFaceGeometry(mesh, faceIndex) || this.getFaceTriangleGeometry(mesh, faceIndex);
+            if (!tri) return null;
+            const mat = new THREE.MeshBasicMaterial({
+                color,
+                transparent: true,
+                opacity,
+                side: THREE.DoubleSide,
+                depthTest: false,
+                polygonOffset: true,
+                polygonOffsetFactor: -1,
+                polygonOffsetUnits: -1,
+            });
+            const face = new THREE.Mesh(tri, mat);
+            // Keep face highlight aligned with the mesh.
+            face.matrix.copy(mesh.matrixWorld);
+            face.matrixWorld.copy(mesh.matrixWorld);
+            face.matrixAutoUpdate = false;
+            face.matrixWorldNeedsUpdate = false;
+            this.highlight.group.add(face);
+            return face;
+        };
+
+        const addVertexMarker = (worldPoint, color) => {
+            const g = new THREE.SphereGeometry(1.2, 16, 16);
+            const m = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9, depthTest: false });
+            const s = new THREE.Mesh(g, m);
+            s.position.copy(worldPoint);
+            this.highlight.group.add(s);
+            return s;
+        };
+
+        const renderPick = (pick, palette, out) => {
+            if (!pick?.obj?.mesh) return;
+            const mesh = pick.obj.mesh;
+            if (pick.kind === 'body') {
+                const outline = addOutline(mesh, palette.outline, palette.outlineOpacity);
+                if (Array.isArray(out.outlines)) out.outlines.push(outline);
+                else out.outline = outline;
+            } else if (pick.kind === 'face') {
+                out.outline = addOutline(mesh, palette.outline, 0.25);
+                const faceIdx = pick.faceIdx ?? pick.hit?.faceIndex;
+                out.face = addFaceMarker(mesh, faceIdx, palette.face, palette.faceOpacity);
+            } else if (pick.kind === 'edge') {
+                out.outline = addOutline(mesh, palette.edge, palette.outlineOpacity);
+            } else if (pick.kind === 'vertex') {
+                out.outline = addOutline(mesh, palette.outline, 0.2);
+                out.vertex = addVertexMarker(pick.point, palette.vertex);
+            }
+        };
+
+        renderPick(this.hoverSelection, { outline: 0xffffff, outlineOpacity: 0.35, face: 0x06b6d4, faceOpacity: 0.25, edge: 0xffffff, vertex: 0xffffff }, this.highlight.hover);
+
+        if (this.selection && this.selection.length > 0) {
+            const primary = this.selection[this.selection.length - 1];
+            const mode = this.currentTool === 'face' ? 'face' : this.selectionMode;
+            if (mode === 'body') {
+                this.selection
+                    .filter(p => p?.kind === 'body' && p?.obj?.mesh)
+                    .forEach(p => renderPick(p, { outline: 0xf97316, outlineOpacity: 0.85, face: 0xf97316, faceOpacity: 0.25, edge: 0xf97316, vertex: 0xf97316 }, this.highlight.selected));
+            } else {
+                renderPick(primary, { outline: 0xf97316, outlineOpacity: 0.85, face: 0xf97316, faceOpacity: 0.25, edge: 0xf97316, vertex: 0xf97316 }, this.highlight.selected);
+            }
+        }
+    }
+
+    pickAtMouse() {
+        const meshes = this.objects.map(o => o.mesh);
+        if (meshes.length === 0) return null;
+        const hits = this.raycaster.intersectObjects(meshes);
+        const hit = hits[0];
+        if (!hit) return null;
+        const obj = hit.object.userData.obj;
+        if (!obj) return null;
+
+        if (this.selectionMode === 'body') return { kind: 'body', obj, point: hit.point.clone(), hit };
+        if (this.selectionMode === 'face') {
+            return { kind: 'face', obj, faceIdx: hit.faceIndex, point: hit.point.clone(), normal: hit.face?.normal?.clone?.() ?? new THREE.Vector3(0, 1, 0), hit };
+        }
+
+        const pxToWorldThreshold = (px, dist) => {
+            const fov = THREE.MathUtils.degToRad(this.camera.fov);
+            const worldHeightAtDist = 2 * Math.tan(fov / 2) * dist;
+            const worldPerPixel = worldHeightAtDist / (this.canvas.clientHeight || 1);
+            return px * worldPerPixel;
+        };
+
+        if (this.selectionMode === 'edge') {
+            const edgesGeom = new THREE.EdgesGeometry(hit.object.geometry, 20);
+            const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff });
+            const edges = new THREE.LineSegments(edgesGeom, lineMat);
+            edges.matrixWorld.copy(hit.object.matrixWorld);
+            edges.matrixAutoUpdate = false;
+            this.raycaster.params.Line.threshold = pxToWorldThreshold(this.pickEdgeThresholdPx, hit.distance);
+            const eHits = this.raycaster.intersectObject(edges, true);
+            edgesGeom.dispose();
+            lineMat.dispose();
+            if (eHits[0]) return { kind: 'edge', obj, point: eHits[0].point.clone(), hit: eHits[0] };
+            return { kind: 'face', obj, faceIdx: hit.faceIndex, point: hit.point.clone(), normal: hit.face?.normal?.clone?.() ?? new THREE.Vector3(0, 1, 0), hit };
+        }
+
+        if (this.selectionMode === 'vertex') {
+            const pos = hit.object.geometry.getAttribute('position');
+            if (!pos) return null;
+            const mx = (this.mouse.x * 0.5 + 0.5) * this.canvas.clientWidth;
+            const my = (-this.mouse.y * 0.5 + 0.5) * this.canvas.clientHeight;
+            const tmp = new THREE.Vector3();
+            const world = new THREE.Vector3();
+            const proj = new THREE.Vector3();
+            let bestIndex = -1;
+            let bestD2 = Infinity;
+            let bestPoint = null;
+            const step = Math.max(1, Math.floor(pos.count / 2000));
+            for (let i = 0; i < pos.count; i += step) {
+                tmp.fromBufferAttribute(pos, i);
+                world.copy(tmp).applyMatrix4(hit.object.matrixWorld);
+                proj.copy(world).project(this.camera);
+                const sx = (proj.x * 0.5 + 0.5) * this.canvas.clientWidth;
+                const sy = (-proj.y * 0.5 + 0.5) * this.canvas.clientHeight;
+                const dx = sx - mx;
+                const dy = sy - my;
+                const d2 = dx * dx + dy * dy;
+                if (d2 < bestD2) {
+                    bestD2 = d2;
+                    bestIndex = i;
+                    bestPoint = world.clone();
+                }
+            }
+            if (bestIndex >= 0 && bestD2 <= this.pickVertexThresholdPx * this.pickVertexThresholdPx) {
+                return { kind: 'vertex', obj, point: bestPoint.clone(), vertexIndex: bestIndex, hit };
+            }
+            return { kind: 'face', obj, faceIdx: hit.faceIndex, point: hit.point.clone(), normal: hit.face?.normal?.clone?.() ?? new THREE.Vector3(0, 1, 0), hit };
+        }
+
+        return null;
+    }
+
+    setTool(tool) {
+        this.currentTool = tool;
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+        const btn = document.getElementById('t-' + tool);
+        if (btn) btn.classList.add('active');
+
+        // Step 6: numeric HUD for transforms
+        if (['move', 'rotate', 'scale'].includes(tool)) {
+            this.showNumericHUD(tool);
+        } else {
+            this.hideNumericHUD();
+        }
+
+        if (tool === 'select' || tool === 'face') {
+            this.transform.detach();
+        } else if (['move', 'rotate', 'scale'].includes(tool)) {
+            this.transform.setMode(tool === 'move' ? 'translate' : tool);
+            if (this.selectedObj) this.transform.attach(this.selectedObj.mesh);
+        }
+
+        this.updateTransformSnapping();
+
+        if (tool === 'face') {
+            this.setHUD('Click on a face to select it', 'face');
+        } else if (tool === 'measure') {
+            this.setHUD('Measure: click two points (M). Esc clears.', 'face');
+        } else if (['line', 'rect', 'circle'].includes(tool)) {
+            // New flow: sketch starts by picking a face or the ground/grid plane.
+            if (!this.sketchMode) {
+                if (this.selectedFace) {
+                    this.startSketchSession({ plane: this.computeSketchPlaneFromSelectedFace() });
+                } else {
+                    this.pendingSketchPlanePick = true;
+                    this.setHUD('Sketch: click a face or grid plane to start', 'sketch');
+                }
+            }
+            if (!this.pendingSketchPlanePick) this.setHUD('Sketch: ' + tool + ' (ESC to exit)', 'sketch');
+        } else {
+            if (!this.sketchMode) this.hudEl.className = 'hud';
+        }
+
+        // Leaving sketch drawing tools should clear rubber-band preview
+        if (!['line', 'rect', 'circle'].includes(tool)) this.clearSketchDraft();
+    }
+
+    enterSketchMode() {
+        if (this.selectedFace) {
+            this.startSketchSession({ plane: this.computeSketchPlaneFromSelectedFace(), tool: 'rect' });
+            this.toast('Sketch started on face', 'info');
+            return;
+        }
+        this.pendingSketchPlanePick = true;
+        this.setTool('rect');
+        this.setHUD('Sketch: click a face or grid plane to start', 'sketch');
+    }
+
+    exitSketchMode() {
+        this.sketchMode = false;
+        this.pendingSketchPlanePick = false;
+        this.clearSketchDraft();
+        this.sketchPoints = [];
+        this.sketchLines.forEach(line => {
+            this.scene.remove(line.line);
+            line.geometry?.dispose?.();
+            line.line?.material?.dispose?.();
+        });
+        this.sketchLines = [];
+        this.sketchPlane = null;
+        this.clearSketchSelection();
+        this.sketchConstraints = [];
+        this.clearSketchViz();
+
+        this.clearSketchHoverViz();
+
+        if (this.sketchPointViz?.group) {
+            // Dispose children meshes
+            while (this.sketchPointViz.group.children.length) {
+                const c = this.sketchPointViz.group.children.pop();
+                c.geometry?.dispose?.();
+                c.material?.dispose?.();
+            }
+            this.scene?.remove(this.sketchPointViz.group);
+            this.sketchPointViz.group = null;
+        }
+        // Dispose base geometry/material templates
+        this.sketchPointViz.geom?.dispose?.();
+        this.sketchPointViz.mat?.dispose?.();
+        this.sketchPointViz.geom = null;
+        this.sketchPointViz.mat = null;
+        
+        this.hudEl.className = 'hud';
+        this.setTool('select');
+        this.toast('Sketch mode ended', 'info');
+    }
+
+    getSketchSnapPoints() {
+        const pts = [];
+        for (const s of this.sketchLines) {
+            if (s.type === 'line') {
+                pts.push(s.p1, s.p2);
+            } else if (s.type === 'rect') {
+                const p1 = s.p1;
+                const p2 = s.p2;
+                pts.push(p1, p2, new THREE.Vector2(p2.x, p1.y), new THREE.Vector2(p1.x, p2.y));
+            } else if (s.type === 'circle') {
+                pts.push(s.center);
+            }
+        }
+        // Also include in-progress points
+        for (const p of this.sketchPoints) pts.push(p);
+        return pts;
+    }
+
+    snapSketchPoint(rawPoint2D, { disableSnap = false } = {}) {
+        if (!rawPoint2D) return rawPoint2D;
+        if (disableSnap) return rawPoint2D;
+
+        const step = CONFIG.SKETCH_SNAP_GRID;
+        const gridSnapped = new THREE.Vector2(
+            Math.round(rawPoint2D.x / step) * step,
+            Math.round(rawPoint2D.y / step) * step
+        );
+
+        // Prefer snapping to existing sketch vertices if close enough
+        const candidates = this.getSketchSnapPoints();
+        let best = null;
+        let bestD2 = Infinity;
+        const threshold = CONFIG.SKETCH_SNAP_THRESHOLD;
+        for (const p of candidates) {
+            if (!p) continue;
+            const dx = p.x - rawPoint2D.x;
+            const dy = p.y - rawPoint2D.y;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < bestD2) {
+                bestD2 = d2;
+                best = p;
+            }
+        }
+        if (best && bestD2 <= threshold * threshold) return best.clone();
+
+        return gridSnapped;
+    }
+
+    applySketchInference(point2D, { disableSnap = false } = {}) {
+        if (disableSnap) return point2D;
+        if (this.currentTool !== 'line') return point2D;
+        if (this.sketchPoints.length !== 1) return point2D;
+
+        const a = this.sketchPoints[0];
+        const b = point2D.clone();
+        const th = CONFIG.SKETCH_INFER_HV_THRESHOLD;
+        if (Math.abs(b.x - a.x) <= th) b.x = a.x;
+        if (Math.abs(b.y - a.y) <= th) b.y = a.y;
+        return b;
+    }
+
+    addSketchPoint(point2D, opts = {}) {
+        let p = this.snapSketchPoint(point2D, opts);
+        p = this.applySketchInference(p, opts);
+        this.sketchPoints.push(p);
+        if (this.currentTool === 'rect' && this.sketchPoints.length === 2) {
+            this.clearSketchDraft();
+            this.createSketchRect(this.sketchPoints[0], this.sketchPoints[1]);
+            this.sketchPoints = [];
+        } else if (this.currentTool === 'circle' && this.sketchPoints.length === 2) {
+            this.clearSketchDraft();
+            this.createSketchCircle(this.sketchPoints[0], this.sketchPoints[1]);
+            this.sketchPoints = [];
+        } else if (this.currentTool === 'line' && this.sketchPoints.length === 2) {
+            this.clearSketchDraft();
+            this.createSketchLine(this.sketchPoints[0], this.sketchPoints[1]);
+            this.sketchPoints = [this.sketchPoints[1]];
+        }
+    }
+
+    createSketchRect(p1, p2) {
+        const material = new THREE.LineBasicMaterial({ color: CONFIG.SKETCH_LINE_COLOR, transparent: true, opacity: 1, depthTest: false });
+        const points = [
+            this.sketchToWorld(new THREE.Vector2(p1.x, p1.y)),
+            this.sketchToWorld(new THREE.Vector2(p2.x, p1.y)),
+            this.sketchToWorld(new THREE.Vector2(p2.x, p2.y)),
+            this.sketchToWorld(new THREE.Vector2(p1.x, p2.y)),
+            this.sketchToWorld(new THREE.Vector2(p1.x, p1.y)),
+        ];
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geometry, material);
+        line.renderOrder = 10;
+        this.scene.add(line);
+        const ent = { type: 'rect', p1, p2, line, geometry, baseColor: CONFIG.SKETCH_LINE_COLOR };
+        this.sketchLines.push(ent);
+        this.setSketchSelection(ent);
+        this.startSketchDimCommand(ent);
+    }
+
+    createSketchCircle(center, edge) {
+        const radius = Math.sqrt(Math.pow(edge.x - center.x, 2) + Math.pow(edge.y - center.y, 2));
+        const material = new THREE.LineBasicMaterial({ color: CONFIG.SKETCH_LINE_COLOR, transparent: true, opacity: 1, depthTest: false });
+        const curve = new THREE.EllipseCurve(center.x, center.y, radius, radius, 0, 2 * Math.PI, false, 0);
+        const points = curve.getPoints(CONFIG.SKETCH_CIRCLE_POINTS).map(p => this.sketchToWorld(new THREE.Vector2(p.x, p.y)));
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geometry, material);
+        line.renderOrder = 10;
+        this.scene.add(line);
+        const ent = { type: 'circle', center, radius, line, geometry, baseColor: CONFIG.SKETCH_LINE_COLOR };
+        this.sketchLines.push(ent);
+        this.setSketchSelection(ent);
+        this.startSketchDimCommand(ent);
+    }
+
+    createSketchLine(p1, p2) {
+        const material = new THREE.LineBasicMaterial({ color: CONFIG.SKETCH_LINE_COLOR, transparent: true, opacity: 1, depthTest: false });
+        const points = [this.sketchToWorld(new THREE.Vector2(p1.x, p1.y)), this.sketchToWorld(new THREE.Vector2(p2.x, p2.y))];
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geometry, material);
+        line.renderOrder = 10;
+        this.scene.add(line);
+        const ent = { type: 'line', p1, p2, line, geometry, baseColor: CONFIG.SKETCH_LINE_COLOR };
+        this.sketchLines.push(ent);
+        this.setSketchSelection(ent);
+        this.toast('Line added (press Enter to set length)', 'info');
+    }
+
+    addUndo(action) {
+        this.undoStack.push(action);
+        this.redoStack = [];
+        this.updateUndoButtons();
+    }
+
+    undo() {
+        if (this.undoStack.length === 0) return;
+        const action = this.undoStack.pop();
+        this.redoStack.push(action);
+        if (action.type === 'create') {
+            if (action.feature) this.removeFeatureById(action.feature.id);
+            // Clear edge helper before removing from scene
+            if (action.obj?.wireframeHelper) {
+                action.obj.wireframeHelper.parent?.remove(action.obj.wireframeHelper);
+                action.obj.wireframeHelper.geometry?.dispose?.();
+                action.obj.wireframeHelper.material?.dispose?.();
+                action.obj.wireframeHelper = null;
+            }
+            this.scene.remove(action.obj.mesh);
+            this.objects = this.objects.filter(o => o.id !== action.obj.id);
+            if (this.selectedObj === action.obj) this.selectObject(null);
+        } else if (action.type === 'delete') {
+            this.scene.add(action.obj.mesh);
+            this.objects.push(action.obj);
+            this.applyRenderModeToObject(action.obj);
+        } else if (action.type === 'delete-multi') {
+            (action.objs || []).forEach(obj => {
+                this.scene.add(obj.mesh);
+                this.objects.push(obj);
+                this.applyRenderModeToObject(obj);
+            });
+        } else if (action.type === 'fillet' || action.type === 'chamfer' || action.type === 'cut') {
+            if (action.feature) this.removeFeatureById(action.feature.id);
+            if (action.originalGeometry && action.obj.mesh) {
+                action.obj.mesh.geometry.dispose();
+                action.obj.mesh.geometry = action.originalGeometry.clone();
+                action.obj.mesh.geometry.computeBoundingBox();
+                action.obj.mesh.geometry.computeBoundingSphere();
+                this.applyRenderModeToObject(action.obj);
+            }
+        }
+        this.updateUI();
+        this.updateUndoButtons();
+        this.toast('Undo');
+    }
+
+    redo() {
+        if (this.redoStack.length === 0) return;
+        const action = this.redoStack.pop();
+        this.undoStack.push(action);
+        if (action.type === 'create') {
+            this.scene.add(action.obj.mesh);
+            this.objects.push(action.obj);
+            this.applyRenderModeToObject(action.obj);
+            if (action.feature) this.insertFeature(action.feature, action.featureIndex);
+        } else if (action.type === 'delete') {
+            // Clear edge helper before removing
+            if (action.obj?.wireframeHelper) {
+                action.obj.wireframeHelper.parent?.remove(action.obj.wireframeHelper);
+                action.obj.wireframeHelper.geometry?.dispose?.();
+                action.obj.wireframeHelper.material?.dispose?.();
+                action.obj.wireframeHelper = null;
+            }
+            this.scene.remove(action.obj.mesh);
+            this.objects = this.objects.filter(o => o.id !== action.obj.id);
+            if (this.selectedObj === action.obj) this.selectObject(null);
+        } else if (action.type === 'delete-multi') {
+            const deletedIds = new Set();
+            (action.objs || []).forEach(obj => {
+                if (obj?.wireframeHelper) {
+                    obj.wireframeHelper.parent?.remove(obj.wireframeHelper);
+                    obj.wireframeHelper.geometry?.dispose?.();
+                    obj.wireframeHelper.material?.dispose?.();
+                    obj.wireframeHelper = null;
+                }
+                this.scene.remove(obj.mesh);
+                this.objects = this.objects.filter(o => o.id !== obj.id);
+                deletedIds.add(obj.id);
+            });
+            if (this.selectedObj && deletedIds.has(this.selectedObj.id)) this.selectObject(null);
+        } else if (action.type === 'fillet' || action.type === 'chamfer' || action.type === 'cut') {
+            if (action.newGeometry && action.obj.mesh) {
+                action.obj.mesh.geometry.dispose();
+                action.obj.mesh.geometry = action.newGeometry.clone();
+                action.obj.mesh.geometry.computeBoundingBox();
+                action.obj.mesh.geometry.computeBoundingSphere();
+                this.applyRenderModeToObject(action.obj);
+            }
+            if (action.feature) this.insertFeature(action.feature, action.featureIndex);
+        }
+        this.updateUI();
+        this.updateUndoButtons();
+        this.toast('Redo');
+    }
+
+    updateUndoButtons() {
+        document.getElementById('t-undo').disabled = this.undoStack.length === 0;
+        document.getElementById('t-redo').disabled = this.redoStack.length === 0;
+    }
+
+    createPrimitive(type) {
+        let geometry;
+        const params = {};
+        switch (type) {
+            case 'box':
+                params.width = CONFIG.DEFAULT_BOX_SIZE;
+                params.height = CONFIG.DEFAULT_BOX_SIZE;
+                params.depth = CONFIG.DEFAULT_BOX_SIZE;
+                geometry = new THREE.BoxGeometry(params.width, params.height, params.depth);
+                break;
+            case 'sphere':
+                params.radius = CONFIG.DEFAULT_SPHERE_RADIUS;
+                geometry = new THREE.SphereGeometry(params.radius, CONFIG.GEOMETRY_SEGMENTS, CONFIG.GEOMETRY_SEGMENTS);
+                break;
+            case 'cylinder':
+                params.radius = CONFIG.DEFAULT_CYLINDER_RADIUS;
+                params.height = CONFIG.DEFAULT_CYLINDER_HEIGHT;
+                geometry = new THREE.CylinderGeometry(params.radius, params.radius, params.height, CONFIG.GEOMETRY_SEGMENTS);
+                break;
+            case 'cone':
+                params.radius = CONFIG.DEFAULT_CONE_RADIUS;
+                params.height = CONFIG.DEFAULT_CONE_HEIGHT;
+                geometry = new THREE.ConeGeometry(params.radius, params.height, CONFIG.GEOMETRY_SEGMENTS);
+                break;
+            case 'torus':
+                params.radius = CONFIG.DEFAULT_TORUS_RADIUS;
+                params.tube = CONFIG.DEFAULT_TORUS_TUBE;
+                geometry = new THREE.TorusGeometry(params.radius, params.tube, CONFIG.GEOMETRY_SEGMENTS_TORUS_RADIAL, CONFIG.GEOMETRY_SEGMENTS_TORUS_TUBULAR);
+                break;
+            default:
+                return;
+        }
+        const mesh = new THREE.Mesh(geometry, this.createMaterial());
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        const box = new THREE.Box3().setFromObject(mesh);
+        mesh.position.y = (box.max.y - box.min.y) / 2;
+
+        const offset = this.objects.length * CONFIG.PRIMITIVE_SPACING;
+        mesh.position.x = offset % CONFIG.PRIMITIVE_GRID_WIDTH;
+        mesh.position.z = Math.floor(offset / CONFIG.PRIMITIVE_GRID_WIDTH) * CONFIG.PRIMITIVE_SPACING;
+
+        this.objCounter++;
+        const obj = { id: this.objCounter, name: type.charAt(0).toUpperCase() + type.slice(1) + ' ' + this.objCounter, type, mesh, params };
+        mesh.userData.obj = obj;
+        this.scene.add(mesh);
+        mesh.updateMatrixWorld(true);
+        this.objects.push(obj);
+        this.applyRenderModeToObject(obj);
+        this.addUndo({ type: 'create', obj });
+        this.selection = [{ kind: 'body', obj, point: mesh.position.clone() }];
+        this.selectObject(obj);
+        this.updateUI();
+        this.toast('Created ' + obj.name, 'success');
+    }
+
+    doExtrude() {
+        let depth = parseFloat(document.getElementById('extrude-val').value);
+        if (isNaN(depth) || depth === 0) depth = CONFIG.DEFAULT_EXTRUDE_DEPTH;
+        const sign = Math.sign(depth) || 1;
+        const absDepth = Math.abs(depth);
+        if (absDepth < 0.1) {
+            this.toast('Extrude depth must have |value| >= 0.1', 'error');
+            return;
+        }
+
+        const sp = this.sketchPlane || (this.selectedFace ? this.computeSketchPlaneFromSelectedFace() : this.getDefaultSketchPlane());
+
+        if (this.sketchLines.length > 0) {
+            const sketch = this.sketchLines[this.sketchLines.length - 1];
+            let geometry;
+            if (sketch.type === 'rect') {
+                const w = Math.abs(sketch.p2.x - sketch.p1.x);
+                const d = Math.abs(sketch.p2.y - sketch.p1.y);
+                geometry = new THREE.BoxGeometry(w, absDepth, d);
+            } else if (sketch.type === 'circle') {
+                geometry = new THREE.CylinderGeometry(sketch.radius, sketch.radius, absDepth, CONFIG.GEOMETRY_SEGMENTS);
+            } else {
+                this.toast('Cannot extrude this sketch type', 'error');
+                return;
+            }
+
+            const mesh = new THREE.Mesh(geometry, this.createMaterial());
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            const center2 = sketch.type === 'rect'
+                ? new THREE.Vector2((sketch.p1.x + sketch.p2.x) / 2, (sketch.p1.y + sketch.p2.y) / 2)
+                : sketch.center.clone();
+            const centerW = this.sketchPlane ? this.sketchToWorld(center2) : sp.origin.clone().addScaledVector(sp.u, center2.x).addScaledVector(sp.v, center2.y).addScaledVector(sp.w, sp.offset);
+            mesh.position.copy(centerW);
+            mesh.position.addScaledVector(sp.w, (sign * absDepth) / 2);
+            mesh.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), sp.w));
+
+            this.scene.remove(sketch.line);
+            sketch.geometry?.dispose?.();
+            this.sketchLines.pop();
+
+            this.objCounter++;
+            const obj = { id: this.objCounter, name: 'Extrusion ' + this.objCounter, type: 'extrusion', mesh, params: { depth } };
+            mesh.userData.obj = obj;
+            this.scene.add(mesh);
+            this.objects.push(obj);
+            this.applyRenderModeToObject(obj);
+            const featName = 'Extrude ' + Math.abs(depth) + 'mm';
+            const featureIndex = this.features.length;
+            const feature = this.addFeature({ type: 'extrude', name: featName, objId: obj.id, params: { depth, from: 'sketch' } });
+            this.addUndo({ type: 'create', obj, feature, featureIndex });
+            this.selection = [{ kind: 'body', obj, point: mesh.position.clone() }];
+            this.selectObject(obj);
+            this.updateUI();
+            this.toast('Extruded ' + depth + 'mm', 'success');
+        } else if (this.selectedFace) {
+            const faceNormal = this.selectedFace.normal.clone();
+            faceNormal.transformDirection(this.selectedFace.obj.mesh.matrixWorld);
+            faceNormal.normalize();
+            const facePoint = this.selectedFace.point.clone();
+
+            const baseGeometry = this.selectedFace.obj.mesh.geometry;
+            baseGeometry.computeBoundingBox();
+            const bb = baseGeometry.boundingBox;
+            const width = bb.max.x - bb.min.x;
+            const depthBB = bb.max.z - bb.min.z;
+            const extrudeGeometry = new THREE.BoxGeometry(width * 0.8, absDepth, depthBB * 0.8);
+            const mesh = new THREE.Mesh(extrudeGeometry, this.createMaterial());
+            mesh.castShadow = true;
+            mesh.position.copy(facePoint);
+            mesh.position.addScaledVector(faceNormal, (sign * absDepth) / 2);
+            mesh.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), faceNormal));
+
+            this.objCounter++;
+            const obj = { id: this.objCounter, name: 'Extrusion ' + this.objCounter, type: 'extrusion', mesh, params: { depth } };
+            mesh.userData.obj = obj;
+            this.scene.add(mesh);
+            this.objects.push(obj);
+            this.applyRenderModeToObject(obj);
+            const featName = 'Extrude ' + Math.abs(depth) + 'mm';
+            const featureIndex = this.features.length;
+            const feature = this.addFeature({ type: 'extrude', name: featName, objId: obj.id, params: { depth, from: 'face' } });
+            this.addUndo({ type: 'create', obj, feature, featureIndex });
+            this.selection = [{ kind: 'body', obj, point: mesh.position.clone() }];
+            this.selectObject(obj);
+            this.updateUI();
+            this.toast('Face extruded ' + depth + 'mm', 'success');
+        } else {
+            this.toast('Draw a sketch or select a face first', 'warning');
+        }
+
+        this.closeModal('m-extrude');
+    }
+
+    startCutCommand() {
+        const modalId = 'm-cut';
+        const input = document.getElementById('cut-val');
+        
+        let onInput = null;
+        this.startCommand({
+            name: 'cut',
+            title: 'Cut',
+            hudKind: 'face',
+            hint: 'Enter=OK, Esc=Cancel',
+            modalId,
+            start: () => {
+                this.openModal(modalId);
+                if (input) {
+                    setTimeout(() => input.focus(), 0);
+                }
+            },
+            confirm: () => {
+                if (input && onInput) input.removeEventListener('input', onInput);
+                this.doCut();
+            },
+            cancel: () => {
+                if (input && onInput) input.removeEventListener('input', onInput);
+                this.closeModal(modalId);
+            },
+        });
+    }
+
+    doCut() {
+        let depth = parseFloat(document.getElementById('cut-val').value);
+        if (isNaN(depth) || depth === 0) depth = CONFIG.DEFAULT_EXTRUDE_DEPTH;
+        const absDepth = Math.abs(depth);
+        if (absDepth < 0.1) {
+            this.toast('Cut depth must be >= 0.1', 'error');
+            return;
+        }
+
+        if (!this.selectedFace && this.sketchLines.length === 0) {
+            this.toast('Select a face or draw a sketch first', 'warning');
+            this.closeModal('m-cut');
+            return;
+        }
+
+        if (!this.selectedObj && !this.selectedFace) {
+            this.toast('Select an object to cut from', 'warning');
+            this.closeModal('m-cut');
+            return;
+        }
+
+        const targetObj = this.selectedFace ? this.selectedFace.obj : this.selectedObj;
+        if (!targetObj || !targetObj.mesh) {
+            this.toast('No valid object selected for cutting', 'warning');
+            this.closeModal('m-cut');
+            return;
+        }
+
+        const sp = this.sketchPlane || (this.selectedFace ? this.computeSketchPlaneFromSelectedFace() : this.getDefaultSketchPlane());
+
+        let cutGeometry;
+        let cutPosition = new THREE.Vector3();
+        let cutQuaternion = new THREE.Quaternion();
+
+        if (this.sketchLines.length > 0) {
+            const sketch = this.sketchLines[this.sketchLines.length - 1];
+            
+            if (sketch.type === 'rect') {
+                const w = Math.abs(sketch.p2.x - sketch.p1.x);
+                const d = Math.abs(sketch.p2.y - sketch.p1.y);
+                cutGeometry = new THREE.BoxGeometry(w, absDepth, d);
+            } else if (sketch.type === 'circle') {
+                cutGeometry = new THREE.CylinderGeometry(sketch.radius, sketch.radius, absDepth, CONFIG.GEOMETRY_SEGMENTS);
+            } else {
+                this.toast('Cannot cut with this sketch type', 'error');
+                return;
+            }
+
+            const center2 = sketch.type === 'rect'
+                ? new THREE.Vector2((sketch.p1.x + sketch.p2.x) / 2, (sketch.p1.y + sketch.p2.y) / 2)
+                : sketch.center.clone();
+            const centerW = this.sketchPlane ? this.sketchToWorld(center2) : sp.origin.clone().addScaledVector(sp.u, center2.x).addScaledVector(sp.v, center2.y).addScaledVector(sp.w, sp.offset);
+            
+            // Position the cut tool to go INTO the object (negative direction)
+            cutPosition.copy(centerW);
+            cutPosition.addScaledVector(sp.w, -absDepth / 2);
+            cutQuaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), sp.w);
+
+            // Remove sketch
+            this.scene.remove(sketch.line);
+            sketch.geometry?.dispose?.();
+            this.sketchLines.pop();
+
+        } else if (this.selectedFace) {
+            const faceNormal = this.selectedFace.normal.clone();
+            faceNormal.transformDirection(this.selectedFace.obj.mesh.matrixWorld);
+            faceNormal.normalize();
+            const facePoint = this.selectedFace.point.clone();
+
+            const baseGeometry = this.selectedFace.obj.mesh.geometry;
+            baseGeometry.computeBoundingBox();
+            const bb = baseGeometry.boundingBox;
+            const width = bb.max.x - bb.min.x;
+            const depthBB = bb.max.z - bb.min.z;
+            cutGeometry = new THREE.BoxGeometry(width * 0.8, absDepth, depthBB * 0.8);
+            
+            // Position the cut tool to go INTO the object (opposite to face normal)
+            cutPosition.copy(facePoint);
+            cutPosition.addScaledVector(faceNormal, -absDepth / 2);
+            cutQuaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), faceNormal);
+        }
+
+        if (!cutGeometry) {
+            this.toast('Failed to create cut geometry', 'error');
+            this.closeModal('m-cut');
+            return;
+        }
+
+        // Perform CSG boolean subtraction using our embedded CSG library
+        let targetGeom = null;
+        try {
+            const targetMesh = targetObj.mesh;
+            targetMesh.updateMatrixWorld(true);
+            
+            // Ensure geometry has normals
+            if (!cutGeometry.attributes.normal) {
+                cutGeometry.computeVertexNormals();
+            }
+            targetGeom = targetMesh.geometry.clone();
+            if (!targetGeom.attributes.normal) {
+                targetGeom.computeVertexNormals();
+            }
+            
+            // Create CSG from target mesh geometry (with world transform applied)
+            const baseCSG = CSG.fromGeometry(targetGeom, targetMesh.matrixWorld);
+            
+            // Create a temporary mesh for the cut tool to get its world matrix
+            const cutMeshTemp = new THREE.Mesh(cutGeometry);
+            cutMeshTemp.position.copy(cutPosition);
+            cutMeshTemp.quaternion.copy(cutQuaternion);
+            cutMeshTemp.updateMatrixWorld(true);
+            
+            // Create CSG from cut geometry (with world transform applied)
+            const cutCSG = CSG.fromGeometry(cutGeometry, cutMeshTemp.matrixWorld);
+            
+            // Perform subtraction
+            const resultCSG = baseCSG.subtract(cutCSG);
+            
+            // Convert result back to Three.js geometry
+            const resultGeometry = resultCSG.toGeometry();
+            
+            if (resultGeometry.attributes.position.count > 0) {
+                // Store old geometry for undo (clone so history isn't tied to live/disposed geometry)
+                const oldGeometry = targetMesh.geometry.clone();
+                const liveOldGeometry = targetMesh.geometry;
+                
+                // Reset mesh transforms since geometry is now in world space
+                // We need to transform the result back to local space
+                const inverseMatrix = new THREE.Matrix4().copy(targetMesh.matrixWorld).invert();
+                resultGeometry.applyMatrix4(inverseMatrix);
+                
+                // Apply result to target mesh
+                targetMesh.geometry = resultGeometry;
+                liveOldGeometry.dispose(); // Dispose old live geometry
+                targetMesh.geometry.computeBoundingBox();
+                targetMesh.geometry.computeBoundingSphere();
+                
+                // Add feature
+                const featureIndex = this.features.length;
+                const feature = this.addFeature({ 
+                    type: 'cut', 
+                    name: 'Cut ' + absDepth + 'mm', 
+                    objId: targetObj.id, 
+                    params: { depth: absDepth, from: this.selectedFace ? 'face' : 'sketch' } 
+                });
+                
+                this.addUndo({
+                    type: 'cut',
+                    obj: targetObj,
+                    originalGeometry: oldGeometry,
+                    newGeometry: targetMesh.geometry.clone(),
+                    feature,
+                    featureIndex,
+                });
+
+                // Keep edge overlays in sync if active
+                this.applyRenderModeToObject(targetObj);
+                
+                // Dispose temporary geometries
+                cutGeometry.dispose();
+                targetGeom.dispose();
+                
+                this.updateUI();
+                this.toast('Cut ' + absDepth + 'mm', 'success');
+                this.closeModal('m-cut');
+                return;
+            } else {
+                throw new Error('CSG resulted in empty geometry');
+            }
+        } catch (err) {
+            console.error('CSG cut failed:', err);
+            this.toast('Cut failed: ' + err.message, 'error');
+        }
+        
+        // Dispose temporary geometries on failure path
+        if (cutGeometry) cutGeometry.dispose();
+        if (targetGeom) targetGeom.dispose();
+        
+        this.closeModal('m-cut');
+    }
+
+    doFillet() {
+        if (!this.selectedObj || this.selectedObj.type !== 'box') {
+            this.toast('Select a box to fillet', 'warning');
+            this.closeModal('m-fillet');
+            return;
+        }
+        let radius = parseFloat(document.getElementById('fillet-val').value);
+        if (isNaN(radius) || radius === 0) radius = CONFIG.DEFAULT_FILLET_RADIUS;
+        if (radius < 0.1) {
+            this.toast('Fillet radius must be >= 0.1', 'error');
+            return;
+        }
+        const p = this.selectedObj.params;
+        const shape = new THREE.Shape();
+        const w = p.width / 2, h = p.depth / 2;
+        const r = Math.min(radius, Math.min(w, h) * CONFIG.FILLET_CHAMFER_MAX_RATIO);
+        shape.moveTo(-w + r, -h);
+        shape.lineTo(w - r, -h);
+        shape.quadraticCurveTo(w, -h, w, -h + r);
+        shape.lineTo(w, h - r);
+        shape.quadraticCurveTo(w, h, w - r, h);
+        shape.lineTo(-w + r, h);
+        shape.quadraticCurveTo(-w, h, -w, h - r);
+        shape.lineTo(-w, -h + r);
+        shape.quadraticCurveTo(-w, -h, -w + r, -h);
+        const geometry = new THREE.ExtrudeGeometry(shape, {
+            depth: p.height,
+            bevelEnabled: true,
+            bevelThickness: r,
+            bevelSize: r,
+            bevelSegments: CONFIG.BEVEL_SEGMENTS,
+        });
+        geometry.center();
+        geometry.rotateX(Math.PI / 2);
+        const oldGeom = this.selectedObj.mesh.geometry.clone();
+        const liveOldGeom = this.selectedObj.mesh.geometry;
+        this.selectedObj.mesh.geometry = geometry;
+        liveOldGeom.dispose(); // Dispose the old live geometry
+        this.selectedObj.params.fillet = radius;
+        const featureIndex = this.features.length;
+        const feature = this.addFeature({ type: 'fillet', name: 'Fillet ' + radius + 'mm', objId: this.selectedObj.id, params: { radius } });
+        this.addUndo({ type: 'fillet', obj: this.selectedObj, radius, originalGeometry: oldGeom, newGeometry: geometry.clone(), feature, featureIndex });
+        this.applyRenderModeToObject(this.selectedObj);
+        this.toast('Fillet applied: ' + radius + 'mm', 'success');
+        this.closeModal('m-fillet');
+    }
+
+    doChamfer() {
+        if (!this.selectedObj || this.selectedObj.type !== 'box') {
+            this.toast('Select a box to chamfer', 'warning');
+            this.closeModal('m-chamfer');
+            return;
+        }
+        let dist = parseFloat(document.getElementById('chamfer-val').value);
+        if (isNaN(dist) || dist === 0) dist = CONFIG.DEFAULT_CHAMFER_DISTANCE;
+        if (dist < 0.1) {
+            this.toast('Chamfer distance must be >= 0.1', 'error');
+            return;
+        }
+        const p = this.selectedObj.params;
+        const shape = new THREE.Shape();
+        const w = p.width / 2, h = p.depth / 2;
+        const c = Math.min(dist, Math.min(w, h) * CONFIG.FILLET_CHAMFER_MAX_RATIO);
+        shape.moveTo(-w + c, -h);
+        shape.lineTo(w - c, -h);
+        shape.lineTo(w, -h + c);
+        shape.lineTo(w, h - c);
+        shape.lineTo(w - c, h);
+        shape.lineTo(-w + c, h);
+        shape.lineTo(-w, h - c);
+        shape.lineTo(-w, -h + c);
+        shape.closePath();
+        const geometry = new THREE.ExtrudeGeometry(shape, { depth: p.height, bevelEnabled: false });
+        geometry.center();
+        geometry.rotateX(Math.PI / 2);
+        const oldGeom = this.selectedObj.mesh.geometry.clone();
+        const liveOldGeom = this.selectedObj.mesh.geometry;
+        this.selectedObj.mesh.geometry = geometry;
+        liveOldGeom.dispose(); // Dispose the old live geometry
+        this.selectedObj.params.chamfer = dist;
+        const featureIndex = this.features.length;
+        const feature = this.addFeature({ type: 'chamfer', name: 'Chamfer ' + dist + 'mm', objId: this.selectedObj.id, params: { dist } });
+        this.addUndo({ type: 'chamfer', obj: this.selectedObj, dist, originalGeometry: oldGeom, newGeometry: geometry.clone(), feature, featureIndex });
+        this.applyRenderModeToObject(this.selectedObj);
+        this.toast('Chamfer applied: ' + dist + 'mm', 'success');
+        this.closeModal('m-chamfer');
+    }
+
+    deleteSelected() {
+        const targetsMap = new Map();
+        (this.selection || []).forEach(p => {
+            if (p?.obj?.id) targetsMap.set(p.obj.id, p.obj);
+        });
+        if (targetsMap.size === 0 && this.selectedObj?.id) targetsMap.set(this.selectedObj.id, this.selectedObj);
+        const targets = [...targetsMap.values()];
+        if (targets.length === 0) return;
+
+        targets.forEach(obj => {
+            // Dispose edge helper if present
+            if (obj.wireframeHelper) {
+                obj.wireframeHelper.parent?.remove(obj.wireframeHelper);
+                obj.wireframeHelper.geometry?.dispose?.();
+                obj.wireframeHelper.material?.dispose?.();
+                obj.wireframeHelper = null;
+            }
+            this.scene.remove(obj.mesh);
+            this.objects = this.objects.filter(o => o.id !== obj.id);
+        });
+        this.addUndo(targets.length === 1 ? { type: 'delete', obj: targets[0] } : { type: 'delete-multi', objs: targets });
+        this.toast('Deleted ' + (targets.length === 1 ? targets[0].name : targets.length + ' objects'));
+        this.clearSelection();
+        this.updateUI();
+    }
+
+    duplicateSelected() {
+        if (!this.selectedObj) return;
+        const mesh = this.selectedObj.mesh.clone();
+        mesh.material = this.selectedObj.mesh.material.clone();
+        mesh.geometry = this.selectedObj.mesh.geometry.clone();
+        mesh.position.x += 20;
+        mesh.position.z += 20;
+        this.objCounter++;
+        const obj = { id: this.objCounter, name: this.selectedObj.name + ' Copy', type: this.selectedObj.type, mesh, params: { ...this.selectedObj.params } };
+        mesh.userData.obj = obj;
+        this.scene.add(mesh);
+        this.objects.push(obj);
+        this.applyRenderModeToObject(obj);
+        this.addUndo({ type: 'create', obj });
+        this.selection = [{ kind: 'body', obj, point: mesh.position.clone() }];
+        this.selectObject(obj);
+        this.updateUI();
+        this.toast('Duplicated');
+    }
+
+    exportSTL() {
+        if (this.objects.length === 0) {
+            this.toast('No objects to export', 'warning');
+            return;
+        }
+        try {
+            const geometries = [];
+            this.objects.forEach(obj => {
+                const geom = obj.mesh.geometry.clone();
+                obj.mesh.updateMatrixWorld(true);
+                geom.applyMatrix4(obj.mesh.matrixWorld);
+                if (geom.index) {
+                    const nonIndexed = geom.toNonIndexed();
+                    geom.dispose(); // Dispose the indexed clone
+                    geometries.push(nonIndexed);
+                } else {
+                    geometries.push(geom);
+                }
+            });
+            const mergedGeom = new THREE.BufferGeometry();
+            const positions = [];
+            geometries.forEach(geom => {
+                const pos = geom.getAttribute('position');
+                for (let i = 0; i < pos.count; i++) positions.push(pos.getX(i), pos.getY(i), pos.getZ(i));
+            });
+            mergedGeom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            mergedGeom.computeVertexNormals();
+            const tempMesh = new THREE.Mesh(mergedGeom);
+            const exporter = new THREE.STLExporter();
+            const stl = exporter.parse(tempMesh);
+            const blob = new Blob([stl], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'model.stl';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            geometries.forEach(g => g.dispose());
+            mergedGeom.dispose();
+            this.toast('STL exported!', 'success');
+        } catch (err) {
+            console.error('Export error:', err);
+            this.toast('Export failed: ' + err.message, 'error');
+        }
+    }
+
+    exportSTEP() {
+        if (this.objects.length === 0) {
+            this.toast('No objects to export', 'warning');
+            return;
+        }
+        try {
+            // Generate a basic STEP file format
+            const stepContent = this.generateSTEPContent();
+            const blob = new Blob([stepContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'model.step';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            this.toast('STEP exported! (Note: Basic format)', 'success');
+        } catch (err) {
+            console.error('STEP Export error:', err);
+            this.toast('STEP Export failed: ' + err.message, 'error');
+        }
+    }
+
+    generateSTEPContent() {
+        const date = new Date();
+        const dateStr = date.toISOString().split('T')[0].replace(/-/g, '');
+        const timeStr = date.toTimeString().split(' ')[0].replace(/:/g, '');
+        
+        let content = `ISO-10303-21;
+HEADER;
+FILE_DESCRIPTION(('BulletCAD Exported Model'),
+    '2;1',
+    2022,
+    ('Generated by BulletCAD'),
+    (''),
+    '',
+    '',
+    '');
+FILE_NAME('model.step',
+    '${dateStr}T${timeStr}',
+    (''),
+    (''),
+    'BulletCAD',
+    'BulletCAD',
+    '');
+FILE_SCHEMA(('AUTOMOTIVE_DESIGN { 0 0 10303 214 1 1 1 1 }'));
+ENDSEC;
+DATA;
+`;
+
+        // NOTE: This is a minimal, metadata-only STEP stub.
+        // It avoids broken references but does not encode solid geometry.
+        let idCounter = 1;
+        const applicationContextId = idCounter++;
+        const productContextId = idCounter++;
+        content += `#${applicationContextId}=APPLICATION_CONTEXT('Core Data for Automotive Mechanical Design Process');\n`;
+        content += `#${productContextId}=PRODUCT_CONTEXT('',#${applicationContextId},'mechanical');\n`;
+
+        this.objects.forEach((obj) => {
+            const safeName = String(obj?.name ?? 'Part').replace(/'/g, "''");
+            const productId = idCounter++;
+            content += `#${productId}=PRODUCT('${safeName}','','',(#${productContextId}));\n`;
+        });
+
+        content += `ENDSEC;\nEND-ISO-10303-21;`;
+        return content;
+    }
+
+    setRenderMode(mode) {
+        const buttons = document.querySelectorAll('.render-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+
+        // Remember selection so newly created objects can be synced later if needed
+        this.renderMode = mode;
+
+        const clearEdgeHelper = (obj) => {
+            const h = obj?.wireframeHelper;
+            if (!h) return;
+            h.parent?.remove(h);
+            h.geometry?.dispose?.();
+            h.material?.dispose?.();
+            obj.wireframeHelper = null;
+        };
+        
+        if (mode === 'shaded') {
+            document.getElementById('render-shaded').classList.add('active');
+            this.objects.forEach(obj => {
+                obj.mesh.material.wireframe = false;
+                clearEdgeHelper(obj);
+            });
+        } else if (mode === 'wireframe') {
+            document.getElementById('render-wireframe').classList.add('active');
+            this.objects.forEach(obj => {
+                clearEdgeHelper(obj);
+                obj.mesh.material.wireframe = true;
+            });
+        } else if (mode === 'edges') {
+            document.getElementById('render-edges').classList.add('active');
+            this.objects.forEach(obj => {
+                obj.mesh.material.wireframe = false;
+                // Rebuild helper so it stays in sync if geometry changed
+                clearEdgeHelper(obj);
+                const edgeGeometry = new THREE.EdgesGeometry(obj.mesh.geometry);
+                const lineMaterial = new THREE.LineBasicMaterial({ color: 0xf97316 });
+                obj.wireframeHelper = new THREE.LineSegments(edgeGeometry, lineMaterial);
+                obj.mesh.add(obj.wireframeHelper);
+            });
+        }
+        this.toast(`Render mode: ${mode}`, 'success');
+    }
+
+    applyRenderModeToObject(obj) {
+        if (!obj?.mesh) return;
+        const mode = this.renderMode || 'shaded';
+        
+        // Clear any existing edge helper
+        const h = obj.wireframeHelper;
+        if (h) {
+            h.parent?.remove(h);
+            h.geometry?.dispose?.();
+            h.material?.dispose?.();
+            obj.wireframeHelper = null;
+        }
+        
+        if (mode === 'wireframe') {
+            obj.mesh.material.wireframe = true;
+        } else if (mode === 'edges') {
+            obj.mesh.material.wireframe = false;
+            const edgeGeometry = new THREE.EdgesGeometry(obj.mesh.geometry);
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0xf97316 });
+            obj.wireframeHelper = new THREE.LineSegments(edgeGeometry, lineMaterial);
+            obj.mesh.add(obj.wireframeHelper);
+        } else {
+            obj.mesh.material.wireframe = false;
+        }
+    }
+
+    importSTL() {
+        this.stlFileInputEl.click();
+    }
+
+    handleSTLImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            try {
+                const loader = new THREE.STLLoader();
+                const geometry = loader.parse(e.target.result);
+                geometry.computeBoundingBox();
+                const center = new THREE.Vector3();
+                geometry.boundingBox.getCenter(center);
+                geometry.translate(-center.x, -center.y, -center.z);
+                const mesh = new THREE.Mesh(geometry, this.createMaterial());
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                const box = new THREE.Box3().setFromObject(mesh);
+                mesh.position.y = (box.max.y - box.min.y) / 2;
+                const offset = this.objects.length * CONFIG.PRIMITIVE_SPACING;
+                mesh.position.x = offset % CONFIG.PRIMITIVE_GRID_WIDTH;
+                mesh.position.z = Math.floor(offset / CONFIG.PRIMITIVE_GRID_WIDTH) * CONFIG.PRIMITIVE_SPACING;
+                this.objCounter++;
+                const obj = { id: this.objCounter, name: file.name.replace(/\.stl$/i, '') || 'Imported ' + this.objCounter, type: 'imported', mesh, params: {} };
+                mesh.userData.obj = obj;
+                this.scene.add(mesh);
+                this.objects.push(obj);
+                this.applyRenderModeToObject(obj);
+                this.addUndo({ type: 'create', obj });
+                this.selection = [{ kind: 'body', obj, point: mesh.position.clone() }];
+                this.selectObject(obj);
+                this.updateUI();
+                this.toast('Imported ' + obj.name, 'success');
+            } catch (err) {
+                console.error('Import error:', err);
+                this.toast('Import failed: ' + err.message, 'error');
+            }
+        };
+        reader.onerror = () => this.toast('Failed to read file', 'error');
+        reader.readAsArrayBuffer(file);
+        event.target.value = '';
+    }
+
+    updateUI() {
+        this.updateTree();
+        this.updateFeatures();
+        this.statusObjEl.textContent = this.objects.length;
+    }
+
+    updateTree() {
+        if (this.objects.length === 0) {
+            this.treeEl.innerHTML = '<div class="empty">No objects. Create a primitive.</div>';
+            return;
+        }
+
+        const selectedIds = new Set((this.selection || []).filter(p => p?.kind === 'body' && p?.obj?.id).map(p => p.obj.id));
+        this.treeEl.innerHTML = this.objects
+            .map(obj => `<div class="tree-item ${(selectedIds.has(obj.id) || this.selectedObj === obj) ? 'selected' : ''}" data-id="${obj.id}"><span>📦</span><span>${obj.name}</span></div>`)
+            .join('');
+        this.treeEl.querySelectorAll('.tree-item').forEach(el => {
+            el.addEventListener('click', (evt) => {
+                const obj = this.objects.find(o => o.id === parseInt(el.dataset.id));
+                if (obj) {
+                    const pick = { kind: 'body', obj, point: obj.mesh.position.clone() };
+                    if (evt.shiftKey) this.addBodyToSelection(pick);
+                    else if (evt.ctrlKey || evt.metaKey) this.toggleBodySelection(pick);
+                    else this.setBodySelection(pick);
+                }
+            });
+        });
+    }
+
+    addFeature({ type, name, objId = null, params = {} } = {}, { atIndex = null } = {}) {
+        this.featureCounter++;
+        const feature = {
+            id: this.featureCounter,
+            type: type || 'feature',
+            name: name || (type ? type[0].toUpperCase() + type.slice(1) : 'Feature'),
+            objId,
+            params: params || {},
+            ts: Date.now(),
+        };
+        if (typeof atIndex === 'number' && atIndex >= 0 && atIndex <= this.features.length) this.features.splice(atIndex, 0, feature);
+        else this.features.push(feature);
+        this.updateFeatures();
+        return feature;
+    }
+
+    insertFeature(feature, atIndex) {
+        if (!feature) return;
+        this.featureCounter = Math.max(this.featureCounter, feature.id || 0);
+        if (typeof atIndex === 'number' && atIndex >= 0 && atIndex <= this.features.length) this.features.splice(atIndex, 0, feature);
+        else this.features.push(feature);
+        this.updateFeatures();
+    }
+
+    removeFeatureById(id) {
+        if (!id) return;
+        const before = this.features.length;
+        this.features = this.features.filter(f => f?.id !== id);
+        if (this.selectedFeatureId === id) this.selectedFeatureId = null;
+        if (this.features.length !== before) this.updateFeatures();
+    }
+
+    updateFeatures() {
+        if (!this.featuresEl) return;
+        if (!this.features || this.features.length === 0) {
+            this.featuresEl.innerHTML = '<div class="empty">No features yet.</div>';
+            return;
+        }
+
+        const selectedId = this.selectedFeatureId;
+        const iconFor = (t) => {
+            if (t === 'extrude') return '⬆';
+            if (t === 'cut') return '⬇';
+            if (t === 'fillet') return '◜';
+            if (t === 'chamfer') return '⟂';
+            return '•';
+        };
+
+        this.featuresEl.innerHTML = this.features
+            .map(f => `<div class="feature-item ${selectedId === f.id ? 'selected' : ''}" data-id="${f.id}"><span>${iconFor(f.type)}</span><span>${f.name}</span></div>`)
+            .join('');
+
+        this.featuresEl.querySelectorAll('.feature-item').forEach(el => {
+            el.addEventListener('click', () => {
+                const id = parseInt(el.dataset.id);
+                const f = this.features.find(x => x.id === id);
+                this.selectedFeatureId = id;
+                this.updateFeatures();
+                if (f?.objId) {
+                    const obj = this.objects.find(o => o.id === f.objId);
+                    if (obj) {
+                        const pick = { kind: 'body', obj, point: obj.mesh.position.clone() };
+                        this.setBodySelection(pick);
+                    }
+                }
+            });
+        });
+    }
+
+    computeGeometryStats(obj) {
+        const geom = obj.mesh.geometry;
+        if (!geom) return { volume: 0, surfaceArea: 0, vertexCount: 0, triangleCount: 0 };
+
+        obj.mesh.updateMatrixWorld(true);
+        const worldMatrix = obj.mesh.matrixWorld;
+        
+        const posAttr = geom.getAttribute('position');
+        const vertexCount = posAttr ? posAttr.count : 0;
+        const idx = geom.index;
+        const triangleCount = idx ? idx.count / 3 : vertexCount / 3;
+        
+        // Simple volume approximation using bounding box
+        geom.computeBoundingBox();
+        const bb = geom.boundingBox;
+        const localVolume = bb ? (bb.max.x - bb.min.x) * (bb.max.y - bb.min.y) * (bb.max.z - bb.min.z) : 0;
+        const s = obj.mesh.scale;
+        const volume = localVolume * Math.abs((s?.x ?? 1) * (s?.y ?? 1) * (s?.z ?? 1));
+        
+        // Surface area approximation
+        let surfaceArea = 0;
+        if (posAttr) {
+            const a = new THREE.Vector3();
+            const b = new THREE.Vector3();
+            const c = new THREE.Vector3();
+            const ab = new THREE.Vector3();
+            const ac = new THREE.Vector3();
+
+            const triArea = (ai, bi, ci) => {
+                a.fromBufferAttribute(posAttr, ai).applyMatrix4(worldMatrix);
+                b.fromBufferAttribute(posAttr, bi).applyMatrix4(worldMatrix);
+                c.fromBufferAttribute(posAttr, ci).applyMatrix4(worldMatrix);
+                ab.subVectors(b, a);
+                ac.subVectors(c, a);
+                return ab.cross(ac).length() / 2;
+            };
+
+            if (idx) {
+                for (let i = 0; i < idx.count; i += 3) {
+                    surfaceArea += triArea(idx.getX(i), idx.getX(i + 1), idx.getX(i + 2));
+                }
+            } else {
+                for (let i = 0; i + 2 < posAttr.count; i += 3) {
+                    surfaceArea += triArea(i, i + 1, i + 2);
+                }
+            }
+        }
+        
+        return { volume: Math.abs(volume), surfaceArea, vertexCount, triangleCount };
+    }
+
+    updateProps() {
+        if (!this.selectedObj) {
+            this.propsEl.innerHTML = '<div class="empty">Select an object</div>';
+            return;
+        }
+        const p = this.selectedObj.mesh.position;
+        const r = this.selectedObj.mesh.rotation;
+        const s = this.selectedObj.mesh.scale;
+        const color = '#' + this.selectedObj.mesh.material.color.getHexString();
+        const mat = this.selectedObj.mesh.material;
+        const stats = this.computeGeometryStats(this.selectedObj);
+        
+        this.propsEl.innerHTML = `
+        <div class="prop-row">
+            <span class="prop-label">Position</span>
+            <div class="prop-inputs">
+                <input class="prop-input prop-pos" type="number" data-axis="x" value="${p.x.toFixed(1)}" step="1">
+                <input class="prop-input prop-pos" type="number" data-axis="y" value="${p.y.toFixed(1)}" step="1">
+                <input class="prop-input prop-pos" type="number" data-axis="z" value="${p.z.toFixed(1)}" step="1">
+            </div>
+        </div>
+        <div class="prop-row">
+            <span class="prop-label">Rotation</span>
+            <div class="prop-inputs">
+                <input class="prop-input prop-rot" type="number" data-axis="x" value="${THREE.MathUtils.radToDeg(r.x).toFixed(0)}" step="5">
+                <input class="prop-input prop-rot" type="number" data-axis="y" value="${THREE.MathUtils.radToDeg(r.y).toFixed(0)}" step="5">
+                <input class="prop-input prop-rot" type="number" data-axis="z" value="${THREE.MathUtils.radToDeg(r.z).toFixed(0)}" step="5">
+            </div>
+        </div>
+        <div class="prop-row">
+            <span class="prop-label">Scale</span>
+            <div class="prop-inputs">
+                <input class="prop-input prop-scale" type="number" data-axis="x" value="${s.x.toFixed(2)}" step="0.1" min="0.1">
+                <input class="prop-input prop-scale" type="number" data-axis="y" value="${s.y.toFixed(2)}" step="0.1" min="0.1">
+                <input class="prop-input prop-scale" type="number" data-axis="z" value="${s.z.toFixed(2)}" step="0.1" min="0.1">
+            </div>
+        </div>
+        <div class="prop-row">
+            <span class="prop-label">Color</span>
+            <div class="color-row">
+                <div class="color-swatch" id="swatch" style="background:${color}"></div>
+                <input type="color" id="colorpick" value="${color}">
+                <span class="color-hex">${color}</span>
+            </div>
+        </div>
+        
+        <div class="material-section">
+            <div style="font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 10px;">Material</div>
+            <div class="material-row">
+                <label class="material-label">Metallic</label>
+                <input class="material-input prop-metallic" type="range" min="0" max="1" step="0.1" value="${mat.metalness ?? 0}">
+            </div>
+            <div class="material-row">
+                <label class="material-label">Roughness</label>
+                <input class="material-input prop-roughness" type="range" min="0" max="1" step="0.1" value="${mat.roughness ?? 0.5}">
+            </div>
+            <div class="material-row">
+                <label class="material-label">Opacity</label>
+                <input class="material-input prop-opacity" type="range" min="0" max="1" step="0.1" value="${mat.opacity ?? 1}">
+            </div>
+        </div>
+        
+        <div class="geometry-section">
+            <div style="font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 10px;">Geometry</div>
+            <div class="geometry-stat">
+                <span class="geometry-label">Volume:</span>
+                <span class="geometry-value">${stats.volume.toFixed(2)} mm³</span>
+            </div>
+            <div class="geometry-stat">
+                <span class="geometry-label">Surface:</span>
+                <span class="geometry-value">${stats.surfaceArea.toFixed(2)} mm²</span>
+            </div>
+            <div class="geometry-stat">
+                <span class="geometry-label">Vertices:</span>
+                <span class="geometry-value">${stats.vertexCount}</span>
+            </div>
+            <div class="geometry-stat">
+                <span class="geometry-label">Triangles:</span>
+                <span class="geometry-value">${stats.triangleCount}</span>
+            </div>
+        </div>
+    `;
+
+        this.propsEl.querySelectorAll('.prop-pos').forEach(input => {
+            input.addEventListener('change', e => {
+                this.selectedObj.mesh.position[e.target.dataset.axis] = parseFloat(e.target.value);
+            });
+        });
+        this.propsEl.querySelectorAll('.prop-rot').forEach(input => {
+            input.addEventListener('change', e => {
+                this.selectedObj.mesh.rotation[e.target.dataset.axis] = THREE.MathUtils.degToRad(parseFloat(e.target.value));
+            });
+        });
+        this.propsEl.querySelectorAll('.prop-scale').forEach(input => {
+            input.addEventListener('change', e => {
+                this.selectedObj.mesh.scale[e.target.dataset.axis] = parseFloat(e.target.value);
+            });
+        });
+        document.getElementById('swatch').addEventListener('click', () => document.getElementById('colorpick').click());
+        document.getElementById('colorpick').addEventListener('input', e => {
+            this.selectedObj.mesh.material.color.set(e.target.value);
+            document.getElementById('swatch').style.background = e.target.value;
+        });
+        document.querySelector('.prop-metallic')?.addEventListener('input', e => {
+            this.selectedObj.mesh.material.metalness = parseFloat(e.target.value);
+        });
+        document.querySelector('.prop-roughness')?.addEventListener('input', e => {
+            this.selectedObj.mesh.material.roughness = parseFloat(e.target.value);
+        });
+        document.querySelector('.prop-opacity')?.addEventListener('input', e => {
+            this.selectedObj.mesh.material.opacity = parseFloat(e.target.value);
+            this.selectedObj.mesh.material.transparent = parseFloat(e.target.value) < 1;
+        });
+    }
+
+    onCanvasClick(e) {
+        if (this.transform?.dragging) return;
+        const rect = this.canvas.getBoundingClientRect();
+        this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+
+        if (this.currentTool === 'measure') {
+            const p = this.getWorldPointFromMouse();
+            if (p) this.addMeasurePoint(p);
+            return;
+        }
+
+        // If a sketch tool is active but we haven't picked a plane yet, first click chooses the plane.
+        if (!this.sketchMode && this.pendingSketchPlanePick && ['line', 'rect', 'circle'].includes(this.currentTool)) {
+            const facePick = this.pickFaceAtMouse();
+            if (facePick) {
+                this.selectFace(facePick.obj, facePick.faceIdx, facePick.point, facePick.normal);
+                this.sketchPlane = this.computeSketchPlaneFromSelectedFace();
+                this.startSketchSession({ plane: this.sketchPlane });
+                this.setHUD('Sketch: ' + this.currentTool + ' (ESC to exit)', 'sketch');
+                return;
+            }
+
+            // Fallback to ground/grid plane
+            const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+            const pt = new THREE.Vector3();
+            const hit = this.raycaster.ray.intersectPlane(ground, pt);
+            if (hit) {
+                this.clearSelection();
+                const plane = this.createSketchPlaneAtWorldPoint(pt);
+                this.startSketchSession({ plane });
+                this.setHUD('Sketch: ' + this.currentTool + ' (ESC to exit)', 'sketch');
+                return;
+            }
+            return;
+        }
+
+        if (this.sketchMode || ['line', 'rect', 'circle'].includes(this.currentTool)) {
+            // In sketch mode, Select tool performs sketch entity selection.
+            if (this.sketchMode && this.currentTool === 'select') {
+                if (!this.sketchPlane) {
+                    this.sketchPlane = this.selectedFace ? this.computeSketchPlaneFromSelectedFace() : this.getDefaultSketchPlane();
+                }
+                const sp = this.sketchPlane || this.getDefaultSketchPlane();
+                const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(sp.w, sp.origin);
+                const pt = new THREE.Vector3();
+                const hit = this.raycaster.ray.intersectPlane(plane, pt);
+                const p2 = hit ? this.worldToSketch(pt) : null;
+                const pickedPoint = p2 ? this.pickSketchPointAt(p2) : null;
+                if (pickedPoint) {
+                    // point selection
+                    if (e.shiftKey || e.ctrlKey || e.metaKey) this.toggleSketchPointSelection(pickedPoint);
+                    else this.setSketchPointSelection(pickedPoint);
+                    if (!e.shiftKey && !e.ctrlKey && !e.metaKey) this.sketchSelection = [];
+                    this.updateSketchSelectionVisuals();
+                    return;
+                }
+
+                const ent = this.pickSketchEntityAtMouse();
+                if (!ent) {
+                    if (!e.shiftKey && !e.ctrlKey && !e.metaKey) this.clearSketchSelection();
+                    return;
+                }
+                if (e.shiftKey || e.ctrlKey || e.metaKey) this.toggleSketchSelection(ent);
+                else this.setSketchSelection(ent);
+                if (!e.shiftKey && !e.ctrlKey && !e.metaKey) this.clearSketchPointSelection();
+                return;
+            }
+
+            if (!this.sketchPlane) {
+                this.sketchPlane = this.selectedFace ? this.computeSketchPlaneFromSelectedFace() : this.getDefaultSketchPlane();
+            }
+            const sp = this.sketchPlane || this.getDefaultSketchPlane();
+            const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(sp.w, sp.origin);
+            const pt = new THREE.Vector3();
+            const hit = this.raycaster.ray.intersectPlane(plane, pt);
+            if (hit) {
+                const p2 = this.worldToSketch(pt);
+                this.addSketchPoint(p2, { disableSnap: e.shiftKey });
+            }
+            return;
+        }
+
+        const picked = this.pickAtMouse();
+        const mode = this.currentTool === 'face' ? 'face' : this.selectionMode;
+        if (!picked) {
+            if (e.shiftKey || e.ctrlKey || e.metaKey) return;
+            this.clearSelection();
+            this.hudEl.className = 'hud';
+            return;
+        }
+
+        if (mode === 'body') {
+            if (e.shiftKey) this.addBodyToSelection(picked);
+            else if (e.ctrlKey || e.metaKey) this.toggleBodySelection(picked);
+            else this.setBodySelection(picked);
+            return;
+        }
+        if (mode === 'face') {
+            const faceIdx = picked.faceIdx ?? picked.hit?.faceIndex;
+            const normal = picked.normal ?? picked.hit?.face?.normal ?? new THREE.Vector3(0, 1, 0);
+            this.selectFace(picked.obj, faceIdx, picked.point, normal);
+            return;
+        }
+
+        this.selection = [picked];
+        this.selectedFace = null;
+        this.selectObject(picked.obj);
+        this.updateSelectionStatus();
+    }
+
+    onKeyUp(e) {
+        if (e.key === 'Shift') {
+            this.shiftDown = false;
+            this.updateTransformSnapping();
+        }
+    }
+
+    onCanvasMove(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+
+        const meshes = this.objects.map(o => o.mesh);
+        const hits = this.raycaster.intersectObjects(meshes);
+        if (hits.length > 0) {
+            const point = hits[0].point;
+            this.coordsEl.textContent = `X: ${point.x.toFixed(1)} Y: ${point.y.toFixed(1)} Z: ${point.z.toFixed(1)}`;
+        } else {
+            const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+            const pt = new THREE.Vector3();
+            this.raycaster.ray.intersectPlane(plane, pt);
+            if (pt) this.coordsEl.textContent = `X: ${pt.x.toFixed(1)} Y: ${pt.y.toFixed(1)} Z: ${pt.z.toFixed(1)}`;
+        }
+
+        // Sketch UX: hover feedback + rubber-band previews
+        if (this.sketchMode) {
+            if (['line', 'rect', 'circle'].includes(this.currentTool)) {
+                this.updateSketchRubberBand({ disableSnap: e.shiftKey });
+            } else if (this.currentTool === 'select') {
+                // Show hover marker for selectable sketch points
+                if (!this.sketchPlane) this.sketchPlane = this.selectedFace ? this.computeSketchPlaneFromSelectedFace() : this.getDefaultSketchPlane();
+                const sp = this.sketchPlane || this.getDefaultSketchPlane();
+                const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(sp.w, sp.origin);
+                const pt = new THREE.Vector3();
+                const hit = this.raycaster.ray.intersectPlane(plane, pt);
+                const p2 = hit ? this.worldToSketch(pt) : null;
+                const pickedPoint = p2 ? this.pickSketchPointAt(p2) : null;
+                if (pickedPoint) {
+                    const pSel = this.getSketchPoint2(pickedPoint.entity, pickedPoint.ref);
+                    this.setSketchHoverMarkerWorld(pSel ? this.sketchToWorld(pSel) : null, { visible: true });
+                } else {
+                    this.setSketchHoverMarkerWorld(null);
+                }
+            } else {
+                this.setSketchHoverMarkerWorld(null);
+                this.clearSketchDraft();
+            }
+        }
+
+        const prev = this.hoverSelection;
+
+        // While picking a sketch plane, always hover faces (not bodies) so the user sees the target.
+        if (!this.sketchMode && this.pendingSketchPlanePick && ['line', 'rect', 'circle'].includes(this.currentTool)) {
+            const facePick = this.pickFaceAtMouse();
+            if (facePick) {
+                this.hoverSelection = { kind: 'face', obj: facePick.obj, faceIdx: facePick.faceIdx, point: facePick.point.clone(), normal: facePick.normal.clone() };
+                this.setSketchHoverMarkerWorld(facePick.point, { visible: true });
+            } else {
+                this.hoverSelection = null;
+                // Ground plane hover marker
+                const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+                const pt = new THREE.Vector3();
+                const hit = this.raycaster.ray.intersectPlane(ground, pt);
+                this.setSketchHoverMarkerWorld(hit ? pt : null, { visible: !!hit });
+            }
+        } else {
+            this.hoverSelection = this.pickAtMouse();
+            if (!this.sketchMode) this.setSketchHoverMarkerWorld(null);
+        }
+
+        const changed = (prev?.kind ?? null) !== (this.hoverSelection?.kind ?? null)
+            || (prev?.obj?.id ?? null) !== (this.hoverSelection?.obj?.id ?? null)
+            || (prev?.faceIdx ?? null) !== (this.hoverSelection?.faceIdx ?? null);
+        if (changed) this.updateHighlights();
+    }
+
+    onKeyDown(e) {
+        const key = e.key.toLowerCase();
+
+        // Step 4: command confirm/cancel should work even inside inputs
+        if (this.activeCommand) {
+            if (key === 'escape') {
+                e.preventDefault();
+                this.cancelActiveCommand();
+                return;
+            }
+            if (key === 'enter') {
+                e.preventDefault();
+                this.confirmActiveCommand();
+                return;
+            }
+        }
+
+        if (e.target.tagName === 'INPUT') return;
+
+        if (e.key === 'Shift') {
+            this.shiftDown = true;
+            this.updateTransformSnapping();
+        }
+
+        // Step 9: quick sketch dimension editing
+        if (key === 'enter' && this.sketchMode && this.currentTool === 'select' && (this.sketchSelection || []).length === 1) {
+            e.preventDefault();
+            this.startSketchDimCommand(this.sketchSelection[0]);
+            return;
+        }
+
+        // Step 10: basic constraints/relations (sketch select tool)
+        if (this.sketchMode && this.currentTool === 'select') {
+            if (key === 'h') {
+                e.preventDefault();
+                this.applyLineConstraint('horizontal');
+                return;
+            }
+            if (key === 'j') {
+                e.preventDefault();
+                this.applyLineConstraint('vertical');
+                return;
+            }
+            if (key === 'o') {
+                e.preventDefault();
+                this.applyCoincidentConstraintFromSelection();
+                return;
+            }
+        }
+
+        if (key === 'v') {
+            this.setTool('select');
+            this.setSelectionMode('body');
+        }
+        if (key === 'f') {
+            this.setTool('face');
+            this.setSelectionMode('face');
+        }
+        if (key === 'e' && !e.ctrlKey && !e.metaKey) this.setSelectionMode('edge');
+        if (key === 'x' && !e.ctrlKey && !e.metaKey) this.setSelectionMode('vertex');
+        if (key === 'g') this.setTool('move');
+        if (key === 'r') this.setTool('rotate');
+        if (key === 's' && !e.ctrlKey) this.setTool('scale');
+        if (key === 'l') this.setTool('line');
+        if (key === 'b') this.setTool('rect');
+        if (key === 'c') this.setTool('circle');
+        if (key === 'k') this.enterSketchMode();
+
+        if (key === 'm') this.setTool('measure');
+        if (key === 'i') this.toggleIsolate();
+
+        if (key === 'delete' || key === 'backspace') this.deleteSelected();
+        if (key === 'escape') {
+            if (this.currentTool === 'measure') {
+                this.clearMeasure();
+                return;
+            }
+            if (this.sketchMode) this.exitSketchMode();
+            else this.clearSelection();
+        }
+
+        if ((e.ctrlKey || e.metaKey) && key === 'z') {
+            e.preventDefault();
+            this.undo();
+        }
+        if ((e.ctrlKey || e.metaKey) && key === 'y') {
+            e.preventDefault();
+            this.redo();
+        }
+        if ((e.ctrlKey || e.metaKey) && key === 'd') {
+            e.preventDefault();
+            this.duplicateSelected();
+        }
+        if ((e.ctrlKey || e.metaKey) && key === 'e') {
+            e.preventDefault();
+            this.startExtrudeCommand({ title: 'Extrude' });
+        }
+    }
+
+    onResize() {
+        const w = Math.max(1, this.canvas.clientWidth || 0);
+        const h = Math.max(1, this.canvas.clientHeight || 0);
+        this.camera.aspect = w / h;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(w, h);
+    }
+
+    bindEvents() {
+        this.canvas.addEventListener('click', this.onCanvasClick);
+        this.canvas.addEventListener('mousemove', this.onCanvasMove);
+        document.addEventListener('keydown', this.onKeyDown);
+        document.addEventListener('keyup', this.onKeyUp);
+        window.addEventListener('resize', this.onResize);
+
+        document.getElementById('t-select').addEventListener('click', () => {
+            this.setTool('select');
+            this.setSelectionMode('body');
+        });
+        document.getElementById('t-face').addEventListener('click', () => {
+            this.setTool('face');
+            this.setSelectionMode('face');
+        });
+        document.getElementById('t-move').addEventListener('click', () => this.setTool('move'));
+        document.getElementById('t-rotate').addEventListener('click', () => this.setTool('rotate'));
+        document.getElementById('t-scale').addEventListener('click', () => this.setTool('scale'));
+        document.getElementById('t-line').addEventListener('click', () => this.setTool('line'));
+        document.getElementById('t-rect').addEventListener('click', () => this.setTool('rect'));
+        document.getElementById('t-circle').addEventListener('click', () => this.setTool('circle'));
+        document.getElementById('t-measure').addEventListener('click', () => this.setTool('measure'));
+        document.getElementById('t-undo').addEventListener('click', () => this.undo());
+        document.getElementById('t-redo').addEventListener('click', () => this.redo());
+
+        document.querySelectorAll('#sel-mode .seg-btn').forEach(b => {
+            b.addEventListener('click', () => {
+                this.setSelectionMode(b.dataset.selmode);
+                if (b.dataset.selmode === 'face') this.setTool('face');
+                else if (this.currentTool === 'face') this.setTool('select');
+            });
+        });
+
+        document.querySelectorAll('.prim-btn').forEach(btn => btn.addEventListener('click', () => this.createPrimitive(btn.dataset.prim)));
+
+        document.getElementById('f-extrude').addEventListener('click', () => {
+            this.startExtrudeCommand({ title: 'Extrude' });
+        });
+        document.getElementById('f-cut').addEventListener('click', () => {
+            if (!this.selectedObj && !this.selectedFace && this.sketchLines.length === 0) {
+                this.toast('Select an object/face or draw a sketch first', 'warning');
+                return;
+            }
+            this.startCutCommand();
+        });
+        document.getElementById('f-fillet').addEventListener('click', () => {
+            this.startModalCommand({
+                modalId: 'm-fillet',
+                title: 'Fillet',
+                hudKind: 'face',
+                confirmLabel: 'Apply',
+                confirm: () => this.doFillet(),
+            });
+        });
+        document.getElementById('f-chamfer').addEventListener('click', () => {
+            this.startModalCommand({
+                modalId: 'm-chamfer',
+                title: 'Chamfer',
+                hudKind: 'face',
+                confirmLabel: 'Apply',
+                confirm: () => this.doChamfer(),
+            });
+        });
+
+        document.getElementById('extrude-ok').addEventListener('click', () => {
+            if (this.activeCommand?.modalId === 'm-extrude') this.confirmActiveCommand();
+            else {
+                this.doExtrude();
+                this.closeModal('m-extrude');
+            }
+        });
+        document.getElementById('cut-ok').addEventListener('click', () => {
+            if (this.activeCommand?.modalId === 'm-cut') this.confirmActiveCommand();
+            else {
+                this.doCut();
+                this.closeModal('m-cut');
+            }
+        });
+        document.getElementById('fillet-ok').addEventListener('click', () => {
+            if (this.activeCommand?.modalId === 'm-fillet') this.confirmActiveCommand();
+            else {
+                this.doFillet();
+                this.closeModal('m-fillet');
+            }
+        });
+        document.getElementById('chamfer-ok').addEventListener('click', () => {
+            if (this.activeCommand?.modalId === 'm-chamfer') this.confirmActiveCommand();
+            else {
+                this.doChamfer();
+                this.closeModal('m-chamfer');
+            }
+        });
+
+        document.getElementById('skdim-ok')?.addEventListener('click', () => {
+            if (this.activeCommand?.modalId === 'm-sketch-dim') this.confirmActiveCommand();
+            else {
+                const ent = (this.sketchSelection || [])[0];
+                if (ent && this.applySketchDimFromModal(ent)) {
+                    this.toast(this.getSketchEntityLabel(ent) + ' updated', 'success');
+                    this.closeModal('m-sketch-dim');
+                }
+            }
+        });
+
+        this.saveBtnEl?.addEventListener('click', () => this.saveProject());
+        this.loadBtnEl?.addEventListener('click', () => this.loadProject());
+
+        document.getElementById('btn-import').addEventListener('click', () => this.importSTL());
+        this.stlFileInputEl.addEventListener('change', e => this.handleSTLImport(e));
+        document.getElementById('btn-export').addEventListener('click', () => this.exportSTL());
+        document.getElementById('btn-export-step').addEventListener('click', () => this.exportSTEP());
+
+        document.getElementById('render-shaded').addEventListener('click', () => this.setRenderMode('shaded'));
+        document.getElementById('render-wireframe').addEventListener('click', () => this.setRenderMode('wireframe'));
+        document.getElementById('render-edges').addEventListener('click', () => this.setRenderMode('edges'));
+
+        // Step 6: numeric HUD keyboard handling
+        const onNumKey = (e) => {
+            if (!this.numericHudKind) return;
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.applyNumericHUD();
+            }
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                this.hideNumericHUD();
+            }
+        };
+        this.numHudXEl?.addEventListener('keydown', onNumKey);
+        this.numHudYEl?.addEventListener('keydown', onNumKey);
+        this.numHudZEl?.addEventListener('keydown', onNumKey);
+    }
+
+    animate() {
+        requestAnimationFrame(this.animate);
+        this.orbit.update();
+        this.renderer.render(this.scene, this.camera);
+    }
+
+    start() {
+        this.initThree();
+        this.bindEvents();
+        this.onResize();
+        this.updateUndoButtons();
+        this.setSelectionMode('body');
+        this.animate();
+        this.toast('BulletCAD ready! Create shapes to begin.', 'success');
+    }
+}
+
+const __bulletCadApp = new BulletCADApp();
+window.toast = (...args) => __bulletCadApp.toast(...args);
+window.openModal = id => __bulletCadApp.openModal(id);
+window.closeModal = id => __bulletCadApp.onModalCancel(id);
+__bulletCadApp.start();
+</script>
+
+</body>
+</html>
+
