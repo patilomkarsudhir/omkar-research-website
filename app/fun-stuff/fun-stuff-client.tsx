@@ -28,29 +28,12 @@ export default function FunStuffClient() {
       <Section title="Fun Stuff">
         <div className="space-y-12">
           <div>
-            <h3 className="text-xl font-semibold text-white/95 mb-4">Academic Genealogy Tree</h3>
-            <p className="text-[var(--muted)] mb-6">Academic lineage and intellectual inheritance through my advisors and mentors. Click to view larger.</p>
-            <div 
-              className="relative bg-white/5 rounded-lg p-6 overflow-x-auto inline-block cursor-pointer hover:bg-white/10 transition-colors"
-              onClick={() => setIsOpen(true)}
-            >
-              <Image
-                src="/Genealogy Tree.png"
-                alt="Academic Genealogy Tree"
-                width={300}
-                height={200}
-                className="rounded"
-              />
-            </div>
-          </div>
-
-          <div>
             <h3 className="text-xl font-semibold text-white/95 mb-4">3D Prints Gallery</h3>
             <p className="text-[var(--muted)] mb-6">Explorations in mathematical forms and architectural structures through 3D printing.</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Klein Bottle */}
               <div className="flex flex-col items-center">
-                <div className="bg-white/5 rounded-lg p-6 w-full aspect-square flex items-center justify-center hover:bg-white/10 transition-colors mb-4">
+                <div className="bg-white/5 rounded-lg p-6 w-full h-64 flex items-center justify-center hover:bg-white/10 transition-colors mb-4">
                   <Image
                     src="/Klein Bottle.jpg"
                     alt="Klein Bottle"
@@ -65,7 +48,7 @@ export default function FunStuffClient() {
 
               {/* Tensegrity 1 */}
               <div className="flex flex-col items-center">
-                <div className="bg-white/5 rounded-lg p-6 w-full aspect-square flex items-center justify-center hover:bg-white/10 transition-colors mb-4">
+                <div className="bg-white/5 rounded-lg p-6 w-full h-64 flex items-center justify-center hover:bg-white/10 transition-colors mb-4">
                   <Image
                     src="/Tensegrity 1.jpg"
                     alt="Tensegrity Structure"
@@ -75,12 +58,12 @@ export default function FunStuffClient() {
                   />
                 </div>
                 <h4 className="text-lg font-semibold text-white/95 mb-2">Tensegrity</h4>
-                <p className="text-sm text-center text-[var(--muted)]">Tensional integrity in balance—discontinuous compression and continuous tension creating strength through equilibrium.</p>
+                <p className="text-sm text-center text-[var(--muted)]">Tensional integrity in balance: discontinuous compression and continuous tension creating strength through equilibrium.</p>
               </div>
 
               {/* Voronoi Ball */}
               <div className="flex flex-col items-center">
-                <div className="bg-white/5 rounded-lg p-6 w-full aspect-square flex items-center justify-center hover:bg-white/10 transition-colors mb-4">
+                <div className="bg-white/5 rounded-lg p-6 w-full h-64 flex items-center justify-center hover:bg-white/10 transition-colors mb-4">
                   <Image
                     src="/Voronoi Ball.jpg"
                     alt="Voronoi Ball"
@@ -90,8 +73,25 @@ export default function FunStuffClient() {
                   />
                 </div>
                 <h4 className="text-lg font-semibold text-white/95 mb-2">Voronoi Ball</h4>
-                <p className="text-sm text-center text-[var(--muted)]">Cellular geometry dividing space into regions of geometric proximity—nature's tessellation principle materialized.</p>
+                <p className="text-sm text-center text-[var(--muted)]">Cellular geometry dividing space into regions of geometric proximity. Nature's tessellation principle materialized.</p>
               </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-semibold text-white/95 mb-4">Academic Genealogy Tree</h3>
+            <p className="text-[var(--muted)] mb-6">Academic lineage and intellectual inheritance through my advisors and mentors. Click to view larger.</p>
+            <div 
+              className="relative bg-white/5 rounded-lg p-6 overflow-x-auto inline-block cursor-pointer hover:bg-white/10 transition-colors"
+              onClick={() => setIsOpen(true)}
+            >
+              <Image
+                src="/Genealogy Tree.png"
+                alt="Academic Genealogy Tree"
+                width={300}
+                height={200}
+                className="rounded"
+              />
             </div>
           </div>
         </div>
