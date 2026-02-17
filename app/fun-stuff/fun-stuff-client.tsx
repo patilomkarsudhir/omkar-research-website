@@ -79,6 +79,20 @@ export default function FunStuffClient() {
                 <p className="text-sm text-center text-[var(--muted)]">Cellular geometry dividing space into regions of geometric proximity. Nature's tessellation principle materialized.</p>
               </div>
             </div>
+
+            {/* BulletCAD side note */}
+            <div className="mt-8 p-4 rounded-lg border border-white/10 bg-white/5">
+              <p className="text-sm text-[var(--muted)]">
+                <span className="text-white/80 font-medium">Side note:</span> I built{" "}
+                <a 
+                  href="/bulletcad.html" 
+                  className="text-[var(--accent)] hover:underline font-medium"
+                >
+                  BulletCAD
+                </a>
+                , an open-source tool for rapid prototyping CAD models for 3D printing. It lets you describe geometry using simple bullet-point syntax and instantly preview your model.
+              </p>
+            </div>
           </div>
 
           <div>
