@@ -190,6 +190,7 @@
         <button class="btn btn-primary" id="btn-export">Export STL</button>
         <button class="btn btn-primary" id="btn-export-step">Export STEP</button>
         <input type="file" id="stl-file-input" accept=".stl" style="display:none" />
+        <input type="file" id="load-file-input" accept=".json,.stl,.step" style="display:none" />
     </header>
 
     <aside class="panel">
@@ -999,7 +1000,20 @@ class BulletCADApp {
         try {
             const data = this.serializeProject();
             localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(data));
-            this.toast('Saved', 'success');
+            
+            // Download file to computer
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `bulletcad-project-${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            this.toast('Project saved and downloaded', 'success');
         } catch (err) {
             console.error('Save failed:', err);
             this.toast('Save failed: ' + (err?.message ?? String(err)), 'error');
@@ -1007,18 +1021,75 @@ class BulletCADApp {
     }
 
     loadProject() {
-        try {
-            const raw = localStorage.getItem(CONFIG.STORAGE_KEY);
-            if (!raw) {
-                this.toast('No saved project found', 'warning');
-                return;
-            }
-            const data = JSON.parse(raw);
-            if (!data?.objects) {
-                this.toast('Invalid save data', 'error');
-                return;
-            }
+        document.getElementById('load-file-input').click();
+    }
 
+    handleLoadFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const ext = file.name.toLowerCase().split('.').pop();
+        const reader = new FileReader();
+        
+        if (ext === 'json') {
+            reader.onload = e => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!data?.objects) {
+                        this.toast('Invalid project file', 'error');
+                        return;
+                    }
+                    this.deserializeProject(data);
+                    this.toast('Project loaded', 'success');
+                } catch (err) {
+                    console.error('Load failed:', err);
+                    this.toast('Failed to load project: ' + (err?.message ?? String(err)), 'error');
+                }
+            };
+            reader.readAsText(file);
+        } else if (ext === 'stl') {
+            reader.onload = e => {
+                try {
+                    const loader = new THREE.STLLoader();
+                    const geometry = loader.parse(e.target.result);
+                    geometry.computeBoundingBox();
+                    const center = new THREE.Vector3();
+                    geometry.boundingBox.getCenter(center);
+                    geometry.translate(-center.x, -center.y, -center.z);
+                    const mesh = new THREE.Mesh(geometry, this.createMaterial());
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = true;
+                    const box = new THREE.Box3().setFromObject(mesh);
+                    mesh.position.y = (box.max.y - box.min.y) / 2;
+                    const offset = this.objects.length * CONFIG.PRIMITIVE_SPACING;
+                    mesh.position.x = offset % CONFIG.PRIMITIVE_GRID_WIDTH;
+                    mesh.position.z = Math.floor(offset / CONFIG.PRIMITIVE_GRID_WIDTH) * CONFIG.PRIMITIVE_SPACING;
+                    this.objCounter++;
+                    const obj = { id: this.objCounter, name: file.name.replace(/\.stl$/i, '') || 'Imported ' + this.objCounter, type: 'imported', mesh, params: {} };
+                    mesh.userData.obj = obj;
+                    this.scene.add(mesh);
+                    this.objects.push(obj);
+                    this.applyRenderModeToObject(obj);
+                    this.addUndo({ type: 'create', obj });
+                    this.selection = [{ kind: 'body', obj, point: mesh.position.clone() }];
+                    this.selectObject(obj);
+                    this.updateUI();
+                    this.toast('Loaded ' + obj.name, 'success');
+                } catch (err) {
+                    console.error('STL load failed:', err);
+                    this.toast('Failed to load STL: ' + (err?.message ?? String(err)), 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        } else if (ext === 'step') {
+            this.toast('STEP import requires additional libraries. Use STL or JSON format.', 'warning');
+        } else {
+            this.toast('Unsupported file format. Use JSON, STL, or STEP.', 'error');
+        }
+    }
+
+    deserializeProject(data) {
+        try {
             this.resetModel();
             this.objCounter = data.objCounter || 0;
             this.featureCounter = data.featureCounter || 0;
@@ -4246,6 +4317,7 @@ DATA;
 
         this.saveBtnEl?.addEventListener('click', () => this.saveProject());
         this.loadBtnEl?.addEventListener('click', () => this.loadProject());
+        document.getElementById('load-file-input').addEventListener('change', e => this.handleLoadFile(e));
 
         document.getElementById('btn-import').addEventListener('click', () => this.importSTL());
         this.stlFileInputEl.addEventListener('change', e => this.handleSTLImport(e));
