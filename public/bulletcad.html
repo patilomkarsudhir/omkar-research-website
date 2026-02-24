@@ -3142,13 +3142,8 @@ class BulletCADApp {
         this.pendingSketchPlanePick = false;
         this.clearSketchDraft();
         this.sketchPoints = [];
-        this.sketchLines.forEach(line => {
-            this.scene.remove(line.line);
-            line.geometry?.dispose?.();
-            line.line?.material?.dispose?.();
-        });
-        this.sketchLines = [];
-        this.sketchPlane = null;
+        // NOTE: Do NOT remove sketchLines here — they persist until consumed by an operation
+        // The sketch geometry stays visible and available for Extrude, Revolve, Sweep, etc.
         this.clearSketchSelection();
         this.sketchConstraints = [];
         this.clearSketchViz();
