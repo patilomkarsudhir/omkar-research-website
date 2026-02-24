@@ -104,6 +104,52 @@
         .modal-btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; }
         .modal-cancel { background: #333; color: #fff; }
         .modal-confirm { background: #f97316; color: #fff; }
+        select.modal-input option { background: #252525; color: #fff; }
+        input[type="checkbox"] { accent-color: #f97316; width: 16px; height: 16px; }
+        .modal-subtitle { margin-bottom: 12px; font-size: 12px; color: #888; line-height: 1.4; }
+        .modal-label { font-size: 11px; color: #888; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+
+        /* Axis Selector Buttons */
+        .axis-selector { display: flex; gap: 6px; margin-bottom: 12px; }
+        .axis-btn { flex: 1; padding: 10px 8px; border-radius: 8px; border: 2px solid #333; background: #1e1e1e; color: #888; cursor: pointer; font-size: 13px; font-weight: 600; text-align: center; transition: all 0.15s ease; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .axis-btn:hover { border-color: #555; color: #ccc; }
+        .axis-btn.selected { color: #fff; }
+        .axis-btn[data-axis="x"].selected, .axis-btn[data-plane="yz"].selected { border-color: #ef4444; background: rgba(239,68,68,0.15); color: #ef4444; }
+        .axis-btn[data-axis="y"].selected, .axis-btn[data-plane="xz"].selected { border-color: #22c55e; background: rgba(34,197,94,0.15); color: #22c55e; }
+        .axis-btn[data-axis="z"].selected, .axis-btn[data-plane="xy"].selected { border-color: #3b82f6; background: rgba(59,130,246,0.15); color: #3b82f6; }
+        .axis-btn .axis-letter { font-size: 18px; font-weight: 700; line-height: 1; }
+        .axis-btn .axis-desc { font-size: 9px; color: #666; font-weight: 400; }
+        .axis-btn.selected .axis-desc { color: inherit; opacity: 0.7; }
+
+        /* Input Group */
+        .modal-input-group { margin-bottom: 12px; }
+        .modal-input-group .modal-label { margin-bottom: 5px; }
+        .modal-input-group .modal-input { margin-bottom: 0; }
+        .modal-input-group .input-hint { font-size: 10px; color: #555; margin-top: 3px; }
+
+        /* Status Badge */
+        .modal-status { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 6px; margin-bottom: 14px; font-size: 11px; }
+        .modal-status.ready { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #22c55e; }
+        .modal-status.warn { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #f59e0b; }
+        .modal-status .status-icon { font-size: 14px; }
+        .modal-status .status-text { flex: 1; }
+
+        /* Operation category headers */
+        .op-category { font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: 1px; padding: 4px 0 2px 2px; grid-column: 1 / -1; border-top: 1px solid #2a2a2a; margin-top: 4px; }
+        .op-category:first-child { border-top: none; margin-top: 0; }
+
+        /* Divider in modal */
+        .modal-divider { border: none; border-top: 1px solid #333; margin: 8px 0 12px; }
+
+        /* Checkbox label improvement */
+        .modal-checkbox-label { font-size: 12px; color: #999; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; cursor: pointer; padding: 6px 8px; border-radius: 6px; border: 1px solid #333; background: #1e1e1e; }
+        .modal-checkbox-label:hover { border-color: #555; color: #ccc; }
+        .modal-checkbox-label input:checked ~ span { color: #f97316; }
+
+        /* Boolean op selector colors */
+        .axis-btn[data-op="union"].selected { border-color: #22c55e; background: rgba(34,197,94,0.15); color: #22c55e; }
+        .axis-btn[data-op="subtract"].selected { border-color: #ef4444; background: rgba(239,68,68,0.15); color: #ef4444; }
+        .axis-btn[data-op="intersect"].selected { border-color: #3b82f6; background: rgba(59,130,246,0.15); color: #3b82f6; }
 
         .empty { padding: 30px; text-align: center; color: #555; font-size: 12px; }
 
@@ -167,6 +213,7 @@
                 <button class="tool-btn" id="t-line" title="Line (L)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 19L19 5"/></svg></button>
                 <button class="tool-btn" id="t-rect" title="Rectangle (B)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16"/></svg></button>
                 <button class="tool-btn" id="t-circle" title="Circle (C)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg></button>
+                <button class="tool-btn" id="t-centerline" title="Centerline / Revolve Axis (A)" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"><path d="M4 20L20 4"/></svg><span style="position:absolute;bottom:1px;right:3px;font-size:7px;color:#f59e0b;font-weight:700;">⊕</span></button>
                 <button class="tool-btn" id="t-measure" title="Measure (M)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20L20 4"/><path d="M8 4h12v12"/></svg></button>
             </div>
 
@@ -208,12 +255,24 @@
         <div class="section">
             <div class="section-title">Operations</div>
             <div class="feature-grid">
-                <button class="feature-btn" id="f-extrude">Extrude</button>
-                <button class="feature-btn" id="f-cut">Cut</button>
-                <button class="feature-btn" id="f-fillet">Fillet</button>
-                <button class="feature-btn" id="f-chamfer">Chamfer</button>
-                <button class="feature-btn" id="f-move-sketch">Move Sketch</button>
-                <button class="feature-btn" id="f-rotate-sketch">Rotate Sketch</button>
+                <div class="op-category">Sketch → Solid</div>
+                <button class="feature-btn" id="f-extrude" title="Extrude sketch profile along normal">⬆ Extrude</button>
+                <button class="feature-btn" id="f-cut" title="Cut into solid using sketch profile">⬇ Cut</button>
+                <button class="feature-btn" id="f-revolve" title="Revolve sketch around an axis">🔄 Revolve</button>
+                <button class="feature-btn" id="f-sweep" title="Sweep sketch along a path with optional twist">↗ Sweep</button>
+                <button class="feature-btn" id="f-loft" title="Taper sketch profile to a scaled end">◇ Loft</button>
+                <div class="op-category">Modify Body</div>
+                <button class="feature-btn" id="f-fillet" title="Round edges of selected body">◠ Fillet</button>
+                <button class="feature-btn" id="f-chamfer" title="Bevel edges of selected body">◿ Chamfer</button>
+                <button class="feature-btn" id="f-shell" title="Hollow out a solid body">▢ Shell</button>
+                <div class="op-category">Transform & Combine</div>
+                <button class="feature-btn" id="f-mirror" title="Mirror body across a reference plane">⬌ Mirror</button>
+                <button class="feature-btn" id="f-linear-pattern" title="Repeat body in a line">⫼ Lin Pattern</button>
+                <button class="feature-btn" id="f-circular-pattern" title="Repeat body around an axis">⟳ Circ Pattern</button>
+                <button class="feature-btn" id="f-boolean" title="Union / Subtract / Intersect two bodies">⊕ Boolean</button>
+                <div class="op-category">Sketch Plane</div>
+                <button class="feature-btn" id="f-move-sketch" title="Translate the sketch plane">↔ Move</button>
+                <button class="feature-btn" id="f-rotate-sketch" title="Rotate the sketch plane">↻ Rotate</button>
             </div>
         </div>
 
@@ -262,8 +321,14 @@
 
 <div class="modal" id="m-extrude">
     <div class="modal-box">
-        <div class="modal-title">Extrude</div>
-        <input type="number" class="modal-input" id="extrude-val" value="20" placeholder="Distance (mm)" />
+        <div class="modal-title">⬆ Extrude</div>
+        <div class="modal-subtitle">Push a sketch profile upward along its normal to create a 3D solid.</div>
+        <div class="modal-status" id="extrude-status"></div>
+        <div class="modal-input-group">
+            <label class="modal-label" for="extrude-val">Distance (mm)</label>
+            <input type="number" class="modal-input" id="extrude-val" value="20" placeholder="20" />
+            <div class="input-hint">Negative values extrude in opposite direction</div>
+        </div>
         <div class="modal-actions">
             <button class="modal-btn modal-cancel" onclick="closeModal('m-extrude')">Cancel</button>
             <button class="modal-btn modal-confirm" id="extrude-ok">Extrude</button>
@@ -273,8 +338,13 @@
 
 <div class="modal" id="m-cut">
     <div class="modal-box">
-        <div class="modal-title">Cut</div>
-        <input type="number" class="modal-input" id="cut-val" value="20" placeholder="Cut depth (mm)" />
+        <div class="modal-title">⬇ Cut</div>
+        <div class="modal-subtitle">Subtracts the sketch profile shape from an existing solid body below.</div>
+        <div class="modal-status" id="cut-status"></div>
+        <div class="modal-input-group">
+            <label class="modal-label" for="cut-val">Cut Depth (mm)</label>
+            <input type="number" class="modal-input" id="cut-val" value="20" placeholder="20" />
+        </div>
         <div class="modal-actions">
             <button class="modal-btn modal-cancel" onclick="closeModal('m-cut')">Cancel</button>
             <button class="modal-btn modal-confirm" id="cut-ok">Cut</button>
@@ -284,8 +354,14 @@
 
 <div class="modal" id="m-fillet">
     <div class="modal-box">
-        <div class="modal-title">Fillet</div>
-        <input type="number" class="modal-input" id="fillet-val" value="2" placeholder="Radius (mm)" />
+        <div class="modal-title">◠ Fillet</div>
+        <div class="modal-subtitle">Rounds the edges of the selected body with a smooth radius.</div>
+        <div class="modal-status" id="fillet-status"></div>
+        <div class="modal-input-group">
+            <label class="modal-label" for="fillet-val">Radius (mm)</label>
+            <input type="number" class="modal-input" id="fillet-val" value="2" placeholder="2" min="0.1" step="0.5" />
+            <div class="input-hint">Larger radius = more rounded</div>
+        </div>
         <div class="modal-actions">
             <button class="modal-btn modal-cancel" onclick="closeModal('m-fillet')">Cancel</button>
             <button class="modal-btn modal-confirm" id="fillet-ok">Apply</button>
@@ -295,8 +371,14 @@
 
 <div class="modal" id="m-chamfer">
     <div class="modal-box">
-        <div class="modal-title">Chamfer</div>
-        <input type="number" class="modal-input" id="chamfer-val" value="2" placeholder="Distance (mm)" />
+        <div class="modal-title">◿ Chamfer</div>
+        <div class="modal-subtitle">Bevels the edges of the selected body with a flat cut.</div>
+        <div class="modal-status" id="chamfer-status"></div>
+        <div class="modal-input-group">
+            <label class="modal-label" for="chamfer-val">Distance (mm)</label>
+            <input type="number" class="modal-input" id="chamfer-val" value="2" placeholder="2" min="0.1" step="0.5" />
+            <div class="input-hint">Distance from the edge to apply the bevel</div>
+        </div>
         <div class="modal-actions">
             <button class="modal-btn modal-cancel" onclick="closeModal('m-chamfer')">Cancel</button>
             <button class="modal-btn modal-confirm" id="chamfer-ok">Apply</button>
@@ -312,6 +394,213 @@
         <div class="modal-actions">
             <button class="modal-btn modal-cancel" onclick="closeModal('m-sketch-dim')">Cancel</button>
             <button class="modal-btn modal-confirm" id="skdim-ok">Apply</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="m-revolve">
+    <div class="modal-box">
+        <div class="modal-title">🔄 Revolve</div>
+        <div class="modal-subtitle">Spins a sketch profile around an axis to create a solid of revolution (like a vase or wheel).</div>
+        <div class="modal-status" id="revolve-status"></div>
+        <div class="modal-label">Axis Source</div>
+        <div class="axis-selector" id="revolve-mode-selector">
+            <button type="button" class="axis-btn selected" data-mode="centerline"><span class="axis-letter" style="font-size:14px;">⊕</span><span class="axis-desc">Drawn Centerline</span></button>
+            <button type="button" class="axis-btn" data-mode="world"><span class="axis-letter" style="font-size:14px;">⟠</span><span class="axis-desc">World Axis</span></button>
+        </div>
+        <input type="hidden" id="revolve-mode" value="centerline" />
+        <div id="revolve-centerline-info" style="font-size:11px;color:#f59e0b;margin-bottom:12px;padding:8px 10px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:6px;">
+            <span style="font-weight:600;">⊕ Centerline detected</span> — will revolve around the drawn axis line.
+        </div>
+        <div id="revolve-world-axis-section" style="display:none;">
+            <div class="modal-label">World Axis</div>
+            <div class="axis-selector" id="revolve-axis-selector">
+                <button type="button" class="axis-btn" data-axis="x"><span class="axis-letter">X</span><span class="axis-desc">Left/Right</span></button>
+                <button type="button" class="axis-btn selected" data-axis="y"><span class="axis-letter">Y</span><span class="axis-desc">Up/Down</span></button>
+                <button type="button" class="axis-btn" data-axis="z"><span class="axis-letter">Z</span><span class="axis-desc">Front/Back</span></button>
+            </div>
+            <input type="hidden" id="revolve-axis" value="y" />
+        </div>
+        <div class="modal-input-group">
+            <label class="modal-label" for="revolve-angle">Angle (degrees)</label>
+            <input type="number" class="modal-input" id="revolve-angle" value="360" placeholder="360 = full circle" />
+            <div class="input-hint">Use 360° for full revolution, or less for partial arcs</div>
+        </div>
+        <div class="modal-input-group">
+            <label class="modal-label" for="revolve-segments">Smoothness (segments)</label>
+            <input type="number" class="modal-input" id="revolve-segments" value="32" placeholder="32" min="3" />
+            <div class="input-hint">Higher = smoother but slower (8-64 typical)</div>
+        </div>
+        <div class="modal-actions">
+            <button class="modal-btn modal-cancel" onclick="closeModal('m-revolve')">Cancel</button>
+            <button class="modal-btn modal-confirm" id="revolve-ok">Revolve</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="m-sweep">
+    <div class="modal-box">
+        <div class="modal-title">↗ Sweep</div>
+        <div class="modal-subtitle">Sweeps a sketch profile along its normal direction with optional twist, like pulling taffy.</div>
+        <div class="modal-status" id="sweep-status"></div>
+        <div class="modal-input-group">
+            <label class="modal-label" for="sweep-distance">Sweep Distance (mm)</label>
+            <input type="number" class="modal-input" id="sweep-distance" value="30" placeholder="30" />
+            <div class="input-hint">Negative values sweep in opposite direction</div>
+        </div>
+        <div class="modal-input-group">
+            <label class="modal-label" for="sweep-twist">Twist Angle (degrees)</label>
+            <input type="number" class="modal-input" id="sweep-twist" value="0" placeholder="0 = no twist" />
+            <div class="input-hint">0° = straight extrude, 90° = quarter turn, 360° = full helix</div>
+        </div>
+        <div class="modal-input-group">
+            <label class="modal-label" for="sweep-segments">Steps / Segments</label>
+            <input type="number" class="modal-input" id="sweep-segments" value="32" placeholder="32" min="1" />
+            <div class="input-hint">More steps = smoother twist (needed for twist > 0)</div>
+        </div>
+        <div class="modal-actions">
+            <button class="modal-btn modal-cancel" onclick="closeModal('m-sweep')">Cancel</button>
+            <button class="modal-btn modal-confirm" id="sweep-ok">Sweep</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="m-loft">
+    <div class="modal-box">
+        <div class="modal-title">◇ Loft</div>
+        <div class="modal-subtitle">Creates a tapered solid by scaling the sketch profile from start to end (like a pyramid or funnel).</div>
+        <div class="modal-status" id="loft-status"></div>
+        <div class="modal-input-group">
+            <label class="modal-label" for="loft-depth">Depth (mm)</label>
+            <input type="number" class="modal-input" id="loft-depth" value="30" placeholder="30" />
+        </div>
+        <div class="modal-input-group">
+            <label class="modal-label" for="loft-end-scale">End Scale Factor</label>
+            <input type="number" class="modal-input" id="loft-end-scale" value="0.5" placeholder="0.5" step="0.1" min="0.01" max="3.0" />
+            <div class="input-hint">0.01 = near-point (pyramid), 0.5 = half-size, 1.0 = same size (cylinder), 2.0 = flared</div>
+        </div>
+        <div class="modal-actions">
+            <button class="modal-btn modal-cancel" onclick="closeModal('m-loft')">Cancel</button>
+            <button class="modal-btn modal-confirm" id="loft-ok">Loft</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="m-shell">
+    <div class="modal-box">
+        <div class="modal-title">▢ Shell</div>
+        <div class="modal-subtitle">Hollows out a solid body, leaving only thin walls — like making a box into a container.</div>
+        <div class="modal-status" id="shell-status"></div>
+        <div class="modal-input-group">
+            <label class="modal-label" for="shell-thickness">Wall Thickness (mm)</label>
+            <input type="number" class="modal-input" id="shell-thickness" value="2" placeholder="2" min="0.1" step="0.5" />
+            <div class="input-hint">Must be less than half the smallest dimension of the object</div>
+        </div>
+        <div class="modal-actions">
+            <button class="modal-btn modal-cancel" onclick="closeModal('m-shell')">Cancel</button>
+            <button class="modal-btn modal-confirm" id="shell-ok">Shell</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="m-mirror">
+    <div class="modal-box">
+        <div class="modal-title">⬌ Mirror</div>
+        <div class="modal-subtitle">Creates a mirrored copy of the selected body across the chosen reference plane.</div>
+        <div class="modal-status" id="mirror-status"></div>
+        <div class="modal-label">Mirror Plane</div>
+        <div class="axis-selector" id="mirror-plane-selector">
+            <button type="button" class="axis-btn selected" data-plane="yz"><span class="axis-letter">YZ</span><span class="axis-desc">Mirror X</span></button>
+            <button type="button" class="axis-btn" data-plane="xz"><span class="axis-letter">XZ</span><span class="axis-desc">Mirror Y</span></button>
+            <button type="button" class="axis-btn" data-plane="xy"><span class="axis-letter">XY</span><span class="axis-desc">Mirror Z</span></button>
+        </div>
+        <input type="hidden" id="mirror-plane" value="yz" />
+        <label class="modal-checkbox-label">
+            <input type="checkbox" id="mirror-merge" /> <span>Merge with original (boolean union into one body)</span>
+        </label>
+        <div class="modal-actions">
+            <button class="modal-btn modal-cancel" onclick="closeModal('m-mirror')">Cancel</button>
+            <button class="modal-btn modal-confirm" id="mirror-ok">Mirror</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="m-linear-pattern">
+    <div class="modal-box">
+        <div class="modal-title">⫼ Linear Pattern</div>
+        <div class="modal-subtitle">Repeats the selected body in a straight line along the chosen direction.</div>
+        <div class="modal-status" id="lp-status"></div>
+        <div class="modal-input-group">
+            <label class="modal-label" for="lp-count">Number of Copies</label>
+            <input type="number" class="modal-input" id="lp-count" value="3" placeholder="3" min="2" max="50" />
+            <div class="input-hint">Includes the original (2 = one copy, max 50)</div>
+        </div>
+        <div class="modal-input-group">
+            <label class="modal-label" for="lp-spacing">Spacing (mm)</label>
+            <input type="number" class="modal-input" id="lp-spacing" value="25" placeholder="25" />
+            <div class="input-hint">Distance between each copy center-to-center</div>
+        </div>
+        <div class="modal-label">Direction</div>
+        <div class="axis-selector" id="lp-direction-selector">
+            <button type="button" class="axis-btn selected" data-axis="x"><span class="axis-letter">X</span><span class="axis-desc">Left/Right</span></button>
+            <button type="button" class="axis-btn" data-axis="y"><span class="axis-letter">Y</span><span class="axis-desc">Up/Down</span></button>
+            <button type="button" class="axis-btn" data-axis="z"><span class="axis-letter">Z</span><span class="axis-desc">Front/Back</span></button>
+        </div>
+        <input type="hidden" id="lp-direction" value="x" />
+        <div class="modal-actions">
+            <button class="modal-btn modal-cancel" onclick="closeModal('m-linear-pattern')">Cancel</button>
+            <button class="modal-btn modal-confirm" id="lp-ok">Create Pattern</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="m-circular-pattern">
+    <div class="modal-box">
+        <div class="modal-title">⟳ Circular Pattern</div>
+        <div class="modal-subtitle">Repeats the selected body in a circle around the chosen axis through the world origin.</div>
+        <div class="modal-status" id="cp-status"></div>
+        <div class="modal-input-group">
+            <label class="modal-label" for="cp-count">Number of Copies</label>
+            <input type="number" class="modal-input" id="cp-count" value="6" placeholder="6" min="2" max="50" />
+            <div class="input-hint">Evenly spaced around the circle (includes original)</div>
+        </div>
+        <div class="modal-input-group">
+            <label class="modal-label" for="cp-angle">Total Angle (degrees)</label>
+            <input type="number" class="modal-input" id="cp-angle" value="360" placeholder="360" />
+            <div class="input-hint">360° = full circle, 180° = half circle</div>
+        </div>
+        <div class="modal-label">Rotation Axis</div>
+        <div class="axis-selector" id="cp-axis-selector">
+            <button type="button" class="axis-btn" data-axis="x"><span class="axis-letter">X</span><span class="axis-desc">Left/Right</span></button>
+            <button type="button" class="axis-btn selected" data-axis="y"><span class="axis-letter">Y</span><span class="axis-desc">Up/Down</span></button>
+            <button type="button" class="axis-btn" data-axis="z"><span class="axis-letter">Z</span><span class="axis-desc">Front/Back</span></button>
+        </div>
+        <input type="hidden" id="cp-axis" value="y" />
+        <div class="modal-actions">
+            <button class="modal-btn modal-cancel" onclick="closeModal('m-circular-pattern')">Cancel</button>
+            <button class="modal-btn modal-confirm" id="cp-ok">Create Pattern</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="m-boolean">
+    <div class="modal-box">
+        <div class="modal-title">⊕ Boolean Operation</div>
+        <div class="modal-subtitle">Combines two bodies using CSG (Constructive Solid Geometry). Select exactly 2 bodies using Shift+Click before opening.</div>
+        <div class="modal-status" id="boolean-status"></div>
+        <div class="modal-label">Operation Type</div>
+        <div class="axis-selector" id="boolean-op-selector">
+            <button type="button" class="axis-btn selected" data-op="union" style="--sel-color:#22c55e"><span class="axis-letter">∪</span><span class="axis-desc">Union</span></button>
+            <button type="button" class="axis-btn" data-op="subtract" style="--sel-color:#ef4444"><span class="axis-letter">−</span><span class="axis-desc">Subtract</span></button>
+            <button type="button" class="axis-btn" data-op="intersect" style="--sel-color:#3b82f6"><span class="axis-letter">∩</span><span class="axis-desc">Intersect</span></button>
+        </div>
+        <input type="hidden" id="boolean-op" value="union" />
+        <div style="font-size:11px;color:#666;margin-bottom:12px;padding:6px 8px;background:#1e1e1e;border-radius:6px;" id="boolean-desc">
+            <strong>Union:</strong> Merges both bodies into a single combined solid.
+        </div>
+        <div class="modal-actions">
+            <button class="modal-btn modal-cancel" onclick="closeModal('m-boolean')">Cancel</button>
+            <button class="modal-btn modal-confirm" id="boolean-ok">Apply</button>
         </div>
     </div>
 </div>
@@ -631,6 +920,7 @@ const CONFIG = Object.freeze({
     GEOMETRY_SEGMENTS_TORUS_TUBULAR: 96,
     SKETCH_CIRCLE_POINTS: 50,
     SKETCH_LINE_COLOR: 0x8b5cf6,
+    SKETCH_CENTERLINE_COLOR: 0xf59e0b,
     SKETCH_SELECT_COLOR: 0xf97316,
     SKETCH_PICK_THRESHOLD: 0.25,
     SKETCH_POINT_PICK_THRESHOLD: 0.6,
@@ -1212,12 +1502,22 @@ class BulletCADApp {
         if (!this.scene) return;
         if (this.sketchDraft.obj && this.sketchDraft.kind === kind) return;
         this.clearSketchDraft();
-        const material = new THREE.LineBasicMaterial({
-            color: 0x06b6d4,
-            transparent: true,
-            opacity: 0.8,
-            depthTest: false,
-        });
+        const isCenterline = kind === 'centerline';
+        const material = isCenterline
+            ? new THREE.LineDashedMaterial({
+                color: CONFIG.SKETCH_CENTERLINE_COLOR,
+                transparent: true,
+                opacity: 0.8,
+                depthTest: false,
+                dashSize: 1.5,
+                gapSize: 0.8,
+            })
+            : new THREE.LineBasicMaterial({
+                color: 0x06b6d4,
+                transparent: true,
+                opacity: 0.8,
+                depthTest: false,
+            });
         const geometry = new THREE.BufferGeometry();
         const line = new THREE.Line(geometry, material);
         line.renderOrder = 9;
@@ -1243,7 +1543,7 @@ class BulletCADApp {
 
     updateSketchRubberBand({ disableSnap = false } = {}) {
         if (!this.scene || !this.sketchMode) return;
-        if (!['line', 'rect', 'circle'].includes(this.currentTool)) {
+        if (!['line', 'rect', 'circle', 'centerline'].includes(this.currentTool)) {
             this.clearSketchDraft();
             return;
         }
@@ -1269,7 +1569,7 @@ class BulletCADApp {
         this.ensureSketchDraft(kind);
 
         let pointsW = [];
-        if (kind === 'line') {
+        if (kind === 'line' || kind === 'centerline') {
             pointsW = [this.sketchToWorld(a), this.sketchToWorld(b)];
         } else if (kind === 'rect') {
             pointsW = [
@@ -1289,6 +1589,7 @@ class BulletCADApp {
         const newGeom = new THREE.BufferGeometry().setFromPoints(pointsW);
         this.sketchDraft.obj.geometry = newGeom;
         this.sketchDraft.geometry = newGeom;
+        if (kind === 'centerline') this.sketchDraft.obj.computeLineDistances(); // Required for dashed material
         oldGeom?.dispose?.();
     }
 
@@ -2333,10 +2634,12 @@ class BulletCADApp {
 
     openModal(id) {
         document.getElementById(id).classList.add('active');
+        this.updateModalStatus(id);
     }
 
     closeModal(id) {
         document.getElementById(id).classList.remove('active');
+        this.removeAxisHelper();
     }
 
     initThree() {
@@ -2801,7 +3104,7 @@ class BulletCADApp {
             this.setHUD('Click on a face to select it', 'face');
         } else if (tool === 'measure') {
             this.setHUD('Measure: click two points (M). Esc clears.', 'face');
-        } else if (['line', 'rect', 'circle'].includes(tool)) {
+        } else if (['line', 'rect', 'circle', 'centerline'].includes(tool)) {
             // New flow: sketch starts by picking a face or the ground/grid plane.
             if (!this.sketchMode) {
                 if (this.selectedFace) {
@@ -2811,13 +3114,16 @@ class BulletCADApp {
                     this.setHUD('Sketch: click a face or grid plane to start', 'sketch');
                 }
             }
-            if (!this.pendingSketchPlanePick) this.setHUD('Sketch: ' + tool + ' (ESC to exit)', 'sketch');
+            if (!this.pendingSketchPlanePick) {
+                if (tool === 'centerline') this.setHUD('Centerline: click two points to define revolve axis (ESC to exit)', 'sketch');
+                else this.setHUD('Sketch: ' + tool + ' (ESC to exit)', 'sketch');
+            }
         } else {
             if (!this.sketchMode) this.hudEl.className = 'hud';
         }
 
         // Leaving sketch drawing tools should clear rubber-band preview
-        if (!['line', 'rect', 'circle'].includes(tool)) this.clearSketchDraft();
+        if (!['line', 'rect', 'circle', 'centerline'].includes(tool)) this.clearSketchDraft();
     }
 
     enterSketchMode() {
@@ -2948,6 +3254,10 @@ class BulletCADApp {
             this.clearSketchDraft();
             this.createSketchLine(this.sketchPoints[0], this.sketchPoints[1]);
             this.sketchPoints = [this.sketchPoints[1]];
+        } else if (this.currentTool === 'centerline' && this.sketchPoints.length === 2) {
+            this.clearSketchDraft();
+            this.createSketchCenterline(this.sketchPoints[0], this.sketchPoints[1]);
+            this.sketchPoints = [];
         }
     }
 
@@ -2996,6 +3306,52 @@ class BulletCADApp {
         this.sketchLines.push(ent);
         this.setSketchSelection(ent);
         this.toast('Line added (press Enter to set length)', 'info');
+    }
+
+    createSketchCenterline(p1, p2) {
+        // SolidWorks-style construction centerline for revolve axis
+        const material = new THREE.LineDashedMaterial({
+            color: CONFIG.SKETCH_CENTERLINE_COLOR,
+            transparent: true,
+            opacity: 1,
+            depthTest: false,
+            dashSize: 1.5,
+            gapSize: 0.8,
+        });
+        const worldP1 = this.sketchToWorld(new THREE.Vector2(p1.x, p1.y));
+        const worldP2 = this.sketchToWorld(new THREE.Vector2(p2.x, p2.y));
+        // Extend the centerline visually beyond the endpoints for clarity
+        const dir2D = new THREE.Vector2(p2.x - p1.x, p2.y - p1.y);
+        const len2D = dir2D.length();
+        const ext = len2D * 0.4; // extend 40% on each side
+        dir2D.normalize();
+        const extP1 = new THREE.Vector2(p1.x - dir2D.x * ext, p1.y - dir2D.y * ext);
+        const extP2 = new THREE.Vector2(p2.x + dir2D.x * ext, p2.y + dir2D.y * ext);
+        const points = [
+            this.sketchToWorld(extP1),
+            this.sketchToWorld(extP2),
+        ];
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geometry, material);
+        line.computeLineDistances(); // Required for dashed material
+        line.renderOrder = 10;
+        this.scene.add(line);
+        // Add small cross-marks at p1 and p2 to mark the axis endpoints
+        const crossSize = Math.max(0.8, len2D * 0.06);
+        const crossMat = new THREE.LineBasicMaterial({ color: CONFIG.SKETCH_CENTERLINE_COLOR, transparent: true, opacity: 0.7, depthTest: false });
+        const perp2D = new THREE.Vector2(-dir2D.y, dir2D.x);
+        for (const ep of [p1, p2]) {
+            const cp1 = this.sketchToWorld(new THREE.Vector2(ep.x - perp2D.x * crossSize, ep.y - perp2D.y * crossSize));
+            const cp2 = this.sketchToWorld(new THREE.Vector2(ep.x + perp2D.x * crossSize, ep.y + perp2D.y * crossSize));
+            const crossGeom = new THREE.BufferGeometry().setFromPoints([cp1, cp2]);
+            const crossLine = new THREE.Line(crossGeom, crossMat);
+            crossLine.renderOrder = 10;
+            line.add(crossLine); // parent to main line for cleanup
+        }
+        const ent = { type: 'centerline', p1, p2, line, geometry, baseColor: CONFIG.SKETCH_CENTERLINE_COLOR };
+        this.sketchLines.push(ent);
+        this.setSketchSelection(ent);
+        this.toast('Centerline added — this defines the revolve axis', 'success');
     }
 
     addUndo(action) {
@@ -3547,6 +3903,704 @@ class BulletCADApp {
         this.closeModal('m-chamfer');
     }
 
+    // ============ ADVANCED SOLIDWORKS-STYLE OPERATIONS ============
+
+    doRevolve() {
+        const revolveMode = document.getElementById('revolve-mode').value; // 'centerline' or 'world'
+        const axisStr = document.getElementById('revolve-axis').value;
+        let angle = parseFloat(document.getElementById('revolve-angle').value);
+        let segments = parseInt(document.getElementById('revolve-segments').value);
+        if (isNaN(angle) || angle === 0) angle = 360;
+        if (isNaN(segments) || segments < 3) segments = 32;
+        const angleRad = THREE.MathUtils.degToRad(Math.min(360, Math.max(1, Math.abs(angle))));
+
+        if (this.sketchLines.length === 0) {
+            this.toast('Draw a sketch profile first', 'warning');
+            this.closeModal('m-revolve');
+            return;
+        }
+
+        // Separate centerlines from profile sketches
+        const centerlines = this.sketchLines.filter(s => s.type === 'centerline');
+        const profiles = this.sketchLines.filter(s => s.type !== 'centerline');
+
+        if (profiles.length === 0) {
+            this.toast('Draw a sketch profile (rect, circle, or line) first', 'warning');
+            this.closeModal('m-revolve');
+            return;
+        }
+
+        const sketch = profiles[profiles.length - 1]; // last non-centerline sketch
+        const sp = this.sketchPlane || this.getDefaultSketchPlane();
+        let lathePoints = [];
+        let axisOrigin3D = sp.origin.clone();
+        let axisDir3D = null;
+
+        const useCenterline = revolveMode === 'centerline' && centerlines.length > 0;
+
+        if (useCenterline) {
+            // ===== SOLIDWORKS-STYLE: Revolve around drawn centerline =====
+            const cl = centerlines[centerlines.length - 1]; // last centerline
+            const clP1 = cl.p1; // 2D sketch coords
+            const clP2 = cl.p2;
+
+            // Axis direction in 2D sketch space
+            const axisDir2D = new THREE.Vector2(clP2.x - clP1.x, clP2.y - clP1.y).normalize();
+            // Perpendicular direction in 2D (pointing "right" of the axis)
+            const axisPerp2D = new THREE.Vector2(-axisDir2D.y, axisDir2D.x);
+
+            // Transform profile points to axis-relative coordinates
+            // In axis frame: t = along axis (becomes Y for LatheGeometry), r = perpendicular distance (becomes X for LatheGeometry)
+            const transformToAxisFrame = (p) => {
+                const dx = p.x - clP1.x;
+                const dy = p.y - clP1.y;
+                const t = dx * axisDir2D.x + dy * axisDir2D.y;  // along axis
+                const r = dx * axisPerp2D.x + dy * axisPerp2D.y; // perpendicular
+                return new THREE.Vector2(Math.abs(r), t); // abs(r) = radius for lathe
+            };
+
+            if (sketch.type === 'rect') {
+                const corners = [
+                    new THREE.Vector2(sketch.p1.x, sketch.p1.y),
+                    new THREE.Vector2(sketch.p2.x, sketch.p1.y),
+                    new THREE.Vector2(sketch.p2.x, sketch.p2.y),
+                    new THREE.Vector2(sketch.p1.x, sketch.p2.y),
+                ];
+                lathePoints = corners.map(transformToAxisFrame);
+                // Close the profile
+                lathePoints.push(lathePoints[0].clone());
+            } else if (sketch.type === 'circle') {
+                const n = Math.max(16, segments);
+                for (let i = 0; i <= n; i++) {
+                    const t = (i / n) * Math.PI * 2;
+                    const px = sketch.center.x + sketch.radius * Math.cos(t);
+                    const py = sketch.center.y + sketch.radius * Math.sin(t);
+                    const transformed = transformToAxisFrame(new THREE.Vector2(px, py));
+                    if (transformed.x >= 0) lathePoints.push(transformed);
+                }
+            } else {
+                // Line profile - create a solid of revolution (frustum)
+                const tp1 = transformToAxisFrame(new THREE.Vector2(sketch.p1.x, sketch.p1.y));
+                const tp2 = transformToAxisFrame(new THREE.Vector2(sketch.p2.x, sketch.p2.y));
+                lathePoints = [
+                    new THREE.Vector2(0, tp1.y),
+                    tp1,
+                    tp2,
+                    new THREE.Vector2(0, tp2.y),
+                ];
+            }
+
+            // Build the 3D transformation for the resulting mesh
+            // Convert centerline to 3D world space
+            const worldClP1 = this.sketchToWorld(new THREE.Vector2(clP1.x, clP1.y));
+            const worldClP2 = this.sketchToWorld(new THREE.Vector2(clP2.x, clP2.y));
+            axisDir3D = worldClP2.clone().sub(worldClP1).normalize();
+            axisOrigin3D = worldClP1.clone();
+
+        } else {
+            // ===== FALLBACK: Revolve around world axis (X/Y/Z) =====
+            if (sketch.type === 'rect') {
+                const x1 = Math.min(sketch.p1.x, sketch.p2.x);
+                const x2 = Math.max(sketch.p1.x, sketch.p2.x);
+                const y1 = Math.min(sketch.p1.y, sketch.p2.y);
+                const y2 = Math.max(sketch.p1.y, sketch.p2.y);
+                const rMin = Math.max(0, x1);
+                const rMax = Math.max(0.1, x2);
+                lathePoints = [
+                    new THREE.Vector2(rMin, y1),
+                    new THREE.Vector2(rMax, y1),
+                    new THREE.Vector2(rMax, y2),
+                    new THREE.Vector2(rMin, y2),
+                ];
+            } else if (sketch.type === 'circle') {
+                const cx = Math.max(0, sketch.center.x);
+                const cy = sketch.center.y;
+                const r = sketch.radius;
+                const n = Math.max(16, segments);
+                for (let i = 0; i <= n; i++) {
+                    const t = (i / n) * Math.PI * 2;
+                    const px = cx + r * Math.cos(t);
+                    if (px >= 0) lathePoints.push(new THREE.Vector2(px, cy + r * Math.sin(t)));
+                }
+            } else {
+                const r1 = Math.max(0, Math.abs(sketch.p1.x));
+                const r2 = Math.max(0, Math.abs(sketch.p2.x));
+                lathePoints = [
+                    new THREE.Vector2(0, sketch.p1.y),
+                    new THREE.Vector2(r1, sketch.p1.y),
+                    new THREE.Vector2(r2, sketch.p2.y),
+                    new THREE.Vector2(0, sketch.p2.y),
+                ];
+            }
+        }
+
+        if (lathePoints.length < 2) {
+            this.toast('Could not generate revolve profile', 'error');
+            this.closeModal('m-revolve');
+            return;
+        }
+
+        const geometry = new THREE.LatheGeometry(lathePoints, segments, 0, angleRad);
+
+        if (useCenterline && axisDir3D) {
+            // Align the LatheGeometry (which revolves around local Y) to the actual 3D axis direction
+            // Build a rotation matrix from Y-axis to axisDir3D
+            const yAxis = new THREE.Vector3(0, 1, 0);
+            const quaternion = new THREE.Quaternion().setFromUnitVectors(yAxis, axisDir3D);
+            const rotMatrix = new THREE.Matrix4().makeRotationFromQuaternion(quaternion);
+            geometry.applyMatrix4(rotMatrix);
+        } else {
+            // World axis rotation for the fallback mode
+            if (axisStr === 'x') {
+                const m = new THREE.Matrix4().makeRotationZ(-Math.PI / 2);
+                geometry.applyMatrix4(m);
+            } else if (axisStr === 'z') {
+                const m = new THREE.Matrix4().makeRotationX(Math.PI / 2);
+                geometry.applyMatrix4(m);
+            }
+        }
+
+        const mesh = new THREE.Mesh(geometry, this.createMaterial());
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+
+        if (useCenterline && axisOrigin3D) {
+            mesh.position.copy(axisOrigin3D);
+        } else {
+            mesh.position.copy(sp.origin);
+        }
+
+        // Remove consumed sketch entities from scene
+        this.scene.remove(sketch.line);
+        sketch.geometry?.dispose?.();
+        // Remove the profile from sketchLines
+        const profileIdx = this.sketchLines.indexOf(sketch);
+        if (profileIdx !== -1) this.sketchLines.splice(profileIdx, 1);
+
+        // Also remove consumed centerline
+        if (useCenterline && centerlines.length > 0) {
+            const cl = centerlines[centerlines.length - 1];
+            this.scene.remove(cl.line);
+            cl.geometry?.dispose?.();
+            const clIdx = this.sketchLines.indexOf(cl);
+            if (clIdx !== -1) this.sketchLines.splice(clIdx, 1);
+        }
+
+        const axisLabel = useCenterline ? 'centerline' : axisStr.toUpperCase();
+        this.objCounter++;
+        const obj = { id: this.objCounter, name: 'Revolve ' + this.objCounter, type: 'revolve', mesh, params: { angle, segments, axis: axisLabel } };
+        mesh.userData.obj = obj;
+        this.scene.add(mesh);
+        this.objects.push(obj);
+        this.applyRenderModeToObject(obj);
+        const featureIndex = this.features.length;
+        const feature = this.addFeature({ type: 'revolve', name: `Revolve ${angle}\u00B0 ${axisLabel}`, objId: obj.id, params: { angle, segments, axis: axisLabel } });
+        this.addUndo({ type: 'create', obj, feature, featureIndex });
+        this.selection = [{ kind: 'body', obj, point: mesh.position.clone() }];
+        this.selectObject(obj);
+        this.updateUI();
+        this.toast(`Revolved ${angle}\u00B0 around ${axisLabel} axis`, 'success');
+        this.closeModal('m-revolve');
+    }
+
+    doSweep() {
+        let distance = parseFloat(document.getElementById('sweep-distance').value);
+        let twist = parseFloat(document.getElementById('sweep-twist').value);
+        let steps = parseInt(document.getElementById('sweep-segments').value);
+        if (isNaN(distance) || distance === 0) distance = 30;
+        if (isNaN(twist)) twist = 0;
+        if (isNaN(steps) || steps < 1) steps = 32;
+        const absDistance = Math.abs(distance);
+
+        if (this.sketchLines.length === 0) {
+            this.toast('Draw a sketch profile first', 'warning');
+            this.closeModal('m-sweep');
+            return;
+        }
+
+        const sketch = this.sketchLines[this.sketchLines.length - 1];
+        const sp = this.sketchPlane || this.getDefaultSketchPlane();
+
+        let shape;
+        if (sketch.type === 'rect') {
+            const w = Math.abs(sketch.p2.x - sketch.p1.x);
+            const h = Math.abs(sketch.p2.y - sketch.p1.y);
+            shape = new THREE.Shape();
+            shape.moveTo(-w / 2, -h / 2);
+            shape.lineTo(w / 2, -h / 2);
+            shape.lineTo(w / 2, h / 2);
+            shape.lineTo(-w / 2, h / 2);
+            shape.closePath();
+        } else if (sketch.type === 'circle') {
+            shape = new THREE.Shape();
+            shape.absarc(0, 0, sketch.radius, 0, Math.PI * 2, false);
+        } else {
+            this.toast('Sweep requires a rectangle or circle profile', 'error');
+            this.closeModal('m-sweep');
+            return;
+        }
+
+        const dir = sp.w.clone().normalize();
+        const start = sp.origin.clone().addScaledVector(sp.w, sp.offset);
+        const end = start.clone().addScaledVector(dir, distance);
+        const pathCurve = new THREE.LineCurve3(start, end);
+
+        const geometry = new THREE.ExtrudeGeometry(shape, {
+            steps: steps,
+            bevelEnabled: false,
+            extrudePath: pathCurve,
+        });
+
+        // Apply twist by rotating vertices progressively along the sweep direction
+        if (Math.abs(twist) > 0.1) {
+            const twistRad = THREE.MathUtils.degToRad(twist);
+            const posAttr = geometry.getAttribute('position');
+            const tempVec = new THREE.Vector3();
+            for (let i = 0; i < posAttr.count; i++) {
+                tempVec.fromBufferAttribute(posAttr, i);
+                const along = tempVec.clone().sub(start).dot(dir);
+                const t = Math.max(0, Math.min(1, along / distance));
+                const ang = twistRad * t;
+                const center = start.clone().addScaledVector(dir, along);
+                const offset = tempVec.clone().sub(center);
+                offset.applyQuaternion(new THREE.Quaternion().setFromAxisAngle(dir, ang));
+                const result = center.add(offset);
+                posAttr.setXYZ(i, result.x, result.y, result.z);
+            }
+            posAttr.needsUpdate = true;
+            geometry.computeVertexNormals();
+        }
+
+        // Center geometry for clean transforms
+        geometry.computeBoundingBox();
+        const gCenter = new THREE.Vector3();
+        geometry.boundingBox.getCenter(gCenter);
+        geometry.translate(-gCenter.x, -gCenter.y, -gCenter.z);
+
+        const mesh = new THREE.Mesh(geometry, this.createMaterial());
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.position.copy(gCenter);
+
+        this.scene.remove(sketch.line);
+        sketch.geometry?.dispose?.();
+        this.sketchLines.pop();
+
+        this.objCounter++;
+        const obj = { id: this.objCounter, name: 'Sweep ' + this.objCounter, type: 'sweep', mesh, params: { distance, twist, steps } };
+        mesh.userData.obj = obj;
+        this.scene.add(mesh);
+        this.objects.push(obj);
+        this.applyRenderModeToObject(obj);
+        const featureIndex = this.features.length;
+        const feature = this.addFeature({ type: 'sweep', name: `Sweep ${absDistance}mm`, objId: obj.id, params: { distance, twist, steps } });
+        this.addUndo({ type: 'create', obj, feature, featureIndex });
+        this.selection = [{ kind: 'body', obj, point: mesh.position.clone() }];
+        this.selectObject(obj);
+        this.updateUI();
+        this.toast(`Swept ${absDistance}mm` + (Math.abs(twist) > 0.1 ? ` with ${twist}\u00B0 twist` : ''), 'success');
+        this.closeModal('m-sweep');
+    }
+
+    doLoft() {
+        let depth = parseFloat(document.getElementById('loft-depth').value);
+        let endScale = parseFloat(document.getElementById('loft-end-scale').value);
+        if (isNaN(depth) || depth === 0) depth = 30;
+        if (isNaN(endScale) || endScale < 0.01) endScale = 0.5;
+        endScale = Math.max(0.01, Math.min(3.0, endScale));
+        const absDepth = Math.abs(depth);
+        const sign = Math.sign(depth) || 1;
+
+        if (this.sketchLines.length === 0) {
+            this.toast('Draw a sketch profile first', 'warning');
+            this.closeModal('m-loft');
+            return;
+        }
+
+        const sketch = this.sketchLines[this.sketchLines.length - 1];
+        const sp = this.sketchPlane || this.getDefaultSketchPlane();
+        let geometry;
+
+        if (sketch.type === 'circle') {
+            const r1 = sketch.radius;
+            const r2 = sketch.radius * endScale;
+            geometry = new THREE.CylinderGeometry(r2, r1, absDepth, CONFIG.GEOMETRY_SEGMENTS);
+        } else if (sketch.type === 'rect') {
+            // Truncated pyramid
+            const w1 = Math.abs(sketch.p2.x - sketch.p1.x), h1 = Math.abs(sketch.p2.y - sketch.p1.y);
+            const w2 = w1 * endScale, h2 = h1 * endScale;
+            const hw1 = w1 / 2, hh1 = h1 / 2, hw2 = w2 / 2, hh2 = h2 / 2, d2 = absDepth / 2;
+            const positions = [], normals = [];
+            const addQuad = (a, b, c, d) => {
+                positions.push(...a, ...b, ...c, ...a, ...c, ...d);
+                const ab = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+                const ac = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+                const n = [ab[1] * ac[2] - ab[2] * ac[1], ab[2] * ac[0] - ab[0] * ac[2], ab[0] * ac[1] - ab[1] * ac[0]];
+                const len = Math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]) || 1;
+                n[0] /= len; n[1] /= len; n[2] /= len;
+                for (let i = 0; i < 6; i++) normals.push(...n);
+            };
+            const b0 = [-hw1, -d2, -hh1], b1 = [hw1, -d2, -hh1], b2 = [hw1, -d2, hh1], b3 = [-hw1, -d2, hh1];
+            const t0 = [-hw2, d2, -hh2], t1 = [hw2, d2, -hh2], t2 = [hw2, d2, hh2], t3 = [-hw2, d2, hh2];
+            addQuad(b3, b2, b1, b0); // bottom
+            addQuad(t0, t1, t2, t3); // top
+            addQuad(b0, b1, t1, t0); // front
+            addQuad(b2, b3, t3, t2); // back
+            addQuad(b3, b0, t0, t3); // left
+            addQuad(b1, b2, t2, t1); // right
+            geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+        } else {
+            this.toast('Loft requires a rectangle or circle profile', 'error');
+            this.closeModal('m-loft');
+            return;
+        }
+
+        const mesh = new THREE.Mesh(geometry, this.createMaterial());
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        const center2 = sketch.type === 'rect'
+            ? new THREE.Vector2((sketch.p1.x + sketch.p2.x) / 2, (sketch.p1.y + sketch.p2.y) / 2)
+            : sketch.center.clone();
+        mesh.position.copy(this.sketchToWorld(center2));
+        mesh.position.addScaledVector(sp.w, (sign * absDepth) / 2);
+        mesh.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), sp.w));
+
+        this.scene.remove(sketch.line);
+        sketch.geometry?.dispose?.();
+        this.sketchLines.pop();
+
+        this.objCounter++;
+        const obj = { id: this.objCounter, name: 'Loft ' + this.objCounter, type: 'loft', mesh, params: { depth, endScale } };
+        mesh.userData.obj = obj;
+        this.scene.add(mesh);
+        this.objects.push(obj);
+        this.applyRenderModeToObject(obj);
+        const featureIndex = this.features.length;
+        const feature = this.addFeature({ type: 'loft', name: `Loft ${absDepth}mm \u00D7${endScale}`, objId: obj.id, params: { depth, endScale } });
+        this.addUndo({ type: 'create', obj, feature, featureIndex });
+        this.selection = [{ kind: 'body', obj, point: mesh.position.clone() }];
+        this.selectObject(obj);
+        this.updateUI();
+        this.toast(`Loft: ${absDepth}mm, end scale ${endScale}\u00D7`, 'success');
+        this.closeModal('m-loft');
+    }
+
+    doShell() {
+        let thickness = parseFloat(document.getElementById('shell-thickness').value);
+        if (isNaN(thickness) || thickness <= 0) thickness = 2;
+        const targetObj = this.selectedObj;
+        if (!targetObj?.mesh) {
+            this.toast('Select an object to shell', 'warning');
+            this.closeModal('m-shell');
+            return;
+        }
+        try {
+            const mesh = targetObj.mesh;
+            mesh.updateMatrixWorld(true);
+            const geom = mesh.geometry.clone();
+            if (!geom.attributes.normal) geom.computeVertexNormals();
+            geom.computeBoundingBox();
+            const bb = geom.boundingBox;
+            const sx = bb.max.x - bb.min.x, sy = bb.max.y - bb.min.y, sz = bb.max.z - bb.min.z;
+
+            if (thickness * 2 >= Math.min(sx, sy, sz)) {
+                this.toast('Wall thickness too large for this object', 'error');
+                geom.dispose();
+                this.closeModal('m-shell');
+                return;
+            }
+
+            const innerGeom = geom.clone();
+            const scaleX = Math.max(0.01, 1 - (2 * thickness / sx));
+            const scaleY = Math.max(0.01, 1 - (2 * thickness / sy));
+            const scaleZ = Math.max(0.01, 1 - (2 * thickness / sz));
+            const cx = (bb.min.x + bb.max.x) / 2, cy = (bb.min.y + bb.max.y) / 2, cz = (bb.min.z + bb.max.z) / 2;
+            const m1 = new THREE.Matrix4().makeTranslation(-cx, -cy, -cz);
+            const m2 = new THREE.Matrix4().makeScale(scaleX, scaleY, scaleZ);
+            const m3 = new THREE.Matrix4().makeTranslation(cx, cy, cz);
+            innerGeom.applyMatrix4(new THREE.Matrix4().multiplyMatrices(m3, new THREE.Matrix4().multiplyMatrices(m2, m1)));
+            if (!innerGeom.attributes.normal) innerGeom.computeVertexNormals();
+
+            const outerCSG = CSG.fromGeometry(geom, mesh.matrixWorld);
+            const innerMeshTemp = new THREE.Mesh(innerGeom);
+            innerMeshTemp.position.copy(mesh.position);
+            innerMeshTemp.rotation.copy(mesh.rotation);
+            innerMeshTemp.scale.copy(mesh.scale);
+            innerMeshTemp.updateMatrixWorld(true);
+            const innerCSG = CSG.fromGeometry(innerGeom, innerMeshTemp.matrixWorld);
+            const resultCSG = outerCSG.subtract(innerCSG);
+            const resultGeom = resultCSG.toGeometry();
+
+            if (resultGeom.attributes.position.count === 0) throw new Error('Shell resulted in empty geometry');
+
+            const inverseMatrix = new THREE.Matrix4().copy(mesh.matrixWorld).invert();
+            resultGeom.applyMatrix4(inverseMatrix);
+            const oldGeom = mesh.geometry.clone();
+            mesh.geometry.dispose();
+            mesh.geometry = resultGeom;
+            mesh.geometry.computeBoundingBox();
+            mesh.geometry.computeBoundingSphere();
+            geom.dispose();
+            innerGeom.dispose();
+
+            const featureIndex = this.features.length;
+            const feature = this.addFeature({ type: 'shell', name: `Shell ${thickness}mm`, objId: targetObj.id, params: { thickness } });
+            this.addUndo({ type: 'fillet', obj: targetObj, originalGeometry: oldGeom, newGeometry: mesh.geometry.clone(), feature, featureIndex });
+            this.applyRenderModeToObject(targetObj);
+            this.updateUI();
+            this.toast(`Shell applied: ${thickness}mm wall`, 'success');
+        } catch (err) {
+            console.error('Shell failed:', err);
+            this.toast('Shell failed: ' + err.message, 'error');
+        }
+        this.closeModal('m-shell');
+    }
+
+    doMirror() {
+        const planeStr = document.getElementById('mirror-plane').value;
+        const merge = document.getElementById('mirror-merge').checked;
+        const targetObj = this.selectedObj;
+        if (!targetObj?.mesh) {
+            this.toast('Select an object to mirror', 'warning');
+            this.closeModal('m-mirror');
+            return;
+        }
+        try {
+            const srcMesh = targetObj.mesh;
+            const clonedGeom = srcMesh.geometry.clone();
+            const clonedMat = srcMesh.material.clone();
+            const newMesh = new THREE.Mesh(clonedGeom, clonedMat);
+            newMesh.position.copy(srcMesh.position);
+            newMesh.rotation.copy(srcMesh.rotation);
+            newMesh.scale.copy(srcMesh.scale);
+            newMesh.castShadow = true;
+            newMesh.receiveShadow = true;
+
+            // Flip position & scale on mirror axis
+            if (planeStr === 'yz') { newMesh.position.x = -newMesh.position.x; newMesh.scale.x *= -1; }
+            else if (planeStr === 'xz') { newMesh.position.y = -newMesh.position.y; newMesh.scale.y *= -1; }
+            else { newMesh.position.z = -newMesh.position.z; newMesh.scale.z *= -1; }
+
+            // Fix face winding for negative scale
+            if (clonedGeom.index) {
+                const idx = clonedGeom.index.array;
+                for (let i = 0; i < idx.length; i += 3) { const tmp = idx[i + 1]; idx[i + 1] = idx[i + 2]; idx[i + 2] = tmp; }
+                clonedGeom.index.needsUpdate = true;
+            } else {
+                const posAttr = clonedGeom.getAttribute('position');
+                if (posAttr) {
+                    for (let i = 0; i < posAttr.count; i += 3) {
+                        const x1 = posAttr.getX(i + 1), y1 = posAttr.getY(i + 1), z1 = posAttr.getZ(i + 1);
+                        posAttr.setXYZ(i + 1, posAttr.getX(i + 2), posAttr.getY(i + 2), posAttr.getZ(i + 2));
+                        posAttr.setXYZ(i + 2, x1, y1, z1);
+                    }
+                    posAttr.needsUpdate = true;
+                }
+            }
+            clonedGeom.computeVertexNormals();
+
+            if (merge) {
+                try {
+                    srcMesh.updateMatrixWorld(true);
+                    newMesh.updateMatrixWorld(true);
+                    const srcCSG = CSG.fromGeometry(srcMesh.geometry, srcMesh.matrixWorld);
+                    const mirCSG = CSG.fromGeometry(newMesh.geometry, newMesh.matrixWorld);
+                    const resultCSG = srcCSG.union(mirCSG);
+                    const resultGeom = resultCSG.toGeometry();
+                    if (resultGeom.attributes.position.count > 0) {
+                        const inv = new THREE.Matrix4().copy(srcMesh.matrixWorld).invert();
+                        resultGeom.applyMatrix4(inv);
+                        const oldGeom = srcMesh.geometry.clone();
+                        srcMesh.geometry.dispose();
+                        srcMesh.geometry = resultGeom;
+                        srcMesh.geometry.computeBoundingBox();
+                        srcMesh.geometry.computeBoundingSphere();
+                        clonedGeom.dispose();
+                        clonedMat.dispose();
+                        const featureIndex = this.features.length;
+                        const feature = this.addFeature({ type: 'mirror', name: `Mirror+Merge (${planeStr.toUpperCase()})`, objId: targetObj.id, params: { plane: planeStr, merge: true } });
+                        this.addUndo({ type: 'fillet', obj: targetObj, originalGeometry: oldGeom, newGeometry: srcMesh.geometry.clone(), feature, featureIndex });
+                        this.applyRenderModeToObject(targetObj);
+                        this.updateUI();
+                        this.toast(`Mirrored and merged across ${planeStr.toUpperCase()} plane`, 'success');
+                        this.closeModal('m-mirror');
+                        return;
+                    }
+                } catch (err) {
+                    console.error('Mirror merge failed:', err);
+                    this.toast('Merge failed, creating separate copy', 'warning');
+                }
+            }
+
+            // Create as separate object
+            this.objCounter++;
+            const obj = { id: this.objCounter, name: targetObj.name + ' Mirror', type: targetObj.type, mesh: newMesh, params: { ...targetObj.params } };
+            newMesh.userData.obj = obj;
+            this.scene.add(newMesh);
+            this.objects.push(obj);
+            this.applyRenderModeToObject(obj);
+            const featureIndex = this.features.length;
+            const feature = this.addFeature({ type: 'mirror', name: `Mirror (${planeStr.toUpperCase()})`, objId: obj.id, params: { plane: planeStr } });
+            this.addUndo({ type: 'create', obj, feature, featureIndex });
+            this.selection = [{ kind: 'body', obj, point: newMesh.position.clone() }];
+            this.selectObject(obj);
+            this.updateUI();
+            this.toast(`Mirrored across ${planeStr.toUpperCase()} plane`, 'success');
+        } catch (err) {
+            console.error('Mirror failed:', err);
+            this.toast('Mirror failed: ' + err.message, 'error');
+        }
+        this.closeModal('m-mirror');
+    }
+
+    doLinearPattern() {
+        let count = parseInt(document.getElementById('lp-count').value);
+        let spacing = parseFloat(document.getElementById('lp-spacing').value);
+        const direction = document.getElementById('lp-direction').value;
+        if (isNaN(count) || count < 2) count = 3;
+        if (isNaN(spacing) || spacing === 0) spacing = 25;
+        count = Math.min(count, 50);
+
+        const targetObj = this.selectedObj;
+        if (!targetObj?.mesh) {
+            this.toast('Select an object to pattern', 'warning');
+            this.closeModal('m-linear-pattern');
+            return;
+        }
+
+        for (let i = 1; i < count; i++) {
+            const newMesh = new THREE.Mesh(targetObj.mesh.geometry.clone(), targetObj.mesh.material.clone());
+            newMesh.position.copy(targetObj.mesh.position);
+            newMesh.quaternion.copy(targetObj.mesh.quaternion);
+            newMesh.scale.copy(targetObj.mesh.scale);
+            newMesh.castShadow = true;
+            newMesh.receiveShadow = true;
+            newMesh.position[direction] += spacing * i;
+
+            this.objCounter++;
+            const obj = { id: this.objCounter, name: `${targetObj.name} P${i + 1}`, type: targetObj.type, mesh: newMesh, params: { ...targetObj.params } };
+            newMesh.userData.obj = obj;
+            this.scene.add(newMesh);
+            this.objects.push(obj);
+            this.applyRenderModeToObject(obj);
+            this.addUndo({ type: 'create', obj });
+        }
+
+        this.addFeature({ type: 'linear-pattern', name: `Lin Pattern \u00D7${count} ${direction.toUpperCase()}`, objId: targetObj.id, params: { count, spacing, direction } });
+        this.updateUI();
+        this.toast(`Linear pattern: ${count} copies along ${direction.toUpperCase()}`, 'success');
+        this.closeModal('m-linear-pattern');
+    }
+
+    doCircularPattern() {
+        let count = parseInt(document.getElementById('cp-count').value);
+        let totalAngle = parseFloat(document.getElementById('cp-angle').value);
+        const axis = document.getElementById('cp-axis').value;
+        if (isNaN(count) || count < 2) count = 6;
+        if (isNaN(totalAngle) || totalAngle === 0) totalAngle = 360;
+        count = Math.min(count, 50);
+        const angleStep = THREE.MathUtils.degToRad(totalAngle / count);
+        const axisVec = axis === 'x' ? new THREE.Vector3(1, 0, 0) : axis === 'z' ? new THREE.Vector3(0, 0, 1) : new THREE.Vector3(0, 1, 0);
+
+        const targetObj = this.selectedObj;
+        if (!targetObj?.mesh) {
+            this.toast('Select an object to pattern', 'warning');
+            this.closeModal('m-circular-pattern');
+            return;
+        }
+
+        for (let i = 1; i < count; i++) {
+            const newMesh = new THREE.Mesh(targetObj.mesh.geometry.clone(), targetObj.mesh.material.clone());
+            newMesh.castShadow = true;
+            newMesh.receiveShadow = true;
+            newMesh.scale.copy(targetObj.mesh.scale);
+
+            // Rotate position around axis through world origin
+            const pos = targetObj.mesh.position.clone();
+            const ang = angleStep * i;
+            pos.applyAxisAngle(axisVec, ang);
+            newMesh.position.copy(pos);
+
+            // Rotate orientation
+            newMesh.quaternion.copy(targetObj.mesh.quaternion);
+            newMesh.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(axisVec, ang));
+
+            this.objCounter++;
+            const obj = { id: this.objCounter, name: `${targetObj.name} C${i + 1}`, type: targetObj.type, mesh: newMesh, params: { ...targetObj.params } };
+            newMesh.userData.obj = obj;
+            this.scene.add(newMesh);
+            this.objects.push(obj);
+            this.applyRenderModeToObject(obj);
+            this.addUndo({ type: 'create', obj });
+        }
+
+        this.addFeature({ type: 'circular-pattern', name: `Circ Pattern \u00D7${count} ${axis.toUpperCase()}`, objId: targetObj.id, params: { count, totalAngle, axis } });
+        this.updateUI();
+        this.toast(`Circular pattern: ${count} copies around ${axis.toUpperCase()}`, 'success');
+        this.closeModal('m-circular-pattern');
+    }
+
+    doBoolean() {
+        const op = document.getElementById('boolean-op').value;
+        const bodies = this.getSelectedBodies();
+        if (bodies.length !== 2) {
+            this.toast('Select exactly 2 bodies (Shift+Click)', 'warning');
+            this.closeModal('m-boolean');
+            return;
+        }
+        const [objA, objB] = bodies;
+        try {
+            objA.mesh.updateMatrixWorld(true);
+            objB.mesh.updateMatrixWorld(true);
+            const geomA = objA.mesh.geometry.clone();
+            const geomB = objB.mesh.geometry.clone();
+            if (!geomA.attributes.normal) geomA.computeVertexNormals();
+            if (!geomB.attributes.normal) geomB.computeVertexNormals();
+
+            const csgA = CSG.fromGeometry(geomA, objA.mesh.matrixWorld);
+            const csgB = CSG.fromGeometry(geomB, objB.mesh.matrixWorld);
+            let resultCSG;
+            if (op === 'union') resultCSG = csgA.union(csgB);
+            else if (op === 'subtract') resultCSG = csgA.subtract(csgB);
+            else resultCSG = csgA.intersect(csgB);
+
+            const resultGeom = resultCSG.toGeometry();
+            if (resultGeom.attributes.position.count === 0) throw new Error('Boolean resulted in empty geometry');
+
+            const mesh = new THREE.Mesh(resultGeom, this.createMaterial(objA.mesh.material.color.getHex()));
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            // Remove originals
+            [objA, objB].forEach(o => {
+                if (o.wireframeHelper) { o.wireframeHelper.parent?.remove(o.wireframeHelper); o.wireframeHelper.geometry?.dispose?.(); o.wireframeHelper.material?.dispose?.(); o.wireframeHelper = null; }
+                this.scene.remove(o.mesh);
+                this.objects = this.objects.filter(x => x.id !== o.id);
+            });
+
+            this.objCounter++;
+            const obj = { id: this.objCounter, name: `Boolean ${this.objCounter}`, type: 'boolean', mesh, params: { op } };
+            mesh.userData.obj = obj;
+            this.scene.add(mesh);
+            this.objects.push(obj);
+            this.applyRenderModeToObject(obj);
+            geomA.dispose();
+            geomB.dispose();
+
+            this.addFeature({ type: 'boolean', name: `Boolean ${op}`, objId: obj.id, params: { op } });
+            this.selection = [{ kind: 'body', obj, point: mesh.position.clone() }];
+            this.selectObject(obj);
+            this.updateUI();
+            this.toast(`Boolean ${op} applied`, 'success');
+        } catch (err) {
+            console.error('Boolean failed:', err);
+            this.toast('Boolean failed: ' + err.message, 'error');
+        }
+        this.closeModal('m-boolean');
+    }
+
     deleteSelected() {
         const targetsMap = new Map();
         (this.selection || []).forEach(p => {
@@ -3898,6 +4952,14 @@ DATA;
             if (t === 'cut') return '⬇';
             if (t === 'fillet') return '◜';
             if (t === 'chamfer') return '⟂';
+            if (t === 'revolve') return '↻';
+            if (t === 'sweep') return '⇝';
+            if (t === 'loft') return '△';
+            if (t === 'shell') return '□';
+            if (t === 'mirror') return '↔';
+            if (t === 'linear-pattern') return '≡';
+            if (t === 'circular-pattern') return '◎';
+            if (t === 'boolean') return '∩';
             return '•';
         };
 
@@ -4102,7 +5164,7 @@ DATA;
         }
 
         // If a sketch tool is active but we haven't picked a plane yet, first click chooses the plane.
-        if (!this.sketchMode && this.pendingSketchPlanePick && ['line', 'rect', 'circle'].includes(this.currentTool)) {
+        if (!this.sketchMode && this.pendingSketchPlanePick && ['line', 'rect', 'circle', 'centerline'].includes(this.currentTool)) {
             const facePick = this.pickFaceAtMouse();
             if (facePick) {
                 this.selectFace(facePick.obj, facePick.faceIdx, facePick.point, facePick.normal);
@@ -4126,7 +5188,7 @@ DATA;
             return;
         }
 
-        if (this.sketchMode || ['line', 'rect', 'circle'].includes(this.currentTool)) {
+        if (this.sketchMode || ['line', 'rect', 'circle', 'centerline'].includes(this.currentTool)) {
             // In sketch mode, Select tool performs sketch entity selection.
             if (this.sketchMode && this.currentTool === 'select') {
                 if (!this.sketchPlane) {
@@ -4227,7 +5289,7 @@ DATA;
 
         // Sketch UX: hover feedback + rubber-band previews
         if (this.sketchMode) {
-            if (['line', 'rect', 'circle'].includes(this.currentTool)) {
+            if (['line', 'rect', 'circle', 'centerline'].includes(this.currentTool)) {
                 this.updateSketchRubberBand({ disableSnap: e.shiftKey });
             } else if (this.currentTool === 'select') {
                 // Show hover marker for selectable sketch points
@@ -4253,7 +5315,7 @@ DATA;
         const prev = this.hoverSelection;
 
         // While picking a sketch plane, always hover faces (not bodies) so the user sees the target.
-        if (!this.sketchMode && this.pendingSketchPlanePick && ['line', 'rect', 'circle'].includes(this.currentTool)) {
+        if (!this.sketchMode && this.pendingSketchPlanePick && ['line', 'rect', 'circle', 'centerline'].includes(this.currentTool)) {
             const facePick = this.pickFaceAtMouse();
             if (facePick) {
                 this.hoverSelection = { kind: 'face', obj: facePick.obj, faceIdx: facePick.faceIdx, point: facePick.point.clone(), normal: facePick.normal.clone() };
@@ -4352,6 +5414,7 @@ DATA;
         if (key === 'l') this.setTool('line');
         if (key === 'b') this.setTool('rect');
         if (key === 'c') this.setTool('circle');
+        if (key === 'a' && !e.ctrlKey && !e.metaKey) this.setTool('centerline');
         if (key === 'k') this.enterSketchMode();
 
         if (key === 'm') this.setTool('measure');
@@ -4414,6 +5477,7 @@ DATA;
         document.getElementById('t-line').addEventListener('click', () => this.setTool('line'));
         document.getElementById('t-rect').addEventListener('click', () => this.setTool('rect'));
         document.getElementById('t-circle').addEventListener('click', () => this.setTool('circle'));
+        document.getElementById('t-centerline').addEventListener('click', () => this.setTool('centerline'));
         document.getElementById('t-measure').addEventListener('click', () => this.setTool('measure'));
         document.getElementById('t-undo').addEventListener('click', () => this.undo());
         document.getElementById('t-redo').addEventListener('click', () => this.redo());
@@ -4463,6 +5527,31 @@ DATA;
             this.startSketchPlaneTransform('rotate');
         });
 
+        document.getElementById('f-revolve').addEventListener('click', () => {
+            this.startModalCommand({ modalId: 'm-revolve', title: 'Revolve', hudKind: 'face', confirmLabel: 'Revolve', confirm: () => this.doRevolve() });
+        });
+        document.getElementById('f-sweep').addEventListener('click', () => {
+            this.startModalCommand({ modalId: 'm-sweep', title: 'Sweep', hudKind: 'face', confirmLabel: 'Sweep', confirm: () => this.doSweep() });
+        });
+        document.getElementById('f-loft').addEventListener('click', () => {
+            this.startModalCommand({ modalId: 'm-loft', title: 'Loft', hudKind: 'face', confirmLabel: 'Loft', confirm: () => this.doLoft() });
+        });
+        document.getElementById('f-shell').addEventListener('click', () => {
+            this.startModalCommand({ modalId: 'm-shell', title: 'Shell', hudKind: 'face', confirmLabel: 'Apply', confirm: () => this.doShell() });
+        });
+        document.getElementById('f-mirror').addEventListener('click', () => {
+            this.startModalCommand({ modalId: 'm-mirror', title: 'Mirror', hudKind: 'face', confirmLabel: 'Mirror', confirm: () => this.doMirror() });
+        });
+        document.getElementById('f-linear-pattern').addEventListener('click', () => {
+            this.startModalCommand({ modalId: 'm-linear-pattern', title: 'Linear Pattern', hudKind: 'face', confirmLabel: 'Create', confirm: () => this.doLinearPattern() });
+        });
+        document.getElementById('f-circular-pattern').addEventListener('click', () => {
+            this.startModalCommand({ modalId: 'm-circular-pattern', title: 'Circular Pattern', hudKind: 'face', confirmLabel: 'Create', confirm: () => this.doCircularPattern() });
+        });
+        document.getElementById('f-boolean').addEventListener('click', () => {
+            this.startModalCommand({ modalId: 'm-boolean', title: 'Boolean', hudKind: 'face', confirmLabel: 'Apply', confirm: () => this.doBoolean() });
+        });
+
         document.getElementById('extrude-ok').addEventListener('click', () => {
             if (this.activeCommand?.modalId === 'm-extrude') this.confirmActiveCommand();
             else {
@@ -4490,6 +5579,39 @@ DATA;
                 this.doChamfer();
                 this.closeModal('m-chamfer');
             }
+        });
+
+        document.getElementById('revolve-ok').addEventListener('click', () => {
+            if (this.activeCommand?.modalId === 'm-revolve') this.confirmActiveCommand();
+            else { this.doRevolve(); this.closeModal('m-revolve'); }
+        });
+        document.getElementById('sweep-ok').addEventListener('click', () => {
+            if (this.activeCommand?.modalId === 'm-sweep') this.confirmActiveCommand();
+            else { this.doSweep(); this.closeModal('m-sweep'); }
+        });
+        document.getElementById('loft-ok').addEventListener('click', () => {
+            if (this.activeCommand?.modalId === 'm-loft') this.confirmActiveCommand();
+            else { this.doLoft(); this.closeModal('m-loft'); }
+        });
+        document.getElementById('shell-ok').addEventListener('click', () => {
+            if (this.activeCommand?.modalId === 'm-shell') this.confirmActiveCommand();
+            else { this.doShell(); this.closeModal('m-shell'); }
+        });
+        document.getElementById('mirror-ok').addEventListener('click', () => {
+            if (this.activeCommand?.modalId === 'm-mirror') this.confirmActiveCommand();
+            else { this.doMirror(); this.closeModal('m-mirror'); }
+        });
+        document.getElementById('lp-ok').addEventListener('click', () => {
+            if (this.activeCommand?.modalId === 'm-linear-pattern') this.confirmActiveCommand();
+            else { this.doLinearPattern(); this.closeModal('m-linear-pattern'); }
+        });
+        document.getElementById('cp-ok').addEventListener('click', () => {
+            if (this.activeCommand?.modalId === 'm-circular-pattern') this.confirmActiveCommand();
+            else { this.doCircularPattern(); this.closeModal('m-circular-pattern'); }
+        });
+        document.getElementById('boolean-ok').addEventListener('click', () => {
+            if (this.activeCommand?.modalId === 'm-boolean') this.confirmActiveCommand();
+            else { this.doBoolean(); this.closeModal('m-boolean'); }
         });
 
         document.getElementById('skdim-ok')?.addEventListener('click', () => {
@@ -4531,6 +5653,236 @@ DATA;
         this.numHudXEl?.addEventListener('keydown', onNumKey);
         this.numHudYEl?.addEventListener('keydown', onNumKey);
         this.numHudZEl?.addEventListener('keydown', onNumKey);
+
+        // ============ AXIS SELECTOR BUTTONS ============
+        this.setupAxisSelector('revolve-axis-selector', 'revolve-axis', 'axis');
+        this.setupAxisSelector('mirror-plane-selector', 'mirror-plane', 'plane');
+        this.setupAxisSelector('lp-direction-selector', 'lp-direction', 'axis');
+        this.setupAxisSelector('cp-axis-selector', 'cp-axis', 'axis');
+        this.setupBooleanOpSelector();
+        this.setupRevolveModeSelector();
+    }
+
+    // ============ AXIS SELECTOR HELPERS ============
+
+    setupAxisSelector(containerId, hiddenInputId, attrName) {
+        const container = document.getElementById(containerId);
+        const hiddenInput = document.getElementById(hiddenInputId);
+        if (!container || !hiddenInput) return;
+        const buttons = container.querySelectorAll('.axis-btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                buttons.forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                hiddenInput.value = btn.dataset[attrName];
+                // Show visual axis helper
+                this.showAxisHelper(btn.dataset[attrName], attrName === 'plane');
+            });
+        });
+    }
+
+    setupBooleanOpSelector() {
+        const container = document.getElementById('boolean-op-selector');
+        const hiddenInput = document.getElementById('boolean-op');
+        const descEl = document.getElementById('boolean-desc');
+        if (!container || !hiddenInput) return;
+        const descriptions = {
+            union: '<strong>Union:</strong> Merges both bodies into a single combined solid.',
+            subtract: '<strong>Subtract (A − B):</strong> Cuts body B away from body A. Select the main body first, then Shift+Click the cutter.',
+            intersect: '<strong>Intersect:</strong> Keeps only the overlapping volume shared by both bodies.'
+        };
+        const buttons = container.querySelectorAll('.axis-btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                buttons.forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                hiddenInput.value = btn.dataset.op;
+                if (descEl) descEl.innerHTML = descriptions[btn.dataset.op] || '';
+            });
+        });
+    }
+
+    setupRevolveModeSelector() {
+        const container = document.getElementById('revolve-mode-selector');
+        const hiddenInput = document.getElementById('revolve-mode');
+        const clInfo = document.getElementById('revolve-centerline-info');
+        const worldSection = document.getElementById('revolve-world-axis-section');
+        if (!container || !hiddenInput) return;
+        const buttons = container.querySelectorAll('.axis-btn');
+        const updateVisibility = (mode) => {
+            if (clInfo) clInfo.style.display = mode === 'centerline' ? 'block' : 'none';
+            if (worldSection) worldSection.style.display = mode === 'world' ? 'block' : 'none';
+        };
+        buttons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                buttons.forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                hiddenInput.value = btn.dataset.mode;
+                updateVisibility(btn.dataset.mode);
+            });
+        });
+    }
+
+    updateRevolveModalCenterlineState() {
+        // Auto-detect centerline and update modal UI accordingly
+        const centerlines = (this.sketchLines || []).filter(s => s.type === 'centerline');
+        const hasCenterline = centerlines.length > 0;
+        const clInfo = document.getElementById('revolve-centerline-info');
+        const modeInput = document.getElementById('revolve-mode');
+        const modeContainer = document.getElementById('revolve-mode-selector');
+        const worldSection = document.getElementById('revolve-world-axis-section');
+
+        if (hasCenterline) {
+            const cl = centerlines[centerlines.length - 1];
+            const len = Math.sqrt(Math.pow(cl.p2.x - cl.p1.x, 2) + Math.pow(cl.p2.y - cl.p1.y, 2)).toFixed(1);
+            if (clInfo) {
+                clInfo.style.display = 'block';
+                clInfo.innerHTML = `<span style="font-weight:600;">\u2295 Centerline detected</span> (length: ${len}mm) \u2014 will revolve around the drawn axis line.`;
+            }
+            // Auto-select centerline mode
+            if (modeInput) modeInput.value = 'centerline';
+            if (modeContainer) {
+                modeContainer.querySelectorAll('.axis-btn').forEach(b => {
+                    b.classList.toggle('selected', b.dataset.mode === 'centerline');
+                });
+            }
+            if (worldSection) worldSection.style.display = 'none';
+        } else {
+            if (clInfo) {
+                clInfo.style.display = 'block';
+                clInfo.innerHTML = `<span style="color:#888;">\u26A0 No centerline drawn.</span> Press <strong>A</strong> in sketch mode to draw a revolve axis, or use a world axis below.`;
+                clInfo.style.color = '#888';
+                clInfo.style.borderColor = 'rgba(136,136,136,0.2)';
+                clInfo.style.background = 'rgba(136,136,136,0.05)';
+            }
+            // Auto-select world axis mode
+            if (modeInput) modeInput.value = 'world';
+            if (modeContainer) {
+                modeContainer.querySelectorAll('.axis-btn').forEach(b => {
+                    b.classList.toggle('selected', b.dataset.mode === 'world');
+                });
+            }
+            if (worldSection) worldSection.style.display = 'block';
+        }
+    }
+
+    showAxisHelper(value, isPlane) {
+        // Remove existing axis helpers
+        this.removeAxisHelper();
+        const len = 60;
+        let dir, color;
+        if (isPlane) {
+            // For planes, show the normal direction that gets mirrored
+            if (value === 'yz') { dir = new THREE.Vector3(1, 0, 0); color = 0xef4444; }
+            else if (value === 'xz') { dir = new THREE.Vector3(0, 1, 0); color = 0x22c55e; }
+            else { dir = new THREE.Vector3(0, 0, 1); color = 0x3b82f6; }
+            // Show mirror plane as a semi-transparent square
+            const planeGeom = new THREE.PlaneGeometry(len, len);
+            if (value === 'yz') planeGeom.rotateY(Math.PI / 2);
+            else if (value === 'xz') planeGeom.rotateX(-Math.PI / 2);
+            const planeMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.08, side: THREE.DoubleSide, depthTest: false });
+            const planeMesh = new THREE.Mesh(planeGeom, planeMat);
+            planeMesh.renderOrder = 999;
+            this.scene.add(planeMesh);
+            this._axisHelperPlane = planeMesh;
+        } else {
+            if (value === 'x') { dir = new THREE.Vector3(1, 0, 0); color = 0xef4444; }
+            else if (value === 'y') { dir = new THREE.Vector3(0, 1, 0); color = 0x22c55e; }
+            else { dir = new THREE.Vector3(0, 0, 1); color = 0x3b82f6; }
+        }
+        // Create arrow helper
+        const arrow = new THREE.ArrowHelper(dir, new THREE.Vector3(0, 0, 0), len, color, len * 0.12, len * 0.06);
+        arrow.renderOrder = 999;
+        this.scene.add(arrow);
+        // Second arrow for negative direction
+        const arrow2 = new THREE.ArrowHelper(dir.clone().negate(), new THREE.Vector3(0, 0, 0), len * 0.6, color, len * 0.08, len * 0.04);
+        arrow2.renderOrder = 999;
+        arrow2.line.material.opacity = 0.4;
+        arrow2.line.material.transparent = true;
+        this.scene.add(arrow2);
+        this._axisHelperArrow = arrow;
+        this._axisHelperArrow2 = arrow2;
+    }
+
+    removeAxisHelper() {
+        if (this._axisHelperArrow) { this.scene.remove(this._axisHelperArrow); this._axisHelperArrow = null; }
+        if (this._axisHelperArrow2) { this.scene.remove(this._axisHelperArrow2); this._axisHelperArrow2 = null; }
+        if (this._axisHelperPlane) { this.scene.remove(this._axisHelperPlane); this._axisHelperPlane.geometry?.dispose?.(); this._axisHelperPlane.material?.dispose?.(); this._axisHelperPlane = null; }
+    }
+
+    updateModalStatus(modalId) {
+        const statusMap = {
+            'm-extrude': { id: 'extrude-status', needsSketch: true },
+            'm-cut': { id: 'cut-status', needsSketchAndBody: true },
+            'm-fillet': { id: 'fillet-status', needsBody: true },
+            'm-chamfer': { id: 'chamfer-status', needsBody: true },
+            'm-revolve': { id: 'revolve-status', needsSketch: true },
+            'm-sweep': { id: 'sweep-status', needsSketch: true },
+            'm-loft': { id: 'loft-status', needsSketch: true },
+            'm-shell': { id: 'shell-status', needsBody: true },
+            'm-mirror': { id: 'mirror-status', needsBody: true },
+            'm-linear-pattern': { id: 'lp-status', needsBody: true },
+            'm-circular-pattern': { id: 'cp-status', needsBody: true },
+            'm-boolean': { id: 'boolean-status', needs2Bodies: true },
+        };
+        const cfg = statusMap[modalId];
+        if (!cfg) return;
+        const el = document.getElementById(cfg.id);
+        if (!el) return;
+
+        if (cfg.needsSketch || cfg.needsSketchAndBody) {
+            // For revolve, only count non-centerline sketches as profiles
+            const isRevolve = modalId === 'm-revolve';
+            const allSketches = this.sketchLines || [];
+            const profileSketches = isRevolve ? allSketches.filter(s => s.type !== 'centerline') : allSketches;
+            const centerlines = isRevolve ? allSketches.filter(s => s.type === 'centerline') : [];
+            const hasSketch = profileSketches.length > 0;
+            const lastSketch = hasSketch ? profileSketches[profileSketches.length - 1] : null;
+            const sketchType = lastSketch ? (lastSketch.type === 'rect' ? 'Rectangle' : lastSketch.type === 'circle' ? 'Circle' : 'Line') : '';
+            if (hasSketch) {
+                let statusHtml = `<span class="status-icon">\u2713</span><span class="status-text">Sketch ready: <strong>${sketchType}</strong> profile detected`;
+                if (isRevolve && centerlines.length > 0) {
+                    statusHtml += ` + <strong style="color:#f59e0b;">centerline axis</strong>`;
+                } else if (isRevolve) {
+                    statusHtml += ` (no centerline \u2014 press <strong>A</strong> to draw axis, or use world axis)`;
+                }
+                statusHtml += `</span>`;
+                el.className = 'modal-status ready';
+                el.innerHTML = statusHtml;
+            } else {
+                el.className = 'modal-status warn';
+                el.innerHTML = `<span class="status-icon">\u26A0</span><span class="status-text">No sketch found. Enter sketch mode (<strong>K</strong>), draw a shape (<strong>R</strong>=rect, <strong>C</strong>=circle, <strong>L</strong>=line), then press <strong>Esc</strong> to exit sketch.</span>`;
+            }
+            // Update revolve-specific centerline state
+            if (isRevolve) this.updateRevolveModalCenterlineState();
+        } else if (cfg.needsBody) {
+            const hasBody = this.selectedObj?.mesh;
+            if (hasBody) {
+                el.className = 'modal-status ready';
+                el.innerHTML = `<span class="status-icon">✓</span><span class="status-text">Body selected: <strong>${this.selectedObj.name}</strong></span>`;
+            } else {
+                el.className = 'modal-status warn';
+                el.innerHTML = `<span class="status-icon">⚠</span><span class="status-text">No body selected. Click a body in the viewport first.</span>`;
+            }
+        } else if (cfg.needs2Bodies) {
+            const bodies = this.getSelectedBodies();
+            if (bodies.length === 2) {
+                el.className = 'modal-status ready';
+                el.innerHTML = `<span class="status-icon">✓</span><span class="status-text">2 bodies selected: <strong>${bodies[0].name}</strong> + <strong>${bodies[1].name}</strong></span>`;
+            } else if (bodies.length === 1) {
+                el.className = 'modal-status warn';
+                el.innerHTML = `<span class="status-icon">⚠</span><span class="status-text">Only 1 body selected (<strong>${bodies[0].name}</strong>). Hold <kbd style="background:#333;padding:1px 5px;border-radius:3px;font-size:10px;">Shift</kbd> and click a second body.</span>`;
+            } else {
+                el.className = 'modal-status warn';
+                el.innerHTML = `<span class="status-icon">⚠</span><span class="status-text">Select 2 bodies: click one, then <kbd style="background:#333;padding:1px 5px;border-radius:3px;font-size:10px;">Shift</kbd>+click the second.</span>`;
+            }
+        }
     }
 
     animate() {
