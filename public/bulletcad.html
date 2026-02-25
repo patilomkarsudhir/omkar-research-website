@@ -63,9 +63,23 @@
         .tree-item:hover { background: #252525; color: #fff; }
         .tree-item.selected { background: rgba(249,115,22,0.2); color: #f97316; }
 
-        .feature-item { padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; color: #999; display: flex; align-items: center; gap: 8px; margin: 2px 0; }
+        .feature-item { padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; color: #999; display: flex; align-items: center; gap: 8px; margin: 2px 0; position: relative; }
         .feature-item:hover { background: #252525; color: #fff; }
         .feature-item.selected { background: rgba(249,115,22,0.2); color: #f97316; }
+        .feature-item .feat-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .feature-item .feat-actions { display: none; gap: 2px; margin-left: auto; flex-shrink: 0; }
+        .feature-item:hover .feat-actions { display: flex; }
+        .feature-item .feat-action-btn { width: 22px; height: 22px; background: transparent; border: 1px solid #444; border-radius: 4px; color: #888; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; padding: 0; }
+        .feature-item .feat-action-btn:hover { background: #f97316; border-color: #f97316; color: #fff; }
+
+        .feat-ctx-menu { position: fixed; background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 4px 0; min-width: 160px; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        .feat-ctx-menu .ctx-item { padding: 8px 14px; font-size: 12px; color: #ccc; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .feat-ctx-menu .ctx-item:hover { background: #2a2a2a; color: #fff; }
+        .feat-ctx-menu .ctx-item.danger { color: #ef4444; }
+        .feat-ctx-menu .ctx-item.danger:hover { background: rgba(239,68,68,0.15); color: #f87171; }
+        .feat-ctx-menu .ctx-sep { height: 1px; background: #333; margin: 4px 0; }
+
+        .feat-rename-input { background: #252525; border: 1px solid #f97316; border-radius: 3px; color: #fff; font-size: 12px; padding: 2px 6px; width: 100%; outline: none; }
         
         .viewport { background: #0a0a0a; position: relative; }
         #canvas { width: 100%; height: 100%; display: block; }
@@ -604,6 +618,20 @@
         </div>
     </div>
 </div>
+
+<div class="modal" id="m-edit-feature">
+    <div class="modal-box" style="width:360px">
+        <div class="modal-title" id="edit-feat-title">Edit Feature</div>
+        <div class="modal-subtitle" id="edit-feat-subtitle">Modify the parameters of this feature.</div>
+        <div id="edit-feat-fields"></div>
+        <div class="modal-actions">
+            <button class="modal-btn modal-cancel" onclick="closeModal('m-edit-feature')">Cancel</button>
+            <button class="modal-btn modal-confirm" id="edit-feat-ok">Apply</button>
+        </div>
+    </div>
+</div>
+
+<div class="feat-ctx-menu" id="feat-ctx-menu" style="display:none"></div>
 
 <script>
 // CSG Library for Boolean Operations (based on csg.js by Evan Wallace)
@@ -2074,6 +2102,19 @@ class BulletCADApp {
             return false;
         }
 
+        // Save old state for undo
+        const oldState = {};
+        if (entity.type === 'rect') {
+            oldState.p1 = entity.p1.clone();
+            oldState.p2 = entity.p2.clone();
+        } else if (entity.type === 'circle') {
+            oldState.center = entity.center.clone();
+            oldState.radius = entity.radius;
+        } else {
+            oldState.p1 = entity.p1.clone();
+            oldState.p2 = entity.p2.clone();
+        }
+
         if (entity.type === 'rect') {
             if (b == null || b <= 0) {
                 this.toast('Enter width and height', 'warning');
@@ -2094,6 +2135,20 @@ class BulletCADApp {
                 entity.p2 = entity.p1.clone().add(dir);
             }
         }
+        // Save new state for redo
+        const newState = {};
+        if (entity.type === 'rect') {
+            newState.p1 = entity.p1.clone();
+            newState.p2 = entity.p2.clone();
+        } else if (entity.type === 'circle') {
+            newState.center = entity.center.clone();
+            newState.radius = entity.radius;
+        } else {
+            newState.p1 = entity.p1.clone();
+            newState.p2 = entity.p2.clone();
+        }
+
+        this.addUndo({ type: 'sketch-dim', entity, oldState, newState });
         this.refreshSketchEntity(entity);
         this.updateSketchSelectionVisuals();
         this.solveSketchConstraints();
@@ -3271,6 +3326,7 @@ class BulletCADApp {
         this.scene.add(line);
         const ent = { type: 'rect', p1, p2, line, geometry, baseColor: CONFIG.SKETCH_LINE_COLOR };
         this.sketchLines.push(ent);
+        this.addUndo({ type: 'sketch-add', entity: ent });
         this.setSketchSelection(ent);
         this.startSketchDimCommand(ent);
     }
@@ -3286,6 +3342,7 @@ class BulletCADApp {
         this.scene.add(line);
         const ent = { type: 'circle', center, radius, line, geometry, baseColor: CONFIG.SKETCH_LINE_COLOR };
         this.sketchLines.push(ent);
+        this.addUndo({ type: 'sketch-add', entity: ent });
         this.setSketchSelection(ent);
         this.startSketchDimCommand(ent);
     }
@@ -3299,6 +3356,7 @@ class BulletCADApp {
         this.scene.add(line);
         const ent = { type: 'line', p1, p2, line, geometry, baseColor: CONFIG.SKETCH_LINE_COLOR };
         this.sketchLines.push(ent);
+        this.addUndo({ type: 'sketch-add', entity: ent });
         this.setSketchSelection(ent);
         this.toast('Line added (press Enter to set length)', 'info');
     }
@@ -3345,6 +3403,7 @@ class BulletCADApp {
         }
         const ent = { type: 'centerline', p1, p2, line, geometry, baseColor: CONFIG.SKETCH_CENTERLINE_COLOR };
         this.sketchLines.push(ent);
+        this.addUndo({ type: 'sketch-add', entity: ent });
         this.setSketchSelection(ent);
         this.toast('Centerline added — this defines the revolve axis', 'success');
     }
@@ -3390,6 +3449,26 @@ class BulletCADApp {
                 action.obj.mesh.geometry.computeBoundingSphere();
                 this.applyRenderModeToObject(action.obj);
             }
+        } else if (action.type === 'sketch-add') {
+            const ent = action.entity;
+            if (ent?.line) this.scene.remove(ent.line);
+            this.sketchLines = (this.sketchLines || []).filter(s => s !== ent);
+            // If this entity was selected, clear selection
+            if ((this.sketchSelection || []).includes(ent)) this.clearSketchSelection();
+            // Cancel dim command if it was targeting this entity
+            if (this.activeCommand?.name === 'sketch-dim') this.cancelActiveCommand();
+        } else if (action.type === 'sketch-dim') {
+            const ent = action.entity;
+            const old = action.oldState;
+            if (ent.type === 'circle') {
+                ent.center = old.center.clone();
+                ent.radius = old.radius;
+            } else {
+                ent.p1 = old.p1.clone();
+                ent.p2 = old.p2.clone();
+            }
+            this.refreshSketchEntity(ent);
+            this.updateSketchSelectionVisuals();
         }
         this.updateUI();
         this.updateUndoButtons();
@@ -3439,6 +3518,24 @@ class BulletCADApp {
                 this.applyRenderModeToObject(action.obj);
             }
             if (action.feature) this.insertFeature(action.feature, action.featureIndex);
+        } else if (action.type === 'sketch-add') {
+            const ent = action.entity;
+            if (ent?.line) this.scene.add(ent.line);
+            this.sketchLines = this.sketchLines || [];
+            this.sketchLines.push(ent);
+            this.setSketchSelection(ent);
+        } else if (action.type === 'sketch-dim') {
+            const ent = action.entity;
+            const ns = action.newState;
+            if (ent.type === 'circle') {
+                ent.center = ns.center.clone();
+                ent.radius = ns.radius;
+            } else {
+                ent.p1 = ns.p1.clone();
+                ent.p2 = ns.p2.clone();
+            }
+            this.refreshSketchEntity(ent);
+            this.updateSketchSelectionVisuals();
         }
         this.updateUI();
         this.updateUndoButtons();
@@ -4959,12 +5056,14 @@ DATA;
         };
 
         this.featuresEl.innerHTML = this.features
-            .map(f => `<div class="feature-item ${selectedId === f.id ? 'selected' : ''}" data-id="${f.id}"><span>${iconFor(f.type)}</span><span>${f.name}</span></div>`)
+            .map(f => `<div class="feature-item ${selectedId === f.id ? 'selected' : ''}" data-id="${f.id}"><span>${iconFor(f.type)}</span><span class="feat-name">${f.name}</span><span class="feat-actions"><button class="feat-action-btn" data-act="edit" title="Edit feature">✎</button><button class="feat-action-btn" data-act="rename" title="Rename">✏</button><button class="feat-action-btn" data-act="delete" title="Delete feature" style="color:#ef4444">✕</button></span></div>`)
             .join('');
 
         this.featuresEl.querySelectorAll('.feature-item').forEach(el => {
-            el.addEventListener('click', () => {
-                const id = parseInt(el.dataset.id);
+            const id = parseInt(el.dataset.id);
+
+            el.addEventListener('click', (e) => {
+                if (e.target.closest('.feat-action-btn')) return;
                 const f = this.features.find(x => x.id === id);
                 this.selectedFeatureId = id;
                 this.updateFeatures();
@@ -4976,7 +5075,402 @@ DATA;
                     }
                 }
             });
+
+            el.addEventListener('dblclick', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.openFeatureEditor(id);
+            });
+
+            el.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.showFeatureContextMenu(id, e.clientX, e.clientY);
+            });
+
+            el.querySelectorAll('.feat-action-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const act = btn.dataset.act;
+                    if (act === 'edit') this.openFeatureEditor(id);
+                    else if (act === 'rename') this.startFeatureRename(id, el);
+                    else if (act === 'delete') this.deleteFeature(id);
+                });
+            });
         });
+    }
+
+    // ============ FEATURE EDITING ============
+
+    getFeatureParamFields(type) {
+        const fields = {
+            'extrude': [{ key: 'depth', label: 'Distance (mm)', type: 'number', step: 1 }],
+            'cut': [{ key: 'depth', label: 'Cut Depth (mm)', type: 'number', step: 1 }],
+            'fillet': [{ key: 'radius', label: 'Radius (mm)', type: 'number', step: 0.5, min: 0.1 }],
+            'chamfer': [{ key: 'dist', label: 'Distance (mm)', type: 'number', step: 0.5, min: 0.1 }],
+            'revolve': [
+                { key: 'angle', label: 'Angle (°)', type: 'number', step: 5, min: 1, max: 360 },
+                { key: 'segments', label: 'Segments', type: 'number', step: 1, min: 3 },
+                { key: 'axis', label: 'Axis', type: 'select', options: ['X', 'Y', 'Z'] },
+            ],
+            'sweep': [
+                { key: 'distance', label: 'Distance (mm)', type: 'number', step: 1 },
+                { key: 'twist', label: 'Twist (°)', type: 'number', step: 5 },
+                { key: 'steps', label: 'Steps', type: 'number', step: 1, min: 1 },
+            ],
+            'loft': [
+                { key: 'depth', label: 'Depth (mm)', type: 'number', step: 1 },
+                { key: 'endScale', label: 'End Scale', type: 'number', step: 0.1, min: 0 },
+            ],
+            'shell': [{ key: 'thickness', label: 'Thickness (mm)', type: 'number', step: 0.5, min: 0.1 }],
+            'mirror': [{ key: 'plane', label: 'Plane', type: 'select', options: ['xy', 'xz', 'yz'] }],
+            'linear-pattern': [
+                { key: 'count', label: 'Count', type: 'number', step: 1, min: 2 },
+                { key: 'spacing', label: 'Spacing (mm)', type: 'number', step: 1, min: 1 },
+                { key: 'direction', label: 'Direction', type: 'select', options: ['x', 'y', 'z'] },
+            ],
+            'circular-pattern': [
+                { key: 'count', label: 'Count', type: 'number', step: 1, min: 2 },
+                { key: 'axis', label: 'Axis', type: 'select', options: ['x', 'y', 'z'] },
+                { key: 'angle', label: 'Total Angle (°)', type: 'number', step: 5, min: 1, max: 360 },
+            ],
+            'boolean': [{ key: 'operation', label: 'Operation', type: 'select', options: ['union', 'subtract', 'intersect'] }],
+        };
+        return fields[type] || [];
+    }
+
+    openFeatureEditor(featureId) {
+        const f = this.features.find(x => x.id === featureId);
+        if (!f) { this.toast('Feature not found', 'error'); return; }
+
+        const fields = this.getFeatureParamFields(f.type);
+        const iconFor = (t) => {
+            const map = { extrude:'⬆', cut:'⬇', fillet:'◜', chamfer:'⟂', revolve:'↻', sweep:'⇝', loft:'△', shell:'□', mirror:'↔', 'linear-pattern':'≡', 'circular-pattern':'◎', boolean:'∩' };
+            return map[t] || '•';
+        };
+
+        document.getElementById('edit-feat-title').textContent = `${iconFor(f.type)} Edit: ${f.name}`;
+        document.getElementById('edit-feat-subtitle').textContent = fields.length > 0
+            ? 'Modify the parameters below and click Apply. The associated object will be updated.'
+            : 'This feature has no editable parameters. You can rename or delete it from the feature tree.';
+
+        const container = document.getElementById('edit-feat-fields');
+        container.innerHTML = '';
+
+        // Name field always present
+        container.innerHTML += `
+            <div class="modal-input-group">
+                <label class="modal-label" for="edit-feat-name">Name</label>
+                <input type="text" class="modal-input" id="edit-feat-name" value="${f.name}" />
+            </div>`;
+
+        // Parameter fields
+        fields.forEach(fd => {
+            const val = f.params[fd.key] ?? '';
+            if (fd.type === 'select') {
+                const opts = fd.options.map(o => `<option value="${o}" ${String(val).toLowerCase() === o.toLowerCase() ? 'selected' : ''}>${o}</option>`).join('');
+                container.innerHTML += `
+                    <div class="modal-input-group">
+                        <label class="modal-label" for="edit-feat-${fd.key}">${fd.label}</label>
+                        <select class="modal-input" id="edit-feat-${fd.key}">${opts}</select>
+                    </div>`;
+            } else {
+                const attrs = [];
+                if (fd.min !== undefined) attrs.push(`min="${fd.min}"`);
+                if (fd.max !== undefined) attrs.push(`max="${fd.max}"`);
+                if (fd.step !== undefined) attrs.push(`step="${fd.step}"`);
+                container.innerHTML += `
+                    <div class="modal-input-group">
+                        <label class="modal-label" for="edit-feat-${fd.key}">${fd.label}</label>
+                        <input type="number" class="modal-input" id="edit-feat-${fd.key}" value="${val}" ${attrs.join(' ')} />
+                    </div>`;
+            }
+        });
+
+        this._editingFeatureId = featureId;
+        this.openModal('m-edit-feature');
+
+        // Focus the first param field if any, otherwise the name
+        setTimeout(() => {
+            const firstInput = fields.length > 0
+                ? document.getElementById(`edit-feat-${fields[0].key}`)
+                : document.getElementById('edit-feat-name');
+            if (firstInput) firstInput.focus();
+        }, 100);
+    }
+
+    applyFeatureEdit() {
+        const fId = this._editingFeatureId;
+        const f = this.features.find(x => x.id === fId);
+        if (!f) { this.closeModal('m-edit-feature'); return; }
+
+        const fields = this.getFeatureParamFields(f.type);
+        const newName = document.getElementById('edit-feat-name').value.trim() || f.name;
+        const newParams = { ...f.params };
+
+        fields.forEach(fd => {
+            const el = document.getElementById(`edit-feat-${fd.key}`);
+            if (!el) return;
+            if (fd.type === 'select') {
+                newParams[fd.key] = el.value;
+            } else {
+                const val = parseFloat(el.value);
+                if (!isNaN(val)) newParams[fd.key] = val;
+            }
+        });
+
+        // Check if anything actually changed
+        const nameChanged = newName !== f.name;
+        const paramsChanged = JSON.stringify(newParams) !== JSON.stringify(f.params);
+
+        if (nameChanged) f.name = newName;
+
+        if (paramsChanged) {
+            const obj = f.objId ? this.objects.find(o => o.id === f.objId) : null;
+            
+            if (obj && obj.mesh) {
+                const oldParams = { ...f.params };
+                f.params = newParams;
+
+                // Re-apply geometry based on feature type
+                try {
+                    this.reapplyFeatureGeometry(f, obj);
+                    this.applyRenderModeToObject(obj);
+                    this.toast(`Updated: ${f.name}`, 'success');
+                } catch (err) {
+                    // Revert on failure
+                    f.params = oldParams;
+                    this.toast('Failed to update feature: ' + err.message, 'error');
+                }
+            } else {
+                f.params = newParams;
+                this.toast(`Parameters updated for ${f.name}`, 'success');
+            }
+        } else if (nameChanged) {
+            this.toast(`Renamed to: ${f.name}`, 'success');
+        }
+
+        this.updateFeatures();
+        this.closeModal('m-edit-feature');
+        this._editingFeatureId = null;
+    }
+
+    reapplyFeatureGeometry(feature, obj) {
+        const p = feature.params;
+        const mesh = obj.mesh;
+        
+        switch (feature.type) {
+            case 'extrude': {
+                const absDepth = Math.abs(p.depth);
+                if (absDepth <= 0) throw new Error('Depth must be non-zero');
+                const oldGeom = mesh.geometry;
+                // Detect shape from current geometry type
+                const geomType = oldGeom.type;
+                let newGeom;
+                if (geomType === 'CylinderGeometry' || geomType === 'CylinderBufferGeometry') {
+                    const params = oldGeom.parameters || {};
+                    const r = params.radiusTop || params.radiusBottom || 5;
+                    newGeom = new THREE.CylinderGeometry(r, r, absDepth, 32);
+                } else {
+                    // Box or other — scale height
+                    const params = oldGeom.parameters || {};
+                    const w = params.width || 10;
+                    const d = params.depth || 10;
+                    newGeom = new THREE.BoxGeometry(w, absDepth, d);
+                }
+                mesh.geometry = newGeom;
+                oldGeom.dispose();
+                obj.params.depth = p.depth;
+                break;
+            }
+            case 'fillet': {
+                if (!obj.params || !obj.params.width) throw new Error('Fillet requires a box with dimensions');
+                const radius = p.radius;
+                if (radius < 0.1) throw new Error('Radius must be >= 0.1');
+                const op = obj.params;
+                const shape = new THREE.Shape();
+                const w = op.width / 2, h = op.depth / 2;
+                const r = Math.min(radius, Math.min(w, h) * 0.9);
+                shape.moveTo(-w + r, -h);
+                shape.lineTo(w - r, -h);
+                shape.quadraticCurveTo(w, -h, w, -h + r);
+                shape.lineTo(w, h - r);
+                shape.quadraticCurveTo(w, h, w - r, h);
+                shape.lineTo(-w + r, h);
+                shape.quadraticCurveTo(-w, h, -w, h - r);
+                shape.lineTo(-w, -h + r);
+                shape.quadraticCurveTo(-w, -h, -w + r, -h);
+                const geometry = new THREE.ExtrudeGeometry(shape, {
+                    depth: op.height,
+                    bevelEnabled: true,
+                    bevelThickness: r,
+                    bevelSize: r,
+                    bevelSegments: 4,
+                });
+                geometry.center();
+                geometry.rotateX(Math.PI / 2);
+                const old = mesh.geometry;
+                mesh.geometry = geometry;
+                old.dispose();
+                obj.params.fillet = radius;
+                break;
+            }
+            case 'chamfer': {
+                if (!obj.params || !obj.params.width) throw new Error('Chamfer requires a box with dimensions');
+                const dist = p.dist;
+                if (dist < 0.1) throw new Error('Distance must be >= 0.1');
+                const op = obj.params;
+                const shape = new THREE.Shape();
+                const w = op.width / 2, h = op.depth / 2;
+                const c = Math.min(dist, Math.min(w, h) * 0.9);
+                shape.moveTo(-w + c, -h);
+                shape.lineTo(w - c, -h);
+                shape.lineTo(w, -h + c);
+                shape.lineTo(w, h - c);
+                shape.lineTo(w - c, h);
+                shape.lineTo(-w + c, h);
+                shape.lineTo(-w, h - c);
+                shape.lineTo(-w, -h + c);
+                shape.closePath();
+                const geometry = new THREE.ExtrudeGeometry(shape, { depth: op.height, bevelEnabled: false });
+                geometry.center();
+                geometry.rotateX(Math.PI / 2);
+                const old = mesh.geometry;
+                mesh.geometry = geometry;
+                old.dispose();
+                obj.params.chamfer = dist;
+                break;
+            }
+            case 'loft': {
+                const absDepth = Math.abs(p.depth);
+                const endScale = p.endScale ?? 0;
+                if (absDepth <= 0) throw new Error('Depth must be non-zero');
+                const oldGeom = mesh.geometry;
+                const params = oldGeom.parameters || {};
+                // Approximate as a cylinder taper
+                const r = params.radiusBottom || params.radiusTop || params.width / 2 || 5;
+                const newGeom = new THREE.CylinderGeometry(r * endScale, r, absDepth, 32);
+                mesh.geometry = newGeom;
+                oldGeom.dispose();
+                break;
+            }
+            default:
+                // For types without direct geometry reapplication, just update stored params
+                break;
+        }
+    }
+
+    showFeatureContextMenu(featureId, x, y) {
+        const f = this.features.find(ft => ft.id === featureId);
+        if (!f) return;
+
+        const menu = document.getElementById('feat-ctx-menu');
+        menu.innerHTML = `
+            <div class="ctx-item" data-act="edit"><span>✎</span> Edit Parameters</div>
+            <div class="ctx-item" data-act="rename"><span>✏</span> Rename</div>
+            <div class="ctx-sep"></div>
+            <div class="ctx-item" data-act="select"><span>◎</span> Select Object</div>
+            <div class="ctx-sep"></div>
+            <div class="ctx-item danger" data-act="delete"><span>✕</span> Delete Feature</div>
+        `;
+        menu.style.display = 'block';
+        menu.style.left = x + 'px';
+        menu.style.top = y + 'px';
+
+        // Clamp to viewport
+        const rect = menu.getBoundingClientRect();
+        if (rect.right > window.innerWidth) menu.style.left = (window.innerWidth - rect.width - 8) + 'px';
+        if (rect.bottom > window.innerHeight) menu.style.top = (window.innerHeight - rect.height - 8) + 'px';
+
+        const close = () => {
+            menu.style.display = 'none';
+            document.removeEventListener('click', close);
+            document.removeEventListener('contextmenu', close);
+        };
+        setTimeout(() => {
+            document.addEventListener('click', close);
+            document.addEventListener('contextmenu', close);
+        }, 0);
+
+        menu.querySelectorAll('.ctx-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const act = item.dataset.act;
+                menu.style.display = 'none';
+                if (act === 'edit') this.openFeatureEditor(featureId);
+                else if (act === 'rename') {
+                    const el = this.featuresEl.querySelector(`.feature-item[data-id="${featureId}"]`);
+                    if (el) this.startFeatureRename(featureId, el);
+                }
+                else if (act === 'select') {
+                    if (f.objId) {
+                        const obj = this.objects.find(o => o.id === f.objId);
+                        if (obj) {
+                            this.selectedFeatureId = featureId;
+                            const pick = { kind: 'body', obj, point: obj.mesh.position.clone() };
+                            this.setBodySelection(pick);
+                            this.updateFeatures();
+                        }
+                    }
+                }
+                else if (act === 'delete') this.deleteFeature(featureId);
+            });
+        });
+    }
+
+    startFeatureRename(featureId, el) {
+        const f = this.features.find(x => x.id === featureId);
+        if (!f) return;
+        const nameSpan = el.querySelector('.feat-name');
+        if (!nameSpan) return;
+
+        const oldName = f.name;
+        const input = document.createElement('input');
+        input.className = 'feat-rename-input';
+        input.value = oldName;
+        nameSpan.textContent = '';
+        nameSpan.appendChild(input);
+        input.focus();
+        input.select();
+
+        const commit = () => {
+            const val = input.value.trim();
+            if (val && val !== oldName) {
+                f.name = val;
+                this.toast(`Renamed to: ${val}`, 'success');
+            }
+            this.updateFeatures();
+        };
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); commit(); }
+            else if (e.key === 'Escape') { e.preventDefault(); this.updateFeatures(); }
+        });
+        input.addEventListener('blur', commit);
+    }
+
+    deleteFeature(featureId) {
+        const f = this.features.find(x => x.id === featureId);
+        if (!f) return;
+        
+        // Also remove the associated object
+        if (f.objId) {
+            const obj = this.objects.find(o => o.id === f.objId);
+            if (obj && obj.mesh) {
+                this.scene.remove(obj.mesh);
+                obj.mesh.geometry?.dispose();
+                obj.mesh.material?.dispose?.();
+                this.objects = this.objects.filter(o => o.id !== f.objId);
+                if (this.selectedObj === obj) {
+                    this.selectedObj = null;
+                    this.selection = [];
+                }
+            }
+        }
+
+        this.removeFeatureById(featureId);
+        this.updateUI();
+        this.toast(`Deleted: ${f.name}`, 'success');
     }
 
     computeGeometryStats(obj) {
@@ -5607,6 +6101,10 @@ DATA;
         document.getElementById('boolean-ok').addEventListener('click', () => {
             if (this.activeCommand?.modalId === 'm-boolean') this.confirmActiveCommand();
             else { this.doBoolean(); this.closeModal('m-boolean'); }
+        });
+
+        document.getElementById('edit-feat-ok').addEventListener('click', () => {
+            this.applyFeatureEdit();
         });
 
         document.getElementById('skdim-ok')?.addEventListener('click', () => {
