@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 533,
-      "recent": 528
+      "all": 537,
+      "recent": 532
     },
     "h-index": {
       "all": 12,
@@ -67,7 +67,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:hqOjcs7Dif8C",
       "authors": "RG Hart, EJ Griffis, OS Patil, WE Dixon",
       "venue": "IEEE control systems letters 8, 13-18, 2023",
-      "cited": 24,
+      "cited": 25,
       "year": 2023
     },
     {
@@ -75,7 +75,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
       "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
       "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
-      "cited": 21,
+      "cited": 22,
       "year": 2024
     },
     {
@@ -83,7 +83,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:MXK_kJrjxJIC",
       "authors": "A Isaly, OS Patil, HM Sweatland, RG Sanfelice, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 69 (7), 4883-4890, 2024",
-      "cited": 17,
+      "cited": 18,
       "year": 2024
     },
     {
@@ -135,6 +135,14 @@
       "year": 2022
     },
     {
+      "title": "Adaptive deep neural network-based control barrier functions",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Zph67rFs4hoC",
+      "authors": "HM Sweatland, OS Patil, WE Dixon",
+      "venue": "arXiv preprint arXiv:2406.14430, 2024",
+      "cited": 9,
+      "year": 2024
+    },
+    {
       "title": "Composite adaptive Lyapunov-based deep neural network (Lb-DNN) controller",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:roLk4NBRz8UC",
       "authors": "OS Patil, EJ Griffis, WA Makumi, WE Dixon",
@@ -149,14 +157,6 @@
       "venue": "2022 IEEE 61st Conference on Decision and Control (CDC), 3475-3480, 2022",
       "cited": 9,
       "year": 2022
-    },
-    {
-      "title": "Adaptive deep neural network-based control barrier functions",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Zph67rFs4hoC",
-      "authors": "HM Sweatland, OS Patil, WE Dixon",
-      "venue": "arXiv preprint arXiv:2406.14430, 2024",
-      "cited": 8,
-      "year": 2024
     },
     {
       "title": "Exponential stability with RISE controllers for uncertain nonlinear systems with unknown time-varying state delays",
