@@ -59,7 +59,8 @@
     <link rel="apple-touch-icon" sizes="180x180" href="./PINNs.svg" />
     
     <!-- Preload Critical Resources -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" as="style" />
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" /></noscript>
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" as="script" />
     
     <!-- Additional SEO enhancements -->
@@ -127,7 +128,6 @@
         src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"
     ></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
         
         :root {
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -1058,8 +1058,8 @@
                             <div class="parameter-item">
                                 <label class="parameter-label">Damping (β)</label>
                                 <div class="parameter-controls">
-                                    <input type="range" id="betaSlider" min="0" max="2" step="0.01" value="0.1" />
-                                    <input type="number" id="betaValue" min="0" max="2" step="0.01" value="0.1" />
+                                    <input type="range" id="betaPendulumSlider" min="0" max="2" step="0.01" value="0.1" />
+                                    <input type="number" id="betaPendulumValue" min="0" max="2" step="0.01" value="0.1" />
                                 </div>
                             </div>
                         </div>
@@ -1069,15 +1069,15 @@
                             <div class="parameter-item">
                                 <label class="parameter-label">Prey Growth (α)</label>
                                 <div class="parameter-controls">
-                                    <input type="range" id="alphaSlider" min="0.1" max="2" step="0.1" value="0.8" />
-                                    <input type="number" id="alphaValue" min="0.1" max="2" step="0.1" value="0.8" />
+                                    <input type="range" id="alphaLVSlider" min="0.1" max="2" step="0.1" value="0.8" />
+                                    <input type="number" id="alphaLVValue" min="0.1" max="2" step="0.1" value="0.8" />
                                 </div>
                             </div>
                             <div class="parameter-item">
                                 <label class="parameter-label">Predation Rate (β)</label>
                                 <div class="parameter-controls">
-                                    <input type="range" id="betaSlider" min="0.1" max="1" step="0.05" value="0.4" />
-                                    <input type="number" id="betaValue" min="0.1" max="1" step="0.05" value="0.4" />
+                                    <input type="range" id="betaLVSlider" min="0.1" max="1" step="0.05" value="0.4" />
+                                    <input type="number" id="betaLVValue" min="0.1" max="1" step="0.05" value="0.4" />
                                 </div>
                             </div>
                             <div class="parameter-item">
@@ -1158,8 +1158,8 @@
                         <div class="parameter-item">
                             <label class="parameter-label">Training Data Points</label>
                             <div class="parameter-controls">
-                                <input type="range" id="dataSlider" min="8" max="30" step="1" value="20" />
-                                <input type="number" id="dataValue" min="8" max="30" step="1" value="20" />
+                                <input type="range" id="dataSlider" min="5" max="30" step="1" value="8" />
+                                <input type="number" id="dataValue" min="5" max="30" step="1" value="8" />
                             </div>
                         </div>
                         <div class="parameter-item">
@@ -1688,7 +1688,17 @@
             }
 
             getTruePosition(t) {
-                if (this.zeta >= 1) return this.x0 * (1 + this.omega * t) * Math.exp(-this.omega * t);
+                if (this.zeta > 1) {
+                    // Overdamped case: two distinct real exponentials
+                    const sqrtTerm = this.omega * Math.sqrt(this.zeta * this.zeta - 1);
+                    const r1 = -this.zeta * this.omega + sqrtTerm;
+                    const r2 = -this.zeta * this.omega - sqrtTerm;
+                    return this.x0 * (r1 * Math.exp(r2 * t) - r2 * Math.exp(r1 * t)) / (r1 - r2);
+                }
+                if (this.zeta === 1) {
+                    // Critically damped case
+                    return this.x0 * (1 + this.omega * t) * Math.exp(-this.omega * t);
+                }
                 const damp = this.omega * Math.sqrt(1 - this.zeta * this.zeta);
                 return this.x0 * Math.exp(-this.zeta * this.omega * t) * Math.cos(damp * t);
             }
@@ -1705,6 +1715,13 @@
                 const df_dw = 2 * z * dx_dt + 2 * w * x;
                 const df_dz = 2 * w * dx_dt;
                 return [df_dw, df_dz];
+            }
+
+            // Partial derivatives of residual R w.r.t. x, dx/dt, d²x/dt²
+            // Used for computing physics loss gradients w.r.t. NN weights
+            getResidualDerivatives(derivatives, physicsParams) {
+                const w = physicsParams.param1, z = physicsParams.param2;
+                return { dR_dx: w * w, dR_ddxdt: 2 * z * w, dR_dd2xdt2: 1 };
             }
 
             getInitialPhysicsParams() {
@@ -1736,13 +1753,16 @@
             // Override for 1D system with realistic measurement noise
             sampleTrainingData(numPoints = 50, timeRange = 20) {
                 const trainingData = [];
-                // Calculate noise level as percentage of typical amplitude
-                const noiseLevel = Math.abs(this.x0) * 0.02; // 2% of initial amplitude
-                for (let i = 0; i < numPoints; i++) {
-                    const t = (i / (numPoints - 1)) * timeRange;
-                    const trueValue = this.getTruePosition(t);
-                    const x = trueValue + (Math.random() - 0.5) * noiseLevel;
-                    trainingData.push({t, x});
+                // Realistic sensor noise: 5% of initial amplitude
+                const noiseLevel = Math.abs(this.x0) * 0.05;
+                // Include endpoint anchors for stability
+                trainingData.push({ t: 0, x: this.getTruePosition(0) + (Math.random() - 0.5) * noiseLevel });
+                trainingData.push({ t: timeRange, x: this.getTruePosition(timeRange) + (Math.random() - 0.5) * noiseLevel });
+                // Random interior points (creates natural gaps that reveal PINN advantage)
+                for (let i = 2; i < numPoints; i++) {
+                    const t = Math.random() * timeRange;
+                    const x = this.getTruePosition(t) + (Math.random() - 0.5) * noiseLevel;
+                    trainingData.push({ t, x });
                 }
                 return trainingData;
             }
@@ -1807,8 +1827,15 @@
                 return [df_dg_over_L, df_dbeta];
             }
 
+            getResidualDerivatives(derivatives, physicsParams) {
+                const { x } = derivatives;
+                // R = d²θ/dt² + β dθ/dt + (g/L) sin(θ)
+                return { dR_dx: physicsParams.param1 * Math.cos(x), dR_ddxdt: physicsParams.param2, dR_dd2xdt2: 1 };
+            }
+
             getInitialPhysicsParams() {
-                return { param1: this.gravity / this.length, param2: this.beta }; // g/L, β
+                // Start from a deliberately offset guess (not the true values)
+                return { param1: 7.0, param2: 0.3 }; // offset g/L and β
             }
 
             getEquationDisplay() {
@@ -1836,13 +1863,16 @@
             // Override for 1D system with realistic measurement noise
             sampleTrainingData(numPoints = 50, timeRange = 20) {
                 const trainingData = [];
-                // Calculate noise level as percentage of typical amplitude
-                const noiseLevel = Math.abs(this.theta0) * 0.015; // 1.5% of initial angle
-                for (let i = 0; i < numPoints; i++) {
-                    const t = (i / (numPoints - 1)) * timeRange;
-                    const trueValue = this.getTruePosition(t);
-                    const x = trueValue + (Math.random() - 0.5) * noiseLevel;
-                    trainingData.push({t, x});
+                // Realistic sensor noise: 5% of initial angle
+                const noiseLevel = Math.abs(this.theta0) * 0.05;
+                // Include endpoint anchors
+                trainingData.push({ t: 0, x: this.getTruePosition(0) + (Math.random() - 0.5) * noiseLevel });
+                trainingData.push({ t: timeRange, x: this.getTruePosition(timeRange) + (Math.random() - 0.5) * noiseLevel });
+                // Random interior points
+                for (let i = 2; i < numPoints; i++) {
+                    const t = Math.random() * timeRange;
+                    const x = this.getTruePosition(t) + (Math.random() - 0.5) * noiseLevel;
+                    trainingData.push({ t, x });
                 }
                 return trainingData;
             }
@@ -1924,9 +1954,9 @@
                 
                 // For now, we'll focus on the prey equation with a simplified approach
                 // In a full implementation, we'd need two neural networks for x(t) and y(t)
-                // Here we approximate y(t) using the known true solution for demonstration
+                // Approximate y(t) using the known RK4 solution for better physics constraint
                 const t = derivatives.t || 0; // time point (if available)
-                const y_approx = this.y0; // Simplified: use initial predator population
+                const y_approx = this.getTruePredatorPosition(t); // Use actual trajectory instead of constant
                 
                 // Prey equation: dx/dt = αx - βxy
                 return dx_dt - (alpha * x - beta * x * y_approx);
@@ -1938,12 +1968,23 @@
                 const beta = physicsParams.param2;
                 
                 // Simplified gradients for prey equation only
-                const y_approx = this.y0;
+                const t = derivatives.t || 0;
+                const y_approx = this.getTruePredatorPosition(t);
                 // Return residual derivatives (not loss derivatives)
                 const dr_dalpha = -x;
                 const dr_dbeta = x * y_approx;
                 
                 return [dr_dalpha, dr_dbeta];
+            }
+
+            getResidualDerivatives(derivatives, physicsParams) {
+                // R = dx/dt - α*x + β*x*y(t), first-order ODE
+                const y_approx = this.getTruePredatorPosition(derivatives.t || 0);
+                return {
+                    dR_dx: -physicsParams.param1 + physicsParams.param2 * y_approx,
+                    dR_ddxdt: 1,
+                    dR_dd2xdt2: 0
+                };
             }
 
             getInitialPhysicsParams() {
@@ -1975,13 +2016,16 @@
             // Override for 1D system with realistic measurement noise
             sampleTrainingData(numPoints = 50, timeRange = 20) {
                 const trainingData = [];
-                // Calculate noise level as percentage of typical population
-                const noiseLevel = Math.abs(this.x0) * 0.03; // 3% of initial population
-                for (let i = 0; i < numPoints; i++) {
-                    const t = (i / (numPoints - 1)) * timeRange;
-                    const trueValue = this.getTruePosition(t);
-                    const x = trueValue + (Math.random() - 0.5) * noiseLevel;
-                    trainingData.push({t, x});
+                // Realistic measurement noise: 5% of initial population
+                const noiseLevel = Math.abs(this.x0) * 0.05;
+                // Include endpoint anchors
+                trainingData.push({ t: 0, x: this.getTruePosition(0) + (Math.random() - 0.5) * noiseLevel });
+                trainingData.push({ t: timeRange, x: this.getTruePosition(timeRange) + (Math.random() - 0.5) * noiseLevel });
+                // Random interior points
+                for (let i = 2; i < numPoints; i++) {
+                    const t = Math.random() * timeRange;
+                    const x = this.getTruePosition(t) + (Math.random() - 0.5) * noiseLevel;
+                    trainingData.push({ t, x });
                 }
                 return trainingData;
             }
@@ -2015,6 +2059,11 @@
                 const { u_xx } = derivatives;
                 const dr_dalpha = -u_xx; // residual derivative ∂r/∂α
                 return [dr_dalpha, 0];
+            }
+
+            getResidualDerivatives(derivatives, physicsParams) {
+                // R = u_t - α*u_xx  →  heat equation
+                return { dR_du: 0, dR_dux: 0, dR_dut: 1, dR_duxx: -physicsParams.param1, dR_dutt: 0, dR_duxt: 0 };
             }
 
             // Boundary conditions: u(0,t) = 0, u(L,t) = 0
@@ -2199,6 +2248,12 @@
                 return [dr_dc, 0];
             }
 
+            getResidualDerivatives(derivatives, physicsParams) {
+                // R = u_tt - c²*u_xx  →  wave equation
+                const c = physicsParams.param1;
+                return { dR_du: 0, dR_dux: 0, dR_dut: 0, dR_duxx: -c * c, dR_dutt: 1, dR_duxt: 0 };
+            }
+
             // Strategic collocation sampling for balanced gradient computation with mathematical insights
             sampleCollocation(m, T = 20) {
                 const points = [];
@@ -2206,7 +2261,6 @@
                 // INSIGHT 23: Multi-scale collocation sampling for frequency-aware training
                 // Sample across different phases of sin(πx/L) and cos(cπt/L) with emphasis on critical regions
                 
-                const quarters = Math.ceil(m / 5); // Divide into 5 regions instead of 4
                 let pointsAdded = 0;
                 
                 // Region 1: High spatial gradient regions (near x=L/2 where sin'(πx/L) is largest)
@@ -2543,58 +2597,6 @@
         // Minimal AD engine for this demo
         // ===============================
         
-        // Interface for any predictor (neural networks, analytical solutions, etc.)
-        class IPredictor {
-            predict(x, t) {
-                throw new Error("IPredictor.predict must be implemented");
-            }
-            
-            // Optional methods for PINN compatibility
-            computePartialDerivatives(x, t) {
-                return null; // Default: no derivatives available
-            }
-            
-            physicsResidual(x, t) {
-                return 0; // Default: no physics constraints
-            }
-        }
-        
-        // Adapter to make existing PINNs compatible with IPredictor interface
-        class PINNAdapter extends IPredictor {
-            constructor(pinn) {
-                super();
-                this.pinn = pinn;
-            }
-            
-            predict(x, t) {
-                if (this.pinn.is2D) {
-                    return this.pinn.predict(x, t);
-                } else {
-                    return this.pinn.predict(x); // 1D case: only time input
-                }
-            }
-            
-            computePartialDerivatives(x, t) {
-                if (this.pinn.computePartialDerivatives) {
-                    return this.pinn.computePartialDerivatives(x, t);
-                } else if (this.pinn.computeDerivatives) {
-                    return this.pinn.computeDerivatives(x); // 1D case
-                }
-                return null;
-            }
-            
-            physicsResidual(x, t) {
-                if (this.pinn.physicsResidual) {
-                    if (this.pinn.is2D) {
-                        return this.pinn.physicsResidual(x, t);
-                    } else {
-                        return this.pinn.physicsResidual(x); // 1D case
-                    }
-                }
-                return 0;
-            }
-        }
-        
         let nodeCounter = 0;
         class ADNode {
             constructor(value, operation = "constant", parents = [], name = null) {
@@ -2874,7 +2876,7 @@
             computeDerivatives(t) {
                 const { output, input } = this.forward(t);
                 const { d1, d2 } = ADNode.d1d2(output, input, new Map());
-                return { x: output.value, dx_dt: d1, d2x_dt2: d2 };
+                return { x: output.value, dx_dt: d1, d2x_dt2: d2, t: t };
             }
 
             computeGradients(inputs, targets) {
@@ -3071,7 +3073,14 @@
                     this.b1[i] = this.parameters[idx++];
                     this.W2[i] = this.parameters[idx++];
                 }
-                this.b2 = this.parameters[idx];
+                this.b2 = this.parameters[idx++];
+                
+                // Refresh residual connection handles
+                if (this.useResidualConnections) {
+                    this.W_res_x = this.parameters[idx++];
+                    this.W_res_t = this.parameters[idx++];
+                    this.W_res_xt = this.parameters[idx++];
+                }
             }
 
             loss(spatialData, temporalData, targets) {
@@ -3202,6 +3211,68 @@
                 dLdp1 = Math.max(-1.0, Math.min(1.0, dLdp1));
                 dLdp2 = Math.max(-1.0, Math.min(1.0, dLdp2));
                 return [dLdp1, dLdp2];
+            }
+
+            // Analytical physics loss gradients w.r.t. NN weights
+            // Uses chain rule: dR/dθ = (∂R/∂x)(∂x/∂θ) + (∂R/∂ẋ)(∂ẋ/∂θ) + (∂R/∂ẍ)(∂ẍ/∂θ)
+            // where ∂x/∂θ etc. are derived analytically for the single-hidden-layer tanh network
+            computePhysicsNNGradients(collocationPoints) {
+                if (!collocationPoints.length || !this.physicalSystem ||
+                    !this.physicalSystem.getResidualDerivatives) {
+                    return Array(this.parameters.length).fill(0);
+                }
+                const grads = Array(this.parameters.length).fill(0);
+                const N = collocationPoints.length;
+                const physicsParams = { param1: this.param1.value, param2: this.param2.value };
+                const H = this.hiddenSize;
+
+                for (const t_val of collocationPoints) {
+                    // Forward pass to get hidden activations
+                    const { output, input, intermediates } = this.forward(t_val);
+                    const hidden = intermediates.hidden;
+
+                    // Compute residual and its partial derivatives w.r.t. x, dx/dt, d²x/dt²
+                    const derivatives = this.computeDerivatives(t_val);
+                    const R = this.physicalSystem.getPhysicsResidual(derivatives, physicsParams);
+                    const { dR_dx, dR_ddxdt, dR_dd2xdt2 } =
+                        this.physicalSystem.getResidualDerivatives(derivatives, physicsParams);
+
+                    // Accumulate dL/dθ = (2/N) * R * dR/dθ for each NN weight
+                    for (let j = 0; j < H; j++) {
+                        const h = hidden[j].value;       // tanh activation
+                        const s = 1 - h * h;             // sech² = 1 - tanh²
+                        const w1 = this.W1[j].value;
+                        const w2 = this.W2[j].value;
+
+                        // --- θ = W1[j] (index j) ---
+                        const dx_dw1     = w2 * t_val * s;
+                        const ddxdt_dw1  = w2 * s * (1 - 2 * w1 * t_val * h);
+                        const dd2xdt2_dw1 = -2 * w2 * (2 * w1 * h * s
+                                            + w1 * w1 * s * t_val * (1 - 3 * h * h));
+                        grads[j] += (2 / N) * R * (dR_dx * dx_dw1
+                                    + dR_ddxdt * ddxdt_dw1 + dR_dd2xdt2 * dd2xdt2_dw1);
+
+                        // --- θ = b1[j] (index H+j) ---
+                        const dx_db1     = w2 * s;
+                        const ddxdt_db1  = -2 * w2 * w1 * h * s;
+                        const dd2xdt2_db1 = -2 * w2 * w1 * w1 * s * (1 - 3 * h * h);
+                        grads[H + j] += (2 / N) * R * (dR_dx * dx_db1
+                                        + dR_ddxdt * ddxdt_db1 + dR_dd2xdt2 * dd2xdt2_db1);
+
+                        // --- θ = W2[j] (index 2H+j) ---
+                        const dx_dw2     = h;
+                        const ddxdt_dw2  = w1 * s;
+                        const dd2xdt2_dw2 = -2 * w1 * w1 * h * s;
+                        grads[2 * H + j] += (2 / N) * R * (dR_dx * dx_dw2
+                                            + dR_ddxdt * ddxdt_dw2 + dR_dd2xdt2 * dd2xdt2_dw2);
+                    }
+
+                    // --- θ = b2 (index 3H) ---
+                    // Only ∂x/∂b2 = 1; ∂(dx/dt)/∂b2 = 0; ∂(d²x/dt²)/∂b2 = 0
+                    grads[3 * H] += (2 / N) * R * dR_dx;
+                }
+
+                return grads.map(g => Math.max(-2.0, Math.min(2.0, g)));
             }
 
             updatePhysicsParameters([gP1, gP2], lr, beta1 = 0.9, beta2 = 0.999, eps = 1e-8) {
@@ -3377,9 +3448,9 @@
                     const energyPenalty = this.physicalSystem.computeEnergyPenalty(activePoints, this, physicsParams);
                     regularizationTerm += energyPenalty;
                     
-                    // Parameter smoothness - discourage rapid parameter changes
-                    const paramVariation = Math.abs(this.param1.value - this.physicalSystem.getCurrentTrueParams().param1);
-                    regularizationTerm += paramVariation * this.regularization.parameterSmoothness;
+                    // Parameter smoothness - discourage large parameter values (L2 regularization)
+                    const paramMagnitude = this.param1.value * this.param1.value;
+                    regularizationTerm += paramMagnitude * this.regularization.parameterSmoothness;
                 }
                 
                 const avgLoss = s / activePoints.length;
@@ -3441,21 +3512,108 @@
                     }
                 }
                 
-                // Enhanced debug logging for wave equation
-                if (this.physicalSystem && this.physicalSystem.constructor.name === 'WaveEquationSystem' && Math.random() < 0.05) {
-                    const currentC = physicsParams.param1;
-                    const trueC = 1.5;
-                    const cError = Math.abs(currentC - trueC);
-                    console.log(`🌊 Wave Debug: c=${currentC.toFixed(3)} (true=${trueC}, err=${cError.toFixed(3)})`);
-                    console.log(`  ├─ avgR=${(avgResidual/N).toFixed(5)}, avgGrad=${(avgGradient/N).toFixed(5)}`);
-                    console.log(`  ├─ dL/dc=${dLdp1.toFixed(5)} (${dLdp1 > 0 ? 'decreasing c' : 'increasing c'})`);
-                    console.log(`  ├─ Sampling regions: ${N} collocation points across 4 quadrants`);
-                    console.log(`  └─ Next c update: ${(currentC - 0.05 * 0.05 * dLdp1).toFixed(3)}`);
-                }
                 
         dLdp1 = Math.max(-1.0, Math.min(1.0, dLdp1));
         dLdp2 = Math.max(-1.0, Math.min(1.0, dLdp2));
                 return [dLdp1, dLdp2];
+            }
+
+            // Analytical physics loss gradients w.r.t. 2D NN weights
+            // Chain rule through PDE partials: dR/dθ = Σ (∂R/∂u_*)(∂u_*/∂θ)
+            computePhysicsNNGradients(collocationPoints) {
+                if (!collocationPoints.length || !this.physicalSystem ||
+                    !this.physicalSystem.getResidualDerivatives) {
+                    return Array(this.parameters.length).fill(0);
+                }
+                const grads = Array(this.parameters.length).fill(0);
+                const N = collocationPoints.length;
+                const physicsParams = { param1: this.param1.value, param2: this.param2.value };
+                const H = this.hiddenSize;
+
+                for (const point of collocationPoints) {
+                    const x_in = point.x, t_in = point.t;
+                    const { output, x_input, t_input, hidden } = this.forward(x_in, t_in);
+
+                    const derivatives = this.computePartialDerivatives(x_in, t_in);
+                    const R = this.physicalSystem.getPhysicsResidual(derivatives, physicsParams);
+                    const rd = this.physicalSystem.getResidualDerivatives(derivatives, physicsParams);
+
+                    const scale = (2 / N) * R;
+
+                    for (let j = 0; j < H; j++) {
+                        const h = hidden[j].value;
+                        const s = 1 - h * h;
+                        const q = 1 - 3 * h * h;
+                        const w1x = this.W1[j][0].value;
+                        const w1t = this.W1[j][1].value;
+                        const w2 = this.W2[j].value;
+
+                        // θ = W1_x_j (index 4j)
+                        {
+                            const du     = w2 * s * x_in;
+                            const du_t   = -2 * w2 * w1t * x_in * h * s;
+                            const du_x   = w2 * s * (1 - 2 * w1x * x_in * h);
+                            const du_xx  = -2 * w2 * (2 * w1x * h * s + w1x * w1x * x_in * s * q);
+                            const du_tt  = -2 * w2 * w1t * w1t * x_in * s * q;
+                            const du_xt  = -2 * w2 * w1t * (h * s + w1x * x_in * s * q);
+                            const dR = rd.dR_du * du + rd.dR_dux * du_x + rd.dR_dut * du_t
+                                     + rd.dR_duxx * du_xx + rd.dR_dutt * du_tt + rd.dR_duxt * du_xt;
+                            grads[4 * j] += scale * dR;
+                        }
+                        // θ = W1_t_j (index 4j+1)
+                        {
+                            const du     = w2 * s * t_in;
+                            const du_t   = w2 * s * (1 - 2 * w1t * t_in * h);
+                            const du_x   = -2 * w2 * w1x * t_in * h * s;
+                            const du_xx  = -2 * w2 * w1x * w1x * t_in * s * q;
+                            const du_tt  = -2 * w2 * (2 * w1t * h * s + w1t * w1t * t_in * s * q);
+                            const du_xt  = -2 * w2 * w1x * (h * s + w1t * t_in * s * q);
+                            const dR = rd.dR_du * du + rd.dR_dux * du_x + rd.dR_dut * du_t
+                                     + rd.dR_duxx * du_xx + rd.dR_dutt * du_tt + rd.dR_duxt * du_xt;
+                            grads[4 * j + 1] += scale * dR;
+                        }
+                        // θ = b1_j (index 4j+2)
+                        {
+                            const du     = w2 * s;
+                            const du_t   = -2 * w2 * w1t * h * s;
+                            const du_x   = -2 * w2 * w1x * h * s;
+                            const du_xx  = -2 * w2 * w1x * w1x * s * q;
+                            const du_tt  = -2 * w2 * w1t * w1t * s * q;
+                            const du_xt  = -2 * w2 * w1x * w1t * s * q;
+                            const dR = rd.dR_du * du + rd.dR_dux * du_x + rd.dR_dut * du_t
+                                     + rd.dR_duxx * du_xx + rd.dR_dutt * du_tt + rd.dR_duxt * du_xt;
+                            grads[4 * j + 2] += scale * dR;
+                        }
+                        // θ = W2_j (index 4j+3)
+                        {
+                            const du     = h;
+                            const du_t   = w1t * s;
+                            const du_x   = w1x * s;
+                            const du_xx  = -2 * w1x * w1x * h * s;
+                            const du_tt  = -2 * w1t * w1t * h * s;
+                            const du_xt  = -2 * w1x * w1t * h * s;
+                            const dR = rd.dR_du * du + rd.dR_dux * du_x + rd.dR_dut * du_t
+                                     + rd.dR_duxx * du_xx + rd.dR_dutt * du_tt + rd.dR_duxt * du_xt;
+                            grads[4 * j + 3] += scale * dR;
+                        }
+                    }
+
+                    // θ = b2 (index 4H) — only du/db2 = 1; all PDE partials = 0
+                    grads[4 * H] += scale * rd.dR_du;
+
+                    // Residual connection parameters
+                    if (this.useResidualConnections) {
+                        // W_res_x: du/d = x_in, du_x/d = 1
+                        grads[4 * H + 1] += scale * (rd.dR_du * x_in + rd.dR_dux);
+                        // W_res_t: du/d = t_in, du_t/d = 1
+                        grads[4 * H + 2] += scale * (rd.dR_du * t_in + rd.dR_dut);
+                        // W_res_xt: du/d = x*t, du_x/d = t, du_t/d = x, du_xt/d = 1
+                        grads[4 * H + 3] += scale * (rd.dR_du * x_in * t_in
+                                            + rd.dR_dux * t_in + rd.dR_dut * x_in + rd.dR_duxt);
+                    }
+                }
+
+                return grads.map(g => Math.max(-2.0, Math.min(2.0, g)));
             }
 
             updatePhysicsParameters([gP1, gP2], lr, beta1 = 0.9, beta2 = 0.999, eps = 1e-8) {
@@ -3530,15 +3688,7 @@
                         
                         this.param1 = ADNode.variable(clampedVal, "param1");
                         
-                        // Debug boundary conditions
-                        if (this.physicalSystem && this.physicalSystem.constructor.name === 'WaveEquationSystem' && Math.random() < 0.01) {
-                            if (Math.abs(clampedVal - minBound) < 0.05) {
-                                console.warn(`⚠️ Wave speed near lower bound: c=${clampedVal.toFixed(3)} (min=${minBound})`);
-                            }
-                            if (Math.abs(clampedVal - maxBound) < 0.05) {
-                                console.warn(`⚠️ Wave speed near upper bound: c=${clampedVal.toFixed(3)} (max=${maxBound})`);
-                            }
-                        }
+
                     } else {
                         const newVal = this.param2.value - step;
                         this.param2 = ADNode.variable(Math.max(-5.0, Math.min(5.0, newVal)), "param2");
@@ -3547,10 +3697,9 @@
                 
                 // Update curriculum phase based on epoch count
                 this.curriculumEpoch++;
-                if (this.curriculumEpoch >= this.curriculumTransitions[this.curriculumPhase] && 
-                    this.curriculumPhase < this.curriculumTransitions.length) {
+                if (this.curriculumPhase < this.curriculumTransitions.length &&
+                    this.curriculumEpoch >= this.curriculumTransitions[this.curriculumPhase]) {
                     this.curriculumPhase++;
-                    console.log(`📚 Curriculum: Advancing to phase ${this.curriculumPhase} at epoch ${this.curriculumEpoch}`);
                 }
             }
 
@@ -3587,11 +3736,11 @@
                 this.length = 1;
                 this.gravity = 9.81;
                 this.theta0 = 0.3;
-                this.beta = 0.1;
+                this.betaPendulum = 0.1;
                 
                 // Lotka-Volterra parameters
-                this.alpha = 0.8;      // prey growth rate
-                this.beta = 0.4;       // predation rate  
+                this.alphaLV = 0.8;      // prey growth rate
+                this.betaLV = 0.4;       // predation rate  
                 this.gamma = 0.6;      // predator death rate
                 this.delta = 0.3;      // predator efficiency
                 this.x0LV = 2.0;       // initial prey population
@@ -3615,7 +3764,7 @@
                 this.maxAnimationTime = 4.0;   // Maximum time value to animate to (reduced from 5.0)
                 
                 // Initialize with reasonable defaults (will be overridden by UI values during training)
-                this.dataPoints = 18;       
+                this.dataPoints = 8;       
                 this.lr = 0.01;            
                 this.epochs = 1200;         
                 this.physicsWeight = 1.0;
@@ -3642,9 +3791,9 @@
                 if (this.currentSystemType === "oscillator") {
                     return new OscillatorSystem(this.mass, this.springConstant, this.zeta, this.x0);
                 } else if (this.currentSystemType === "pendulum") {
-                    return new PendulumSystem(this.length, this.gravity, this.theta0, this.beta);
+                    return new PendulumSystem(this.length, this.gravity, this.theta0, this.betaPendulum);
                 } else if (this.currentSystemType === "predatorprey") {
-                    return new LotkaVolterraSystem(this.alpha, this.beta, this.gamma, this.delta, this.x0LV, this.y0LV);
+                    return new LotkaVolterraSystem(this.alphaLV, this.betaLV, this.gamma, this.delta, this.x0LV, this.y0LV);
                 } else if (this.currentSystemType === "heat") {
                     return new HeatEquation2DSystem(this.alphaHeat, this.lengthHeat, this.timeHeat);
                 } else if (this.currentSystemType === "wave") {
@@ -3670,7 +3819,6 @@
                 if (this.currentSystemType === "wave") {
                     networkSize = Math.max(8, this.hiddenSize); // Minimum 8 for wave complexity
                     physicsWeight = this.physicsWeight * 0.5; // Reduced physics weight for stability
-                    console.log(`🌊 Wave equation: Using enhanced architecture (${networkSize} neurons, physics weight ${physicsWeight.toFixed(2)})`);
                 }
                 
                 // Use 2D PINN for heat equation and wave equation, 1D PINN for others
@@ -3745,28 +3893,41 @@
                 // Apply research-based parameter optimization for different systems
                 if (systemType === "wave") {
                     // Wave equation requires special handling (based on AGU research)
-                    document.getElementById("epochsValue").value = "2000"; // Increased epochs
-                    document.getElementById("lrValue").value = "0.008"; // Lower learning rate
-                    document.getElementById("hiddenSizeValue").value = "12"; // Larger network
-                    document.getElementById("collocationValue").value = "80"; // More collocation points
-                    document.getElementById("physicsWeightValue").value = "0.8"; // Balanced physics weight
-                    console.log("🌊 Applied wave equation research optimizations");
+                    document.getElementById("epochsSlider").value = "2000";
+                    document.getElementById("epochsValue").value = "2000";
+                    document.getElementById("lrSlider").value = "0.008";
+                    document.getElementById("lrValue").value = "0.008";
+                    document.getElementById("hiddenSizeSlider").value = "12";
+                    document.getElementById("hiddenSizeValue").value = "12";
+                    document.getElementById("collocationSlider").value = "80";
+                    document.getElementById("collocationValue").value = "80";
+                    document.getElementById("physicsWeightSlider").value = "0.8";
+                    document.getElementById("physicsWeightValue").value = "0.8";
                 } else if (systemType === "heat") {
                     // Heat equation optimizations
+                    document.getElementById("epochsSlider").value = "1500";
                     document.getElementById("epochsValue").value = "1500";
+                    document.getElementById("lrSlider").value = "0.01";
                     document.getElementById("lrValue").value = "0.01";
+                    document.getElementById("hiddenSizeSlider").value = "10";
                     document.getElementById("hiddenSizeValue").value = "10";
+                    document.getElementById("collocationSlider").value = "60";
                     document.getElementById("collocationValue").value = "60";
+                    document.getElementById("physicsWeightSlider").value = "1.0";
                     document.getElementById("physicsWeightValue").value = "1.0";
-                    console.log("🔥 Applied heat equation optimizations");
                 } else {
                     // Standard 1D system defaults (keep existing values or set reasonable defaults)
                     const currentEpochs = document.getElementById("epochsValue").value;
                     if (!currentEpochs || currentEpochs === "2000") {
+                        document.getElementById("epochsSlider").value = "1200";
                         document.getElementById("epochsValue").value = "1200";
+                        document.getElementById("lrSlider").value = "0.01";
                         document.getElementById("lrValue").value = "0.01";
+                        document.getElementById("hiddenSizeSlider").value = "12";
                         document.getElementById("hiddenSizeValue").value = "12";
+                        document.getElementById("collocationSlider").value = "50";
                         document.getElementById("collocationValue").value = "50";
+                        document.getElementById("physicsWeightSlider").value = "1.0";
                         document.getElementById("physicsWeightValue").value = "1.0";
                     }
                 }
@@ -3888,13 +4049,13 @@
                     { name: "length", slider: "lengthSlider", input: "lengthValue" },
                     { name: "gravity", slider: "gravitySlider", input: "gravityValue" },
                     { name: "theta0", slider: "theta0Slider", input: "theta0Value" },
-                    { name: "beta", slider: "betaSlider", input: "betaValue" },
+                    { name: "betaPendulum", slider: "betaPendulumSlider", input: "betaPendulumValue" },
                 ];
 
                 // Lotka-Volterra controls
                 const predatorpreyControls = [
-                    { name: "alpha", slider: "alphaSlider", input: "alphaValue" },
-                    { name: "beta", slider: "betaSlider", input: "betaValue" },
+                    { name: "alphaLV", slider: "alphaLVSlider", input: "alphaLVValue" },
+                    { name: "betaLV", slider: "betaLVSlider", input: "betaLVValue" },
                     { name: "gamma", slider: "gammaSlider", input: "gammaValue" },
                     { name: "delta", slider: "deltaSlider", input: "deltaValue" },
                     { name: "x0LV", slider: "x0LVSlider", input: "x0LVValue" },
@@ -4039,34 +4200,27 @@
                 // READ PARAMETERS FROM UI INSTEAD OF USING HARDCODED VALUES
                 this.epochs = parseInt(document.getElementById("epochsValue").value) || 1200;
                 this.lr = parseFloat(document.getElementById("lrValue").value) || 0.01;
-                this.dataPoints = parseInt(document.getElementById("dataValue").value) || 18;
+                this.dataPoints = parseInt(document.getElementById("dataValue").value) || 8;
                 this.hiddenSize = parseInt(document.getElementById("hiddenSizeValue").value) || 12;
                 this.collocationCount = parseInt(document.getElementById("collocationValue").value) || 50;
                 this.physicsWeight = parseFloat(document.getElementById("physicsWeightValue").value) || 1.0;
                 
-                // Regenerate data with updated parameters
-                this.generateTrainingData();
-                
                 // Only recreate the network being trained (keep the other one independent)
+                // When training the PINN, reuse existing training data so the
+                // standard NN plot stays consistent.  Fresh data is only generated
+                // when training the standard NN (or if none exists yet).
                 if (isPINN) {
+                    if (!this.trainingData || !this.trainingData.length) {
+                        this.generateTrainingData();
+                    }
                     this.pinn = this.createCurrentPINN();
                 } else {
+                    this.generateTrainingData();
                     this.regularNN = this.createCurrentNN(this.hiddenSize);
                 }
                 this.setupCollocation();
                 
                 // Wave equation specific training tips (updated with actual parameters)
-                if (this.currentSystemType === "wave" && isPINN) {
-                    console.log("🌊 Wave Equation PINN - Using UI Parameters:");
-                    console.log(`✅ Network capacity: ${this.hiddenSize} hidden units`);
-                    console.log(`✅ Training epochs: ${this.epochs}`);
-                    console.log(`✅ Collocation points: ${this.collocationCount}`);
-                    console.log(`✅ Physics weight: ${this.physicsWeight}`);
-                    console.log(`✅ Learning rate: ${this.lr}`);
-                    console.log(`✅ Data points: ${this.dataPoints}`);
-                    console.log("📊 Monitor: Wave speed parameter should stabilize during training");
-                }
-                
                 this.isTraining = true; this.pauseRequested = false; this.currentEpoch = 0;
                 this.toggleButtons(false); this.showPauseButton(true);
                 this.showStatus(`Training ${isPINN ? "AD-PINN" : "Regular NN"}... Epoch 0/${this.epochs}`, "training");
@@ -4125,10 +4279,14 @@
                             const augTargets = targets.concat(bcY, icY);
                             gNN = net.computeGradients(augSpatial, augTemporal, augTargets);
 
+                            // Physics loss gradients for NN weights (the key PINN mechanism)
+                            const gPhysNN = net.computePhysicsNNGradients(this.collocationPoints);
+                            const combinedNN = gNN.map((g, i) => g + this.physicsWeight * gPhysNN[i]);
+
                             // Keep reported loss consistent with the data actually used to update NN params
                             const trainingDataStructured = { spatial: augSpatial, temporal: augTemporal, targets: augTargets };
                             const gPhys = net.computePhysicsGradients(this.collocationPoints);
-                            net.updateParameters(gNN, currentLR);
+                            net.updateParameters(combinedNN, currentLR);
                             net.updatePhysicsParameters(gPhys, currentLR);
                             history.push(Math.max(1e-8, net.totalLoss(trainingDataStructured, this.collocationPoints, [], [])));
                             
@@ -4143,8 +4301,11 @@
                         } else {
                             gNN = net.computeGradients(inputs, targets);
                         }
+                        // Physics loss gradients for NN weights (the key PINN mechanism)
+                        const gPhysNN = net.computePhysicsNNGradients(this.collocationPoints);
+                        const combinedNN = gNN.map((g, i) => g + this.physicsWeight * gPhysNN[i]);
                         const gPhys = net.computePhysicsGradients(this.collocationPoints);
-                        net.updateParameters(gNN, currentLR);
+                        net.updateParameters(combinedNN, currentLR);
                         net.updatePhysicsParameters(gPhys, currentLR);
                         history.push(Math.max(1e-8, net.totalLoss(this.trainingData, this.collocationPoints)));
                     } else {
