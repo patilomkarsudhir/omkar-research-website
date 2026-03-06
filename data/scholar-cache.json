@@ -1,12 +1,12 @@
 {
   "metrics": {
     "citations": {
-      "all": 539,
-      "recent": 534
+      "all": 541,
+      "recent": 536
     },
     "h-index": {
       "all": 12,
-      "recent": 11
+      "recent": 12
     },
     "i10-index": {
       "all": 15,
@@ -99,7 +99,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Se3iqnhoufwC",
       "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
       "venue": "IFAC-PapersOnLine 56 (2), 6851-6856, 2023",
-      "cited": 15,
+      "cited": 16,
       "year": 2023
     },
     {
@@ -115,7 +115,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:0EnyYjriUFMC",
       "authors": "EJ Griffis, OS Patil, RG Hart, WE Dixon",
       "venue": "IEEE Control Systems Letters 8, 97-102, 2023",
-      "cited": 11,
+      "cited": 12,
       "year": 2023
     },
     {
