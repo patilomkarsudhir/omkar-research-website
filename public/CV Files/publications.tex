@@ -1,0 +1,85 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Omkar Sudhir Patil - Published Works
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[10pt, letterpaper]{article}
+
+\usepackage[
+    ignoreheadfoot,
+    top=2 cm,
+    bottom=2 cm,
+    left=2 cm,
+    right=2 cm,
+    footskip=1.0 cm,
+]{geometry}
+\usepackage{titlesec}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage[dvipsnames]{xcolor}
+\definecolor{primaryColor}{RGB}{0, 79, 144}
+\usepackage{enumitem}
+\usepackage{fontawesome5}
+\usepackage{amsmath}
+\usepackage[
+    pdftitle={Omkar Sudhir Patil's Published Works},
+    pdfauthor={Omkar Sudhir Patil},
+    pdfcreator={LaTeX},
+    colorlinks=true,
+    urlcolor=primaryColor
+]{hyperref}
+\usepackage[pscoord]{eso-pic}
+\usepackage{calc}
+\usepackage{bookmark}
+\usepackage{lastpage}
+\usepackage{changepage}
+\usepackage{paracol}
+\usepackage{ifthen}
+\usepackage{needspace}
+\usepackage{iftex}
+
+\usepackage[backend=biber,style=ieee,sorting=none,uniquename=init,defernumbers=true]{biblatex}
+
+\addbibresource{journal.bib}
+\addbibresource{conf.bib}
+
+\raggedbottom
+
+\pagestyle{empty}
+\setcounter{secnumdepth}{0}
+\setlength{\parindent}{0pt}
+\setlength{\topskip}{0pt}
+
+\titleformat{\section}{\needspace{4\baselineskip}\bfseries\large}{}{0pt}{}[\vspace{1pt}\titlerule]
+\titlespacing{\section}{-1pt}{0.2 cm}{0.2 cm}
+
+\renewcommand\labelitemi{$\circ$}
+
+\begin{document}
+
+\begin{center}
+    {\LARGE Omkar Sudhir Patil}
+    
+    \vspace{0.1 cm}
+    {\normalsize Published Works}
+    
+    \vspace{0.05 cm}
+    \href{https://omkarsudhirpatil.com}{omkarsudhirpatil.com} $|$ 
+    \href{mailto:omkarpatil64328@gmail.com}{omkarpatil64328@gmail.com} $|$
+    \href{https://scholar.google.com/citations?user=EtkfNQMAAAAJ}{Google Scholar}
+\end{center}
+
+\vspace{0.3 cm}
+
+\nocite{*}
+
+\section{Journal Articles}
+
+\printbibliography[type=article, heading=none, nottype=inproceedings, nottype=book, maxnames=99]
+
+\vspace{0.3 cm}
+
+\section{Conference Papers}
+
+\printbibliography[type=inproceedings, heading=none, maxnames=99]
+
+\end{document}
