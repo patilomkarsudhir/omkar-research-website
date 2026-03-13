@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 545,
-      "recent": 540
+      "all": 546,
+      "recent": 541
     },
     "h-index": {
       "all": 12,
@@ -199,6 +199,14 @@
       "year": 2025
     },
     {
+      "title": "Lyapunov-based adaptive deep system identification for approximate dynamic programming",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TQgYirikUcIC",
+      "authors": "WA Makumi, OS Patil, WE Dixon",
+      "venue": "Automatica 180, 112462, 2025",
+      "cited": 3,
+      "year": 2025
+    },
+    {
       "title": "Online resnet-based adaptive control for nonlinear target tracking",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:mVmsd5A6BfQC",
       "authors": "CF Nino, OS Patil, JC Insinger, MR Eisman, WE Dixon",
@@ -237,14 +245,6 @@
       "venue": "IEEE Control Systems Letters 7, 3663-3668, 2023",
       "cited": 3,
       "year": 2023
-    },
-    {
-      "title": "Lyapunov-based adaptive deep system identification for approximate dynamic programming",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TQgYirikUcIC",
-      "authors": "WA Makumi, OS Patil, WE Dixon",
-      "venue": "Automatica 180, 112462, 2025",
-      "cited": 2,
-      "year": 2025
     },
     {
       "title": "Adaptive output feedback control using Lyapunov-based deep recurrent neural networks (Lb-DRNNs)",
