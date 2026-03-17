@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 548,
-      "recent": 543
+      "all": 549,
+      "recent": 544
     },
     "h-index": {
       "all": 12,
@@ -51,7 +51,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:2osOgNQ5qMEC",
       "authors": "OS Patil, A Isaly, B Xian, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1592-1597, 2021",
-      "cited": 42,
+      "cited": 43,
       "year": 2021
     },
     {
