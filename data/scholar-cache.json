@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 555,
-      "recent": 550
+      "all": 556,
+      "recent": 551
     },
     "h-index": {
       "all": 12,
@@ -23,6 +23,14 @@
       "year": 2021
     },
     {
+      "title": "Adaptive safety with multiple barrier functions using integral concurrent learning",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:9yKSN-GCB0IC",
+      "authors": "A Isaly, OS Patil, RG Sanfelice, WE Dixon",
+      "venue": "2021 American Control Conference (ACC), 3719-3724, 2021",
+      "cited": 50,
+      "year": 2021
+    },
+    {
       "title": "Lyapunov-based long short-term memory (Lb-LSTM) neural network-based control",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ufrVoPGSRksC",
       "authors": "EJ Griffis, OS Patil, ZI Bell, WE Dixon",
@@ -37,14 +45,6 @@
       "venue": "IEEE Transactions on Automatic Control 67 (9), 4809-4815, 2022",
       "cited": 49,
       "year": 2022
-    },
-    {
-      "title": "Adaptive safety with multiple barrier functions using integral concurrent learning",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:9yKSN-GCB0IC",
-      "authors": "A Isaly, OS Patil, RG Sanfelice, WE Dixon",
-      "venue": "2021 American Control Conference (ACC), 3719-3724, 2021",
-      "cited": 49,
-      "year": 2021
     },
     {
       "title": "Exponential stability with RISE controllers",
