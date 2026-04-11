@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 560,
-      "recent": 555
+      "all": 561,
+      "recent": 556
     },
     "h-index": {
       "all": 12,
@@ -59,7 +59,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:W7OEmFMy1HYC",
       "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
       "venue": "2022 IEEE 61st Conference on Decision and Control (CDC), 3487-3492, 2022",
-      "cited": 41,
+      "cited": 42,
       "year": 2022
     },
     {
