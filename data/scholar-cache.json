@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 561,
-      "recent": 556
+      "all": 564,
+      "recent": 559
     },
     "h-index": {
       "all": 12,
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 95,
+      "cited": 96,
       "year": 2021
     },
     {
@@ -75,7 +75,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
       "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
       "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
-      "cited": 22,
+      "cited": 23,
       "year": 2024
     },
     {
@@ -271,6 +271,14 @@
       "year": 2025
     },
     {
+      "title": "Concurrent Learning for System Identification and Control Using Lyapunov-Based Deep Neural Networks",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:r0BpntZqJG4C",
+      "authors": "RG Hart, OS Patil, ZI Bell, WE Dixon",
+      "venue": "IEEE Control Systems Letters 9, 2957-2962, 2025",
+      "cited": 1,
+      "year": 2025
+    },
+    {
       "title": "LyLA-Therm: Lyapunov-based Langevin Adaptive Thermodynamic Neural Network Controller",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:e5wmG9Sq2KIC",
       "authors": "S Akbari, OS Patil, WE Dixon",
@@ -301,14 +309,6 @@
       "venue": "arXiv preprint arXiv:2601.22284, 2026",
       "cited": 0,
       "year": 2026
-    },
-    {
-      "title": "Concurrent Learning for System Identification and Control Using Lyapunov-Based Deep Neural Networks",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:r0BpntZqJG4C",
-      "authors": "RG Hart, OS Patil, ZI Bell, WE Dixon",
-      "venue": "IEEE Control Systems Letters 9, 2957-2962, 2025",
-      "cited": 0,
-      "year": 2025
     },
     {
       "title": "Integral Concurrent Learning Control Barrier Functions for Signal Temporal Logic Tasks under Unknown Dynamics",
