@@ -1,11 +1,11 @@
 {
   "metrics": {
     "citations": {
-      "all": 564,
-      "recent": 559
+      "all": 568,
+      "recent": 563
     },
     "h-index": {
-      "all": 12,
+      "all": 13,
       "recent": 12
     },
     "i10-index": {
@@ -27,7 +27,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:9yKSN-GCB0IC",
       "authors": "A Isaly, OS Patil, RG Sanfelice, WE Dixon",
       "venue": "2021 American Control Conference (ACC), 3719-3724, 2021",
-      "cited": 50,
+      "cited": 51,
       "year": 2021
     },
     {
@@ -75,7 +75,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
       "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
       "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
-      "cited": 23,
+      "cited": 24,
       "year": 2024
     },
     {
@@ -83,7 +83,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:MXK_kJrjxJIC",
       "authors": "A Isaly, OS Patil, HM Sweatland, RG Sanfelice, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 69 (7), 4883-4890, 2024",
-      "cited": 20,
+      "cited": 21,
       "year": 2024
     },
     {
@@ -111,20 +111,20 @@
       "year": 2019
     },
     {
+      "title": "Integral concurrent learning-based accelerated gradient adaptive control of uncertain Euler-Lagrange systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Y0pCki6q_DkC",
+      "authors": "DM Le, OS Patil, PM Amy, WE Dixon",
+      "venue": "2022 American Control Conference (ACC), 806-811, 2022",
+      "cited": 13,
+      "year": 2022
+    },
+    {
       "title": "Lyapunov-based long short-term memory (Lb-LSTM) neural network-based adaptive observer",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:0EnyYjriUFMC",
       "authors": "EJ Griffis, OS Patil, RG Hart, WE Dixon",
       "venue": "IEEE Control Systems Letters 8, 97-102, 2023",
       "cited": 12,
       "year": 2023
-    },
-    {
-      "title": "Integral concurrent learning-based accelerated gradient adaptive control of uncertain Euler-Lagrange systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Y0pCki6q_DkC",
-      "authors": "DM Le, OS Patil, PM Amy, WE Dixon",
-      "venue": "2022 American Control Conference (ACC), 806-811, 2022",
-      "cited": 12,
-      "year": 2022
     },
     {
       "title": "Deep adaptive indirect herding of multiple target agents with unknown interaction dynamics",
