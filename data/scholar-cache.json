@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 571,
-      "recent": 566
+      "all": 574,
+      "recent": 569
     },
     "h-index": {
       "all": 13,
@@ -35,7 +35,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ufrVoPGSRksC",
       "authors": "EJ Griffis, OS Patil, ZI Bell, WE Dixon",
       "venue": "IEEE Control Systems Letters 7, 2976-2981, 2023",
-      "cited": 49,
+      "cited": 50,
       "year": 2023
     },
     {
@@ -51,7 +51,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:2osOgNQ5qMEC",
       "authors": "OS Patil, A Isaly, B Xian, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1592-1597, 2021",
-      "cited": 44,
+      "cited": 45,
       "year": 2021
     },
     {
@@ -191,19 +191,19 @@
       "year": 2023
     },
     {
+      "title": "Lyapunov-based adaptive deep system identification for approximate dynamic programming",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TQgYirikUcIC",
+      "authors": "WA Makumi, OS Patil, WE Dixon",
+      "venue": "Automatica 180, 112462, 2025",
+      "cited": 4,
+      "year": 2025
+    },
+    {
       "title": "Lyapunov-based deep residual neural network (ResNet) adaptive control",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
       "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
       "venue": "IEEE Access, 2025",
       "cited": 4,
-      "year": 2025
-    },
-    {
-      "title": "Lyapunov-based adaptive deep system identification for approximate dynamic programming",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TQgYirikUcIC",
-      "authors": "WA Makumi, OS Patil, WE Dixon",
-      "venue": "Automatica 180, 112462, 2025",
-      "cited": 3,
       "year": 2025
     },
     {
