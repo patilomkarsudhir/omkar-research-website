@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.30)  27 OCT 2025 18:41
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.30)  12 MAR 2026 18:43
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -900,10 +900,10 @@ Package logreq Info: Writing requests to 'full_resume.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 22713 strings out of 469608
- 416008 string characters out of 5474779
- 1237437 words of memory out of 5000000
- 49226 multiletter control sequences out of 15000+600000
+ 22719 strings out of 469608
+ 416286 string characters out of 5474779
+ 1237508 words of memory out of 5000000
+ 49231 multiletter control sequences out of 15000+600000
  668779 words of font info for 65 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  75i,10n,79p,1204b,1480s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -916,10 +916,10 @@ texlive/2025/texmf-dist/fonts/type1/public/lm/lmr10.pfb><c:/texlive/2025/texmf-
 dist/fonts/type1/public/lm/lmri10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/p
 ublic/lm/lmri9.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmsy10.pfb
 ><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmtt10.pfb>
-Output written on full_resume.pdf (6 pages, 219165 bytes).
+Output written on full_resume.pdf (6 pages, 219523 bytes).
 PDF statistics:
- 218 PDF objects out of 1000 (max. 8388607)
- 186 compressed objects within 2 object streams
- 58 named destinations out of 1000 (max. 500000)
+ 219 PDF objects out of 1000 (max. 8388607)
+ 187 compressed objects within 2 object streams
+ 59 named destinations out of 1000 (max. 500000)
  89 words of extra memory for PDF output out of 10000 (max. 10000000)
 

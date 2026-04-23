@@ -232,6 +232,24 @@ export default function Page() {
 							<div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/5 blur-xl group-hover:scale-125 transition" />
 						</div>
 					</a>
+					<a href="/pdf-tools.html" className="group">
+						<div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-red-500/20 to-red-700/30 transition shadow-sm hover:shadow-md hover:brightness-110 dark:border-white/5 w-[210px] h-48">
+							<div className="h-28 sm:h-32 w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/20 dark:to-red-800/20">
+								<svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-red-600 dark:text-red-400">
+									<path d="M14 2H6C5.45 2 4.95 2.2 4.59 2.59C4.2 2.95 4 3.45 4 4V20C4 20.55 4.2 21.05 4.59 21.41C4.95 21.8 5.45 22 6 22H18C18.55 22 19.05 21.8 19.41 21.41C19.8 21.05 20 20.55 20 20V8L14 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+									<path d="M14 2V8H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+									<path d="M9 15L11 17L15 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+								</svg>
+							</div>
+							<div className="p-3 flex items-start gap-3">
+								<div className="flex-1">
+									<h3 className="text-base font-semibold tracking-tight">PDF Tools</h3>
+								</div>
+							</div>
+							<div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl" />
+							<div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/5 blur-xl group-hover:scale-125 transition" />
+						</div>
+					</a>
 					<a href="/latex_scratchpad.html" className="group">
 						<div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-sky-500/20 to-sky-700/30 transition shadow-sm hover:shadow-md hover:brightness-110 dark:border-white/5 w-[210px] h-48">
 							<div className="h-28 sm:h-32 w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-sky-100 to-sky-200 dark:from-sky-900/20 dark:to-sky-800/20">
