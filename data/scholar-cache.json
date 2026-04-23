@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 574,
-      "recent": 569
+      "all": 578,
+      "recent": 573
     },
     "h-index": {
       "all": 13,
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 96,
+      "cited": 97,
       "year": 2021
     },
     {
@@ -83,7 +83,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:MXK_kJrjxJIC",
       "authors": "A Isaly, OS Patil, HM Sweatland, RG Sanfelice, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 69 (7), 4883-4890, 2024",
-      "cited": 22,
+      "cited": 23,
       "year": 2024
     },
     {
@@ -175,6 +175,14 @@
       "year": 2025
     },
     {
+      "title": "Lyapunov-based deep residual neural network (ResNet) adaptive control",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
+      "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
+      "venue": "IEEE Access, 2025",
+      "cited": 5,
+      "year": 2025
+    },
+    {
       "title": "Bounds on deep neural network partial derivatives with respect to parameters",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:dhFuZR0502QC",
       "authors": "OS Patil, BC Fallin, CF Nino, RG Hart, WE Dixon",
@@ -199,12 +207,12 @@
       "year": 2025
     },
     {
-      "title": "Lyapunov-based deep residual neural network (ResNet) adaptive control",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
-      "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
-      "venue": "IEEE Access, 2025",
+      "title": "Lyapunov-Based Deep Neural Networks for Adaptive Control of Stochastic Nonlinear Systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:M3ejUd6NZC8C",
+      "authors": "S Akbari, CF Nino, OS Patil, WE Dixon",
+      "venue": "arXiv preprint arXiv:2412.21095, 2024",
       "cited": 4,
-      "year": 2025
+      "year": 2024
     },
     {
       "title": "Online resnet-based adaptive control for nonlinear target tracking",
@@ -221,14 +229,6 @@
       "venue": "arXiv preprint arXiv:2505.10678, 2025",
       "cited": 3,
       "year": 2025
-    },
-    {
-      "title": "Lyapunov-Based Deep Neural Networks for Adaptive Control of Stochastic Nonlinear Systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:M3ejUd6NZC8C",
-      "authors": "S Akbari, CF Nino, OS Patil, WE Dixon",
-      "venue": "arXiv preprint arXiv:2412.21095, 2024",
-      "cited": 3,
-      "year": 2024
     },
     {
       "title": "Distributed target tracking under partial feedback using Lyapunov-based deep neural networks",
