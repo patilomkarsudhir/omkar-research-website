@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 578,
-      "recent": 573
+      "all": 580,
+      "recent": 575
     },
     "h-index": {
       "all": 13,
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 97,
+      "cited": 98,
       "year": 2021
     },
     {
@@ -247,6 +247,14 @@
       "year": 2023
     },
     {
+      "title": "Concurrent Learning for System Identification and Control Using Lyapunov-Based Deep Neural Networks",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:r0BpntZqJG4C",
+      "authors": "RG Hart, OS Patil, ZI Bell, WE Dixon",
+      "venue": "IEEE Control Systems Letters 9, 2957-2962, 2025",
+      "cited": 2,
+      "year": 2025
+    },
+    {
       "title": "Adaptive output feedback control using Lyapunov-based deep recurrent neural networks (Lb-DRNNs)",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:R3hNpaxXUhUC",
       "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
@@ -268,14 +276,6 @@
       "authors": "OS Patil, R Kamalapurkar, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control, 2025",
       "cited": 2,
-      "year": 2025
-    },
-    {
-      "title": "Concurrent Learning for System Identification and Control Using Lyapunov-Based Deep Neural Networks",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:r0BpntZqJG4C",
-      "authors": "RG Hart, OS Patil, ZI Bell, WE Dixon",
-      "venue": "IEEE Control Systems Letters 9, 2957-2962, 2025",
-      "cited": 1,
       "year": 2025
     },
     {
