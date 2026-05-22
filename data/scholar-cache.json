@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 607,
-      "recent": 601
+      "all": 608,
+      "recent": 602
     },
     "h-index": {
       "all": 13,
@@ -175,6 +175,14 @@
       "year": 2025
     },
     {
+      "title": "Lyapunov-based deep residual neural network (ResNet) adaptive control",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
+      "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
+      "venue": "IEEE Access, 2025",
+      "cited": 6,
+      "year": 2025
+    },
+    {
       "title": "Lyapunov-based graph neural networks for adaptive control of multi-agent systems",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:QIV2ME_5wuYC",
       "authors": "BC Fallin, CF Nino, OS Patil, ZI Bell, WE Dixon",
@@ -187,14 +195,6 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TQgYirikUcIC",
       "authors": "WA Makumi, OS Patil, WE Dixon",
       "venue": "Automatica 180, 112462, 2025",
-      "cited": 5,
-      "year": 2025
-    },
-    {
-      "title": "Lyapunov-based deep residual neural network (ResNet) adaptive control",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
-      "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
-      "venue": "IEEE Access, 2025",
       "cited": 5,
       "year": 2025
     },
