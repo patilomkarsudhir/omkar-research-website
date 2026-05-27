@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 608,
-      "recent": 602
+      "all": 609,
+      "recent": 603
     },
     "h-index": {
       "all": 13,
@@ -223,6 +223,14 @@
       "year": 2024
     },
     {
+      "title": "Concurrent Learning for System Identification and Control Using Lyapunov-Based Deep Neural Networks",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:r0BpntZqJG4C",
+      "authors": "RG Hart, OS Patil, ZI Bell, WE Dixon",
+      "venue": "IEEE Control Systems Letters 9, 2957-2962, 2025",
+      "cited": 3,
+      "year": 2025
+    },
+    {
       "title": "Online resnet-based adaptive control for nonlinear target tracking",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:mVmsd5A6BfQC",
       "authors": "CF Nino, OS Patil, JC Insinger, MR Eisman, WE Dixon",
@@ -253,14 +261,6 @@
       "venue": "Int. J. Res 2 (1), 369-375, 2015",
       "cited": 3,
       "year": 2015
-    },
-    {
-      "title": "Concurrent Learning for System Identification and Control Using Lyapunov-Based Deep Neural Networks",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:r0BpntZqJG4C",
-      "authors": "RG Hart, OS Patil, ZI Bell, WE Dixon",
-      "venue": "IEEE Control Systems Letters 9, 2957-2962, 2025",
-      "cited": 2,
-      "year": 2025
     },
     {
       "title": "Adaptive output feedback control using Lyapunov-based deep recurrent neural networks (Lb-DRNNs)",
