@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 611,
-      "recent": 605
+      "all": 612,
+      "recent": 606
     },
     "h-index": {
       "all": 13,
@@ -127,20 +127,20 @@
       "year": 2023
     },
     {
+      "title": "Adaptive deep neural network-based control barrier functions",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Zph67rFs4hoC",
+      "authors": "HM Sweatland, OS Patil, WE Dixon",
+      "venue": "IEEE Transactions on Automatic Control, 2026",
+      "cited": 11,
+      "year": 2026
+    },
+    {
       "title": "Deep adaptive indirect herding of multiple target agents with unknown interaction dynamics",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:5nxA0vEk-isC",
       "authors": "CF Nino, OS Patil, JN Philor, ZI Bell, WE Dixon",
       "venue": "2023 62nd IEEE Conference on Decision and Control (CDC), 2509-2514, 2023",
       "cited": 11,
       "year": 2023
-    },
-    {
-      "title": "Adaptive deep neural network-based control barrier functions",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Zph67rFs4hoC",
-      "authors": "HM Sweatland, OS Patil, WE Dixon",
-      "venue": "IEEE Transactions on Automatic Control, 2026",
-      "cited": 10,
-      "year": 2026
     },
     {
       "title": "Composite adaptive Lyapunov-based deep neural network (Lb-DNN) controller",
@@ -323,6 +323,14 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:bEWYMUwI8FkC",
       "authors": "Y Wang, OS Patil, WE Dixon",
       "venue": "arXiv preprint arXiv:2601.22284, 2026",
+      "cited": 0,
+      "year": 2026
+    },
+    {
+      "title": "Rapid camera-trap assessment of mammals in Tripura, India: new records and implications for conserva-tion",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:k_IJM867U9cC",
+      "authors": "O Patil, A Joshi, R Digaskar, A Parkar",
+      "venue": "Journal of Threatened Taxa 18 (5), 28750-28769, 2026",
       "cited": 0,
       "year": 2026
     },
