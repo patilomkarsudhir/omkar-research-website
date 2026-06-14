@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 614,
-      "recent": 608
+      "all": 617,
+      "recent": 611
     },
     "h-index": {
       "all": 13,
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 105,
+      "cited": 106,
       "year": 2021
     },
     {
@@ -91,7 +91,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:8k81kl-MbHgC",
       "authors": "RG Hart, OS Patil, EJ Griffis, WE Dixon",
       "venue": "2023 62nd IEEE Conference on Decision and Control (CDC), 1511-1516, 2023",
-      "cited": 18,
+      "cited": 19,
       "year": 2023
     },
     {
@@ -231,6 +231,14 @@
       "year": 2025
     },
     {
+      "title": "Collaborative Spacecraft Servicing Under Partial Feedback Using Lyapunov-Based Deep Neural Networks",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qxL8FJ1GzNcC",
+      "authors": "CF Nino, OS Patil, CD Petersen, S Phillips, WE Dixon",
+      "venue": "The Journal of the Astronautical Sciences 72 (4), 40, 2025",
+      "cited": 3,
+      "year": 2025
+    },
+    {
       "title": "Online resnet-based adaptive control for nonlinear target tracking",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:mVmsd5A6BfQC",
       "authors": "CF Nino, OS Patil, JC Insinger, MR Eisman, WE Dixon",
@@ -267,14 +275,6 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:R3hNpaxXUhUC",
       "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control, 2025",
-      "cited": 2,
-      "year": 2025
-    },
-    {
-      "title": "Collaborative Spacecraft Servicing Under Partial Feedback Using Lyapunov-Based Deep Neural Networks",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qxL8FJ1GzNcC",
-      "authors": "CF Nino, OS Patil, CD Petersen, S Phillips, WE Dixon",
-      "venue": "The Journal of the Astronautical Sciences 72 (4), 40, 2025",
       "cited": 2,
       "year": 2025
     },
