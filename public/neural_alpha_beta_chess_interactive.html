@@ -35,7 +35,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .tutorial-header {
@@ -302,6 +302,6 @@
     </script>
 
     <!-- Load and render the JSX component -->
-    <script type="text/babel" src="neural_alpha_beta_chess_interactive.jsx"></script>
+    <script type="text/babel" data-presets="env,react" src="/neural_alpha_beta_chess_interactive.jsx"></script>
 </body>
 </html>
