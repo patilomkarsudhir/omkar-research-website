@@ -353,6 +353,7 @@
             width: 100%;
             height: calc(100% - 30px); /* Minimal space reserved */
             border-radius: 5px;
+            display: block;
         }
 
         .metrics {
@@ -544,8 +545,16 @@
             grid-row: 1;
         }
 
+        .trajectory-3d {
+            display: flex;
+            flex-direction: column;
+        }
+
         .trajectory-3d canvas {
-            height: calc(100% - 30px) !important; /* Minimal space for clean layout */
+            display: block;
+            flex: 1;
+            min-height: 0;
+            border-radius: 8px;
         }
 
         #trajectory3D {
@@ -1371,13 +1380,17 @@
             init3D() {
                 // Create scene
                 scene = new THREE.Scene();
-                
+
+                // Atmospheric depth: distant geometry fades into a soft haze,
+                // which also removes the harsh sky/ground horizon line.
+                scene.fog = new THREE.Fog(0xdce4ee, 22, 130);
+
                 // Create skybox with gradient
                 const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
                 const skyMaterial = new THREE.ShaderMaterial({
                     uniforms: {
-                        topColor: { value: new THREE.Color(0x87CEEB) },
-                        bottomColor: { value: new THREE.Color(0xffffff) },
+                        topColor: { value: new THREE.Color(0xb8cce0) },
+                        bottomColor: { value: new THREE.Color(0xdce4ee) },
                         offset: { value: 33 },
                         exponent: { value: 0.6 }
                     },
@@ -1406,19 +1419,30 @@
                 scene.add(skybox);
 
                 // Create camera
-                camera = new THREE.PerspectiveCamera(75, this.canvas.clientWidth / this.canvas.clientHeight, 0.1, 1000);
-                camera.position.set(8, 6, 8);
+                camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+                camera.position.set(6, 4, 6);
 
                 // Create renderer
                 renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-                renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
                 renderer.shadowMap.enabled = true;
                 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-                renderer.setClearColor(0x87CEEB, 1);
-                
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                renderer.outputEncoding = THREE.sRGBEncoding;
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                renderer.toneMappingExposure = 1.05;
+                renderer.setClearColor(0xdce4ee, 1);
+
                 // Replace canvas with renderer's canvas
-                this.canvas.parentNode.replaceChild(renderer.domElement, this.canvas);
+                this.viewport = this.canvas.parentNode;
+                this.viewport.replaceChild(renderer.domElement, this.canvas);
                 renderer.domElement.id = 'trajectory3D';
+
+                // Size renderer to its panel and keep it in sync
+                this.resize();
+                if (window.ResizeObserver) {
+                    this._resizeObserver = new ResizeObserver(() => this.resize());
+                    this._resizeObserver.observe(this.viewport);
+                }
 
                 // Add orbit controls
                 controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -1430,25 +1454,27 @@
                 controls.maxPolarAngle = Math.PI / 2;
 
                 // Enhanced lighting
-                const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
-                scene.add(ambientLight);
+                const hemiLight = new THREE.HemisphereLight(0xeaf1f8, 0xb6bfca, 0.65);
+                scene.add(hemiLight);
 
-                const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
-                sunLight.position.set(10, 10, 5);
+                const sunLight = new THREE.DirectionalLight(0xffffff, 0.75);
+                sunLight.position.set(10, 14, 6);
                 sunLight.castShadow = true;
                 sunLight.shadow.mapSize.width = 2048;
                 sunLight.shadow.mapSize.height = 2048;
                 sunLight.shadow.camera.near = 0.5;
-                sunLight.shadow.camera.far = 50;
-                sunLight.shadow.camera.left = -10;
-                sunLight.shadow.camera.right = 10;
-                sunLight.shadow.camera.top = 10;
-                sunLight.shadow.camera.bottom = -10;
+                sunLight.shadow.camera.far = 60;
+                sunLight.shadow.camera.left = -14;
+                sunLight.shadow.camera.right = 14;
+                sunLight.shadow.camera.top = 14;
+                sunLight.shadow.camera.bottom = -14;
+                sunLight.shadow.radius = 4;
+                sunLight.shadow.bias = -0.0004;
                 scene.add(sunLight);
 
                 // Add fill light
-                const fillLight = new THREE.DirectionalLight(0x87CEEB, 0.3);
-                fillLight.position.set(-5, 5, -5);
+                const fillLight = new THREE.DirectionalLight(0xaac4e0, 0.25);
+                fillLight.position.set(-6, 5, -6);
                 scene.add(fillLight);
 
                 // Create enhanced environment
@@ -1467,74 +1493,53 @@
             }
 
             createEnvironment() {
-                // Enhanced ground with texture-like appearance
-                const groundGeometry = new THREE.PlaneGeometry(40, 40, 50, 50);
-                const groundMaterial = new THREE.ShaderMaterial({
-                    uniforms: {
-                        time: { value: 0 },
-                        grassColor: { value: new THREE.Color(0x4a7c59) },
-                        dirtColor: { value: new THREE.Color(0x8b4513) }
-                    },
-                    vertexShader: `
-                        varying vec2 vUv;
-                        varying vec3 vPosition;
-                        void main() {
-                            vUv = uv;
-                            vPosition = position;
-                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                        }
-                    `,
-                    fragmentShader: `
-                        uniform float time;
-                        uniform vec3 grassColor;
-                        uniform vec3 dirtColor;
-                        varying vec2 vUv;
-                        varying vec3 vPosition;
-                        
-                        float noise(vec2 p) {
-                            return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453123);
-                        }
-                        
-                        void main() {
-                            vec2 p = vUv * 20.0;
-                            float n = noise(floor(p)) * 0.3 + noise(floor(p * 2.0)) * 0.15;
-                            vec3 color = mix(grassColor, dirtColor, n);
-                            
-                            // Add grid lines
-                            vec2 grid = abs(fract(vUv * 10.0) - 0.5);
-                            float line = 1.0 - min(grid.x, grid.y) * 40.0;
-                            color = mix(color, vec3(0.3, 0.5, 0.3), clamp(line, 0.0, 0.1));
-                            
-                            gl_FragColor = vec4(color, 1.0);
-                        }
-                    `
+                // Clean studio floor: neutral matte plane with a subtle reference grid.
+                const groundGeometry = new THREE.PlaneGeometry(80, 80);
+                const groundMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xe6ebf1,
+                    roughness: 0.95,
+                    metalness: 0.0
                 });
-                
                 const ground = new THREE.Mesh(groundGeometry, groundMaterial);
                 ground.rotation.x = -Math.PI / 2;
                 ground.receiveShadow = true;
                 scene.add(ground);
                 environmentMesh = ground;
 
-                // Add some trees/obstacles
-                this.createTrees();
-                
-                // Add landing pad
-                const padGeometry = new THREE.CylinderGeometry(1.5, 1.5, 0.1, 16);
-                const padMaterial = new THREE.MeshLambertMaterial({ color: 0xff6b6b });
+                // Reference grid for spatial context (engineering look).
+                const grid = new THREE.GridHelper(80, 80, 0x9fb0c3, 0xcdd6e0);
+                grid.material.transparent = true;
+                grid.material.opacity = 0.55;
+                grid.position.y = 0.002;
+                scene.add(grid);
+
+                // Landing pad (origin marker).
+                const padGeometry = new THREE.CylinderGeometry(0.9, 0.9, 0.06, 48);
+                const padMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x2d3a4d,
+                    roughness: 0.6,
+                    metalness: 0.1
+                });
                 const landingPad = new THREE.Mesh(padGeometry, padMaterial);
-                landingPad.position.set(0, 0.05, 0);
-                landingPad.castShadow = true;
+                landingPad.position.set(0, 0.03, 0);
                 landingPad.receiveShadow = true;
                 scene.add(landingPad);
 
-                // Add "H" on landing pad
-                const textGeometry = new THREE.RingGeometry(0.3, 0.4, 16);
-                const textMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
-                const hMarker1 = new THREE.Mesh(textGeometry, textMaterial);
-                hMarker1.position.set(0, 0.11, 0);
-                hMarker1.rotation.x = -Math.PI / 2;
-                scene.add(hMarker1);
+                // Accent ring on the pad.
+                const padRingGeo = new THREE.RingGeometry(0.55, 0.72, 48);
+                const padRingMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6, side: THREE.DoubleSide });
+                const padRing = new THREE.Mesh(padRingGeo, padRingMat);
+                padRing.position.set(0, 0.062, 0);
+                padRing.rotation.x = -Math.PI / 2;
+                scene.add(padRing);
+
+                // Center marker on the pad.
+                const padDotGeo = new THREE.CircleGeometry(0.18, 32);
+                const padDotMat = new THREE.MeshBasicMaterial({ color: 0xeaf2ff, side: THREE.DoubleSide });
+                const padDot = new THREE.Mesh(padDotGeo, padDotMat);
+                padDot.position.set(0, 0.063, 0);
+                padDot.rotation.x = -Math.PI / 2;
+                scene.add(padDot);
             }
 
             createTrees() {
@@ -1565,99 +1570,128 @@
             }
 
             createClouds() {
+                // Clouds removed for a clean, studio-style scene.
                 clouds = [];
-                for (let i = 0; i < 8; i++) {
-                    const cloudGeometry = new THREE.SphereGeometry(2 + Math.random() * 2, 8, 6);
-                    const cloudMaterial = new THREE.MeshLambertMaterial({ 
-                        color: 0xffffff, 
-                        transparent: true, 
-                        opacity: 0.8 
-                    });
-                    const cloud = new THREE.Mesh(cloudGeometry, cloudMaterial);
-                    cloud.position.set(
-                        (Math.random() - 0.5) * 60,
-                        15 + Math.random() * 10,
-                        (Math.random() - 0.5) * 60
-                    );
-                    cloud.userData = {
-                        velocity: new THREE.Vector3(
-                            (Math.random() - 0.5) * 0.02,
-                            0,
-                            (Math.random() - 0.5) * 0.02
-                        )
-                    };
-                    clouds.push(cloud);
-                    scene.add(cloud);
-                }
             }
 
             createQuadrotor() {
                 quadrotorMesh = new THREE.Group();
 
-                // Main body
-                const bodyGeometry = new THREE.BoxGeometry(0.8, 0.15, 0.8);
-                const bodyMaterial = new THREE.MeshPhongMaterial({ 
-                    color: 0x2c3e50,
-                    shininess: 100 
-                });
-                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-                body.castShadow = true;
-                body.receiveShadow = true;
-                quadrotorMesh.add(body);
+                // --- Materials (PBR, lit by hemisphere + sun, tone-mapped) ---
+                const bodyMat = new THREE.MeshStandardMaterial({ color: 0x222a35, metalness: 0.6, roughness: 0.35 });
+                const canopyMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, metalness: 0.35, roughness: 0.2 });
+                const armMat = new THREE.MeshStandardMaterial({ color: 0x2b3440, metalness: 0.5, roughness: 0.4 });
+                const motorMat = new THREE.MeshStandardMaterial({ color: 0x10151c, metalness: 0.75, roughness: 0.3 });
+                const bladeMat = new THREE.MeshStandardMaterial({ color: 0x0f1115, metalness: 0.2, roughness: 0.6 });
+                const hubMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.4, roughness: 0.4 });
 
-                // Arms
-                const armGeometry = new THREE.BoxGeometry(1.5, 0.08, 0.08);
-                const armMaterial = new THREE.MeshPhongMaterial({ color: 0x34495e });
-                
-                const arm1 = new THREE.Mesh(armGeometry, armMaterial);
-                arm1.rotation.z = Math.PI / 4;
-                arm1.castShadow = true;
-                quadrotorMesh.add(arm1);
-                
-                const arm2 = new THREE.Mesh(armGeometry, armMaterial);
-                arm2.rotation.z = -Math.PI / 4;
-                arm2.castShadow = true;
-                quadrotorMesh.add(arm2);
+                // --- Central body: hexagonal chassis + accent canopy ---
+                const chassis = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.42, 0.13, 6), bodyMat);
+                chassis.rotation.y = Math.PI / 6;
+                chassis.castShadow = true;
+                chassis.receiveShadow = true;
+                quadrotorMesh.add(chassis);
 
-                // Propellers
-                const propGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.02, 16);
-                const propMaterial = new THREE.MeshPhongMaterial({ 
-                    color: 0x3498db,
-                    transparent: true,
-                    opacity: 0.7 
-                });
+                const canopy = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.25, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2),
+                    canopyMat
+                );
+                canopy.position.y = 0.05;
+                canopy.castShadow = true;
+                quadrotorMesh.add(canopy);
 
-                const propPositions = [
-                    [0.75, 0.1, 0.75], [-0.75, 0.1, 0.75], 
-                    [0.75, 0.1, -0.75], [-0.75, 0.1, -0.75]
-                ];
+                // Forward heading marker (so yaw/orientation is readable)
+                const nose = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.16, 0.06, 0.14),
+                    new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.3, roughness: 0.4, emissive: 0x6b3d00, emissiveIntensity: 0.4 })
+                );
+                nose.position.set(0.34, 0.02, 0);
+                quadrotorMesh.add(nose);
 
+                // Camera gimbal under the belly
+                const gimbal = new THREE.Mesh(new THREE.SphereGeometry(0.08, 16, 12), motorMat);
+                gimbal.position.set(0.12, -0.1, 0);
+                gimbal.castShadow = true;
+                quadrotorMesh.add(gimbal);
+
+                // --- Arms + motors + rotors in an X configuration ---
+                const armAngles = [Math.PI / 4, 3 * Math.PI / 4, 5 * Math.PI / 4, 7 * Math.PI / 4];
+                const armLength = 0.72;
                 quadrotorMesh.userData.propellers = [];
-                propPositions.forEach((pos, i) => {
-                    const prop = new THREE.Mesh(propGeometry, propMaterial);
-                    prop.position.set(pos[0], pos[1], pos[2]);
-                    prop.rotation.x = Math.PI / 2;
-                    prop.castShadow = true;
-                    quadrotorMesh.userData.propellers.push(prop);
-                    quadrotorMesh.add(prop);
+
+                armAngles.forEach((angle, i) => {
+                    const armUnit = new THREE.Group();
+
+                    // Boom (points outward along +X, then rotated into place about Y)
+                    const boom = new THREE.Mesh(new THREE.BoxGeometry(armLength, 0.05, 0.10), armMat);
+                    boom.position.x = armLength / 2;
+                    boom.castShadow = true;
+                    armUnit.add(boom);
+
+                    // Motor pod (vertical axis)
+                    const motor = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.09, 0.14, 20), motorMat);
+                    motor.position.set(armLength, 0.06, 0);
+                    motor.castShadow = true;
+                    armUnit.add(motor);
+
+                    // Navigation light: green = front (+X), red = rear (-X)
+                    const isFront = Math.cos(angle) > 0;
+                    const navColor = isFront ? 0x22c55e : 0xef4444;
+                    const nav = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.045, 12, 12),
+                        new THREE.MeshStandardMaterial({ color: navColor, emissive: navColor, emissiveIntensity: 0.9, roughness: 0.4 })
+                    );
+                    nav.position.set(armLength, 0.0, 0);
+                    armUnit.add(nav);
+
+                    // Rotor assembly (spins about its own vertical axis)
+                    const rotor = new THREE.Group();
+                    rotor.position.set(armLength, 0.15, 0);
+
+                    // Two crossed blades, slightly pitched for realism
+                    for (let b = 0; b < 2; b++) {
+                        const blade = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.012, 0.07), bladeMat);
+                        blade.rotation.y = b * Math.PI / 2;
+                        blade.rotation.x = 0.18; // blade pitch
+                        blade.castShadow = true;
+                        rotor.add(blade);
+                    }
+
+                    // Hub cap
+                    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.04, 16), hubMat);
+                    rotor.add(cap);
+
+                    // Motion-blur disk (fades in with rotor speed)
+                    const blur = new THREE.Mesh(
+                        new THREE.CircleGeometry(0.36, 32),
+                        new THREE.MeshBasicMaterial({ color: 0x9ec5ff, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false })
+                    );
+                    blur.rotation.x = -Math.PI / 2;
+                    blur.position.y = 0.01;
+                    rotor.add(blur);
+                    rotor.userData.blur = blur;
+                    rotor.userData.dir = (i % 2 === 0) ? 1 : -1;
+
+                    armUnit.add(rotor);
+                    quadrotorMesh.userData.propellers.push(rotor);
+
+                    // Landing leg
+                    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.26, 8), motorMat);
+                    leg.position.set(armLength * 0.55, -0.18, 0);
+                    leg.rotation.z = 0.35;
+                    armUnit.add(leg);
+                    const foot = new THREE.Mesh(new THREE.SphereGeometry(0.03, 10, 10), hubMat);
+                    foot.position.set(armLength * 0.62, -0.3, 0);
+                    armUnit.add(foot);
+
+                    armUnit.rotation.y = angle;
+                    quadrotorMesh.add(armUnit);
                 });
 
-                // LED indicators
-                const ledGeometry = new THREE.SphereGeometry(0.05, 8, 8);
-                const ledMaterials = [
-                    new THREE.MeshLambertMaterial({ color: 0xff0000, emissive: 0x440000 }),
-                    new THREE.MeshLambertMaterial({ color: 0x00ff00, emissive: 0x004400 }),
-                    new THREE.MeshLambertMaterial({ color: 0xff0000, emissive: 0x440000 }),
-                    new THREE.MeshLambertMaterial({ color: 0x00ff00, emissive: 0x004400 })
-                ];
-
-                propPositions.forEach((pos, i) => {
-                    const led = new THREE.Mesh(ledGeometry, ledMaterials[i]);
-                    led.position.set(pos[0] * 0.8, pos[1] + 0.1, pos[2] * 0.8);
-                    quadrotorMesh.add(led);
-                });
+                quadrotorMesh.userData.propRate = 9; // base idle spin rate
 
                 quadrotorMesh.position.set(0, 2, 0);
+                quadrotorMesh.scale.setScalar(1.6);
                 quadrotorMesh.castShadow = true;
                 scene.add(quadrotorMesh);
             }
@@ -1697,10 +1731,10 @@
             createTrajectoryLine() {
                 const lineGeometry = new THREE.BufferGeometry();
                 const lineMaterial = new THREE.LineBasicMaterial({ 
-                    color: 0x3498db,
+                    color: 0x1d4ed8,
                     linewidth: 3,
                     transparent: true,
-                    opacity: 0.8 
+                    opacity: 0.95 
                 });
                 trajectoryLine = new THREE.Line(lineGeometry, lineMaterial);
                 scene.add(trajectoryLine);
@@ -1768,7 +1802,7 @@
                     `,
                     transparent: true,
                     blending: THREE.AdditiveBlending,
-                    vertexColors: true
+                    depthWrite: false
                 });
 
                 particleSystem = new THREE.Points(particleGeometry, particleMaterial);
@@ -1804,23 +1838,14 @@
                 quadrotorMesh.rotation.set(phi, psi, theta);
                 quadrotorMesh.userData.prevPosition = currentPos.clone();
 
-                // Animate propellers based on speed
-                if (quadrotorMesh.userData.propellers) {
-                    const time = Date.now() * 0.01;
-                    const propSpeed = 5 + speed * 20; // Speed affects propeller rotation
-                    quadrotorMesh.userData.propellers.forEach((prop, i) => {
-                        prop.rotation.z = time * (i % 2 === 0 ? 1 : -1) * propSpeed;
-                        
-                        // Add slight tilt based on movement
-                        prop.rotation.x = Math.PI / 2 + speed * Math.sin(time + i) * 0.1;
-                    });
-                }
+                // Rotor spin rate scales with movement (actual spin handled in animate loop)
+                quadrotorMesh.userData.propRate = 9 + speed * 60;
 
                 // Update camera to follow quadrotor smoothly with dynamic distance based on speed
-                const followDistance = 8 + speed * 5;
-                const targetPos = new THREE.Vector3(x + followDistance, z + 6, y + followDistance);
+                const followDistance = 5 + speed * 4;
+                const targetPos = new THREE.Vector3(x + followDistance, z + 3.5, y + followDistance);
                 camera.position.lerp(targetPos, 0.02);
-                controls.target.lerp(new THREE.Vector3(x, z, y), 0.02);
+                controls.target.lerp(new THREE.Vector3(x, z, y), 0.04);
 
                 // Add speed-based trail effect by adjusting trajectory opacity
                 if (trajectoryLine && trajectoryLine.material) {
@@ -1864,11 +1889,23 @@
                 // Event listeners setup - animation controls removed for cleaner interface
             }
 
-            onWindowResize() {
-                const canvas = document.getElementById('trajectory3D');
-                camera.aspect = canvas.clientWidth / canvas.clientHeight;
+            resize() {
+                const panel = this.viewport;
+                if (!panel) return;
+                const title = panel.querySelector('.chart-title');
+                const style = getComputedStyle(panel);
+                const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+                const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+                const titleH = title ? title.getBoundingClientRect().height + 8 : 0;
+                const width = Math.max(1, panel.clientWidth - padX);
+                const height = Math.max(1, panel.clientHeight - padY - titleH);
+                camera.aspect = width / height;
                 camera.updateProjectionMatrix();
-                renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+                renderer.setSize(width, height);
+            }
+
+            onWindowResize() {
+                this.resize();
             }
 
             animate() {
@@ -1878,6 +1915,21 @@
 
                 // Update controls
                 controls.update();
+
+                // Spin rotors continuously so the craft always looks alive
+                if (quadrotorMesh && quadrotorMesh.userData.propellers) {
+                    const dt = Math.min(0.05, time - (this._lastTime || time));
+                    const rate = quadrotorMesh.userData.propRate || 9;
+                    quadrotorMesh.userData.propellers.forEach(rotor => {
+                        rotor.rotation.y += dt * rate * (rotor.userData.dir || 1);
+                        if (rotor.userData.blur) {
+                            const target = Math.min(0.4, 0.06 + rate * 0.006);
+                            const m = rotor.userData.blur.material;
+                            m.opacity += (target - m.opacity) * 0.1;
+                        }
+                    });
+                }
+                this._lastTime = time;
 
                 // Animate clouds
                 clouds.forEach(cloud => {
