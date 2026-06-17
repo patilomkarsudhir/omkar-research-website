@@ -59,7 +59,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(160deg, #1e293b 0%, #334155 100%);
             min-height: 100vh;
             color: #333;
         }
@@ -77,9 +77,10 @@
         }
 
         .header h1 {
-            font-size: 2.2rem;
+            font-size: 2.1rem;
             margin-bottom: 8px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: 600;
+            letter-spacing: -0.01em;
         }
 
         .header p {
@@ -122,12 +123,41 @@
         }
 
         .section h3 {
-            color: #4a5568;
+            color: #1e293b;
             margin-bottom: 18px;
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             font-weight: 600;
             border-bottom: 2px solid #e2e8f0;
             padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.2s ease;
+        }
+
+        .section h3:hover {
+            color: #2563eb;
+        }
+
+        .section h3::after {
+            content: '\25BE';
+            font-size: 0.8rem;
+            color: #94a3b8;
+            transition: transform 0.25s ease;
+        }
+
+        .section.collapsed h3 {
+            margin-bottom: 0;
+        }
+
+        .section.collapsed h3::after {
+            transform: rotate(-90deg);
+        }
+
+        .section.collapsed > *:not(h3) {
+            display: none !important;
         }
 
         .parameter-group {
@@ -162,7 +192,7 @@
             width: 24px;
             height: 24px;
             border-radius: 50%;
-            background: #667eea;
+            background: #2563eb;
             cursor: pointer;
             box-shadow: 0 3px 8px rgba(0,0,0,0.2);
         }
@@ -171,7 +201,7 @@
             width: 24px;
             height: 24px;
             border-radius: 50%;
-            background: #667eea;
+            background: #2563eb;
             cursor: pointer;
             border: none;
             box-shadow: 0 3px 8px rgba(0,0,0,0.2);
@@ -179,18 +209,18 @@
 
         .parameter-value {
             font-size: 1.1rem;
-            color: #667eea;
+            color: #2563eb;
             font-weight: 600;
             text-align: center;
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(37, 99, 235, 0.08);
             padding: 8px 12px;
             border-radius: 8px;
-            border: 1px solid rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(37, 99, 235, 0.18);
         }
 
         .checkbox-param {
-            background: rgba(102, 126, 234, 0.05);
-            border: 1px solid rgba(102, 126, 234, 0.15);
+            background: rgba(37, 99, 235, 0.04);
+            border: 1px solid rgba(37, 99, 235, 0.12);
             border-radius: 8px;
             padding: 12px;
             margin-bottom: 8px;
@@ -208,7 +238,7 @@
         .checkbox-param input[type="checkbox"] {
             width: 18px;
             height: 18px;
-            accent-color: #667eea;
+            accent-color: #2563eb;
             cursor: pointer;
         }
 
@@ -221,12 +251,12 @@
         }
 
         .checkbox-param:hover {
-            background: rgba(102, 126, 234, 0.08);
-            border-color: rgba(102, 126, 234, 0.25);
+            background: rgba(37, 99, 235, 0.07);
+            border-color: rgba(37, 99, 235, 0.22);
         }
 
         .checkbox-param input[type="checkbox"]:checked + span {
-            color: #667eea;
+            color: #2563eb;
         }
 
         .control-buttons {
@@ -247,13 +277,20 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
         }
 
         .btn-secondary {
-            background: linear-gradient(135deg, #f093fb, #f5576c);
-            color: white;
+            background: #ffffff;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+
+        .btn-secondary:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
         }
 
         .btn:hover {
@@ -308,15 +345,15 @@
         }
 
         .controller-btn.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
-            border-color: #667eea;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            border-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
 
         .controller-btn:hover:not(.active) {
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.05);
+            border-color: #2563eb;
+            background: rgba(37, 99, 235, 0.05);
         }
 
         .charts-container {
@@ -367,32 +404,43 @@
         }
 
         .metric {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
+            background: #f1f5f9;
+            color: #1e293b;
             padding: 15px 10px;
             border-radius: 10px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
         }
 
         .metric-value {
             font-size: 1.3rem;
             font-weight: bold;
             margin-bottom: 5px;
+            color: #2563eb;
         }
 
         .metric-label {
             font-size: 0.75rem;
-            opacity: 0.95;
+            color: #64748b;
             font-weight: 500;
         }
 
         .feedback-active {
             background: linear-gradient(135deg, #48bb78, #38a169) !important;
+            border-color: transparent !important;
         }
 
         .feedback-lost {
             background: linear-gradient(135deg, #f56565, #e53e3e) !important;
+            border-color: transparent !important;
+        }
+
+        .feedback-active .metric-value,
+        .feedback-active .metric-label,
+        .feedback-lost .metric-value,
+        .feedback-lost .metric-label {
+            color: #ffffff !important;
         }
 
         .status {
@@ -417,10 +465,10 @@
         }
 
         .initial-conditions-display {
-            background: rgba(102, 126, 234, 0.05);
+            background: rgba(37, 99, 235, 0.04);
             border-radius: 8px;
             padding: 15px;
-            border: 1px solid rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(37, 99, 235, 0.18);
         }
 
         .condition-group {
@@ -445,7 +493,7 @@
         .condition-values {
             font-family: 'Courier New', monospace;
             font-size: 0.85rem;
-            color: #667eea;
+            color: #2563eb;
             font-weight: 500;
             text-align: right;
         }
@@ -499,8 +547,8 @@
         }
 
         .scenario-option:hover {
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.05);
+            border-color: #2563eb;
+            background: rgba(37, 99, 235, 0.05);
         }
 
         .scenario-option h4 {
@@ -677,7 +725,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚁 Lyapunov-based deep neural network - Intermittent Feedback</h1>
+            <h1>Lyapunov-based Deep Neural Network &mdash; Intermittent Feedback</h1>
             <p>Real-time simulation with Jacobian-based neural network adaptation and intermittent feedback loss</p>
         </div>
 
@@ -687,13 +735,13 @@
                     <h3>Controller Type</h3>
                     <div class="controller-selection three-column">
                         <div class="controller-btn active" id="compositeBtn" data-controller="composite">
-                            🎯 Composite Adaptive
+                            Composite Adaptive
                         </div>
                         <div class="controller-btn" id="trackingBtn" data-controller="tracking">
-                            📍 Tracking Error-Based Update
+                            Tracking Error-Based Update
                         </div>
                         <div class="controller-btn" id="pidBtn" data-controller="pid">
-                            ⚙️ PID with Gravity Compensation
+                            PID with Gravity Compensation
                         </div>
                     </div>
                 </div>
@@ -888,7 +936,7 @@
                     </div>
                 </div>
 
-                <div class="section">
+                <div class="section collapsed">
                     <h3>Environment</h3>
                     <div class="parameter-group">
                         <div class="parameter">
@@ -914,8 +962,8 @@
                     </div>
                 </div>
 
-                <div class="section">
-                    <h3>🌪️ Turbulent Nonlinearity</h3>
+                <div class="section collapsed">
+                    <h3>Turbulent Nonlinearity</h3>
                     <div class="parameter-group">
                         <div class="parameter checkbox-param">
                             <label for="enableAeroStall">
@@ -1014,15 +1062,15 @@
 
                 <div class="charts-container">
                     <div class="chart-panel trajectory-3d">
-                        <div class="chart-title">🚁 3D Quadrotor Simulation Environment</div>
+                        <div class="chart-title">3D Quadrotor Simulation Environment</div>
                         <canvas id="trajectory3D"></canvas>
                     </div>
                     <div class="chart-panel">
-                        <div class="chart-title">📊 Position Error</div>
+                        <div class="chart-title">Position Error</div>
                         <canvas id="positionErrorChart"></canvas>
                     </div>
                     <div class="chart-panel">
-                        <div class="chart-title">🎮 Control Effort</div>
+                        <div class="chart-title">Control Effort</div>
                         <canvas id="controlEffortChart"></canvas>
                     </div>
                 </div>
@@ -1033,7 +1081,7 @@
     <!-- Scenario Selection Modal -->
     <div class="scenario-modal" id="scenarioModal">
         <div class="scenario-content">
-            <h3>🎯 Select Initial Condition Scenario</h3>
+            <h3>Select Initial Condition Scenario</h3>
             <div class="scenario-options">
                 <div class="scenario-option" data-scenario="hover">
                     <h4>Hovering Start</h4>
@@ -3925,11 +3973,18 @@
             document.querySelector('.scenario-content').addEventListener('click', (e) => {
                 e.stopPropagation();
             });
+
+            // Collapsible control-panel sections (click header to expand/collapse)
+            document.querySelectorAll('.control-panel .section > h3').forEach(header => {
+                header.addEventListener('click', () => {
+                    header.parentElement.classList.toggle('collapsed');
+                });
+            });
         });
     </script>
 
     <!-- Research-Level Mathematical Description -->
-    <div style="background: linear-gradient(135deg, #f8fafc, #e2e8f0); padding: 40px 20px; margin-top: 50px; border-top: 3px solid #667eea;">
+    <div style="background: linear-gradient(135deg, #f8fafc, #e2e8f0); padding: 40px 20px; margin-top: 50px; border-top: 3px solid #2563eb;">
         <div style="max-width: 1200px; margin: 0 auto;">
             <h2 style="text-align: center; color: #2d3748; font-size: 2.5rem; margin-bottom: 30px; font-weight: 700;">
                 📚 Description
@@ -3944,7 +3999,7 @@
                     The challenge is to design an adaptive controller that maintains stability and tracking performance during both feedback-available 
                     and feedback-lost periods while learning unknown system dynamics.
                 </p>
-                <div style="background: #f7fafc; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+                <div style="background: #f7fafc; border-left: 4px solid #2563eb; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
                     <strong>Key Innovation:</strong> Lyapunov-based Deep Neural Network (LbDNN) adaptation with mathematically rigorous stability guarantees 
                     under intermittent feedback loss scenarios.
                 </div>
@@ -3993,7 +4048,7 @@
                         $$\dot{r} = f(x,\dot{x}) + g(x,\dot{x})u - \ddot{x}_d(t) + \alpha_1(r - \alpha_1 e)$$
                     </div>
                 </div>
-                <div style="background: #f7fafc; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+                <div style="background: #f7fafc; border-left: 4px solid #2563eb; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
                     <strong>Design Parameter:</strong> $\alpha_1 \in \mathbb{R}_{>0}$ is a constant control gain that determines the convergence rate 
                     of the tracking error dynamics and affects the sliding surface slope.
                 </div>
@@ -4073,7 +4128,7 @@
                         \end{cases}$$
                     </div>
                 </div>
-                <div style="background: #f7fafc; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+                <div style="background: #f7fafc; border-left: 4px solid #2563eb; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
                     <strong>Key Innovation:</strong> The prediction error $E$ uses the dynamic state-derivative estimator $\hat{f}$ 
                     instead of traditional approaches, enabling composite adaptation for non-linearly parameterized (NIP) neural networks.
                 </div>
@@ -4227,7 +4282,7 @@
                     </p>
                 </div>
 
-                <div style="background: #f7fafc; border-left: 4px solid #667eea; padding: 20px; margin: 25px 0; border-radius: 0 12px 12px 0;">
+                <div style="background: #f7fafc; border-left: 4px solid #2563eb; padding: 20px; margin: 25px 0; border-radius: 0 12px 12px 0;">
                     <h4 style="color: #553c9a; font-size: 1.3rem; margin-bottom: 15px;">⚡ 7. Reynolds Number-Dependent Drag</h4>
                     <div style="font-family: 'Courier New', monospace; background: #1a202c; color: #e2e8f0; padding: 15px; border-radius: 8px; margin: 10px 0; font-size: 0.95rem;">
                         <div style="margin-bottom: 10px;"><strong style="color: #f6ad55;">Mathematical Model:</strong></div>
