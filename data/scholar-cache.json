@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 621,
-      "recent": 615
+      "all": 620,
+      "recent": 614
     },
     "h-index": {
       "all": 14,
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 107,
+      "cited": 106,
       "year": 2021
     },
     {
