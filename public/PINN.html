@@ -3901,15 +3901,15 @@
                 
                 // Apply research-based parameter optimization for different systems
                 if (systemType === "wave") {
-                    // Wave equation requires special handling (based on AGU research)
-                    document.getElementById("epochsSlider").value = "2000";
-                    document.getElementById("epochsValue").value = "2000";
-                    document.getElementById("lrSlider").value = "0.008";
-                    document.getElementById("lrValue").value = "0.008";
+                    // Wave equation: fast-converging defaults (IC bug fixed)
+                    document.getElementById("epochsSlider").value = "800";
+                    document.getElementById("epochsValue").value = "800";
+                    document.getElementById("lrSlider").value = "0.02";
+                    document.getElementById("lrValue").value = "0.02";
                     document.getElementById("hiddenSizeSlider").value = "12";
                     document.getElementById("hiddenSizeValue").value = "12";
-                    document.getElementById("collocationSlider").value = "80";
-                    document.getElementById("collocationValue").value = "80";
+                    document.getElementById("collocationSlider").value = "60";
+                    document.getElementById("collocationValue").value = "60";
                     document.getElementById("physicsWeightSlider").value = "0.8";
                     document.getElementById("physicsWeightValue").value = "0.8";
                 } else if (systemType === "heat") {
