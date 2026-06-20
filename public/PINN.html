@@ -1172,15 +1172,15 @@
                         <div class="parameter-item">
                             <label class="parameter-label">Learning Rate</label>
                             <div class="parameter-controls">
-                                <input type="range" id="lrSlider" min="0.001" max="0.1" step="0.001" value="0.012" />
-                                <input type="number" id="lrValue" min="0.001" max="0.1" step="0.001" value="0.012" />
+                                <input type="range" id="lrSlider" min="0.001" max="0.1" step="0.001" value="0.02" />
+                                <input type="number" id="lrValue" min="0.001" max="0.1" step="0.001" value="0.02" />
                             </div>
                         </div>
                         <div class="parameter-item">
                             <label class="parameter-label">Training Epochs</label>
                             <div class="parameter-controls">
-                                <input type="range" id="epochsSlider" min="300" max="3000" step="100" value="1800" />
-                                <input type="number" id="epochsValue" min="300" max="3000" step="100" value="1800" />
+                                <input type="range" id="epochsSlider" min="300" max="3000" step="100" value="800" />
+                                <input type="number" id="epochsValue" min="300" max="3000" step="100" value="800" />
                             </div>
                         </div>
                         <div class="parameter-item">
@@ -1200,8 +1200,8 @@
                         <div class="parameter-item">
                             <label class="parameter-label">Collocation Points</label>
                             <div class="parameter-controls">
-                                <input type="range" id="collocationSlider" min="30" max="150" step="10" value="80" />
-                                <input type="number" id="collocationValue" min="30" max="150" step="10" value="80" />
+                                <input type="range" id="collocationSlider" min="30" max="150" step="10" value="60" />
+                                <input type="number" id="collocationValue" min="30" max="150" step="10" value="60" />
                             </div>
                         </div>
                     </div>
@@ -3577,6 +3577,53 @@
                 return grads.map(g => Math.max(-2.0, Math.min(2.0, g)));
             }
 
+            // Enforce the initial-velocity condition ∂u/∂t(x,0)=0 (needed for second-order
+            // PDEs such as the wave equation to be well-posed). Returns the mean-squared u_t
+            // over the supplied (x, t=0) points.
+            velocityICLoss(points) {
+                if (!points || !points.length) return 0;
+                let s = 0;
+                for (const p of points) {
+                    const d = this.computePartialDerivatives(p.x, p.t);
+                    s += d.u_t * d.u_t;
+                }
+                return s / points.length;
+            }
+
+            // Analytical gradient of the velocity-IC loss w.r.t. NN weights:
+            //   dL/dθ = (2/M) Σ u_t · ∂u_t/∂θ
+            // reusing the same ∂u_t/∂θ expressions as computePhysicsNNGradients.
+            velocityICNNGradients(points) {
+                if (!points || !points.length) return Array(this.parameters.length).fill(0);
+                const grads = Array(this.parameters.length).fill(0);
+                const M = points.length;
+                const H = this.hiddenSize;
+                for (const p of points) {
+                    const x_in = p.x, t_in = p.t;
+                    const { hidden } = this.forward(x_in, t_in);
+                    const d = this.computePartialDerivatives(x_in, t_in);
+                    const scale = (2 / M) * d.u_t;
+                    for (let j = 0; j < H; j++) {
+                        const h = hidden[j].value;
+                        const s = 1 - h * h;
+                        const w1x = this.W1[j][0].value;
+                        const w1t = this.W1[j][1].value;
+                        const w2 = this.W2[j].value;
+                        grads[4 * j]     += scale * (-2 * w2 * w1t * x_in * h * s); // ∂u_t/∂W1_x
+                        grads[4 * j + 1] += scale * (w2 * s * (1 - 2 * w1t * t_in * h)); // ∂u_t/∂W1_t
+                        grads[4 * j + 2] += scale * (-2 * w2 * w1t * h * s); // ∂u_t/∂b1
+                        grads[4 * j + 3] += scale * (w1t * s); // ∂u_t/∂W2
+                    }
+                    // b2: ∂u_t/∂b2 = 0
+                    if (this.useResidualConnections) {
+                        // W_res_x: ∂u_t/∂ = 0; W_res_t: ∂u_t/∂ = 1; W_res_xt: ∂u_t/∂ = x
+                        grads[4 * H + 2] += scale * 1;
+                        grads[4 * H + 3] += scale * x_in;
+                    }
+                }
+                return grads.map(g => Math.max(-2.0, Math.min(2.0, g)));
+            }
+
             updatePhysicsParameters([gP1, gP2], lr, beta1 = 0.9, beta2 = 0.999, eps = 1e-8) {
                 // Track gradient magnitudes for adaptive schedules
                 if (this.gradStats && this.gradStats.paramGrads) {
@@ -3727,11 +3774,11 @@
                 // Initialize with reasonable defaults (will be overridden by UI values during training)
                 this.dataPoints = 8;       
                 this.trainingTimeRange = 4;  // Restrict training to first 4 seconds
-                this.lr = 0.01;            
-                this.epochs = 1200;         
+                this.lr = 0.02;            
+                this.epochs = 800;         
                 this.physicsWeight = 1.0;
                 this.hiddenSize = 12;       
-                this.collocationCount = 50; 
+                this.collocationCount = 60; 
 
                 this.currentSystem = this.createCurrentSystem();
                 this.regularNN = this.createCurrentNN(this.hiddenSize);
@@ -4236,8 +4283,15 @@
                             // Augment supervised data with BC/IC points to inject their gradients into NN params
                             const BC = this.currentSystem.getBoundaryConditions();
                             const IC = this.currentSystem.getInitialConditions();
+                            // Separate position-type ICs (supervised on u) from velocity ICs
+                            // (∂u/∂t = 0). Feeding velocity entries as u-targets would
+                            // contradict the displacement IC at t=0 (both sit at the same x,t=0)
+                            // and corrupt training — this is what crippled the wave equation.
+                            const dispIC = IC.filter(c => c.type !== 'initial_velocity');
+                            const velIC = IC.filter(c => c.type === 'initial_velocity')
+                                            .map(c => ({ x: c.x, t: c.t }));
                             const bcX = BC.map(b => b.x), bcT = BC.map(b => b.t), bcY = BC.map(b => b.value);
-                            const icX = IC.map(i => i.x), icT = IC.map(i => i.t), icY = IC.map(i => i.value);
+                            const icX = dispIC.map(i => i.x), icT = dispIC.map(i => i.t), icY = dispIC.map(i => i.value);
                             const augSpatial = inputs.spatialData.concat(bcX, icX);
                             const augTemporal = inputs.temporalData.concat(bcT, icT);
                             const augTargets = targets.concat(bcY, icY);
@@ -4245,14 +4299,18 @@
 
                             // Physics loss gradients for NN weights (the key PINN mechanism)
                             const gPhysNN = net.computePhysicsNNGradients(this.collocationPoints);
-                            const combinedNN = gNN.map((g, i) => g + this.physicsWeight * gPhysNN[i]);
+                            // Initial-velocity condition gradients ∂u/∂t(x,0)=0 (e.g. wave equation;
+                            // empty/zero for systems without a velocity IC such as the heat equation)
+                            const gVelIC = net.velocityICNNGradients(velIC);
+                            const combinedNN = gNN.map((g, i) => g + this.physicsWeight * (gPhysNN[i] + gVelIC[i]));
 
                             // Keep reported loss consistent with the data actually used to update NN params
                             const trainingDataStructured = { spatial: augSpatial, temporal: augTemporal, targets: augTargets };
                             const gPhys = net.computePhysicsGradients(this.collocationPoints);
                             net.updateParameters(combinedNN, currentLR);
                             net.updatePhysicsParameters(gPhys, currentLR);
-                            history.push(Math.max(1e-8, net.totalLoss(trainingDataStructured, this.collocationPoints, [], [])));
+                            history.push(Math.max(1e-8, net.totalLoss(trainingDataStructured, this.collocationPoints, [], [])
+                                        + this.physicsWeight * net.velocityICLoss(velIC)));
                             
                             if (epoch % stepEvery === 0 || epoch === this.epochs - 1) {
                                 this.updateLossChart(history, isPINN);
