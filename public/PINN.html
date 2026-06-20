@@ -1163,6 +1163,13 @@
                             </div>
                         </div>
                         <div class="parameter-item">
+                            <label class="parameter-label">Training Time Range (s)</label>
+                            <div class="parameter-controls">
+                                <input type="range" id="trainingTimeRangeSlider" min="1" max="10" step="0.5" value="4" />
+                                <input type="number" id="trainingTimeRangeValue" min="1" max="10" step="0.5" value="4" />
+                            </div>
+                        </div>
+                        <div class="parameter-item">
                             <label class="parameter-label">Learning Rate</label>
                             <div class="parameter-controls">
                                 <input type="range" id="lrSlider" min="0.001" max="0.1" step="0.001" value="0.012" />
@@ -1643,10 +1650,10 @@
             
             // Default sampling methods for 1D systems (time-only)
             // Override in subclasses for different behavior
-            sampleTrainingData(numPoints = 50, timeRange = 20) {
+            sampleTrainingData(numPoints = 50, timeRange = 20, trainingTimeRange = timeRange) {
                 const trainingData = [];
                 for (let i = 0; i < numPoints; i++) {
-                    const t = (i / (numPoints - 1)) * timeRange;
+                    const t = (i / (numPoints - 1)) * trainingTimeRange;
                     const u = this.getTruePosition(t);
                     trainingData.push({t, u});
                 }
@@ -1751,16 +1758,16 @@
             }
             
             // Override for 1D system with realistic measurement noise
-            sampleTrainingData(numPoints = 50, timeRange = 20) {
+            sampleTrainingData(numPoints = 50, timeRange = 20, trainingTimeRange = timeRange) {
                 const trainingData = [];
                 // Realistic sensor noise: 5% of initial amplitude
                 const noiseLevel = Math.abs(this.x0) * 0.05;
                 // Include endpoint anchors for stability
                 trainingData.push({ t: 0, x: this.getTruePosition(0) + (Math.random() - 0.5) * noiseLevel });
-                trainingData.push({ t: timeRange, x: this.getTruePosition(timeRange) + (Math.random() - 0.5) * noiseLevel });
+                trainingData.push({ t: trainingTimeRange, x: this.getTruePosition(trainingTimeRange) + (Math.random() - 0.5) * noiseLevel });
                 // Random interior points (creates natural gaps that reveal PINN advantage)
                 for (let i = 2; i < numPoints; i++) {
-                    const t = Math.random() * timeRange;
+                    const t = Math.random() * trainingTimeRange;
                     const x = this.getTruePosition(t) + (Math.random() - 0.5) * noiseLevel;
                     trainingData.push({ t, x });
                 }
@@ -1861,16 +1868,16 @@
             }
             
             // Override for 1D system with realistic measurement noise
-            sampleTrainingData(numPoints = 50, timeRange = 20) {
+            sampleTrainingData(numPoints = 50, timeRange = 20, trainingTimeRange = timeRange) {
                 const trainingData = [];
                 // Realistic sensor noise: 5% of initial angle
                 const noiseLevel = Math.abs(this.theta0) * 0.05;
                 // Include endpoint anchors
                 trainingData.push({ t: 0, x: this.getTruePosition(0) + (Math.random() - 0.5) * noiseLevel });
-                trainingData.push({ t: timeRange, x: this.getTruePosition(timeRange) + (Math.random() - 0.5) * noiseLevel });
+                trainingData.push({ t: trainingTimeRange, x: this.getTruePosition(trainingTimeRange) + (Math.random() - 0.5) * noiseLevel });
                 // Random interior points
                 for (let i = 2; i < numPoints; i++) {
-                    const t = Math.random() * timeRange;
+                    const t = Math.random() * trainingTimeRange;
                     const x = this.getTruePosition(t) + (Math.random() - 0.5) * noiseLevel;
                     trainingData.push({ t, x });
                 }
@@ -2014,16 +2021,16 @@
             }
             
             // Override for 1D system with realistic measurement noise
-            sampleTrainingData(numPoints = 50, timeRange = 20) {
+            sampleTrainingData(numPoints = 50, timeRange = 20, trainingTimeRange = timeRange) {
                 const trainingData = [];
                 // Realistic measurement noise: 5% of initial population
                 const noiseLevel = Math.abs(this.x0) * 0.05;
                 // Include endpoint anchors
                 trainingData.push({ t: 0, x: this.getTruePosition(0) + (Math.random() - 0.5) * noiseLevel });
-                trainingData.push({ t: timeRange, x: this.getTruePosition(timeRange) + (Math.random() - 0.5) * noiseLevel });
+                trainingData.push({ t: trainingTimeRange, x: this.getTruePosition(trainingTimeRange) + (Math.random() - 0.5) * noiseLevel });
                 // Random interior points
                 for (let i = 2; i < numPoints; i++) {
-                    const t = Math.random() * timeRange;
+                    const t = Math.random() * trainingTimeRange;
                     const x = this.getTruePosition(t) + (Math.random() - 0.5) * noiseLevel;
                     trainingData.push({ t, x });
                 }
@@ -3765,6 +3772,7 @@
                 
                 // Initialize with reasonable defaults (will be overridden by UI values during training)
                 this.dataPoints = 8;       
+                this.trainingTimeRange = 4;  // Restrict training to first 4 seconds
                 this.lr = 0.01;            
                 this.epochs = 1200;         
                 this.physicsWeight = 1.0;
@@ -4077,6 +4085,7 @@
                 // Common controls
                 const commonControls = [
                     { name: "dataPoints", slider: "dataSlider", input: "dataValue" },
+                    { name: "trainingTimeRange", slider: "trainingTimeRangeSlider", input: "trainingTimeRangeValue" },
                     { name: "lr", slider: "lrSlider", input: "lrValue" },
                     { name: "epochs", slider: "epochsSlider", input: "epochsValue" },
                     { name: "physicsWeight", slider: "physicsWeightSlider", input: "physicsWeightValue" },
@@ -4099,7 +4108,7 @@
                             this.pinn.physicsWeight = this.physicsWeight;
                         } else if (name === "hiddenSize") {
                             this.resetNetworks();
-                        } else if (name === "collocationCount" || name === "dataPoints") {
+                        } else if (name === "collocationCount" || name === "dataPoints" || name === "trainingTimeRange") {
                             this.generateTrainingData();
                             this.drawAllCanvases();
                         }
@@ -4153,7 +4162,7 @@
                 
                 // Use system-owned samplers for better separation of concerns
                 // Systems now handle their own domain-specific sampling logic
-                this.trainingData = this.currentSystem.sampleTrainingData(this.dataPoints, T);
+                this.trainingData = this.currentSystem.sampleTrainingData(this.dataPoints, T, this.trainingTimeRange || 4);
                 
                 if (this.currentSystem.is2D) {
                     // 2D systems handle collocation differently (spatial-temporal grid)
@@ -4201,6 +4210,7 @@
                 this.epochs = parseInt(document.getElementById("epochsValue").value) || 1200;
                 this.lr = parseFloat(document.getElementById("lrValue").value) || 0.01;
                 this.dataPoints = parseInt(document.getElementById("dataValue").value) || 8;
+                this.trainingTimeRange = parseFloat(document.getElementById("trainingTimeRangeValue").value) || 4;
                 this.hiddenSize = parseInt(document.getElementById("hiddenSizeValue").value) || 12;
                 this.collocationCount = parseInt(document.getElementById("collocationValue").value) || 50;
                 this.physicsWeight = parseFloat(document.getElementById("physicsWeightValue").value) || 1.0;
