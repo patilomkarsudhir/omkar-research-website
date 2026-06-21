@@ -1,0 +1,296 @@
+\documentclass[9pt, letterpaper]{article}
+
+\usepackage[margin=0.5in, top=0.32in, bottom=0.38in]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{multicol}
+\usepackage{mdframed}
+\usepackage{parskip}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\definecolor{lsupurple}{RGB}{70, 29, 124}
+\definecolor{lsugold}{RGB}{253, 184, 19}
+\definecolor{lightgold}{RGB}{255, 248, 215}
+\definecolor{lightpurple}{RGB}{242, 235, 255}
+\definecolor{darkgray}{RGB}{45, 45, 45}
+\definecolor{midgray}{RGB}{100, 100, 100}
+\definecolor{accentgray}{RGB}{75, 75, 75}
+
+\titleformat{\section}
+  {\color{lsupurple}\bfseries\normalsize}
+  {}{0em}{}
+  [\vspace{1pt}{\color{lsugold}\hrule height 1.8pt}\vspace{2pt}]
+
+\titlespacing{\section}{0pt}{5pt}{2pt}
+
+\setlist[itemize]{leftmargin=1.1em, itemsep=0.5pt, topsep=1pt, parsep=0pt,
+                  label={\color{lsugold}\small$\blacktriangleright$}}
+
+\newmdenv[
+  linecolor=lsugold, linewidth=1.8pt,
+  backgroundcolor=lightgold,
+  innerleftmargin=7pt, innerrightmargin=7pt,
+  innertopmargin=5pt, innerbottommargin=5pt,
+  roundcorner=3pt, skipabove=4pt, skipbelow=4pt
+]{goldbox}
+
+\newmdenv[
+  linecolor=lsupurple, linewidth=1.2pt,
+  backgroundcolor=lightpurple,
+  innerleftmargin=7pt, innerrightmargin=7pt,
+  innertopmargin=4pt, innerbottommargin=4pt,
+  roundcorner=3pt, skipabove=4pt, skipbelow=4pt
+]{purplebox}
+
+% Quote-style box with thick left bar
+\newmdenv[
+  topline=false, bottomline=false, rightline=false,
+  linecolor=lsugold, linewidth=4pt,
+  backgroundcolor=white,
+  innerleftmargin=10pt, innerrightmargin=4pt,
+  innertopmargin=2pt, innerbottommargin=2pt,
+  skipabove=4pt, skipbelow=4pt
+]{pullquote}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2pt}
+\setlength{\columnsep}{14pt}
+
+\begin{document}
+
+%% PAGE 1
+
+\begin{center}
+  \includegraphics[width=0.68\textwidth]{ARC Lab Best.png}
+\end{center}
+\vspace{-2pt}
+\begin{center}
+  {\color{lsupurple}\bfseries\normalsize
+    Dept.\ of Electrical \& Computer Engineering \quad$\cdot$\quad
+    Louisiana State University}\\[2pt]
+  {\color{darkgray}\small
+    Incoming Assistant Professor\quad
+    \textbf{Omkar Sudhir Patil, Ph.D.}\quad
+    $\cdot$\quad Fall 2026\quad
+    $\cdot$\quad \texttt{opatil1@lsu.edu}}
+\end{center}
+
+\vspace{3pt}
+{\color{lsupurple}\hrule height 0.5pt}
+\vspace{4pt}
+
+\section{THE FRONTIER \& OUR ANSWER}
+
+The next frontier of autonomy is \textbf{embodied AI operating safely in the real world}.
+Humanoids are leaving the lab, multi-agent teams coordinate at scale,
+and vehicles act under intermittent feedback.
+Today's learning systems excel at perception but lack stability guarantees.
+Classical control offers stability but struggles in data-driven, high-dimensional settings.
+\textit{The ARC Lab works on the gap between these two worlds.}
+
+We develop \textbf{mathematically certified} methods that fuse control theory,
+physics-based modeling, and deep learning.
+Our core framework, \textbf{Lyapunov-based deep learning for autonomy}, embeds
+stability directly into the learning dynamics of deep neural networks, with every
+adaptation law backed by a Lyapunov function and an analytically verifiable
+convergence certificate.
+The framework was validated on robotic platforms at the UF Autonomy Park and has
+produced 30+ publications and a forthcoming Springer book.
+
+\begin{goldbox}
+\small\textbf{The unifying question:}
+\textit{How can an autonomous system learn an unknown dynamics model online, in real time,
+while a Lyapunov function simultaneously certifies that the closed-loop trajectories
+remain stable and converge, with a proof rather than a simulation?}
+\end{goldbox}
+
+\section{OPEN RESEARCH THRUSTS}
+
+\begin{multicols}{2}\small
+
+\textbf{Physics-Aware Adaptive System ID.}
+Online frameworks in which neural networks learn energy-based formulations
+(Lagrangian, Hamiltonian, Rayleighian) in real time under intermittent feedback.
+Physics structure improves robustness and tracking; dynamic shifts trigger
+automatic fault flagging via interpretable parameters.
+
+\textbf{AI-Lyapunov Synthesis.}
+An AI system that \textit{discovers} control laws, Lyapunov functions, and safety
+certificates from data, acting as a co-theorist that can prove the laws of
+control rather than just approximate them.
+
+\columnbreak
+
+\textbf{Autonomy on General Metric Spaces.}
+A metric-first framework where stability, safety, and adaptation are expressed using
+distances and measures.
+One unified language for SE(3) robotics, networked systems, and distributional
+control, so proofs and algorithms transfer across representations.
+
+\textbf{Computational Physics-Data Fusion.}
+Structure-aware neural operators, learned closures constrained by physical priors,
+and differentiable solvers, with run-time certification that monitors residuals and
+triggers fallback models when risk increases.
+
+\end{multicols}
+
+\section{APPLICATION FRONTIERS}
+
+Each application area below is driven by a specific theoretical thrust above and
+tied to a concrete research direction the lab is actively pursuing.
+
+\begin{multicols}{2}\small
+
+\textbf{Humanoid robotics} \textit{(emerging direction).}
+Whole-body locomotion and dexterous manipulation involve uncertain contact dynamics,
+hybrid switching, and failure modes where a fall is physically catastrophic.
+Lyapunov-based adaptation is one of the few frameworks that can certify online
+learning under these conditions, and is a natural extension of prior work on
+adaptive control of robotic manipulators.
+
+\textbf{Multi-agent and swarm autonomy.}
+Distributed adaptive tracking, formation control, and cooperative estimation over
+heterogeneous agent networks, with graph-based estimators and node-level certificates
+that compose to network-level guarantees.
+A near-term funding target is ONR's CAST program for cooperative autonomous
+mine countermeasures.
+
+\columnbreak
+
+\textbf{Autonomy under intermittent feedback.}
+Composite adaptive control for systems that must remain stable when sensing is
+degraded, occluded, or temporarily lost.
+A direct extension of prior research on Lyapunov-based deep learning for unmanned
+vehicles operating with unreliable measurements.
+
+\textbf{Energy, power, and physical infrastructure.}
+Adaptive observers and physics-informed identification for nonlinear, decentralized
+power networks and thermodynamic systems, where online learning must respect
+conservation laws and decentralized constraints.
+
+\end{multicols}
+
+%% PAGE 2
+\newpage
+
+\begin{center}
+{\color{lsupurple}\bfseries\normalsize
+  ARC Lab $\cdot$ LSU ECE $\cdot$ Omkar Sudhir Patil, Ph.D.}
+\quad{\color{midgray}\small\texttt{opatil1@lsu.edu}}
+\end{center}
+\vspace{1pt}
+{\color{lsugold}\hrule height 2pt}
+\vspace{5pt}
+
+\begin{pullquote}
+\small\itshape\color{accentgray}
+\textbf{My passion is to bring the best out of people.}
+A dissertation is just an artifact. The real outcome of a Ph.D.\ is the
+researcher you become.
+I will hold you to the standard of work you are capable of, and I will meet your
+effort with my own.
+Few decisions in your professional life matter more than where, and with whom,
+you choose to do this work.
+\end{pullquote}
+
+\begin{multicols}{2}
+
+\section{WHAT YOU WILL GAIN}
+
+\textbf{Technical depth that transfers anywhere.}
+The hardest unsolved problems in industry robotics today (humanoid locomotion,
+adaptive manipulation, safe multi-robot coordination) live at the intersection
+of learning and control.
+Understanding why a learning system works, not just that it does, is what separates
+engineers who can build reliably from those who can only tune hyperparameters.
+
+\textbf{A portfolio of validated results.}
+At most three co-authors per paper, and every project goes to hardware.
+You leave with published work and demonstrated systems, the combination that
+gets you taken seriously whether you are interviewing at a robotics startup,
+an autonomy research team, or a top academic program.
+
+\textbf{Direct, high-bandwidth mentorship.}
+As an incoming professor building a first cohort, I work alongside you.
+You develop independent technical judgment from the person who built the framework,
+not through a chain of lab tradition.
+
+\textbf{The rare ability to go from proof to platform.}
+You will design, analyze, and physically validate control systems on real robots.
+Companies building on the frontier of autonomy, including humanoid platforms,
+autonomous vehicles, and aerial and underwater systems, need engineers who can do all three.
+Most candidates can only do one.
+
+\textbf{A credential that opens every door.}
+This training prepares you equally for a research role at a robotics company,
+a position at a national laboratory, or a faculty career.
+Where you take it is your choice.
+
+\columnbreak
+
+\section{TRAINING MODEL}
+
+\textbf{Year 1.}
+\textit{Nonlinear, Adaptive, and Learning-Based Control of Robotic Systems}
+(special topics, Fall 2026) builds the foundation.
+By year end you are working on an open problem, not reading background papers.
+
+\textbf{Years 2--3.}
+Conference submissions, external peer review, experimental validation,
+journal development targeting IEEE TAC, Automatica, or IEEE CSL.
+
+\textbf{Years 3--4.}
+Journal acceptance.
+Because every chapter is already peer-reviewed, the dissertation is a focused assembly
+of vetted, published work.
+
+\textbf{Graduation standard:} 3 first-authored journal papers (at least 1 accepted,
+2 submitted) and 1 published conference paper.
+
+\section{WHAT WE BUILD TOWARD}
+
+\begin{itemize}
+\item Embodied AI with \textit{provable} safety, not statistical hope
+\item ``Machine-discovered control theory'' with AI as co-theorist
+\item Guarantees that survive the move from simulator to hardware
+\item A unified language for control across robotics, networks, and learning
+\end{itemize}
+
+\end{multicols}
+
+\vspace{4pt}
+{\color{lsupurple}\hrule height 0.5pt}
+\vspace{5pt}
+
+\begin{goldbox}
+\begin{center}
+{\color{lsupurple}\bfseries\large
+  Funded Ph.D.\ Positions Open $\cdot$ Fall 2026}
+\end{center}
+\vspace{3pt}
+\begin{multicols}{3}\centering\small
+\textbf{Contact}\\[2pt]
+\texttt{opatil1@lsu.edu}\\[1pt]
+Subject: \texttt{[ARC Lab PhD]}
+
+\columnbreak\centering
+\textbf{Application Materials}\\[2pt]
+CV, transcripts, and one paragraph\\
+on a problem you find interesting\\
+and why.
+
+\columnbreak\centering
+\textbf{Department}\\[2pt]
+Electrical \& Computer Engineering\\
+Louisiana State University\\
+Baton Rouge, LA\ 70803
+\end{multicols}
+\end{goldbox}
+
+\end{document}

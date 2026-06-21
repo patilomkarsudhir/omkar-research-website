@@ -3,7 +3,7 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Contact - Omkar Patil",
-  description: "Get in touch for research collaborations, academic inquiries, or professional opportunities in control systems, robotics, and AI.",
+  description: "Get in touch for ARC Lab PhD applications, research collaborations, and academic inquiries in control systems, robotics, and AI.",
   alternates: {
     canonical: "/contact",
   },
@@ -19,7 +19,10 @@ export default function Page() {
         </p>
         <div className="mt-4 space-y-2 text-[var(--muted)]">
           <p>
-            <strong>Email:</strong> omkarpatil64328 [at] gmail.com
+            <strong>Email (ARC Lab / LSU):</strong> opatil1 [at] lsu.edu
+          </p>
+          <p>
+            <strong>Email (alternate):</strong> omkarpatil64328 [at] gmail.com
           </p>
           <p>
             <strong>LinkedIn:</strong>{" "}

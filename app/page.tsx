@@ -8,7 +8,7 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
 	title: "Omkar Patil - Controls, Robotics, AI Research",
-	description: "Research at University of Florida specializing in adaptive control, robotics, and deep learning. Expert in Lyapunov-based techniques, control barrier functions, and neural network adaptation for nonlinear systems.",
+	description: "Incoming Assistant Professor at LSU (Fall 2026) and founder of ARC Lab. Research in adaptive control, robotics, and AI with provable stability and safety guarantees.",
 	authors: [{ name: "Omkar Sudhir Patil" }],
 	creator: "Omkar Sudhir Patil",
 	alternates: {
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 	},
 	openGraph: {
 		title: "Omkar Patil - Controls, Robotics, AI Research",
-		description: "Innovative control strategies for robotics and automation. Interactive demos, research publications, and cutting-edge solutions in adaptive control and machine learning.",
+		description: "Incoming Assistant Professor at LSU and founder of ARC Lab. Research in adaptive control, robotics, and AI with provable guarantees.",
 		url: "https://omkarsudhirpatil.com",
 		siteName: "Omkar Patil Research",
 		images: [
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 	twitter: {
 		card: "summary_large_image",
 		title: "Omkar Patil - Controls, Robotics, AI Research",
-		description: "Innovative control strategies for robotics and automation. Interactive demos and cutting-edge research.",
+		description: "Incoming Assistant Professor at LSU and founder of ARC Lab. Adaptive control, robotics, and AI with provable guarantees.",
 		images: ["/research-overview-thumbnail.svg"],
 	},
 	robots: {
@@ -135,9 +135,43 @@ export default function Page() {
 							</a>
 						</div>
 					</div>
-					<p className="text-[var(--muted)]">
-						I am a Research Scientist at the University of Florida with a PhD specializing in cutting-edge controls, robotics, and AI-based methods. My work bridges advanced control theory, adaptive algorithms, and machine learning to design robust, real-time solutions for uncertain nonlinear systems and multi-agent environments. My research has led to breakthroughs in solving longstanding open problems in adaptive control and stability analysis, notably extending Lyapunov-based techniques to deep neural networks. I have developed innovative methods, ranging from Lyapunov-derived adaptive laws and safety-focused control barrier functions to physics-informed online learning algorithms, that have been implemented in real-world robotic platforms and validated through extensive experimentation. I am always eager to connect with fellow researchers, industry professionals, and anyone interested in the intersection of control theory, robotics, AI, and machine learning. Let us explore how innovative control strategies can transform robotics, automation, and beyond.
-					</p>
+					<div className="space-y-4">
+						<p className="text-[var(--muted)]">
+							I am joining Louisiana State University as a tenure-track Assistant Professor in the Department of Electrical and Computer Engineering in Fall 2026, where I am founding the Adaptive Control and Robotics (ARC) Lab. My research integrates control theory, adaptive methods, and deep learning to build autonomous systems with mathematically certifiable stability and safety guarantees.
+						</p>
+						<p className="text-[var(--muted)]">
+							My work has focused on Lyapunov-based learning and control for uncertain nonlinear systems, including deep neural network adaptation, safe control with barrier methods, and online physics-aware learning. I aim to develop methods that can move reliably from proof to platform, with validation on real robotic systems.
+						</p>
+					</div>
+				</div>
+			</Section>
+			<Section title="ARC Lab at LSU" subtitle="Adaptive Control and Robotics Lab (launching Fall 2026)">
+				<div className="rounded-2xl border border-white/10 bg-gradient-to-br from-[var(--panel)] to-white/[0.02] p-6 md:p-7">
+					<div className="grid gap-6 md:grid-cols-12 md:items-center">
+						<div className="md:col-span-4 flex justify-center md:justify-start">
+							<img
+								src="/ARC Lab Best.png"
+								alt="ARC Lab logo"
+								className="max-h-32 w-auto object-contain"
+							/>
+						</div>
+						<div className="md:col-span-8 space-y-4">
+							<p className="text-[var(--muted)]">
+								ARC Lab works on the frontier between modern AI and nonlinear control: systems that can learn online in uncertain, real-world environments while preserving provable stability and safety through Lyapunov-based certification.
+							</p>
+							<p className="text-[var(--muted)]">
+								Funded PhD positions are open for Fall 2026. I am especially excited to connect with students interested in adaptive control, safe autonomy, multi-agent systems, physics-aware learning, and learning-enabled robotics.
+							</p>
+							<div className="flex flex-wrap gap-3">
+								<Link href="/arc-lab" className="inline-flex items-center rounded-md border border-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--accent)] hover:bg-[var(--accent)]/10 transition-colors">
+									Explore ARC Lab
+								</Link>
+								<a href="/ARC_Lab_PhD_Flyer.pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-md border border-white/20 px-4 py-2 text-sm font-medium hover:bg-white/5 transition-colors">
+									View PhD Flyer
+								</a>
+							</div>
+						</div>
+					</div>
 				</div>
 			</Section>
 			<Section title="At a glance" subtitle="Live metrics from Google Scholar">

@@ -10,8 +10,8 @@ const websiteStructuredData = {
   "@type": "WebSite",
   "@id": "https://omkarsudhirpatil.com/#website",
   url: "https://omkarsudhirpatil.com",
-  name: "Omkar Patil Research",
-  description: "Research in adaptive control, robotics, and AI-driven safety-critical systems",
+  name: "Omkar Patil Research and ARC Lab",
+  description: "Incoming LSU faculty site and ARC Lab home for research in adaptive control, robotics, and AI-driven safety-critical systems",
   publisher: {
     "@id": "https://omkarsudhirpatil.com/#person",
   },
@@ -21,11 +21,11 @@ const organizationStructuredData = {
   "@context": "https://schema.org",
   "@type": "Organization",
   "@id": "https://omkarsudhirpatil.com/#organization",
-  name: "University of Florida",
-  url: "https://www.ufl.edu",
+  name: "Louisiana State University",
+  url: "https://www.lsu.edu",
   sameAs: [
-    "https://www.linkedin.com/school/university-of-florida/",
-    "https://twitter.com/UF",
+    "https://www.linkedin.com/school/louisiana-state-university/",
+    "https://x.com/lsu",
   ],
   logo: "https://omkarsudhirpatil.com/favicon.ico",
 };
@@ -36,8 +36,8 @@ const personStructuredData = {
   "@id": "https://omkarsudhirpatil.com/#person",
   name: "Omkar Sudhir Patil",
   alternateName: ["Omkar Patil"],
-  jobTitle: "Research Scientist",
-  description: "Research Scientist specializing in adaptive control, robotics, and AI-driven safety-critical systems.",
+  jobTitle: "Incoming Assistant Professor (Fall 2026)",
+  description: "Incoming Assistant Professor at LSU and founder of ARC Lab, specializing in adaptive control, robotics, and AI-driven safety-critical systems.",
   url: "https://omkarsudhirpatil.com",
   image: "https://omkarsudhirpatil.com/Profile%20Pic.jpg",
   worksFor: {
@@ -67,10 +67,15 @@ const personStructuredData = {
   ],
   contactPoint: {
     "@type": "ContactPoint",
-    email: "mailto:patilomkarsudhir@ufl.edu",
+    email: "mailto:opatil1@lsu.edu",
     contactType: "Academic and research inquiries",
   },
   hasPart: [
+    {
+      "@type": "WebPage",
+      name: "ARC Lab",
+      url: "https://omkarsudhirpatil.com/arc-lab",
+    },
     {
       "@type": "WebPage",
       name: "Curriculum Vitae",

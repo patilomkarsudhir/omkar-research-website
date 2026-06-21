@@ -1,5 +1,6 @@
 export const NAV_LINKS = [
   { href: "/", label: "Home" },
+  { href: "/arc-lab", label: "ARC Lab" },
   { href: "/research", label: "Research" },
   { href: "/publications", label: "Publications" },
   { href: "/cv", label: "CV" },
@@ -9,6 +10,6 @@ export const NAV_LINKS = [
 export const SITE = {
   owner: "Omkar Sudhir Patil",
   navName: "Omkar Sudhir Patil",
-  role: "Research Scientist",
-  tag: "Control • AI • Robotics",
+  role: "Incoming Assistant Professor",
+  tag: "Control • AI • Robotics • ARC Lab",
 };
