@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 620,
-      "recent": 614
+      "all": 621,
+      "recent": 615
     },
     "h-index": {
       "all": 14,
@@ -83,7 +83,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:MXK_kJrjxJIC",
       "authors": "A Isaly, OS Patil, HM Sweatland, RG Sanfelice, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 69 (7), 4883-4890, 2024",
-      "cited": 23,
+      "cited": 24,
       "year": 2024
     },
     {
