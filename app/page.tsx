@@ -1,5 +1,4 @@
 import Section from "./components/Section";
-import HeroMetricsClient from "./components/HeroMetricsClient";
 import Link from "next/link";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import GitHubIcon from "@mui/icons-material/GitHub";
@@ -173,9 +172,6 @@ export default function Page() {
 						</div>
 					</div>
 				</div>
-			</Section>
-			<Section title="At a glance" subtitle="Live metrics from Google Scholar">
-				<HeroMetricsClient />
 			</Section>
 			<Section title="Interactive Demos">
 				<div className="grid gap-4 justify-center grid-cols-[repeat(auto-fit,minmax(180px,1fr))] sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
