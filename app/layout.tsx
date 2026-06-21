@@ -1,5 +1,6 @@
 import "./globals.css";
-import SiteFrame from "./components/SiteFrame";
+import NavBar from "./components/NavBar";
+import Footer from "./components/Footer";
 import SiteTracker from "./components/SiteTracker";
 import { Analytics } from '@vercel/analytics/next';
 import { Metadata, Viewport } from "next";
@@ -130,7 +131,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen flex flex-col">
         <SiteTracker />
-        <SiteFrame>{children}</SiteFrame>
+        <NavBar />
+        <main className="flex-1 container py-10">{children}</main>
+        <Footer />
         <Analytics />
       </body>
     </html>

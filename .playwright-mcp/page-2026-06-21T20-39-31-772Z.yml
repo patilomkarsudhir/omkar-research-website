@@ -1,0 +1,84 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: ℒ
+      - generic [ref=e7]: Real Time LaTeX
+    - button "☰" [ref=e9] [cursor=pointer]
+    - textbox [ref=e10]: Untitled Paper
+    - generic [ref=e11]: 0 words · 0 eq · 3 files
+    - generic "Live preview status" [ref=e12]
+    - combobox "TeX engine" [ref=e14] [cursor=pointer]:
+      - option "pdflatex" [selected]
+      - option "xelatex"
+      - option "lualatex"
+      - option "platex"
+    - button "▸ Compile" [ref=e15] [cursor=pointer]
+    - button "⟳ Auto" [ref=e16] [cursor=pointer]
+    - button "+ New ▾" [ref=e18] [cursor=pointer]
+    - button "⚙" [ref=e19] [cursor=pointer]
+  - generic [ref=e20]:
+    - generic [ref=e21]:
+      - generic [ref=e22]:
+        - button "Files" [ref=e23] [cursor=pointer]
+        - button "Outline" [ref=e24] [cursor=pointer]
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - button "+ File" [ref=e27] [cursor=pointer]
+          - button "↑ Img" [ref=e28] [cursor=pointer]
+        - generic [ref=e29]:
+          - generic [ref=e30] [cursor=pointer]:
+            - generic [ref=e31]: ∫
+            - generic [ref=e32]: main.tex
+            - generic "Main file" [ref=e33]: main
+            - button "⋯" [ref=e34]
+          - generic [ref=e35] [cursor=pointer]:
+            - generic [ref=e36]: ∫
+            - generic [ref=e37]: intro.tex
+            - button "⋯" [ref=e38]
+          - generic [ref=e39] [cursor=pointer]:
+            - generic [ref=e40]: ❝
+            - generic [ref=e41]: refs.bib
+            - button "⋯" [ref=e42]
+    - generic [ref=e43]:
+      - generic [ref=e44]:
+        - generic [ref=e45]: Format
+        - button "B" [ref=e46] [cursor=pointer]
+        - button "I" [ref=e47] [cursor=pointer]
+        - button "TT" [ref=e48] [cursor=pointer]
+        - button "U̲" [ref=e49] [cursor=pointer]
+        - generic [ref=e51]: Struct
+        - button "§" [ref=e52] [cursor=pointer]
+        - button "§§" [ref=e53] [cursor=pointer]
+        - button "§§§" [ref=e54] [cursor=pointer]
+        - generic [ref=e56]: Math
+        - button "$·$" [ref=e57] [cursor=pointer]
+        - button "$$·$$" [ref=e58] [cursor=pointer]
+        - button "eq" [ref=e59] [cursor=pointer]
+        - button "align" [ref=e60] [cursor=pointer]
+        - button "√" [ref=e61] [cursor=pointer]
+        - button "a/b" [ref=e62] [cursor=pointer]
+        - generic [ref=e64]: Envs
+        - button "thm" [ref=e65] [cursor=pointer]
+        - button "def" [ref=e66] [cursor=pointer]
+        - button "pf" [ref=e67] [cursor=pointer]
+        - button "•" [ref=e68] [cursor=pointer]
+        - button "1." [ref=e69] [cursor=pointer]
+        - button "fig" [ref=e70] [cursor=pointer]
+        - generic [ref=e72]: Ref
+        - button "\\label" [ref=e73] [cursor=pointer]
+        - button "\\ref" [ref=e74] [cursor=pointer]
+        - button "\\cite" [ref=e75] [cursor=pointer]
+        - button "\\fn" [ref=e76] [cursor=pointer]
+        - button "Ω" [ref=e78] [cursor=pointer]
+      - generic [ref=e79]:
+        - generic [ref=e80]: ∫
+        - generic [ref=e81]: main.tex
+        - generic [ref=e82]: main
+      - textbox [ref=e84]: "\\documentclass[11pt]{article} \\usepackage[utf8]{inputenc} \\usepackage{amsmath, amssymb, amsthm} \\usepackage{graphicx} \\usepackage{tikz} \\usepackage[numbers]{natbib} \\usepackage{hyperref} \\newcommand{\\norm}[1]{\\left\\|#1\\right\\|} \\newcommand{\\inner}[2]{\\langle #1,\\, #2 \\rangle} \\newtheorem{theorem}{Theorem}[section] \\newtheorem{definition}{Definition}[section] \\title{Real-Time \\LaTeX: A Researcher-Grade Scratchpad} \\author{Jane Doe \\and John Smith} \\date{\\today} \\begin{document} \\maketitle \\begin{abstract} This document is compiled by a \\emph{real} TeX Live engine over the network: TikZ, \\texttt{natbib} citations, custom macros, theorem environments, and multi-file \\texttt{\\textbackslash input} all work exactly as in a desktop LaTeX install. The instant HTML preview gives you sub-second feedback while you type; hit \\textbf{Compile} for the submission-grade PDF. \\end{abstract} \\input{intro.tex} \\section{The Cauchy-Schwarz Inequality} \\label{sec:cs} Let $H$ be a Hilbert space with inner product $\\inner{\\cdot}{\\cdot}$ and induced norm $\\norm{x} = \\sqrt{\\inner{x}{x}}$. \\begin{theorem}[Cauchy-Schwarz] \\label{thm:cs} For all $x, y \\in H$, \\begin{equation} \\label{eq:cs} |\\inner{x}{y}|^2 \\leq \\inner{x}{x}\\cdot\\inner{y}{y}. \\end{equation} \\end{theorem} Equation~\\eqref{eq:cs} is the cornerstone of inner-product geometry; see~\\citet{rudin1976} for a classical treatment. \\section{A TikZ Figure} \\begin{figure}[ht] \\centering \\begin{tikzpicture}[scale=1.4] \\draw[->] (-0.2,0) -- (2.4,0) node[right] {$x$}; \\draw[->] (0,-0.2) -- (0,2.4) node[above] {$y$}; \\draw[thick,blue] (0,0) -- (2,1.2) node[midway,above left] {$x$}; \\draw[thick,red] (0,0) -- (1.2,2) node[midway,right] {$y$}; \\draw (0,0) circle (0.4); \\end{tikzpicture} \\caption{Two vectors in $H$ and the angle between them.} \\label{fig:vectors} \\end{figure} Figure~\\ref{fig:vectors} illustrates the geometry behind~\\eqref{eq:cs}. \\bibliographystyle{plainnat} \\bibliography{refs} \\end{document}"
+    - generic [ref=e87]:
+      - generic [ref=e88]:
+        - button "Live" [ref=e89] [cursor=pointer]
+        - button "PDF" [ref=e90] [cursor=pointer]
+      - generic [ref=e91]:
+        - button "✎ Edit" [ref=e92] [cursor=pointer]
+        - button "Print" [ref=e93] [cursor=pointer]

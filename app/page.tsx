@@ -280,7 +280,7 @@ export default function Page() {
 							<div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/5 blur-xl group-hover:scale-125 transition" />
 						</div>
 					</a>
-					<a href="/latex" className="group">
+					<a href="/real_time_latex.html" className="group">
 						<div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-sky-500/20 to-sky-700/30 transition shadow-sm hover:shadow-md hover:brightness-110 dark:border-white/5 w-[210px] h-48">
 							<div className="h-28 sm:h-32 w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-sky-100 to-sky-200 dark:from-sky-900/20 dark:to-sky-800/20">
 								{/* Simple LaTeX wordmark-style icon */}

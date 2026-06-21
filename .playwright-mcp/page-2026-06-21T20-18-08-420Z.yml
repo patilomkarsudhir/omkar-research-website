@@ -1,0 +1,194 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: ℒ
+        - generic [ref=e7]: Real Time LaTeX
+      - button "☰" [ref=e9] [cursor=pointer]
+      - textbox [ref=e10]: Untitled Paper
+      - generic [ref=e11]: 0 words · 0 eq · 3 files
+      - generic "Live preview status" [ref=e12]
+      - combobox "TeX engine" [ref=e14] [cursor=pointer]:
+        - option "pdflatex" [selected]
+        - option "xelatex"
+        - option "lualatex"
+        - option "platex"
+      - button "▸ Compile" [ref=e15] [cursor=pointer]
+      - button "⟳ Auto" [ref=e16] [cursor=pointer]
+      - button "+ New ▾" [ref=e18] [cursor=pointer]
+      - button "⚙" [ref=e19] [cursor=pointer]
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - button "Files" [ref=e23] [cursor=pointer]
+          - button "Outline" [ref=e24] [cursor=pointer]
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - button "+ File" [ref=e27] [cursor=pointer]
+            - button "↑ Img" [ref=e28] [cursor=pointer]
+          - generic [ref=e29]:
+            - generic [ref=e30] [cursor=pointer]:
+              - generic [ref=e31]: ∫
+              - generic [ref=e32]: main.tex
+              - generic "Main file" [ref=e33]: main
+              - button "⋯" [ref=e34]
+            - generic [ref=e35] [cursor=pointer]:
+              - generic [ref=e36]: ∫
+              - generic [ref=e37]: intro.tex
+              - button "⋯" [ref=e38]
+            - generic [ref=e39] [cursor=pointer]:
+              - generic [ref=e40]: ❝
+              - generic [ref=e41]: refs.bib
+              - button "⋯" [ref=e42]
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - generic [ref=e45]: Format
+          - button "B" [ref=e46] [cursor=pointer]
+          - button "I" [ref=e47] [cursor=pointer]
+          - button "TT" [ref=e48] [cursor=pointer]
+          - button "U̲" [ref=e49] [cursor=pointer]
+          - generic [ref=e51]: Struct
+          - button "§" [ref=e52] [cursor=pointer]
+          - button "§§" [ref=e53] [cursor=pointer]
+          - button "§§§" [ref=e54] [cursor=pointer]
+          - generic [ref=e56]: Math
+          - button "$·$" [ref=e57] [cursor=pointer]
+          - button "$$·$$" [ref=e58] [cursor=pointer]
+          - button "eq" [ref=e59] [cursor=pointer]
+          - button "align" [ref=e60] [cursor=pointer]
+          - button "√" [ref=e61] [cursor=pointer]
+          - button "a/b" [ref=e62] [cursor=pointer]
+          - generic [ref=e64]: Envs
+          - button "thm" [ref=e65] [cursor=pointer]
+          - button "def" [ref=e66] [cursor=pointer]
+          - button "pf" [ref=e67] [cursor=pointer]
+          - button "•" [ref=e68] [cursor=pointer]
+          - button "1." [ref=e69] [cursor=pointer]
+          - button "fig" [ref=e70] [cursor=pointer]
+          - generic [ref=e72]: Ref
+          - button "\\label" [ref=e73] [cursor=pointer]
+          - button "\\ref" [ref=e74] [cursor=pointer]
+          - button "\\cite" [ref=e75] [cursor=pointer]
+          - button "\\fn" [ref=e76] [cursor=pointer]
+          - button "Ω" [ref=e78] [cursor=pointer]
+        - generic [ref=e79]:
+          - generic [ref=e80]: ∫
+          - generic [ref=e81]: main.tex
+          - generic [ref=e82]: main
+        - generic [ref=e84]:
+          - textbox [active] [ref=e85]
+          - generic [ref=e90]:
+            - generic [ref=e91]:
+              - generic [ref=e92]: "1"
+              - text: "\\documentclass[11pt]{article}"
+            - generic [ref=e93]:
+              - generic [ref=e94]: "2"
+              - text: "\\usepackage[utf8]{inputenc}"
+            - generic [ref=e95]:
+              - generic [ref=e96]: "3"
+              - text: "\\usepackage{amsmath, amssymb, amsthm}"
+            - generic [ref=e97]:
+              - generic [ref=e98]: "4"
+              - text: "\\usepackage{graphicx}"
+            - generic [ref=e99]:
+              - generic [ref=e100]: "5"
+              - text: "\\usepackage{tikz}"
+            - generic [ref=e101]:
+              - generic [ref=e102]: "6"
+              - text: "\\usepackage[numbers]{natbib}"
+            - generic [ref=e103]:
+              - generic [ref=e104]: "7"
+              - text: "\\usepackage{hyperref}"
+            - generic [ref=e106]: "8"
+            - generic [ref=e107]:
+              - generic [ref=e108]: "9"
+              - text: "\\newcommand{\\norm}[1]{\\left\\|#1\\right\\|}"
+            - generic [ref=e109]:
+              - generic [ref=e110]: "10"
+              - text: "\\newcommand{\\inner}[2]{\\langle #1,\\, #2 \\rangle}"
+            - generic [ref=e112]: "11"
+            - generic [ref=e113]:
+              - generic [ref=e114]: "12"
+              - text: "\\newtheorem{theorem}{Theorem}[section]"
+            - generic [ref=e115]:
+              - generic [ref=e116]: "13"
+              - text: "\\newtheorem{definition}{Definition}[section]"
+            - generic [ref=e118]: "14"
+            - generic [ref=e119]:
+              - generic [ref=e120]: "15"
+              - text: "\\title{Real-Time \\LaTeX: A Researcher-Grade Scratchpad}"
+            - generic [ref=e121]:
+              - generic [ref=e122]: "16"
+              - text: "\\author{Jane Doe \\and John Smith}"
+            - generic [ref=e123]:
+              - generic [ref=e124]: "17"
+              - text: "\\date{\\today}"
+            - generic [ref=e126]: "18"
+            - generic [ref=e127]:
+              - generic [ref=e128]: "19"
+              - text: "\\begin{document}"
+            - generic [ref=e129]:
+              - generic [ref=e130]: "20"
+              - text: \maketitle
+            - generic [ref=e132]: "21"
+            - generic [ref=e133]:
+              - generic [ref=e134]: "22"
+              - text: "\\begin{abstract}"
+            - generic [ref=e135]:
+              - generic [ref=e136]: "23"
+              - text: "This document is compiled by a \\emph{real} TeX Live engine over the network:"
+            - generic [ref=e137]:
+              - generic [ref=e138]: "24"
+              - text: "TikZ, \\texttt{natbib} citations, custom macros, theorem environments, and"
+            - generic [ref=e139]:
+              - generic [ref=e140]: "25"
+              - text: "multi-file \\texttt{\\textbackslash input} all work exactly as in a desktop"
+            - generic [ref=e141]:
+              - generic [ref=e142]: "26"
+              - text: LaTeX install. The instant HTML preview gives you sub-second feedback while
+            - generic [ref=e143]:
+              - generic [ref=e144]: "27"
+              - text: "you type; hit \\textbf{Compile} for the submission-grade PDF."
+            - generic [ref=e145]:
+              - generic [ref=e146]: "28"
+              - text: "\\end{abstract}"
+            - generic [ref=e148]: "29"
+            - generic [ref=e149]:
+              - generic [ref=e150]: "30"
+              - text: "\\input{intro.tex}"
+            - generic [ref=e152]: "31"
+            - generic [ref=e153]:
+              - generic [ref=e154]: "32"
+              - text: "\\section{The Cauchy-Schwarz Inequality}"
+            - generic [ref=e155]:
+              - generic [ref=e156]: "33"
+              - text: "\\label{sec:cs}"
+            - generic [ref=e158]: "34"
+            - generic [ref=e159]:
+              - generic [ref=e160]: "35"
+              - text: "Let $H$ be a Hilbert space with inner product $\\inner{\\cdot}{\\cdot}$ and induced"
+            - generic [ref=e161]:
+              - generic [ref=e162]: "36"
+              - text: "norm $\\norm{x} = \\sqrt{\\inner{x}{x}}$."
+            - generic [ref=e164]: "37"
+            - generic [ref=e165]:
+              - generic [ref=e166]: "38"
+              - text: "\\begin{theorem}[Cauchy-Schwarz]"
+            - generic [ref=e167]:
+              - generic [ref=e168]: "39"
+              - text: "\\label{thm:cs}"
+            - generic [ref=e169]:
+              - generic [ref=e170]: "40"
+              - text: For all $x, y \in H$,
+            - generic [ref=e171]:
+              - generic [ref=e172]: "41"
+              - text: "\\begin{equation}"
+            - generic [ref=e173]:
+              - generic [ref=e174]: "42"
+              - text: "\\label{eq:cs}"
+      - generic [ref=e181]:
+        - generic [ref=e182]:
+          - button "Live" [ref=e183] [cursor=pointer]
+          - button "PDF" [ref=e184] [cursor=pointer]
+        - button "Print" [ref=e186] [cursor=pointer]
+  - generic [ref=e190]: "[bundle] error"

@@ -1,0 +1,465 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: ℒ
+        - generic [ref=e7]: Real Time LaTeX
+      - button "☰" [ref=e9] [cursor=pointer]
+      - textbox [ref=e10]: Untitled Paper
+      - generic [ref=e11]: 394 words · 1 eq · 3 files
+      - generic "Live preview status" [ref=e12]
+      - combobox "TeX engine" [ref=e14] [cursor=pointer]:
+        - option "pdflatex" [selected]
+        - option "xelatex"
+        - option "lualatex"
+        - option "platex"
+      - button "▸ Compile" [ref=e15] [cursor=pointer]
+      - button "⟳ Auto" [ref=e16] [cursor=pointer]
+      - button "+ New ▾" [ref=e18] [cursor=pointer]
+      - button "⚙" [ref=e19] [cursor=pointer]
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - button "Files" [ref=e23] [cursor=pointer]
+          - button "Outline" [ref=e24] [cursor=pointer]
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - button "+ File" [ref=e27] [cursor=pointer]
+            - button "↑ Img" [ref=e28] [cursor=pointer]
+          - generic [ref=e29]:
+            - generic [ref=e30] [cursor=pointer]:
+              - generic [ref=e31]: ∫
+              - generic [ref=e32]: main.tex
+              - generic "Main file" [ref=e33]: main
+              - button "⋯" [ref=e34]
+            - generic [ref=e35] [cursor=pointer]:
+              - generic [ref=e36]: ∫
+              - generic [ref=e37]: intro.tex
+              - button "⋯" [ref=e38]
+            - generic [ref=e39] [cursor=pointer]:
+              - generic [ref=e40]: ❝
+              - generic [ref=e41]: refs.bib
+              - button "⋯" [ref=e42]
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - generic [ref=e45]: Format
+          - button "B" [ref=e46] [cursor=pointer]
+          - button "I" [ref=e47] [cursor=pointer]
+          - button "TT" [ref=e48] [cursor=pointer]
+          - button "U̲" [ref=e49] [cursor=pointer]
+          - generic [ref=e51]: Struct
+          - button "§" [ref=e52] [cursor=pointer]
+          - button "§§" [ref=e53] [cursor=pointer]
+          - button "§§§" [ref=e54] [cursor=pointer]
+          - generic [ref=e56]: Math
+          - button "$·$" [ref=e57] [cursor=pointer]
+          - button "$$·$$" [ref=e58] [cursor=pointer]
+          - button "eq" [ref=e59] [cursor=pointer]
+          - button "align" [ref=e60] [cursor=pointer]
+          - button "√" [ref=e61] [cursor=pointer]
+          - button "a/b" [ref=e62] [cursor=pointer]
+          - generic [ref=e64]: Envs
+          - button "thm" [ref=e65] [cursor=pointer]
+          - button "def" [ref=e66] [cursor=pointer]
+          - button "pf" [ref=e67] [cursor=pointer]
+          - button "•" [ref=e68] [cursor=pointer]
+          - button "1." [ref=e69] [cursor=pointer]
+          - button "fig" [ref=e70] [cursor=pointer]
+          - generic [ref=e72]: Ref
+          - button "\\label" [ref=e73] [cursor=pointer]
+          - button "\\ref" [ref=e74] [cursor=pointer]
+          - button "\\cite" [ref=e75] [cursor=pointer]
+          - button "\\fn" [ref=e76] [cursor=pointer]
+          - button "Ω" [ref=e78] [cursor=pointer]
+        - generic [ref=e79]:
+          - generic [ref=e80]: ∫
+          - generic [ref=e81]: main.tex
+          - generic [ref=e82]: main
+        - generic [ref=e84]:
+          - textbox [active] [ref=e85]
+          - generic [ref=e90]:
+            - generic [ref=e91]:
+              - generic [ref=e92]: "1"
+              - text: "\\documentclass[11pt]{article}"
+            - generic [ref=e93]:
+              - generic [ref=e94]: "2"
+              - text: "\\usepackage[utf8]{inputenc}"
+            - generic [ref=e95]:
+              - generic [ref=e96]: "3"
+              - text: "\\usepackage{amsmath, amssymb, amsthm}"
+            - generic [ref=e97]:
+              - generic [ref=e98]: "4"
+              - text: "\\usepackage{graphicx}"
+            - generic [ref=e99]:
+              - generic [ref=e100]: "5"
+              - text: "\\usepackage{tikz}"
+            - generic [ref=e101]:
+              - generic [ref=e102]: "6"
+              - text: "\\usepackage[numbers]{natbib}"
+            - generic [ref=e103]:
+              - generic [ref=e104]: "7"
+              - text: "\\usepackage{hyperref}"
+            - generic [ref=e106]: "8"
+            - generic [ref=e107]:
+              - generic [ref=e108]: "9"
+              - text: "\\newcommand{\\norm}[1]{\\left\\|#1\\right\\|}"
+            - generic [ref=e109]:
+              - generic [ref=e110]: "10"
+              - text: "\\newcommand{\\inner}[2]{\\langle #1,\\, #2 \\rangle}"
+            - generic [ref=e112]: "11"
+            - generic [ref=e113]:
+              - generic [ref=e114]: "12"
+              - text: "\\newtheorem{theorem}{Theorem}[section]"
+            - generic [ref=e115]:
+              - generic [ref=e116]: "13"
+              - text: "\\newtheorem{definition}{Definition}[section]"
+            - generic [ref=e118]: "14"
+            - generic [ref=e119]:
+              - generic [ref=e120]: "15"
+              - text: "\\title{Real-Time \\LaTeX: A Researcher-Grade Scratchpad}"
+            - generic [ref=e121]:
+              - generic [ref=e122]: "16"
+              - text: "\\author{Jane Doe \\and John Smith}"
+            - generic [ref=e123]:
+              - generic [ref=e124]: "17"
+              - text: "\\date{\\today}"
+            - generic [ref=e126]: "18"
+            - generic [ref=e127]:
+              - generic [ref=e128]: "19"
+              - text: "\\begin{document}"
+            - generic [ref=e129]:
+              - generic [ref=e130]: "20"
+              - text: \maketitle
+            - generic [ref=e132]: "21"
+            - generic [ref=e133]:
+              - generic [ref=e134]: "22"
+              - text: "\\begin{abstract}"
+            - generic [ref=e135]:
+              - generic [ref=e136]: "23"
+              - text: "This document is compiled by a \\emph{real} TeX Live engine over the network:"
+            - generic [ref=e137]:
+              - generic [ref=e138]: "24"
+              - text: "TikZ, \\texttt{natbib} citations, custom macros, theorem environments, and"
+            - generic [ref=e139]:
+              - generic [ref=e140]: "25"
+              - text: "multi-file \\texttt{\\textbackslash input} all work exactly as in a desktop"
+            - generic [ref=e141]:
+              - generic [ref=e142]: "26"
+              - text: LaTeX install. The instant HTML preview gives you sub-second feedback while
+            - generic [ref=e143]:
+              - generic [ref=e144]: "27"
+              - text: "you type; hit \\textbf{Compile} for the submission-grade PDF."
+            - generic [ref=e145]:
+              - generic [ref=e146]: "28"
+              - text: "\\end{abstract}"
+            - generic [ref=e148]: "29"
+            - generic [ref=e149]:
+              - generic [ref=e150]: "30"
+              - text: "\\input{intro.tex}"
+            - generic [ref=e152]: "31"
+            - generic [ref=e153]:
+              - generic [ref=e154]: "32"
+              - text: "\\section{The Cauchy-Schwarz Inequality}"
+            - generic [ref=e155]:
+              - generic [ref=e156]: "33"
+              - text: "\\label{sec:cs}"
+            - generic [ref=e158]: "34"
+            - generic [ref=e159]:
+              - generic [ref=e160]: "35"
+              - text: "Let $H$ be a Hilbert space with inner product $\\inner{\\cdot}{\\cdot}$ and induced"
+            - generic [ref=e161]:
+              - generic [ref=e162]: "36"
+              - text: "norm $\\norm{x} = \\sqrt{\\inner{x}{x}}$."
+            - generic [ref=e164]: "37"
+            - generic [ref=e165]:
+              - generic [ref=e166]: "38"
+              - text: "\\begin{theorem}[Cauchy-Schwarz]"
+            - generic [ref=e167]:
+              - generic [ref=e168]: "39"
+              - text: "\\label{thm:cs}"
+            - generic [ref=e169]:
+              - generic [ref=e170]: "40"
+              - text: For all $x, y \in H$,
+            - generic [ref=e171]:
+              - generic [ref=e172]: "41"
+              - text: "\\begin{equation}"
+            - generic [ref=e173]:
+              - generic [ref=e174]: "42"
+              - text: "\\label{eq:cs}"
+      - generic [ref=e180]:
+        - generic [ref=e181]:
+          - generic [ref=e182]:
+            - button "Live" [ref=e183] [cursor=pointer]
+            - button "PDF" [ref=e184] [cursor=pointer]
+          - button "Print" [ref=e186] [cursor=pointer]
+        - generic [ref=e189]:
+          - generic [ref=e191]:
+            - generic [ref=e192]:
+              - text: Real-Time
+              - generic [ref=e193]:
+                - text: L
+                - superscript [ref=e194]: A
+                - text: T
+                - subscript [ref=e195]: E
+                - text: X
+              - text: ": A Researcher-Grade Scratchpad"
+            - generic [ref=e196]: Jane Doe & John Smith
+            - generic [ref=e197]: June 21, 2026
+          - generic:
+            - text: Abstract. This document is compiled by a
+            - emphasis [ref=e198] [cursor=pointer]: real
+            - text: "TeX Live engine over the network: TikZ,"
+            - code [ref=e199] [cursor=pointer]: natbib
+            - text: citations, custom macros, theorem environments, and multi-file
+            - code [ref=e200] [cursor=pointer]: input
+            - text: all work exactly as in a desktop LaTeX install. The instant HTML preview gives you sub-second feedback while you type; hit
+            - strong [ref=e201] [cursor=pointer]: Compile
+            - text: for the submission-grade PDF.
+          - heading "1 Introduction" [level=2] [ref=e202] [cursor=pointer]
+          - paragraph [ref=e203]:
+            - text: This section lives in a separate file,
+            - code [ref=e204]: intro.tex
+            - text: ", and is pulled in with |"
+          - heading "2 Introduction" [level=2] [ref=e205]
+          - paragraph
+          - paragraph [ref=e206]:
+            - text: This section lives in a separate file,
+            - code [ref=e207]: intro.tex
+            - text: ", and is pulled in with |"
+          - heading "3 Introduction" [level=2] [ref=e208]
+          - paragraph
+          - paragraph [ref=e209]:
+            - text: This section lives in a separate file,
+            - code [ref=e210]: intro.tex
+            - text: ", and is pulled in with |"
+          - heading "4 Introduction" [level=2] [ref=e211]
+          - paragraph
+          - paragraph [ref=e212]:
+            - text: This section lives in a separate file,
+            - code [ref=e213]: intro.tex
+            - text: ", and is pulled in with |"
+          - heading "5 Introduction" [level=2] [ref=e214]
+          - paragraph
+          - paragraph [ref=e215]:
+            - text: This section lives in a separate file,
+            - code [ref=e216]: intro.tex
+            - text: ", and is pulled in with |"
+          - heading "6 Introduction" [level=2] [ref=e217]
+          - paragraph
+          - paragraph [ref=e218]:
+            - text: This section lives in a separate file,
+            - code [ref=e219]: intro.tex
+            - text: ", and is pulled in with"
+            - code [ref=e220]
+            - text: ". Multi-file projects keep large papers manageable: one file per section or chapter. Foundational analysis results trace back to"
+            - generic [ref=e221]:
+              - text: "["
+              - link "1" [ref=e222] [cursor=pointer]:
+                - /url: "#bib-rudin1976"
+              - text: "]"
+            - text: and the inequality compendium of
+            - generic [ref=e223]:
+              - text: "["
+              - link "2" [ref=e224] [cursor=pointer]:
+                - /url: "#bib-hardy1952"
+              - text: "]"
+            - text: ". |. Multi-file projects keep large papers manageable: one file per section or chapter. Foundational analysis results trace back to"
+            - generic [ref=e225]:
+              - text: "["
+              - link "1" [ref=e226] [cursor=pointer]:
+                - /url: "#bib-rudin1976"
+              - text: "]"
+            - text: and the inequality compendium of
+            - generic [ref=e227]:
+              - text: "["
+              - link "2" [ref=e228] [cursor=pointer]:
+                - /url: "#bib-hardy1952"
+              - text: "]"
+            - text: ". |. Multi-file projects keep large papers manageable: one file per section or chapter. Foundational analysis results trace back to"
+            - generic [ref=e229]:
+              - text: "["
+              - link "1" [ref=e230] [cursor=pointer]:
+                - /url: "#bib-rudin1976"
+              - text: "]"
+            - text: and the inequality compendium of
+            - generic [ref=e231]:
+              - text: "["
+              - link "2" [ref=e232] [cursor=pointer]:
+                - /url: "#bib-hardy1952"
+              - text: "]"
+            - text: ". |. Multi-file projects keep large papers manageable: one file per section or chapter. Foundational analysis results trace back to"
+            - generic [ref=e233]:
+              - text: "["
+              - link "1" [ref=e234] [cursor=pointer]:
+                - /url: "#bib-rudin1976"
+              - text: "]"
+            - text: and the inequality compendium of
+            - generic [ref=e235]:
+              - text: "["
+              - link "2" [ref=e236] [cursor=pointer]:
+                - /url: "#bib-hardy1952"
+              - text: "]"
+            - text: ". |. Multi-file projects keep large papers manageable: one file per section or chapter. Foundational analysis results trace back to"
+            - generic [ref=e237]:
+              - text: "["
+              - link "1" [ref=e238] [cursor=pointer]:
+                - /url: "#bib-rudin1976"
+              - text: "]"
+            - text: and the inequality compendium of
+            - generic [ref=e239]:
+              - text: "["
+              - link "2" [ref=e240] [cursor=pointer]:
+                - /url: "#bib-hardy1952"
+              - text: "]"
+            - text: ". |. Multi-file projects keep large papers manageable: one file per section or chapter. Foundational analysis results trace back to"
+            - generic [ref=e241]:
+              - text: "["
+              - link "1" [ref=e242] [cursor=pointer]:
+                - /url: "#bib-rudin1976"
+              - text: "]"
+            - text: and the inequality compendium of
+            - generic [ref=e243]:
+              - text: "["
+              - link "2" [ref=e244] [cursor=pointer]:
+                - /url: "#bib-hardy1952"
+              - text: "]"
+            - text: .
+          - heading "7 The Cauchy-Schwarz Inequality" [level=2] [ref=e245] [cursor=pointer]
+          - paragraph [ref=e246] [cursor=pointer]:
+            - text: Let
+            - generic [ref=e247]:
+              - math [ref=e249]:
+                - generic [ref=e252]: H
+              - generic [ref=e254]: H
+            - text: be a Hilbert space with inner product
+            - generic [ref=e255]:
+              - math [ref=e257]:
+                - generic [ref=e259]:
+                  - generic [ref=e260]: ⟨
+                  - generic [ref=e261]: ⋅
+                  - generic [ref=e262]: ","
+                  - generic [ref=e263]: ⋅
+                  - generic [ref=e264]: ⟩
+              - generic [ref=e266]: ⟨⋅, ⋅⟩
+            - text: and induced norm
+            - generic [ref=e267]:
+              - math [ref=e269]:
+                - generic [ref=e271]:
+                  - generic [ref=e272]:
+                    - generic [ref=e273]: ∥
+                    - generic [ref=e274]: x
+                    - generic [ref=e275]: ∥
+                  - generic [ref=e276]: =
+                  - generic [ref=e278]:
+                    - generic [ref=e279]: ⟨
+                    - generic [ref=e280]: x
+                    - generic [ref=e281]: ","
+                    - generic [ref=e282]: x
+                    - generic [ref=e283]: ⟩
+              - generic [ref=e284]:
+                - generic [ref=e285]:
+                  - generic [ref=e286]: ∥x∥
+                  - text: =
+                - generic [ref=e291]:
+                  - generic [ref=e292]: ⟨x, x⟩
+                  - img [ref=e294]
+            - text: .
+          - generic [ref=e299] [cursor=pointer]:
+            - emphasis [ref=e300]: Theorem 7.1 (Cauchy-Schwarz).
+            - text: For all
+            - generic [ref=e301]:
+              - math [ref=e303]:
+                - generic [ref=e305]:
+                  - generic [ref=e306]: x
+                  - generic [ref=e307]: ","
+                  - generic [ref=e308]: "y"
+                  - generic [ref=e309]: ∈
+                  - generic [ref=e310]: H
+              - generic [ref=e311]:
+                - generic [ref=e312]: x, y ∈
+                - generic [ref=e313]: H
+            - text: ","
+            - generic [ref=e315]:
+              - math [ref=e317]:
+                - generic [ref=e320]:
+                  - generic [ref=e322]:
+                    - generic [ref=e323]: ∣
+                    - generic [ref=e324]: ⟨
+                    - generic [ref=e325]: x
+                    - generic [ref=e326]: ","
+                    - generic [ref=e327]: "y"
+                    - generic [ref=e328]: ⟩
+                    - generic [ref=e329]:
+                      - generic [ref=e330]: ∣
+                      - generic [ref=e331]: "2"
+                    - generic [ref=e332]: ≤
+                    - generic [ref=e333]: ⟨
+                    - generic [ref=e334]: x
+                    - generic [ref=e335]: ","
+                    - generic [ref=e336]: x
+                    - generic [ref=e337]: ⟩
+                    - generic [ref=e338]: ⋅
+                    - generic [ref=e339]: ⟨
+                    - generic [ref=e340]: "y"
+                    - generic [ref=e341]: ","
+                    - generic [ref=e342]: "y"
+                    - generic [ref=e343]: ⟩
+                    - generic [ref=e344]: .
+                  - generic [ref=e346]: (1)
+              - generic [ref=e347]:
+                - generic [ref=e348]:
+                  - text: ∣⟨x, y⟩
+                  - generic [ref=e349]:
+                    - text: ∣
+                    - generic [ref=e354]: "2"
+                  - text: ≤
+                - generic [ref=e355]: ⟨x, x⟩ ⋅
+                - generic [ref=e356]: ⟨y, y⟩.
+                - generic [ref=e358]:
+                  - text: (
+                  - generic [ref=e359]: "1"
+                  - text: )
+          - paragraph [ref=e360] [cursor=pointer]:
+            - text: Equation
+            - link "(1)" [ref=e361]:
+              - /url: "#label-eq:cs"
+            - text: is the cornerstone of inner-product geometry; see
+            - generic [ref=e362]:
+              - text: "["
+              - link "1" [ref=e363]:
+                - /url: "#bib-rudin1976"
+              - text: "]"
+            - text: for a classical treatment.
+          - heading "8 A TikZ Figure" [level=2] [ref=e364] [cursor=pointer]
+          - figure "Figure 1. Two vectors in H and the angle between them." [ref=e365] [cursor=pointer]:
+            - text: "[ht]"
+            - paragraph
+            - generic [ref=e366]:
+              - strong [ref=e367]: Figure 1.
+              - text: Two vectors in
+              - generic [ref=e368]:
+                - math [ref=e370]:
+                  - generic [ref=e373]: H
+                - generic [ref=e375]: H
+              - text: and the angle between them.
+          - paragraph
+          - paragraph [ref=e376] [cursor=pointer]:
+            - text: Figure
+            - link "1" [ref=e377]:
+              - /url: "#label-fig:vectors"
+            - text: illustrates the geometry behind
+            - link "(1)" [ref=e378]:
+              - /url: "#label-eq:cs"
+            - text: .
+          - paragraph
+          - generic [ref=e379]:
+            - heading "References" [level=2] [ref=e380]: References
+            - list [ref=e381]:
+              - listitem [ref=e382]:
+                - generic [ref=e383]: "[1]"
+                - generic [ref=e384]: Walter Rudin. “Principles of Mathematical Analysis.” McGraw-Hill. 1976.
+              - listitem [ref=e385]:
+                - generic [ref=e386]: "[2]"
+                - generic [ref=e387]: G. H. Hardy, J. E. Littlewood, G. Pólya. “Inequalities.” Cambridge University Press. 1952.
+          - paragraph
+  - generic [ref=e190]: "[bundle] error"
