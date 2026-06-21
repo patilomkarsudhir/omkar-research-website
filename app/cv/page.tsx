@@ -102,11 +102,21 @@ export default function CVPage() {
 				<div className="space-y-6">
 					<div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2">
 						<div className="flex-1">
-							<h3 className="text-lg font-semibold">Postdoctoral Research Associate</h3>
+							<h3 className="text-lg font-semibold">Assistant Professor</h3>
+							<p className="text-[var(--muted)] font-medium">Louisiana State University</p>
+						</div>
+						<div className="text-[var(--muted)] text-sm md:text-base md:text-right whitespace-nowrap">
+							Aug 2026 - Present
+						</div>
+					</div>
+
+					<div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2">
+						<div className="flex-1">
+							<h3 className="text-lg font-semibold">Research Scientist</h3>
 							<p className="text-[var(--muted)] font-medium">University of Florida</p>
 						</div>
 						<div className="text-[var(--muted)] text-sm md:text-base md:text-right whitespace-nowrap">
-							May 2023 - Present
+							Oct 2025 - Aug 2026
 						</div>
 					</div>
 
