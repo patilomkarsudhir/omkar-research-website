@@ -1,6 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	reactStrictMode: true,
+	async redirects() {
+		return [
+			{ source: '/real_time_latex.html', destination: '/latex', permanent: true },
+			{ source: '/latex_scratchpad.html', destination: '/latex', permanent: true },
+		];
+	},
 	// Temporarily disable all security headers for debugging
 	// async headers() {
 	// 	const csp = [

@@ -3,8 +3,8 @@
   "version": "0.3.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "node scripts/build-rtl-editor.mjs && next dev",
+    "build": "node scripts/build-rtl-editor.mjs && next build",
     "start": "next start",
     "update-scholar": "node scripts/update-scholar-cache.js"
   },
@@ -26,6 +26,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.19",
+    "jszip": "^3.10.1",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.7",
     "typescript": "^5.4.5"
