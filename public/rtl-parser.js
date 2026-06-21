@@ -17,6 +17,13 @@ function parseLatex(input, opts) {
   const slots = []; let sid = 0;
   const protect = html => { const id=`\x02S${sid++}\x03`; slots.push({id,html}); return id; };
 
+  // ── 0. VERBATIM PROTECTION ───────────────────────────────────────────────
+  // Must run before any stripping so literal \input, % and \begin{document}
+  // inside \verb / verbatim survive intact and are not mistaken for commands.
+  text = text.replace(/\\verb([^a-zA-Z*\s])(.*?)\1/g, (_,d,c) => protect(`<code>${escHtml(c)}</code>`));
+  text = text.replace(/\\begin\{verbatim\}([\s\S]*?)\\end\{verbatim\}/g,
+    (_,c) => protect(`<pre class="verbatim-block"><code>${escHtml(c.trim())}</code></pre>`));
+
   // ── 1. COMMENTS ─────────────────────────────────────────────────────────
   text = text.replace(/(?<!\\)%[^\n]*/g, '');
 
@@ -43,11 +50,6 @@ function parseLatex(input, opts) {
     (_,name,nargs,def) => { macros[name]={def,nargs:parseInt(nargs)||0}; return ''; });
   text = text.replace(/\\def\\([a-zA-Z]+)\{([^{}]*)\}/g,
     (_,name,def) => { macros[name]={def,nargs:0}; return ''; });
-
-  // ── 3. VERBATIM PROTECTION ───────────────────────────────────────────────
-  text = text.replace(/\\verb([^a-zA-Z*\s])(.*?)\1/g, (_,d,c) => protect(`<code>${escHtml(c)}</code>`));
-  text = text.replace(/\\begin\{verbatim\}([\s\S]*?)\\end\{verbatim\}/g,
-    (_,c) => protect(`<pre class="verbatim-block"><code>${escHtml(c.trim())}</code></pre>`));
 
   // ── 4. BIBLIOGRAPHY PRE-SCAN ─────────────────────────────────────────────
   const citeMap = {}; let bibHtml = '';

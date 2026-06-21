@@ -342,14 +342,24 @@ function markLines(src){
   }).join('\n');
 }
 
-// Inline \input / \include for the live preview
+// Inline \input / \include for the live preview.
+// Verbatim spans and comments are shielded so a literal \input written inside
+// \verb|...|, a verbatim environment, or a comment is NOT expanded (which would
+// otherwise re-inline a file into itself and duplicate its content).
 function expandInputs(content, files, depth=0) {
   if (depth > 5) return content;
-  return content.replace(/\\(?:input|include)\{([^}]+)\}/g, (_, name) => {
+  const guards = [];
+  const stash = m => { const id = `\x00G${guards.length}\x00`; guards.push(m); return id; };
+  let s = content
+    .replace(/\\begin\{(verbatim|lstlisting|Verbatim)\}[\s\S]*?\\end\{\1\}/g, stash)
+    .replace(/\\verb\*?(\S)[\s\S]*?\1/g, stash)
+    .replace(/(?<!\\)%[^\n]*/g, stash);
+  s = s.replace(/\\(?:input|include)\{([^}]+)\}/g, (_, name) => {
     const want = name.trim().replace(/\.tex$/,'');
     const f = files.find(x => x.name.replace(/\.tex$/,'') === want);
     return f ? expandInputs(f.content, files, depth+1) : '';
   });
+  return s.replace(/\x00G(\d+)\x00/g, (_, i) => guards[+i]);
 }
 
 // ── FILE TREE ───────────────────────────────────────────────────────────────
