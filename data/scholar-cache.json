@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 626,
-      "recent": 620
+      "all": 623,
+      "recent": 618
     },
     "h-index": {
       "all": 14,
@@ -191,20 +191,20 @@
       "year": 2025
     },
     {
+      "title": "Lyapunov-based dropout deep neural network (Lb-DDNN) adaptive controller",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TFP_iSt0sucC",
+      "authors": "S Akbari, EJ Griffis, OS Patil, WE Dixon",
+      "venue": "Automatica 189, 113037, 2026",
+      "cited": 5,
+      "year": 2026
+    },
+    {
       "title": "Lyapunov-based adaptive deep system identification for approximate dynamic programming",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TQgYirikUcIC",
       "authors": "WA Makumi, OS Patil, WE Dixon",
       "venue": "Automatica 180, 112462, 2025",
       "cited": 5,
       "year": 2025
-    },
-    {
-      "title": "Lyapunov-based dropout deep neural network (Lb-DDNN) controller",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:LkGwnXOMwfcC",
-      "authors": "S Akbari, EJ Griffis, OS Patil, WE Dixon",
-      "venue": "arXiv preprint arXiv:2310.19938, 2023",
-      "cited": 5,
-      "year": 2023
     },
     {
       "title": "System identification and control using Lyapunov-based deep neural networks without persistent excitation: A concurrent learning approach",
@@ -263,14 +263,6 @@
       "year": 2023
     },
     {
-      "title": "Predicting dropout students using data mining techniques",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:isC4tDSrTZIC",
-      "authors": "OS Patil, PM Dhere",
-      "venue": "Int. J. Res 2 (1), 369-375, 2015",
-      "cited": 3,
-      "year": 2015
-    },
-    {
       "title": "Adaptive output feedback control using Lyapunov-based deep recurrent neural networks (Lb-DRNNs)",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:R3hNpaxXUhUC",
       "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
@@ -309,14 +301,6 @@
       "venue": "",
       "cited": 1,
       "year": 2025
-    },
-    {
-      "title": "Lyapunov-based dropout deep neural network (Lb-DDNN) adaptive controller",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TFP_iSt0sucC",
-      "authors": "S Akbari, EJ Griffis, OS Patil, WE Dixon",
-      "venue": "Automatica 189, 113037, 2026",
-      "cited": 0,
-      "year": 2026
     },
     {
       "title": "Riemannian Lyapunov Optimizer: A Unified Framework for Optimization",
