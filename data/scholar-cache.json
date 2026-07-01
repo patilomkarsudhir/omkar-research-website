@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 623,
-      "recent": 618
+      "all": 626,
+      "recent": 621
     },
     "h-index": {
       "all": 14,
@@ -51,7 +51,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:2osOgNQ5qMEC",
       "authors": "OS Patil, A Isaly, B Xian, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1592-1597, 2021",
-      "cited": 47,
+      "cited": 48,
       "year": 2021
     },
     {
@@ -63,6 +63,14 @@
       "year": 2022
     },
     {
+      "title": "Lyapunov-based physics-informed long short-term memory (LSTM) neural network-based adaptive control",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:hqOjcs7Dif8C",
+      "authors": "RG Hart, EJ Griffis, OS Patil, WE Dixon",
+      "venue": "IEEE control systems letters 8, 13-18, 2023",
+      "cited": 28,
+      "year": 2023
+    },
+    {
       "title": "Accelerated gradient approach for deep neural network-based adaptive control of unknown nonlinear systems",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
       "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
@@ -71,19 +79,11 @@
       "year": 2024
     },
     {
-      "title": "Lyapunov-based physics-informed long short-term memory (LSTM) neural network-based adaptive control",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:hqOjcs7Dif8C",
-      "authors": "RG Hart, EJ Griffis, OS Patil, WE Dixon",
-      "venue": "IEEE control systems letters 8, 13-18, 2023",
-      "cited": 27,
-      "year": 2023
-    },
-    {
       "title": "Adaptive safety with a RISE-based disturbance observer",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:MXK_kJrjxJIC",
       "authors": "A Isaly, OS Patil, HM Sweatland, RG Sanfelice, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 69 (7), 4883-4890, 2024",
-      "cited": 25,
+      "cited": 26,
       "year": 2024
     },
     {
