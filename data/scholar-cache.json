@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 626,
-      "recent": 621
+      "all": 627,
+      "recent": 622
     },
     "h-index": {
       "all": 14,
@@ -43,7 +43,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:9yKSN-GCB0IC",
       "authors": "A Isaly, OS Patil, RG Sanfelice, WE Dixon",
       "venue": "2021 American Control Conference (ACC), 3719-3724, 2021",
-      "cited": 51,
+      "cited": 52,
       "year": 2021
     },
     {
