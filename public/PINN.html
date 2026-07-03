@@ -1372,13 +1372,13 @@
                         
                         <p class="concept-description"><strong>Spatiotemporal PINN Challenges:</strong> Unlike 1D temporal ODEs, the heat equation requires the network \(u_\theta(x,t)\) to capture spatial and temporal dependencies simultaneously across a 2D domain. The physics residual \(R_\theta = \partial u_\theta/\partial t - \alpha \partial^2 u_\theta/\partial x^2\) involves mixed derivatives computed via automatic differentiation. Boundary conditions can be enforced through penalty terms or by architectural constraints. The time-dependent visualization reveals how the initial sinusoidal temperature profile diffuses and decays according to the thermal physics in the 2D \((x,t)\) space.</p>
                         
-                        <p class="concept-description"><strong>Wave Equation Theory:</strong> The 1D wave equation \(\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}\) describes propagating disturbances with wave speed \(c\). This hyperbolic PDE arises from Newton's second law applied to continuous media under tension, where \(u(x,t)\) represents displacement, \(x \in [0,L]\) is spatial position, and \(t \geq 0\) is time. The wave speed \(c = \sqrt{T/\rho}\) depends on tension \(T\) and linear density \(\rho\). For our system with \(L = 1\), \(c = 1.5\), and boundary conditions \(u(0,t) = u(L,t) = 0\), the analytical solution is \(u(x,t) = \sin(\pi x/L) \cos(c\pi t/L)\), exhibiting standing wave behavior with temporal period \(T = 2L/(c\pi) \approx 1.33\).</p>
+                        <p class="concept-description"><strong>Wave Equation Theory:</strong> The 1D wave equation \(\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}\) describes propagating disturbances with wave speed \(c\). This hyperbolic PDE arises from Newton's second law applied to continuous media under tension, where \(u(x,t)\) represents displacement, \(x \in [0,L]\) is spatial position, and \(t \geq 0\) is time. The wave speed \(c = \sqrt{T/\rho}\) depends on tension \(T\) and linear density \(\rho\). With boundary conditions \(u(0,t) = u(L,t) = 0\), the analytical solution shown here is \(u(x,t) = \sin(\pi x/L) \cos(c\pi t/L)\), exhibiting standing wave behavior with temporal period \(P = 2L/c\).</p>
                         
                         <p class="concept-description"><strong>Mathematical Structure:</strong> The wave equation exhibits several fundamental properties: (1) <em>Hyperbolicity</em>: Characteristic curves \(x \pm ct = \text{const}\) determine information propagation at finite speed \(c\), unlike parabolic diffusion equations with infinite propagation speed. (2) <em>Energy Conservation</em>: Total energy \(E = \frac{1}{2}\int_0^L \left[(\partial u/\partial t)^2 + c^2(\partial u/\partial x)^2\right] dx\) remains constant in time, representing kinetic plus potential energy density. (3) <em>D'Alembert Decomposition</em>: General solutions decompose as \(u(x,t) = f(x-ct) + g(x+ct)\) representing rightward and leftward traveling waves. (4) <em>Superposition Principle</em>: Linear combinations of solutions are also solutions, enabling Fourier modal analysis.</p>
 
                         <p class="concept-description"><strong>PINN Computational Challenges:</strong> Wave equations pose unique difficulties for neural network approximation: (1) <em>Second-order Time Derivatives</em>: Computing \(\partial^2 u_\theta/\partial t^2\) requires two sequential automatic differentiation passes, creating deeper computational graphs with vanishing/exploding gradient risks. (2) <em>Oscillatory Solutions</em>: High-frequency temporal oscillations \(\cos(c\pi t/L)\) challenge neural networks' spectral bias toward low frequencies, requiring specialized architectures like Fourier features or curriculum learning. (3) <em>Parameter Sensitivity</em>: The quadratic coupling \(c^2\) in the PDE makes parameter gradients \(\partial r/\partial c = -2c \partial^2 u/\partial x^2\) scale nonlinearly with wave speed, demanding careful learning rate tuning. (4) <em>Boundary Reflection</em>: Standing wave patterns from boundary reflections create spatially varying solution complexity requiring adaptive collocation strategies.</p>
 
-                        <p class="concept-description"><strong>Physics-Informed Training Methodology:</strong> Our implementation addresses these challenges through: (1) <em>Multi-scale Collocation Sampling</em>: Strategic point placement with 25% near high spatial gradient regions (\(x = L/4, 3L/4\) where \(|\partial u/\partial x|\) peaks), 25% near temporal inflection points (\(t = T/4, T/2, 3T/4\) where \(|\partial^2 u/\partial t^2|\) is large), and 15% in corners for boundary effects. (2) <em>Energy Conservation Penalty</em>: Additional loss term \(\lambda_E \sum_{i=1}^{N_t} |E(t_i) - E_0|^2\) penalizes energy violations, where \(E_0\) is initial energy and \(N_t\) time slices sample energy evolution. (3) <em>Curriculum Learning</em>: Progressive training from low-frequency (Phase 0: using 1/3 of collocation points) to mid-frequency (Phase 1: using 2/3) to full-frequency (Phase 2: all points) components with automatic transitions at epochs 300/600. (4) <em>Enhanced Architecture</em>: Residual connections \(u_\theta = \text{MLP}(x,t) + W_{\text{res},x} x + W_{\text{res},t} t + W_{\text{res},xt} xt\) improve gradient flow for oscillatory solutions.</p>
+                        <p class="concept-description"><strong>Physics-Informed Training Methodology:</strong> The implementation uses strategic collocation sampling, adaptive learning-rate scheduling, gradient clipping, and residual input connections \(u_\theta = \text{MLP}(x,t) + W_{\text{res},x}x + W_{\text{res},t}t + W_{\text{res},xt}xt\) for the 2D PDE networks. Energy-conservation penalties and frequency-weighted residual losses are useful extensions, but they are not part of this browser demo's active training objective.</p>
                         
                         <p class="concept-description"><strong>Network Architecture:</strong> For single‑state ODEs, a network \(u_\theta(t)\) suffices. For multi‑state dynamics like Lotka–Volterra, one may use either a multi‑output network or separate surrogates for each state. For the 2D spatiotemporal PDEs (heat and wave equations), the network \(u_\theta(x,t)\) takes both spatial and temporal coordinates as input, learning the full solution field \(u(x,t)\) across the 2D \((x,t)\) domain. The wave equation requires enhanced architectures with residual connections to handle oscillatory solutions and second-order time derivatives.</p>
                     </div>
@@ -1424,7 +1424,7 @@
                         </p>
                         
                         <p class="concept-description">
-                            <strong>Numerical and PINN Considerations:</strong> The wave equation's hyperbolic character creates unique computational challenges: (1) <em>CFL Condition</em>: Explicit finite difference schemes require \(\Delta t \leq \Delta x/c\) for stability, (2) <em>Dispersion Errors</em>: Discrete schemes introduce artificial frequency-dependent wave speeds, (3) <em>Boundary Reflections</em>: Improper boundary treatment can create spurious reflections. For PINNs, these translate to: (1) <em>Temporal Resolution</em>: Networks must resolve oscillations with period \(T = 2L/(c\pi) \approx 1.33\), (2) <em>Gradient Pathologies</em>: Second-order time derivatives create deeper AD graphs, (3) <em>Standing Wave Patterns</em>: Spatial nodes at boundaries and antinodes at \(x = L/2\) require careful collocation sampling to capture the full solution structure.
+                            <strong>Numerical and PINN Considerations:</strong> The wave equation's hyperbolic character creates unique computational challenges: (1) <em>CFL Condition</em>: Explicit finite difference schemes require \(\Delta t \leq \Delta x/c\) for stability, (2) <em>Dispersion Errors</em>: Discrete schemes introduce artificial frequency-dependent wave speeds, (3) <em>Boundary Reflections</em>: Improper boundary treatment can create spurious reflections. For PINNs, these translate to: (1) <em>Temporal Resolution</em>: Networks must resolve oscillations with period \(P = 2L/c\), (2) <em>Gradient Pathologies</em>: Second-order time derivatives create deeper AD graphs, (3) <em>Standing Wave Patterns</em>: Spatial nodes at boundaries and antinodes at \(x = L/2\) require careful collocation sampling to capture the full solution structure.
                         </p>
                     </div>
 
@@ -1439,7 +1439,7 @@
                         </p>
                         
                         <p class="concept-description">
-                            <strong>Research Background:</strong> Wave equations pose fundamental challenges for PINNs due to their second-order temporal nature and oscillatory solutions. This implementation incorporates 24 specific mathematical insights from recent literature to address these challenges, including energy conservation penalties based on Hamiltonian mechanics and frequency-aware training strategies inspired by spectral methods.
+                            <strong>Research Background:</strong> Wave equations pose fundamental challenges for PINNs due to their second-order temporal nature and oscillatory solutions. This demo focuses on a compact subset of practical techniques suitable for an interactive browser implementation: exact AD derivatives, strategic collocation, residual connections, adaptive learning rates, and gradient clipping.
                         </p>
                         
                         <p class="concept-description">
@@ -1478,7 +1478,7 @@
                             </li>
                             <li class="feature-item">
                                 <span class="feature-icon">🎵</span>
-                                <span><strong>Frequency-Aware Loss Weighting:</strong> Differential weighting of loss components (1.0 for low-freq, 0.8 for mid-freq, 0.6 for high-freq) based on spatial/temporal frequency content</span>
+                                <span><strong>Adaptive Learning-Rate Scheduling:</strong> Lower learning rates later in training reduce oscillatory parameter updates</span>
                             </li>
                             <li class="feature-item">
                                 <span class="feature-icon">🏗️</span>
@@ -1486,7 +1486,7 @@
                             </li>
                             <li class="feature-item">
                                 <span class="feature-icon">🎯</span>
-                                <span><strong>Smart Parameter Initialization:</strong> Initialize \(c^2\) near true value \((2.25\) for \(c=1.5)\) with random perturbation \([2.0, 2.5]\) instead of far-from-target values</span>
+                                <span><strong>Generic Parameter Initialization:</strong> Start wave-speed discovery from a fixed offset guess rather than the true value</span>
                             </li>
                             <li class="feature-item">
                                 <span class="feature-icon">📊</span>
@@ -1498,11 +1498,7 @@
                             </li>
                             <li class="feature-item">
                                 <span class="feature-icon">🔧</span>
-                                <span><strong>Physics-Informed Regularization:</strong> Energy conservation penalty \(|c - 1.5| \times 0.01\) and parameter smoothness penalty to encourage physical behavior</span>
-                            </li>
-                            <li class="feature-item">
-                                <span class="feature-icon">🔄</span>
-                                <span><strong>Soft Parameter Constraints:</strong> Instead of hard bounds, use pull-back mechanism: if deviation \(> 50\%\) from true value, apply \(10\%\) correction toward target</span>
+                                <span><strong>Parameter Constraints:</strong> Positive wave-speed bounds prevent nonphysical parameter values without depending on the hidden true value</span>
                             </li>
                         </ul>
                         
@@ -1511,11 +1507,11 @@
                         </p>
                         
                         <p class="concept-description">
-                            <strong>Energy Conservation Mathematics:</strong> Wave energy \(E(t) = \frac{1}{2}\int_0^L [u_t^2 + c^2 u_x^2] dx\) should remain constant (\(\frac{dE}{dt} = 0\)) for conservative systems. Our energy penalty \(\mathcal{L}_E = \lambda_E \sum_{j=1}^{N_t} |E(t_j) - E_0|^2\) with \(\lambda_E = 0.1\) enforces this constraint by sampling energy at \(N_t = 5\) time slices across the domain \([0,T]\). The energy density integrand \(e(x,t) = u_t^2 + c^2 u_x^2\) combines kinetic and potential energy, where numerical integration uses spatial discretization with \(N_x = 10\) points and trapezoidal rule. This approach is mathematically justified by Noether's theorem: temporal translation symmetry of the Lagrangian \(\mathcal{L} = \frac{1}{2}(u_t^2 - c^2 u_x^2)\) leads to energy conservation as the corresponding conserved quantity.
+                            <strong>Energy Conservation Mathematics:</strong> Wave energy \(E(t) = \frac{1}{2}\int_0^L [u_t^2 + c^2 u_x^2] dx\) should remain constant (\(\frac{dE}{dt} = 0\)) for conservative systems. This is an important diagnostic and possible regularizer for larger PINN implementations. In this demo, the active objective is the PDE residual plus data, boundary, and initial-condition losses.
                         </p>
                         
                         <p class="concept-description">
-                            <strong>Validation &amp; Theoretical Basis:</strong> These insights combine classical wave theory with modern PINN methodology. The mathematical framework draws from: (1) <em>Hamiltonian Mechanics</em>: Energy conservation penalties from variational principles, (2) <em>Spectral Theory</em>: Frequency-aware loss weighting based on eigenfunction analysis of the wave operator \(\mathcal{L} = \partial^2/\partial t^2 - c^2 \partial^2/\partial x^2\), (3) <em>Characteristic Theory</em>: Collocation sampling aligned with characteristic directions \(x \pm ct = \text{const}\), and (4) <em>Automatic Differentiation Theory</em>: Gradient flow analysis for second-order derivative computations in deep networks. Implementation validation references include <em>"Physics-Informed Neural Networks (PINNs) for Wave Propagation and Full Waveform Inversions"</em> (American Geophysical Union) and <em>"Energy-Conserving Neural Networks for Hamiltonian Systems"</em> (Journal of Computational Physics).
+                            <strong>Validation &amp; Theoretical Basis:</strong> These insights combine classical wave theory with modern PINN methodology. The mathematical framework draws from: (1) <em>Hamiltonian Mechanics</em> for conserved diagnostics, (2) <em>Spectral Theory</em> for understanding oscillatory loss landscapes, (3) <em>Characteristic Theory</em> for collocation intuition, and (4) <em>Automatic Differentiation Theory</em> for second-order derivative computations in neural networks. Implementation references include <em>"Physics-Informed Neural Networks (PINNs) for Wave Propagation and Full Waveform Inversions"</em> (American Geophysical Union) and <em>"Energy-Conserving Neural Networks for Hamiltonian Systems"</em> (Journal of Computational Physics).
                         </p>
                     </div>
 
@@ -1707,7 +1703,9 @@
                     return this.x0 * (1 + this.omega * t) * Math.exp(-this.omega * t);
                 }
                 const damp = this.omega * Math.sqrt(1 - this.zeta * this.zeta);
-                return this.x0 * Math.exp(-this.zeta * this.omega * t) * Math.cos(damp * t);
+                const correction = this.zeta / Math.sqrt(1 - this.zeta * this.zeta);
+                return this.x0 * Math.exp(-this.zeta * this.omega * t) *
+                    (Math.cos(damp * t) + correction * Math.sin(damp * t));
             }
 
             getPhysicsResidual(derivatives, physicsParams) {
@@ -1784,9 +1782,13 @@
                 this.theta0 = theta0;
                 this.beta = beta; // damping coefficient
                 this.omega = Math.sqrt(gravity / length);
+                this.solutionCache = new Map();
             }
 
             getTruePosition(t) {
+                const cacheKey = t.toFixed(4);
+                if (this.solutionCache.has(cacheKey)) return this.solutionCache.get(cacheKey);
+
                 // Numerical solution for nonlinear pendulum using RK4
                 // d²θ/dt² + β dθ/dt + (g/L) sin(θ) = 0
                 // Convert to first-order system: dθ/dt = ω, dω/dt = -β*ω - (g/L)*sin(θ)
@@ -1816,6 +1818,7 @@
                     omega += dt * (k1_omega + 2 * k2_omega + 2 * k3_omega + k4_omega) / 6;
                 }
                 
+                this.solutionCache.set(cacheKey, theta);
                 return theta;
             }
 
@@ -1896,11 +1899,13 @@
                 this.x0 = x0;           // initial prey population
                 this.y0 = y0;           // initial predator population
                 this.isSystemOfEquations = true; // This is a system of ODEs
+                this.solutionCache = new Map();
             }
 
-            // For Lotka-Volterra, we solve the system numerically
-            getTruePosition(t) {
-                // Numerical solution using Runge-Kutta 4th order
+            solveSystemAt(t) {
+                const cacheKey = t.toFixed(4);
+                if (this.solutionCache.has(cacheKey)) return this.solutionCache.get(cacheKey);
+
                 const dt = 0.01;
                 let x = this.x0, y = this.y0;
                 const steps = Math.floor(t / dt);
@@ -1922,34 +1927,20 @@
                     x += dt * (k1x + 2 * k2x + 2 * k3x + k4x) / 6;
                     y += dt * (k1y + 2 * k2y + 2 * k3y + k4y) / 6;
                 }
-                
-                return x; // Return prey population (primary output)
+
+                const solution = { x, y };
+                this.solutionCache.set(cacheKey, solution);
+                return solution;
+            }
+
+            // For Lotka-Volterra, we solve the system numerically
+            getTruePosition(t) {
+                return this.solveSystemAt(t).x; // Return prey population (primary output)
             }
 
             // Get predator population
             getTruePredatorPosition(t) {
-                const dt = 0.01;
-                let x = this.x0, y = this.y0;
-                const steps = Math.floor(t / dt);
-                
-                for (let i = 0; i < steps; i++) {
-                    const k1x = this.alpha * x - this.beta * x * y;
-                    const k1y = -this.gamma * y + this.delta * x * y;
-                    
-                    const k2x = this.alpha * (x + dt * k1x / 2) - this.beta * (x + dt * k1x / 2) * (y + dt * k1y / 2);
-                    const k2y = -this.gamma * (y + dt * k1y / 2) + this.delta * (x + dt * k1x / 2) * (y + dt * k1y / 2);
-                    
-                    const k3x = this.alpha * (x + dt * k2x / 2) - this.beta * (x + dt * k2x / 2) * (y + dt * k2y / 2);
-                    const k3y = -this.gamma * (y + dt * k2y / 2) + this.delta * (x + dt * k2x / 2) * (y + dt * k2y / 2);
-                    
-                    const k4x = this.alpha * (x + dt * k3x) - this.beta * (x + dt * k3x) * (y + dt * k3y);
-                    const k4y = -this.gamma * (y + dt * k3y) + this.delta * (x + dt * k3x) * (y + dt * k3y);
-                    
-                    x += dt * (k1x + 2 * k2x + 2 * k3x + k4x) / 6;
-                    y += dt * (k1y + 2 * k2y + 2 * k3y + k4y) / 6;
-                }
-                
-                return y; // Return predator population
+                return this.solveSystemAt(t).y; // Return predator population
             }
 
             // Self-contained physics constraint for the prey x(t).
@@ -2144,19 +2135,8 @@
                 return data;
             }
 
-            // Generate collocation points for physics loss
-            generateCollocationPoints(count = 100) {
-                const points = [];
-                for (let i = 0; i < count; i++) {
-                    const x = Math.random() * this.L;
-                    const t = Math.random() * this.T;
-                    points.push({ x, t });
-                }
-                return points;
-            }
-
             getInitialPhysicsParams() {
-                return { param1: 0.2, param2: 0.0 }; // α (reduced for more prominent effects), unused param2
+                return { param1: 0.35, param2: 0.0 }; // offset α guess, unused param2
             }
 
             getEquationDisplay() {
@@ -2216,7 +2196,7 @@
             }
 
             // Generate metrics evaluation grid for consistent performance assessment
-            metricsGrid(nx = 5, nt = 10, T = 20) {
+            metricsGrid(nx = 7, nt = 10, T = 20) {
                 const grid = [];
                 for (let i = 0; i < nt; i++) {
                     const t = (i / (nt - 1)) * T;
@@ -2426,52 +2406,6 @@
                 return data;
             }
 
-            // Generate collocation points for physics loss
-            generateCollocationPoints(count = 100) {
-                const points = [];
-                
-                // Enhanced strategy for wave equation: focus on temporal dynamics
-                const boundaryFraction = 0.25; // 25% near boundaries  
-                const earlyTimeFraction = 0.35; // 35% in early time period
-                const temporalFraction = 0.25; // 25% with high temporal resolution
-                
-                const boundaryPoints = Math.floor(count * boundaryFraction);
-                const earlyTimePoints = Math.floor(count * earlyTimeFraction);
-                const temporalPoints = Math.floor(count * temporalFraction);
-                const regularPoints = count - boundaryPoints - earlyTimePoints - temporalPoints;
-                
-                // Boundary-focused points (x near 0 or L) - critical for wave reflections
-                for (let i = 0; i < boundaryPoints; i++) {
-                    const nearLeft = Math.random() < 0.5;
-                    const x = nearLeft ? Math.random() * 0.15 * this.L : (0.85 + Math.random() * 0.15) * this.L;
-                    const t = Math.random() * this.T;
-                    points.push({ x, t });
-                }
-                
-                // Early time points (t near 0) - critical for initial conditions
-                for (let i = 0; i < earlyTimePoints; i++) {
-                    const x = Math.random() * this.L;
-                    const t = Math.random() * 0.25 * this.T; // First 25% of time domain
-                    points.push({ x, t });
-                }
-                
-                // High temporal resolution points - focus on oscillation dynamics
-                for (let i = 0; i < temporalPoints; i++) {
-                    const x = 0.3 * this.L + Math.random() * 0.4 * this.L; // Middle spatial region
-                    const t = Math.random() * this.T;
-                    points.push({ x, t });
-                }
-                
-                // Regular random points
-                for (let i = 0; i < regularPoints; i++) {
-                    const x = Math.random() * this.L;
-                    const t = Math.random() * this.T;
-                    points.push({ x, t });
-                }
-                
-                return points;
-            }
-
             getInitialPhysicsParams() {
                 // Generic initialization (do not depend on the true parameter value)
                 return { param1: 1.0, param2: 0.0 };
@@ -2562,50 +2496,6 @@
                 return grid;
             }
 
-            // INSIGHT 24: Energy conservation penalty for wave equations
-            // Mathematical foundation: E[u] = ∫(u_t² + c²u_x²) dx should be conserved over time
-            // Research validation: 2025 Allen-Cahn paper confirms energy dissipation penalties improve accuracy
-            computeEnergyPenalty(collocationPoints, pinn, physicsParams) {
-                if (!collocationPoints || !collocationPoints.length) return 0;
-                
-                let totalEnergyVariation = 0;
-                const c = physicsParams.param1; // wave speed
-                const energyWeight = 0.1; // Moderate penalty weight to avoid overwhelming physics loss
-                
-                // Sample energy at multiple time slices for conservation check
-                const timeSlices = 5;
-                const spatialPoints = 10;
-                const energyAtTimes = [];
-                
-                for (let tIdx = 0; tIdx < timeSlices; tIdx++) {
-                    const t = (tIdx / (timeSlices - 1)) * this.T;
-                    let energyAtTime = 0;
-                    
-                    // Compute energy density E = u_t² + c²u_x² across spatial domain
-                    for (let xIdx = 0; xIdx < spatialPoints; xIdx++) {
-                        const x = (xIdx / (spatialPoints - 1)) * this.L;
-                        const derivatives = pinn.computePartialDerivatives(x, t);
-                        const { u_t, u_x } = derivatives;
-                        
-                        // Energy density at point (x,t)
-                        const energyDensity = u_t * u_t + c * c * u_x * u_x;
-                        energyAtTime += energyDensity;
-                    }
-                    
-                    energyAtTimes.push(energyAtTime);
-                }
-                
-                // Penalize energy variation across time (should be conserved)
-                if (energyAtTimes.length > 1) {
-                    const avgEnergy = energyAtTimes.reduce((sum, e) => sum + e, 0) / energyAtTimes.length;
-                    for (const energy of energyAtTimes) {
-                        const variation = Math.abs(energy - avgEnergy);
-                        totalEnergyVariation += variation * variation;
-                    }
-                }
-                
-                return energyWeight * totalEnergyVariation / energyAtTimes.length;
-            }
         }
 
         // ===============================
@@ -3164,11 +3054,8 @@
                 const g_over_L = this.param1.value; // g/L (not ω²)
                 const beta = this.param2.value; // damping coefficient
                 
-                // Compute sin(θ) using ADNode operations for full AD support
-                const sin_theta = output.sin();
-                
                 // Physics residual: d²θ/dt² + β dθ/dt + (g/L) sin(θ)
-                return d2 + beta * d1 + g_over_L * sin_theta.value;
+                return d2 + beta * d1 + g_over_L * Math.sin(output.value);
             }
 
             physicsLoss(collocation) {
@@ -3300,8 +3187,8 @@
                     const vhat = this.v_physics[i] / (1 - Math.pow(beta2, this.t));
                     const step = (physicsLR * mhat) / (Math.sqrt(vhat) + eps);
                     if (i === 0) {
-                        // For pendulum: param1 is g/L, should be positive (not ω²)
-                        const newParam1 = Math.max(0.5, this.param1.value - step); // Lower bound for g/L
+                        // param1 is a positive physical rate/ratio; lower bound covers all UI slider ranges
+                        const newParam1 = Math.max(0.05, this.param1.value - step);
                         this.param1 = ADNode.variable(newParam1, "param1");
                     } else {
                         // param2 is damping coefficient, should be non-negative
@@ -3355,25 +3242,11 @@
                     maxLR: 0.05       // Maximum learning rate
                 };
                 
-                // INSIGHT 4: Frequency-aware loss weighting for oscillatory solutions
-                this.frequencyWeights = {
-                    low: 1.0,         // Fundamental frequency weight
-                    mid: 0.8,         // Mid-frequency harmonics
-                    high: 0.6         // High-frequency components
-                };
-                
                 // INSIGHT 5: Gradient clipping for parameter stability
                 this.gradientClipping = {
                     enabled: true,
                     maxNorm: 1.0,     // Maximum gradient norm
                     adaptiveThreshold: 2.0  // Adaptive clipping threshold
-                };
-                
-                // INSIGHT 6: Physics-informed regularization terms
-                this.regularization = {
-                    parameterSmoothness: 0.001,  // Encourage smooth parameter evolution
-                    energyConservation: 0.01,    // Energy conservation penalty (for wave eq)
-                    causalityPenalty: 0.005      // Penalize non-causal behavior
                 };
                 
                 this.m_physics = [0, 0];
@@ -3769,7 +3642,7 @@
                 this.animationId = null;
                 this.animationStartTime = null;
                 this.animationDuration = 8000; // 8 seconds for full cycle (0 to 4)
-                this.maxAnimationTime = 4.0;   // Maximum time value to animate to (reduced from 5.0)
+                this.maxAnimationTime = 4.0;   // Updated per-system by updateTimeControls()
                 
                 // Initialize with reasonable defaults (will be overridden by UI values during training)
                 this.dataPoints = 8;       
@@ -3777,7 +3650,7 @@
                 this.lr = 0.02;            
                 this.epochs = 800;         
                 this.physicsWeight = 1.0;
-                this.hiddenSize = 12;       
+                this.hiddenSize = 16;       
                 this.collocationCount = 60; 
 
                 this.currentSystem = this.createCurrentSystem();
@@ -3827,7 +3700,6 @@
                 // Apply research findings for wave equation optimization
                 if (this.currentSystemType === "wave") {
                     networkSize = Math.max(8, this.hiddenSize); // Minimum 8 for wave complexity
-                    physicsWeight = this.physicsWeight * 0.5; // Reduced physics weight for stability
                 }
                 
                 // Use 2D PINN for heat equation and wave equation, 1D PINN for others
@@ -3940,8 +3812,34 @@
                         document.getElementById("physicsWeightValue").value = "1.0";
                     }
                 }
+
+                this.syncConfigFromInputs();
+                this.updateTimeControls();
                 
                 this.reset();
+            }
+
+            syncConfigFromInputs() {
+                this.epochs = parseInt(document.getElementById("epochsValue").value) || this.epochs;
+                this.lr = parseFloat(document.getElementById("lrValue").value) || this.lr;
+                this.dataPoints = parseInt(document.getElementById("dataValue").value) || this.dataPoints;
+                this.trainingTimeRange = parseFloat(document.getElementById("trainingTimeRangeValue").value) || this.trainingTimeRange;
+                this.hiddenSize = parseInt(document.getElementById("hiddenSizeValue").value) || this.hiddenSize;
+                this.collocationCount = parseInt(document.getElementById("collocationValue").value) || this.collocationCount;
+                this.physicsWeight = parseFloat(document.getElementById("physicsWeightValue").value) || this.physicsWeight;
+            }
+
+            updateTimeControls() {
+                const slider = document.getElementById("timeVizSlider");
+                const numberInput = document.getElementById("timeVizValue");
+                if (!slider || !numberInput || !this.currentSystem || !this.currentSystem.is2D) return;
+                const maxTime = this.currentSystem.T || 5;
+                this.maxAnimationTime = maxTime;
+                slider.max = String(maxTime);
+                numberInput.max = String(maxTime);
+                const clamped = Math.max(0, Math.min(maxTime, parseFloat(numberInput.value) || 0));
+                slider.value = clamped.toFixed(1);
+                numberInput.value = clamped.toFixed(1);
             }
 
             updateTimeVisualization() {
@@ -4372,6 +4270,10 @@
             showPauseButton(show) { document.getElementById("pauseTraining").style.display = show ? "inline-block" : "none"; }
             toggleButtons(enabled) { 
                 document.querySelectorAll("button, input").forEach((el) => {
+                    if (el.id === "pauseTraining") {
+                        el.disabled = false;
+                        return;
+                    }
                     // Don't enable time controls if animation is running
                     if (!enabled || !this.isAnimating || (el.id !== "timeVizSlider" && el.id !== "timeVizValue")) {
                         el.disabled = !enabled;
@@ -4402,7 +4304,8 @@
                 
                 if (this.currentSystem.is2D) {
                     // Use system-provided metrics grid for more representative sampling
-                    const metricsGrid = this.currentSystem.metricsGrid(3, Math.floor(N/3), T); // 3x~17 grid ≈ 50 points
+                    const metricsGrid = this.currentSystem.metricsGrid(7, Math.ceil(N / 7), T); // include interior points, not mostly boundaries
+                    const trueParams = this.currentSystem.getCurrentTrueParams();
                     
                     for (const {x, t} of metricsGrid) {
                         const trueX = this.currentSystem.getTruePosition(x, t);
@@ -4414,11 +4317,12 @@
                         
                         // Compute physics residual for 2D system
                         const nnDerivatives = this.regularNN.computePartialDerivatives(x, t);
-                        const trueParams = this.currentSystem.getCurrentTrueParams();
                         const nnResidual = this.currentSystem.getPhysicsResidual(nnDerivatives, trueParams);
                         nnPhys += nnResidual * nnResidual;
                         
-                        pinnPhys += this.pinn.physicsResidual(x, t) ** 2;
+                        const pinnDerivatives = this.pinn.computePartialDerivatives(x, t);
+                        const pinnResidual = this.currentSystem.getPhysicsResidual(pinnDerivatives, trueParams);
+                        pinnPhys += pinnResidual * pinnResidual;
                     }
                     
                     const gridSize = metricsGrid.length;
@@ -4428,6 +4332,7 @@
                     pinnPhys /= gridSize;
                 } else {
                     // For 1D systems, use time-series sampling
+                    const trueParams = this.currentSystem.getCurrentTrueParams();
                     for (let i = 0; i < N; i++) {
                         const t = (i / (N - 1)) * T;
                         const trueX = this.truePosition(t);
@@ -4439,11 +4344,12 @@
                         
                         // Compute physics residual for regular NN using current system
                         const nnDerivatives = this.regularNN.computeDerivatives(t);
-                        const trueParams = this.currentSystem.getCurrentTrueParams();
                         const nnResidual = this.currentSystem.getPhysicsResidual(nnDerivatives, trueParams);
                         nnPhys += nnResidual * nnResidual;
                         
-                        pinnPhys += this.pinn.physicsResidual(t) ** 2;
+                        const pinnDerivatives = this.pinn.computeDerivatives(t);
+                        const pinnResidual = this.currentSystem.getPhysicsResidual(pinnDerivatives, trueParams);
+                        pinnPhys += pinnResidual * pinnResidual;
                     }
                     
                     nnMse /= N;
@@ -4460,10 +4366,10 @@
                 const trueParams = this.currentSystem.getCurrentTrueParams();
                 document.getElementById("trueParam1").textContent = trueParams.param1.toFixed(3);
                 
-                // Hide Param2 for heat equation or show as N/A
+                // Hide Param2 for one-parameter PDEs or show as N/A
                 const param2Element = document.getElementById("trueParam2");
                 const pinnParam2Element = document.getElementById("pinnParam2");
-                if (this.currentSystemType === "heat") {
+                if (this.currentSystemType === "heat" || this.currentSystemType === "wave") {
                     param2Element.textContent = "N/A";
                     pinnParam2Element.textContent = "N/A";
                 } else {
@@ -4511,18 +4417,25 @@
                     yRange = Math.max(1, Math.abs(initialPos) * 1.5);
                 }
                 
-                const toXY = (t, x) => ({ px: (t / T) * width, py: height / 2 - (x / yRange) * (height / 2) });
+                const toXY = this.currentSystemType === "predatorprey"
+                    ? ((t, x) => ({ px: (t / T) * width, py: height - (x / yRange) * height }))
+                    : ((t, x) => ({ px: (t / T) * width, py: height / 2 - (x / yRange) * (height / 2) }));
                 
-                // Draw center line
+                // Draw zero/center line
                 ctx.strokeStyle = "#e0e0e0"; ctx.lineWidth = 1; ctx.beginPath(); 
-                ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke();
+                const zeroY = this.currentSystemType === "predatorprey" ? height : height / 2;
+                ctx.moveTo(0, zeroY); ctx.lineTo(width, zeroY); ctx.stroke();
                 
                 // Draw y-axis scale labels
                 ctx.fillStyle = "#666"; ctx.font = "10px Arial";
                 ctx.textAlign = "left";
                 ctx.fillText(`+${yRange.toFixed(1)}`, 5, 15);
-                ctx.fillText("0", 5, height / 2 - 5);
-                ctx.fillText(`-${yRange.toFixed(1)}`, 5, height - 5);
+                if (this.currentSystemType === "predatorprey") {
+                    ctx.fillText("0", 5, height - 5);
+                } else {
+                    ctx.fillText(`-${yRange.toFixed(1)}`, 5, height - 5);
+                    ctx.fillText("0", 5, height / 2 - 5);
+                }
                 
                 // Draw main curve
                 ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.beginPath();
@@ -4822,6 +4735,7 @@
             reset() {
                 if (this.isTraining) return;
                 this.currentSystem = this.createCurrentSystem();
+                this.updateTimeControls();
                 this.regularNN = this.createCurrentNN(this.hiddenSize);
                 this.pinn = this.createCurrentPINN();
                 this.generateTrainingData();
