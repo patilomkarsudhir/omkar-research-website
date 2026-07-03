@@ -1124,6 +1124,11 @@
         let skybox, clouds = [];
         let particles = [], particleSystem;
         let feedbackLossEffect = false;
+
+        // Wrap an angle to [-π, π] (handles negative values correctly, unlike a bare %)
+        function wrapAngle(a) {
+            return ((a + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+        }
         
         class Matrix {
             constructor(rows, cols, data = null) {
@@ -2252,7 +2257,7 @@
 
                 // Wrap angles to [-π, π]
                 for (let i = 3; i < 6; i++) {
-                    newState[i] = ((newState[i] + Math.PI) % (2 * Math.PI)) - Math.PI;
+                    newState[i] = wrapAngle(newState[i]);
                 }
 
                 return [newState, newStateDot, unknownDynamics];
@@ -2276,6 +2281,7 @@
                 
                 this.r_hat = new Array(6).fill(0);
                 this.f_hat = new Array(6).fill(0);
+                this.r_tilde_prev = new Array(6).fill(0);
                 
                 // Store last known state for feedback loss scenarios
                 this.lastState = new Array(6).fill(0);
@@ -2327,8 +2333,8 @@
                 
                 if (feedbackAvailable) {
                     // Normal closed-loop control when feedback is available
-                    // Tracking error
-                    e = currentState.map((s, i) => s - desiredState[i]);
+                    // Tracking error (angle errors wrapped to [-π, π] to avoid ±π wrap spikes)
+                    e = currentState.map((s, i) => i >= 3 ? wrapAngle(s - desiredState[i]) : s - desiredState[i]);
                     r = currentStateDot.map((sd, i) => sd - desiredStateDot[i] + this.alpha1 * e[i]);
 
                     // DNN forward pass with current state
@@ -2336,8 +2342,10 @@
                     phi_hat = this.dnn.forward(X, true);
 
                     // Control input with DNN compensation (closed-loop)
+                    // Known gravity is compensated directly (+g on z) so the DNN only
+                    // learns genuinely unknown dynamics — consistent with the open-loop branch
                     u = desiredStateDdot.map((dd, i) => 
-                        dd - (this.alpha1 + this.kr) * r[i] + (this.alpha1 * this.alpha1 - 1) * e[i] - phi_hat[i]);
+                        dd - (this.alpha1 + this.kr) * r[i] + (this.alpha1 * this.alpha1 - 1) * e[i] - phi_hat[i] + (i === 2 ? 9.81 : 0));
                 } else {
                     // Open-loop control during feedback loss: u = ẍ_d - Φ(X_d, θ̂_frozen) + gravity_compensation
                     // Use desired trajectory states for DNN evaluation
@@ -2360,19 +2368,20 @@
                 if (feedbackAvailable) {
                     // Only update observer when feedback is available
                     const r_tilde = r.map((ri, i) => ri - this.r_hat[i]);
+                    // r̂̇ = u - ẍ_d + α₁(r - α₁e) + f̂ + α₂r̃
                     const r_dot_obs = u.map((ui, i) => 
-                        (ui - desiredStateDdot[i] + this.alpha1 * r[i] + this.f_hat[i] + this.alpha2 * r_tilde[i]));
+                        (ui - desiredStateDdot[i] + this.alpha1 * (r[i] - this.alpha1 * e[i]) + this.f_hat[i] + this.alpha2 * r_tilde[i]));
                     
                     for (let i = 0; i < 6; i++) {
                         this.r_hat[i] += r_dot_obs[i] * dt;
                     }
 
-                    const f_dot_obs = r_tilde.map((rt, i) => 
-                        (this.kf * (rt + this.alpha2 * rt) + rt));
-                    
+                    // f̂̇ = k_f(r̃̇ + α₂r̃) + r̃, implemented in integrated form to avoid
+                    // differentiating r̃:  f̂ += k_f·Δr̃ + (k_f·α₂ + 1)·r̃·dt
                     for (let i = 0; i < 6; i++) {
-                        this.f_hat[i] += f_dot_obs[i] * dt;
+                        this.f_hat[i] += this.kf * (r_tilde[i] - this.r_tilde_prev[i]) + (this.kf * this.alpha2 + 1) * r_tilde[i] * dt;
                     }
+                    this.r_tilde_prev = r_tilde;
                 }
                 // Observer remains frozen during feedback loss (no updates)
 
@@ -2388,10 +2397,11 @@
                 this.normalizationFactor = 1.0 / (1.0 + signalNorm);
 
                 let adaptationRate = 0;
+                let jacobian = null;
 
                 // DNN weight updates - completely frozen during feedback loss
                 if (feedbackAvailable && signalNorm > 0.001) {
-                    const jacobian = this.dnn.computeJacobian(adaptationSignal);
+                    jacobian = this.dnn.computeJacobian(adaptationSignal);
                     
                     const gradientNorm = Math.sqrt(jacobian.reduce((sum, val) => sum + val * val, 0));
                     let clippedJacobian = jacobian;
@@ -2420,9 +2430,9 @@
                         const gammaScalar = Math.sqrt(this.Gamma_diag.reduce((sum, g) => sum + g*g, 0));
                         const beta_t = Math.max(0.1, this.beta0 * (1 - gammaScalar / this.kappa0));
                         
-                        // Jacobian-squared based gain updates
-                        const jacobian = this.dnn.computeJacobian(adaptationSignal);
-                        const J_squared = jacobian.map(j => j * j);
+                        // Jacobian-squared based gain updates (reuses jacobian from weight update)
+                        const J = jacobian || this.dnn.computeJacobian(adaptationSignal);
+                        const J_squared = J.map(j => j * j);
                         
                         for (let i = 0; i < this.Gamma_diag.length; i++) {
                             const Gamma_inv_dot = J_squared[i] - beta_t;
@@ -2523,6 +2533,10 @@
                 this.integral_limit_pos = 5.0;
                 this.integral_limit_att = 2.0;
                 
+                // Actuator limits (used to saturate stored control for state estimation)
+                this.maxForce = params.maxForce !== undefined ? params.maxForce : 50.0;
+                this.maxTorque = params.maxTorque !== undefined ? params.maxTorque : 5.0;
+                
                 // Feedforward dynamics learning for feedback loss scenarios
                 this.lastState = new Array(6).fill(0);
                 this.lastStateDot = new Array(6).fill(0);
@@ -2558,11 +2572,11 @@
                     desiredState[2] - currentState[2]
                 ];
 
-                // Attitude errors
+                // Attitude errors (wrapped to [-π, π] to avoid ±π wrap spikes)
                 const att_error = [
-                    desiredState[3] - currentState[3],
-                    desiredState[4] - currentState[4],
-                    desiredState[5] - currentState[5]
+                    wrapAngle(desiredState[3] - currentState[3]),
+                    wrapAngle(desiredState[4] - currentState[4]),
+                    wrapAngle(desiredState[5] - currentState[5])
                 ];
 
                 // Debug output when feedback is lost (uncomment for debugging)
@@ -2619,10 +2633,14 @@
                     desiredStateDdot[5] + (feedbackAvailable ? 0 : this.ff_dynamics[5])
                 ];
 
-                // Store previous errors and control
+                // Store previous errors and control (saturated — the plant can't
+                // deliver more, so the state estimator must not assume it can)
                 this.prev_error_pos = [...pos_error];
                 this.prev_error_att = [...att_error];
-                this.lastControl = [...u];
+                this.lastControl = u.map((ui, i) => {
+                    const lim = i < 3 ? this.maxForce : this.maxTorque;
+                    return Math.max(-lim, Math.min(lim, ui));
+                });
 
                 // For compatibility with adaptive controller interface
                 const adaptationRate = 0; // PID doesn't adapt
@@ -2725,9 +2743,10 @@
             const psi_dot_d = 0.06 * Math.cos(0.2 * t);
             const psi_ddot_d = -0.012 * Math.sin(0.2 * t);
 
-            // Physical constants
+            // Physical constants (mq matches QuadrotorDynamics.m; it cancels in the
+            // attitude-angle ratios but is kept consistent for clarity)
             const g = 9.81;
-            const mq = 1.0;
+            const mq = 1.5;
 
             // Thrust components from paper equations (14), (15), (16)
             // Simplified version of the virtual control law from equation (9)
@@ -2813,6 +2832,9 @@
                 this.isRunning = false;
                 this.time = 0;
                 this.dt = 0.02;
+                // Sliding window on logged data: bounds memory and avoids
+                // Math.max(...arr) argument-limit crashes on indefinite runs
+                this.maxDataPoints = 3000;
                 // No time limit - simulation runs indefinitely with periodic trajectories
                 this.selectedController = 'composite';
                 
@@ -2998,7 +3020,7 @@
 
             setupParameterListeners() {
                 const adaptiveParams = ['hiddenDim', 'numBlocks', 'alpha1', 'alpha2', 'alpha3', 'kr', 'kf', 'gammaBase', 'beta0', 'kappa0', 'windStrength', 'dragCoeff', 'maxForce', 'maxTorque'];
-                const pidParams = ['kp_pos', 'ki_pos', 'kd_pos', 'kp_att', 'ki_att', 'kd_att', 'windStrength_pid', 'dragCoeff_pid', 'maxForce_pid', 'maxTorque_pid'];
+                const pidParams = ['kp_pos', 'ki_pos', 'kd_pos', 'kp_att', 'ki_att', 'kd_att'];
                 const feedbackParams = ['feedbackLossRate', 'feedbackLossDuration', 'feedbackRecoveryTime'];
                 const allParams = [...adaptiveParams, ...pidParams, ...feedbackParams];
                 
@@ -3250,10 +3272,6 @@
                             { id: 'dragCoeff', label: 'Drag Coefficient', min: 0.1, max: 1, value: 0.25, step: 0.05 },
                             { id: 'maxForce', label: 'Max Force (N)', min: 20, max: 100, value: 50, step: 5 },
                             { id: 'maxTorque', label: 'Max Torque (Nm)', min: 1, max: 10, value: 5, step: 0.1 },
-                            { id: 'windStrength_pid', label: 'Wind Strength', min: 0, max: 2, value: 0.5, step: 0.1 },
-                            { id: 'dragCoeff_pid', label: 'Drag Coefficient', min: 0.1, max: 1, value: 0.25, step: 0.05 },
-                            { id: 'maxForce_pid', label: 'Max Force (N)', min: 20, max: 100, value: 50, step: 5 },
-                            { id: 'maxTorque_pid', label: 'Max Torque (Nm)', min: 1, max: 10, value: 5, step: 0.1 },
                         ]
                     }
                 ];
@@ -3293,10 +3311,10 @@
                         kp_att: parseFloat(document.getElementById('kp_att').value),
                         ki_att: parseFloat(document.getElementById('ki_att').value),
                         kd_att: parseFloat(document.getElementById('kd_att').value),
-                        windStrength: parseFloat(document.getElementById('windStrength_pid').value),
-                        dragCoeff: parseFloat(document.getElementById('dragCoeff_pid').value),
-                        maxForce: parseFloat(document.getElementById('maxForce_pid').value),
-                        maxTorque: parseFloat(document.getElementById('maxTorque_pid').value)
+                        windStrength: parseFloat(document.getElementById('windStrength').value),
+                        dragCoeff: parseFloat(document.getElementById('dragCoeff').value),
+                        maxForce: parseFloat(document.getElementById('maxForce').value),
+                        maxTorque: parseFloat(document.getElementById('maxTorque').value)
                     };
                 } else {
                     return {
@@ -3321,10 +3339,36 @@
             updateController() {
                 const params = this.getParameters();
                 
+                // Update gains in place where possible so mid-run slider tweaks
+                // don't discard learned DNN weights / integrator state.
+                // A rebuild is only required when the DNN architecture changes.
                 if (this.selectedController === 'pid') {
-                    this.controller = new QuadrotorPIDController(params);
+                    if (this.controller instanceof QuadrotorPIDController) {
+                        this.controller.kp_pos = params.kp_pos;
+                        this.controller.ki_pos = params.ki_pos;
+                        this.controller.kd_pos = params.kd_pos;
+                        this.controller.kp_att = params.kp_att;
+                        this.controller.ki_att = params.ki_att;
+                        this.controller.kd_att = params.kd_att;
+                        this.controller.maxForce = params.maxForce;
+                        this.controller.maxTorque = params.maxTorque;
+                    } else {
+                        this.controller = new QuadrotorPIDController(params);
+                    }
                 } else {
-                    this.controller = new QuadrotorAdaptiveController(params);
+                    const c = this.controller;
+                    if (c instanceof QuadrotorAdaptiveController &&
+                        c.dnn.hiddenDim === params.hiddenDim && c.dnn.numBlocks === params.numBlocks) {
+                        c.alpha1 = params.alpha1;
+                        c.alpha2 = params.alpha2;
+                        c.alpha3 = params.alpha3;
+                        c.kr = params.kr;
+                        c.kf = params.kf;
+                        c.beta0 = params.beta0;
+                        c.kappa0 = params.kappa0;
+                    } else {
+                        this.controller = new QuadrotorAdaptiveController(params);
+                    }
                 }
                 
                 this.dynamics.setWindStrength(params.windStrength);
@@ -3374,6 +3418,12 @@
                 this.feedbackLossScheduled = false;
                 this.nextFeedbackLossTime = 0;
                 
+                // Reset fixed-timestep bookkeeping
+                this._accumulator = 0;
+                this._lastFrameTime = performance.now();
+                this._lastDesiredState = null;
+                this._frameCount = 0;
+                
                 // Clear attitude cache for fresh trajectory generation
                 attitudeCache.clear();
                 
@@ -3413,10 +3463,14 @@
                 if (this.isRunning) return;
                 
                 this.isRunning = true;
+                const controllerLabel = this.selectedController === 'composite' ? 'Composite' :
+                    this.selectedController === 'tracking' ? 'Tracking' : 'PID';
                 document.getElementById('startBtn').textContent = 'Pause Simulation';
-                document.getElementById('status').textContent = `Simulation Running (${this.selectedController === 'composite' ? 'Composite' : 'Tracking'})`;
+                document.getElementById('status').textContent = `Simulation Running (${controllerLabel})`;
                 document.getElementById('status').className = 'status running';
                 
+                this._lastFrameTime = performance.now();
+                this._accumulator = 0;
                 this.animationFrame = requestAnimationFrame(() => this.simulate());
             }
 
@@ -3437,81 +3491,113 @@
                     return;
                 }
 
+                // Fixed-timestep integration decoupled from display refresh rate:
+                // sim time advances at real-time speed regardless of monitor Hz
+                const now = performance.now();
+                let elapsed = (now - (this._lastFrameTime || now)) / 1000;
+                this._lastFrameTime = now;
+                elapsed = Math.min(elapsed, 0.1); // clamp after tab switches / long frames
+                this._accumulator = (this._accumulator || 0) + elapsed;
+
                 try {
-                    // Manage intermittent feedback
-                    this.scheduleFeedbackLoss();
-                    this.updateFeedbackStatus();
-
-                    const [desiredState, desiredStateDot, desiredStateDdot] = generate3DTrajectory(this.time);
-
-                    let u, phiHat, adaptRate, predError;
-
-                    // During feedback loss, don't provide true state to controller - it must estimate
-                    const observedState = this.feedbackAvailable ? this.state : null;
-                    const observedStateDot = this.feedbackAvailable ? this.stateDot : null;
-
-                    if (this.selectedController === 'pid') {
-                        [u, phiHat, adaptRate, predError] = this.controller.step(
-                            observedState, observedStateDot, desiredState, desiredStateDot, desiredStateDdot, this.dt, this.feedbackAvailable);
-                    } else {
-                        const useComposite = this.selectedController === 'composite';
-                        [u, phiHat, adaptRate, predError] = this.controller.step(
-                            observedState, observedStateDot, desiredState, desiredStateDot, desiredStateDdot, this.dt, useComposite, this.feedbackAvailable);
+                    while (this._accumulator >= this.dt) {
+                        this._accumulator -= this.dt;
+                        this.stepSimulation();
                     }
 
-                    [this.state, this.stateDot] = this.dynamics.step(
-                        this.state, this.stateDot, u, this.dt, this.time);
-
-                    this.trajectoryData.actual.push([...this.state]);
-                    this.trajectoryData.desired.push([...desiredState]);
-
-                    // Position error (x, y, z)
-                    const posError = Math.sqrt(
-                        (this.state[0] - desiredState[0]) ** 2 +
-                        (this.state[1] - desiredState[1]) ** 2 +
-                        (this.state[2] - desiredState[2]) ** 2
-                    );
-
-                    // Orientation error (phi, theta, psi)
-                    const oriError = Math.sqrt(
-                        (this.state[3] - desiredState[3]) ** 2 +
-                        (this.state[4] - desiredState[4]) ** 2 +
-                        (this.state[5] - desiredState[5]) ** 2
-                    );
-
-                    this.errorData.position.push(posError);
-                    this.errorData.orientation.push(oriError);
-                    this.errorData.time.push(this.time);
-
-                    const controlNorm = Math.sqrt(u.reduce((sum, ui) => sum + ui * ui, 0));
-                    this.controlData.effort.push(controlNorm);
-                    this.controlData.time.push(this.time);
-
-                    this.adaptationData.adaptationRate.push(adaptRate);
-                    this.adaptationData.predictionError.push(predError);
-                    this.adaptationData.time.push(this.time);
-
+                    this.updateFeedbackStatus();
                     this.updateMetrics();
-                    
+
                     // Update 3D visualizer
-                    if (this.visualizer) {
+                    if (this.visualizer && this._lastDesiredState) {
                         this.visualizer.updateQuadrotorPosition(this.state);
-                        this.visualizer.updateTargetPosition(desiredState);
+                        this.visualizer.updateTargetPosition(this._lastDesiredState);
                         this.visualizer.updateTrajectory(this.trajectoryData.actual);
                         this.visualizer.setFeedbackLossEffect(!this.feedbackAvailable);
                     }
-                    
-                    if (Math.floor(this.time / this.dt) % 5 === 0) {
+
+                    this._frameCount = (this._frameCount || 0) + 1;
+                    if (this._frameCount % 5 === 0) {
                         this.updatePlots();
                     }
 
-                    this.time += this.dt;
                     this.animationFrame = requestAnimationFrame(() => this.simulate());
 
                 } catch (error) {
                     console.error('Simulation error:', error);
                     this.stop();
                 }
+            }
+
+            stepSimulation() {
+                // Manage intermittent feedback
+                this.scheduleFeedbackLoss();
+
+                const [desiredState, desiredStateDot, desiredStateDdot] = generate3DTrajectory(this.time);
+                this._lastDesiredState = desiredState;
+
+                let u, phiHat, adaptRate, predError;
+
+                // During feedback loss, don't provide true state to controller - it must estimate
+                const observedState = this.feedbackAvailable ? this.state : null;
+                const observedStateDot = this.feedbackAvailable ? this.stateDot : null;
+
+                if (this.selectedController === 'pid') {
+                    [u, phiHat, adaptRate, predError] = this.controller.step(
+                        observedState, observedStateDot, desiredState, desiredStateDot, desiredStateDdot, this.dt, this.feedbackAvailable);
+                } else {
+                    const useComposite = this.selectedController === 'composite';
+                    [u, phiHat, adaptRate, predError] = this.controller.step(
+                        observedState, observedStateDot, desiredState, desiredStateDot, desiredStateDdot, this.dt, useComposite, this.feedbackAvailable);
+                }
+
+                [this.state, this.stateDot] = this.dynamics.step(
+                    this.state, this.stateDot, u, this.dt, this.time);
+
+                this.trajectoryData.actual.push([...this.state]);
+                this.trajectoryData.desired.push([...desiredState]);
+
+                // Position error (x, y, z)
+                const posError = Math.sqrt(
+                    (this.state[0] - desiredState[0]) ** 2 +
+                    (this.state[1] - desiredState[1]) ** 2 +
+                    (this.state[2] - desiredState[2]) ** 2
+                );
+
+                // Orientation error (phi, theta, psi) — angle differences wrapped
+                const oriError = Math.sqrt(
+                    wrapAngle(this.state[3] - desiredState[3]) ** 2 +
+                    wrapAngle(this.state[4] - desiredState[4]) ** 2 +
+                    wrapAngle(this.state[5] - desiredState[5]) ** 2
+                );
+
+                this.errorData.position.push(posError);
+                this.errorData.orientation.push(oriError);
+                this.errorData.time.push(this.time);
+
+                const controlNorm = Math.sqrt(u.reduce((sum, ui) => sum + ui * ui, 0));
+                this.controlData.effort.push(controlNorm);
+                this.controlData.time.push(this.time);
+
+                this.adaptationData.adaptationRate.push(adaptRate);
+                this.adaptationData.predictionError.push(predError);
+                this.adaptationData.time.push(this.time);
+
+                // Trim to sliding window
+                if (this.errorData.time.length > this.maxDataPoints) {
+                    this.trajectoryData.actual.shift();
+                    this.trajectoryData.desired.shift();
+                    this.errorData.position.shift();
+                    this.errorData.orientation.shift();
+                    this.errorData.time.shift();
+                    this.controlData.effort.shift();
+                    this.controlData.time.shift();
+                    this.adaptationData.adaptationRate.shift();
+                    this.adaptationData.predictionError.shift();
+                    this.adaptationData.time.shift();
+                }
+
+                this.time += this.dt;
             }
 
             updateMetrics() {
@@ -3584,11 +3670,12 @@
                 const width = canvas.width - 2 * margin;
                 const height = canvas.height - 2 * margin - 30;
 
-                const timeRange = [0, Math.max(...this.errorData.time)];
+                const timeRange = [this.errorData.time[0], this.errorData.time[this.errorData.time.length - 1]];
+                const timeSpan = Math.max(timeRange[1] - timeRange[0], 1e-6);
                 const errorRange = [0, Math.max(...this.errorData.position) * 1.1];
 
                 function projectError(time, error) {
-                    const x = margin + (time - timeRange[0]) / (timeRange[1] - timeRange[0]) * width;
+                    const x = margin + (time - timeRange[0]) / timeSpan * width;
                     const y = margin + height - (error - errorRange[0]) / (errorRange[1] - errorRange[0]) * height;
                     return [x, y];
                 }
@@ -3637,7 +3724,7 @@
                 ctx.textAlign = 'center';
                 for (let i = 0; i <= timeSteps; i++) {
                     const x = margin + (i / timeSteps) * width;
-                    const timeValue = (i / timeSteps) * timeRange[1];
+                    const timeValue = timeRange[0] + (i / timeSteps) * timeSpan;
                     
                     // Tick mark
                     ctx.strokeStyle = 'rgba(55, 65, 81, 0.4)';
@@ -3778,11 +3865,12 @@
                 const width = canvas.width - 2 * margin;
                 const height = canvas.height - 2 * margin - 25;
 
-                const timeRange = [0, Math.max(...this.controlData.time)];
+                const timeRange = [this.controlData.time[0], this.controlData.time[this.controlData.time.length - 1]];
+                const timeSpan = Math.max(timeRange[1] - timeRange[0], 1e-6);
                 const controlRange = [0, Math.max(...this.controlData.effort) * 1.1];
 
                 function projectControl(time, control) {
-                    const x = margin + (time - timeRange[0]) / (timeRange[1] - timeRange[0]) * width;
+                    const x = margin + (time - timeRange[0]) / timeSpan * width;
                     const y = margin + height - (control - controlRange[0]) / (controlRange[1] - controlRange[0]) * height;
                     return [x, y];
                 }
@@ -3831,7 +3919,7 @@
                 ctx.textAlign = 'center';
                 for (let i = 0; i <= timeSteps; i++) {
                     const x = margin + (i / timeSteps) * width;
-                    const timeValue = (i / timeSteps) * timeRange[1];
+                    const timeValue = timeRange[0] + (i / timeSteps) * timeSpan;
                     
                     // Tick mark
                     ctx.strokeStyle = 'rgba(55, 65, 81, 0.4)';
