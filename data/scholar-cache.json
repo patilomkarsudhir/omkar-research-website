@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 629,
-      "recent": 624
+      "all": 633,
+      "recent": 628
     },
     "h-index": {
       "all": 14,
@@ -63,20 +63,20 @@
       "year": 2022
     },
     {
+      "title": "Accelerated gradient approach for deep neural network-based adaptive control of unknown nonlinear systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
+      "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
+      "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
+      "cited": 28,
+      "year": 2024
+    },
+    {
       "title": "Lyapunov-based physics-informed long short-term memory (LSTM) neural network-based adaptive control",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:hqOjcs7Dif8C",
       "authors": "RG Hart, EJ Griffis, OS Patil, WE Dixon",
       "venue": "IEEE control systems letters 8, 13-18, 2023",
       "cited": 28,
       "year": 2023
-    },
-    {
-      "title": "Accelerated gradient approach for deep neural network-based adaptive control of unknown nonlinear systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
-      "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
-      "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
-      "cited": 27,
-      "year": 2024
     },
     {
       "title": "Adaptive safety with a RISE-based disturbance observer",
@@ -107,7 +107,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Y0pCki6q_DkC",
       "authors": "DM Le, OS Patil, PM Amy, WE Dixon",
       "venue": "2022 American Control Conference (ACC), 806-811, 2022",
-      "cited": 15,
+      "cited": 16,
       "year": 2022
     },
     {
@@ -175,18 +175,18 @@
       "year": 2025
     },
     {
-      "title": "Lyapunov-based deep residual neural network (ResNet) adaptive control",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
-      "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
-      "venue": "IEEE Access, 2025",
-      "cited": 6,
-      "year": 2025
-    },
-    {
       "title": "Lyapunov-based graph neural networks for adaptive control of multi-agent systems",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:QIV2ME_5wuYC",
       "authors": "BC Fallin, CF Nino, OS Patil, ZI Bell, WE Dixon",
       "venue": "arXiv preprint arXiv:2503.15360, 2025",
+      "cited": 7,
+      "year": 2025
+    },
+    {
+      "title": "Lyapunov-based deep residual neural network (ResNet) adaptive control",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
+      "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
+      "venue": "IEEE Access, 2025",
       "cited": 6,
       "year": 2025
     },
@@ -204,6 +204,14 @@
       "authors": "WA Makumi, OS Patil, WE Dixon",
       "venue": "Automatica 180, 112462, 2025",
       "cited": 5,
+      "year": 2025
+    },
+    {
+      "title": "Adaptive output feedback control using Lyapunov-based deep recurrent neural networks (Lb-DRNNs)",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:R3hNpaxXUhUC",
+      "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
+      "venue": "IEEE Transactions on Automatic Control, 2025",
+      "cited": 4,
       "year": 2025
     },
     {
@@ -227,14 +235,6 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:r0BpntZqJG4C",
       "authors": "RG Hart, OS Patil, ZI Bell, WE Dixon",
       "venue": "IEEE Control Systems Letters 9, 2957-2962, 2025",
-      "cited": 3,
-      "year": 2025
-    },
-    {
-      "title": "Adaptive output feedback control using Lyapunov-based deep recurrent neural networks (Lb-DRNNs)",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:R3hNpaxXUhUC",
-      "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
-      "venue": "IEEE Transactions on Automatic Control, 2025",
       "cited": 3,
       "year": 2025
     },
