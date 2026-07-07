@@ -51,6 +51,12 @@ export const metadata: Metadata = {
 // Data URI thumbnails (SVG) so no extra asset files are needed
 const demos = [
 	{
+		name: "Legged Locomotion",
+		href: "/Legged Locomotion.html",
+		color: "from-lime-500/20 to-lime-700/30",
+		thumb: "/Legged Robotics Image.png",
+	},
+	{
 		name: "Lyapunov-based Deep Neural Network",
 		href: "/LbDNN Quadrotor.html",
 		color: "from-emerald-500/20 to-emerald-700/30",
