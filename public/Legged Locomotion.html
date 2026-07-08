@@ -1401,10 +1401,15 @@ function makeSimHybrid(ms, ctrl, opts){
     let remaining=T;
     while(remaining>1e-12 && !S.fallen){
       const dt=Math.min(S.dt,remaining);
+      let stepCtrl=S.ctrl;
+      if(S.ctrl.zoh){
+        const held=S.ctrl(S.mo,S.q,S.dq,S.t);
+        stepCtrl=function(){ return held; };
+      }
       if(S.phase==='a'){
         const gy=S.gOff-h;   // ground height in the ankle-based frame
         const pPrev=swingFoot(S.mo,S.q,S.dq);
-        const nx=rk4(S.mo,S.q,S.dq,S.t,dt,S.alpha,S.ctrl,S.uMap,S.extQ);
+        const nx=rk4(S.mo,S.q,S.dq,S.t,dt,S.alpha,stepCtrl,S.uMap,S.extQ);
         const pNew=swingFoot(S.mo,nx.q,nx.dq);
         const gate = pNew.x>0.05*S.mo.legLen && (S.t-S.tImp)>S.tRef && pNew.vy<0
                      && S.mo.phaseVal(S.q)>0.0;
@@ -1418,10 +1423,10 @@ function makeSimHybrid(ms, ctrl, opts){
           let lo=0, hi=dt, qs=S.q, ds=S.dq;
           for(let it=0; it<30; it++){
             const mid=(lo+hi)/2;
-            const test=rk4(S.mo,qs,ds,S.t,mid,S.alpha,S.ctrl,S.uMap,S.extQ);
+            const test=rk4(S.mo,qs,ds,S.t,mid,S.alpha,stepCtrl,S.uMap,S.extQ);
             if(swingFoot(S.mo,test.q,test.dq).y>gy) lo=mid; else hi=mid;
           }
-          const hit=rk4(S.mo,qs,ds,S.t,hi,S.alpha,S.ctrl,S.uMap,S.extQ);
+          const hit=rk4(S.mo,qs,ds,S.t,hi,S.alpha,stepCtrl,S.uMap,S.extQ);
           S.q=hit.q; S.dq=hit.dq; S.t+=hi; remaining-=hi;
           heelRiseMap();
           processTD();
@@ -1431,7 +1436,7 @@ function makeSimHybrid(ms, ctrl, opts){
         }
       } else {
         const pPrev=swingFoot(S.mo,S.q,S.dq);
-        const nx=rk4(S.mo,S.q,S.dq,S.t,dt,S.alpha,S.ctrl,S.uMap,S.extQ);
+        const nx=rk4(S.mo,S.q,S.dq,S.t,dt,S.alpha,stepCtrl,S.uMap,S.extQ);
         const pNew=swingFoot(S.mo,nx.q,nx.dq);
         const gate = pNew.x>0.05*S.mo.legLen && (S.t-S.tImp)>S.tRef && pNew.vy<0
                      && S.mo.phaseVal(S.q)>0.0;
@@ -1439,10 +1444,10 @@ function makeSimHybrid(ms, ctrl, opts){
           let lo=0, hi=dt, qs=S.q, ds=S.dq;
           for(let it=0; it<30; it++){
             const mid=(lo+hi)/2;
-            const test=rk4(S.mo,qs,ds,S.t,mid,S.alpha,S.ctrl,S.uMap,S.extQ);
+            const test=rk4(S.mo,qs,ds,S.t,mid,S.alpha,stepCtrl,S.uMap,S.extQ);
             if(swingFoot(S.mo,test.q,test.dq).y>S.gOff) lo=mid; else hi=mid;
           }
-          const hit=rk4(S.mo,qs,ds,S.t,hi,S.alpha,S.ctrl,S.uMap,S.extQ);
+          const hit=rk4(S.mo,qs,ds,S.t,hi,S.alpha,stepCtrl,S.uMap,S.extQ);
           S.q=hit.q; S.dq=hit.dq; S.t+=hi; remaining-=hi;
           processTD();
         } else {
@@ -2752,7 +2757,7 @@ function controller(ctx){
 const HIDDEN = [16, 16];
 const ALPHA = 8;
 const KRFRAC = 20;
-const GAMMA = 180;
+const GAMMA = 720;
 const KTH = 0.02;
 const WBAR = 25;
 
@@ -3078,7 +3083,7 @@ if (typeof module !== 'undefined' && module.exports){ module.exports = ARC_TEMPL
         '// resets is an open problem; here it simply persists.\n'+
         '// Base architecture below: SWITCHING LbDNN ADAPTIVE CONTROLLER')
       .replace('const WBAR = 25;',
-        'const WBAR = 25;\nconst KR1 = 10, BETA = 1.5, KLEAK = 2; // leaky robust integral: bounded windup through impact re-excitation (boundedness traded for the asymptotic claim)')
+        'const WBAR = 25;\nconst KR1 = 40, BETA = 6, KLEAK = 2; // leaky robust integral: bounded windup through impact re-excitation (boundedness traded for the asymptotic claim)')
       .replace("if(!mem.Wa){ mem.Wa=netInit(19,8,5); mem.Wu=netInit(21,9,7); mem.msY=0; }",
         "if(!mem.Wa){ mem.Wa=netInit(19,8,5); mem.Wu=netInit(21,9,7); mem.msY=0;\n"+
         "    mem.nuA=new Array(8).fill(0); mem.nuU=new Array(9).fill(0); }")
