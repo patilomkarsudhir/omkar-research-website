@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 633,
-      "recent": 628
+      "all": 634,
+      "recent": 629
     },
     "h-index": {
       "all": 14,
@@ -183,20 +183,20 @@
       "year": 2025
     },
     {
+      "title": "Lyapunov-based dropout deep neural network (Lb-DDNN) adaptive controller",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TFP_iSt0sucC",
+      "authors": "S Akbari, EJ Griffis, OS Patil, WE Dixon",
+      "venue": "Automatica 189, 113037, 2026",
+      "cited": 6,
+      "year": 2026
+    },
+    {
       "title": "Lyapunov-based deep residual neural network (ResNet) adaptive control",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
       "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
       "venue": "IEEE Access, 2025",
       "cited": 6,
       "year": 2025
-    },
-    {
-      "title": "Lyapunov-based dropout deep neural network (Lb-DDNN) adaptive controller",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TFP_iSt0sucC",
-      "authors": "S Akbari, EJ Griffis, OS Patil, WE Dixon",
-      "venue": "Automatica 189, 113037, 2026",
-      "cited": 5,
-      "year": 2026
     },
     {
       "title": "Lyapunov-based adaptive deep system identification for approximate dynamic programming",
