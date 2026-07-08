@@ -239,6 +239,14 @@ select#cd-template{background:var(--panel2);color:var(--text);border:1px solid v
 #btn-code.custom{border-color:var(--violet);color:#e9e4ff;}
 #btn-code.err{border-color:var(--danger);color:#ffc7c1;}
 
+/* ---------- scope tabs ---------- */
+#scope-tabs{float:right;display:flex;gap:3px;}
+.scopetab{font-family:var(--mono);font-size:8.5px;letter-spacing:0.05em;color:var(--muted);
+  background:transparent;border:1px solid var(--border);border-radius:5px;
+  padding:2px 6px;cursor:pointer;}
+.scopetab:hover{color:var(--text);}
+.scopetab.active{color:#f2f0ff;background:var(--violet-deep);border-color:var(--violet-deep);}
+
 /* ---------- docs overlay ---------- */
 #docs-overlay{position:fixed;inset:0;background:var(--ink);z-index:55;
   display:flex;flex-direction:column;}
@@ -4141,6 +4149,8 @@ const AppState = {
   history:{ E:[], t:[] },
   phaseTrail:[],
   poincare:[],
+  errHist:[], uHist:[],
+  scope:{ mode:'err', heldErr:null, heldLabel:'' },
   /* true-plant mismatch and protocol settings: the simulator integrates
      the perturbed plant; controllers and ctx are served the design model */
   pert:{ massScale:1, inertiaScale:1, payload:0, eff:1, bias:0,
@@ -4207,6 +4217,31 @@ function applyPerturbation(){
   AppState.history={E:[],t:[]};   // keep the drift readout meaningful
 }
 
+const Y_NAMES={
+  twolink:['Swing mirror'],
+  threelink:['Torso lean','Swing mirror'],
+  fivelink:['Torso lean','Stance knee','Swing femur','Swing knee'],
+  go1:['Body pitch','Support knee','Swing mirror','Swing knee'],
+  b1:['Body pitch','Support knee','Swing mirror','Swing knee'],
+  g1:['Torso lean','Stance knee','Swing femur','Swing knee',
+      'L shoulder','R shoulder','L elbow','R elbow','Stance ankle'],
+};
+function yNames(n){
+  const base=Y_NAMES[AppState.modelKey]||[];
+  const out=[];
+  for(let i=0;i<n;i++) out.push(base[i]||('y'+(i+1)));
+  return out;
+}
+function buildRefCtrl(){
+  // canonical virtual-constraint outputs for THIS model, the common yardstick
+  // for every controller, built-in or custom; geometric in (q, P)
+  const kind=PRESETS[AppState.modelKey].ctrlKind;
+  if(kind==='fl3') return ctrl3(AppState.P);
+  if(kind==='fl5') return ctrl5(AppState.P);
+  if(kind==='quad') return ctrlQ(AppState.P);
+  if(kind==='g1') return ctrlGF(AppState.P);
+  return mirrorCtrl2(AppState.P);
+}
 function buildCtrl(){
   const cu=AppState.preset._custom;
   if(cu && cu.active && cu.fn){
@@ -4264,6 +4299,8 @@ function resetSim(modelKey){
   AppState.phaseTrail=[];
   AppState.poincare=[];
   AppState.trajLog=[];
+  AppState.errHist=[]; AppState.uHist=[];
+  AppState.refCtrl=buildRefCtrl();
   lastStepCount=0;
   const dashF = document.getElementById('fallbanner'); if(dashF) dashF.classList.remove('show');
   buildLeftRail();
@@ -4477,17 +4514,54 @@ function buildRightRail(){
   root.innerHTML='';
 
   const p1=document.createElement('div'); p1.className='panel';
-  p1.innerHTML='<div class="panel-title">PHASE PORTRAIT</div>'+
+  p1.innerHTML='<div class="panel-title">SCOPE'+
+    '<span id="scope-tabs">'+
+      '<button class="scopetab active" data-m="err">ERROR</button>'+
+      '<button class="scopetab" data-m="stride">STRIDE</button>'+
+      '<button class="scopetab" data-m="torque">TORQUE</button>'+
+      '<button class="scopetab" data-m="phase">PHASE</button>'+
+      '<button class="scopetab" data-m="energy">ENERGY</button>'+
+    '</span></div>'+
     '<canvas class="scope" id="scope-canvas"></canvas>'+
-    '<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:5px;">'+
-    'gold: state trajectory &middot; violet dots: Poincare (post-impact) samples</div>';
+    '<div id="scope-cap" style="font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:5px;line-height:1.5;"></div>'+
+    '<div class="btnrow" style="margin-top:6px;">'+
+      '<button class="smallbtn" id="btn-hold">HOLD REF</button>'+
+      '<button class="smallbtn" id="btn-clearref">CLEAR REF</button>'+
+      '<button class="smallbtn" id="btn-figsvg">FIG SVG</button>'+
+      '<button class="smallbtn" id="btn-figpng">FIG PNG</button>'+
+      '<button class="smallbtn" id="btn-figcsv">DATA</button>'+
+    '</div>'+
+    '<div id="met-row" style="font-family:var(--mono);font-size:10px;color:var(--muted);'+
+      'margin-top:7px;display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;"></div>';
   root.appendChild(p1);
   scopeCanvas=document.getElementById('scope-canvas'); scopeCtx=scopeCanvas.getContext('2d');
-
-  const p2=document.createElement('div'); p2.className='panel';
-  p2.innerHTML='<div class="panel-title">TOTAL ENERGY</div><canvas class="spark" id="spark-canvas"></canvas>';
-  root.appendChild(p2);
-  sparkCanvas=document.getElementById('spark-canvas'); sparkCtx=sparkCanvas.getContext('2d');
+  p1.querySelectorAll('.scopetab').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      AppState.scope.mode=b.dataset.m;
+      p1.querySelectorAll('.scopetab').forEach(x=>x.classList.toggle('active', x===b));
+    });
+  });
+  document.getElementById('btn-hold').addEventListener('click', ()=>{
+    const cu=AppState.preset._custom;
+    AppState.scope.heldErr=AppState.errHist.slice();
+    AppState.scope.heldStride=strideSeries();
+    AppState.scope.heldLabel=(cu&&cu.active&&cu.name)? cu.name.slice(0,26) : 'built-in';
+  });
+  document.getElementById('btn-figsvg').addEventListener('click', ()=>{
+    const sp=figureSpec(); if(!sp) return;
+    ensureMathJax(()=>{ dl(figName()+'.svg', svgFromSpec(sp), 'image/svg+xml'); });
+  });
+  document.getElementById('btn-figpng').addEventListener('click', ()=>{
+    const sp=figureSpec(); if(!sp) return;
+    ensureMathJax(()=>{ pngFromSpec(sp, figName()+'.png'); });
+  });
+  document.getElementById('btn-figcsv').addEventListener('click', ()=>{
+    const sp=figureSpec(); if(!sp) return;
+    dl(figName()+'.csv', csvFromSpec(sp), 'text/csv');
+  });
+  document.getElementById('btn-clearref').addEventListener('click', ()=>{
+    AppState.scope.heldErr=null; AppState.scope.heldStride=null; AppState.scope.heldLabel='';
+  });
 
   const p3=document.createElement('div'); p3.className='panel';
   p3.innerHTML='<div class="panel-title">IMPACT VALIDITY, REMARK 3.5</div>'+
@@ -4507,64 +4581,562 @@ function buildRightRail(){
   stepTableBody=document.getElementById('step-tbody');
 }
 
+const CHCOL=['#d9a441','#8f7ff0','#57b98a','#e2574c','#5aa9e6','#e6c85a','#c97fd4','#7fd4c9','#d47f9a'];
+function niceTicks(lo,hi,target){
+  const span=hi-lo; if(!(span>0)) return [lo];
+  const raw=span/(target||4);
+  const mag=Math.pow(10,Math.floor(Math.log10(raw)));
+  let step=10*mag;
+  for(const m of [1,2,5,10]) if(m*mag>=raw){ step=m*mag; break; }
+  const t0=Math.ceil(lo/step)*step, out=[];
+  for(let v=t0; v<=hi+1e-12; v+=step) out.push(Math.abs(v)<step*1e-6?0:v);
+  return out;
+}
+function fmtTick(v){
+  const a=Math.abs(v);
+  if(a===0) return '0';
+  if(a>=10000||a<0.001) return v.toExponential(0);
+  if(a>=100) return v.toFixed(0);
+  if(a>=1) return (''+ +v.toFixed(2));
+  return (''+ +v.toFixed(3));
+}
+/* professional plot frame: dark panel, margined plot rect, numeric ticks,
+   gridlines, axis unit labels; returns coordinate mappers */
+function axisFrame(xlo,xhi,ylo,yhi,xlab,ylab,opt){
+  opt=opt||{};
+  const dpr=devicePixelRatio;
+  const w=scopeCanvas.width=scopeCanvas.clientWidth*dpr;
+  const h=scopeCanvas.height=scopeCanvas.clientHeight*dpr;
+  const ctx=scopeCtx;
+  ctx.clearRect(0,0,w,h); ctx.fillStyle='#0a0a0d'; ctx.fillRect(0,0,w,h);
+  const ml=44*dpr, mr=8*dpr, mt=7*dpr, mb=20*dpr;
+  const pw=w-ml-mr, ph=h-mt-mb;
+  const X=(v)=> ml + (v-xlo)/(xhi-xlo)*pw;
+  const Yl=(v)=> mt + ph - (v-ylo)/(yhi-ylo)*ph;
+  const Y=opt.ylog? (v)=> Yl(Math.log10(Math.max(v,Math.pow(10,ylo)))) : Yl;
+  ctx.font=(8.5*dpr)+'px "IBM Plex Mono", monospace';
+  ctx.fillStyle='#5b5a64';
+  // x ticks
+  const xt=niceTicks(xlo,xhi,5);
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for(const v of xt){
+    const x=X(v);
+    ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke();
+    ctx.fillText(fmtTick(v), x, mt+ph+3*dpr);
+  }
+  // y ticks (log: decades)
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  if(opt.ylog){
+    for(let d=Math.ceil(ylo); d<=Math.floor(yhi); d++){
+      const y=Yl(d);
+      ctx.strokeStyle='rgba(255,255,255,0.08)';
+      ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke();
+      ctx.fillText('1e'+d, ml-4*dpr, y);
+      for(const m of [2,5]){ const ym=Yl(d+Math.log10(m));
+        if(ym>mt&&ym<mt+ph){ ctx.strokeStyle='rgba(255,255,255,0.03)';
+          ctx.beginPath(); ctx.moveTo(ml,ym); ctx.lineTo(ml+pw,ym); ctx.stroke(); } }
+    }
+  } else {
+    for(const v of niceTicks(ylo,yhi,4)){
+      const y=Yl(v);
+      ctx.strokeStyle=(v===0)?'rgba(255,255,255,0.25)':'rgba(255,255,255,0.07)';
+      ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke();
+      ctx.fillStyle='#5b5a64';
+      ctx.fillText(fmtTick(v), ml-4*dpr, y);
+    }
+  }
+  // axis labels
+  ctx.fillStyle='#8b8a94'; ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillText(ylab, ml+3*dpr, mt+2*dpr);
+  ctx.textAlign='right';
+  ctx.fillText(xlab, ml+pw, mt+ph-11*dpr);
+  // frame
+  ctx.strokeStyle='#2a2a36'; ctx.lineWidth=1;
+  ctx.strokeRect(ml,mt,pw,ph);
+  return {ctx:ctx, X:X, Y:Y, ml:ml, mt:mt, pw:pw, ph:ph, dpr:dpr};
+}
+function drawLine(F,pts,getX,getY,color,width,dots){
+  const ctx=F.ctx;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(F.ml,F.mt,F.pw,F.ph); ctx.clip();
+  ctx.strokeStyle=color; ctx.lineWidth=width*F.dpr; ctx.beginPath();
+  let st=false;
+  for(const p of pts){
+    const x=F.X(getX(p)), y=F.Y(getY(p));
+    if(!st){ ctx.moveTo(x,y); st=true; } else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  if(dots){ ctx.fillStyle=color;
+    for(const p of pts){ ctx.beginPath();
+      ctx.arc(F.X(getX(p)),F.Y(getY(p)),2.2*F.dpr,0,Math.PI*2); ctx.fill(); } }
+  ctx.restore();
+}
+/* per-stride RMS of the constraint error: the stride-indexed sequence that
+   hybrid convergence statements are actually about */
+function strideSeries(){
+  const ev=AppState.sim.events, eh=AppState.errHist;
+  if(!ev.length||eh.length<3) return [];
+  const evs=ev.slice(-24), out=[];
+  let k=0;
+  const n0=AppState.sim.steps-evs.length;
+  for(let n=0;n<evs.length;n++){
+    const tEnd=evs[n].t, tStart=n? evs[n-1].t : (eh[0].t-1);
+    let s=0,c=0;
+    while(k<eh.length && eh[k].t<=tEnd){
+      if(eh[k].t>tStart){ s+=eh[k].e*eh[k].e; c++; }
+      k++;
+    }
+    if(c>=3) out.push({n:n0+n+1, r:Math.sqrt(s/c)});
+  }
+  return out;
+}
+function drawErr(){
+  const cap=document.getElementById('scope-cap');
+  const eh=AppState.errHist;
+  if(eh.length<2){ if(cap) cap.textContent='virtual constraint errors: waiting for samples'; return; }
+  const t1=eh[eh.length-1].t, t0=Math.max(eh[0].t, t1-6);
+  const win=eh.filter(function(p){return p.t>=t0;});
+  const last=eh[eh.length-1], nch=(last.y||[]).length;
+  let vmax=1e-4;
+  for(const p of win) if(p.y) for(const v of p.y) vmax=Math.max(vmax,Math.abs(v));
+  vmax*=1.15;
+  const F=axisFrame(t0,t1,-vmax,vmax,'t [s]','y_i [rad]');
+  const names=yNames(nch);
+  for(let c=0;c<nch;c++){
+    (function(cc){
+      drawLine(F,win,function(p){return p.t;},
+        function(p){return (p.y&&p.y[cc]!==undefined)?p.y[cc]:0;},
+        CHCOL[cc%CHCOL.length],1.15);
+    })(c);
+  }
+  if(cap){
+    let leg='Virtual constraint errors: each trace is one posture relation held at zero. '+
+      'Impacts re-excite errors every stride; see STRIDE for convergence.<br>';
+    for(let c=0;c<nch;c++){
+      leg+='<span style="color:'+CHCOL[c%CHCOL.length]+';">&#9632; '+names[c]+
+        ' '+(last.y[c]>=0?'+':'')+last.y[c].toFixed(3)+'</span>&nbsp;&nbsp;';
+    }
+    cap.innerHTML=leg;
+  }
+}
+function drawStride(){
+  const cap=document.getElementById('scope-cap');
+  const cur=strideSeries(), held=AppState.scope.heldStride;
+  if(cur.length<2){
+    if(cap) cap.textContent='per-stride RMS error: take a few steps first';
+    axisFrame(0,10,-4,-1,'stride','RMS||y||',{ylog:true});
+    return;
+  }
+  let lo=1e9, hi=1e-9, nmax=0;
+  for(const p of cur){ lo=Math.min(lo,p.r); hi=Math.max(hi,p.r); nmax=Math.max(nmax,p.n); }
+  if(held) for(const p of held){ lo=Math.min(lo,p.r); hi=Math.max(hi,p.r); }
+  const ylo=Math.floor(Math.log10(Math.max(lo,1e-6)))-0.1;
+  const yhi=Math.ceil(Math.log10(hi))+0.1;
+  const n0=Math.max(1,nmax-23);
+  const F=axisFrame(n0,Math.max(nmax,n0+5),ylo,yhi,'stride n','RMS||y|| [rad]',{ylog:true});
+  if(held && held.length>1){
+    // align the held sequence to the same stride window for shape comparison
+    const off=held[held.length-1].n-nmax;
+    drawLine(F,held,function(p){return p.n-off;},function(p){return p.r;},
+      'rgba(143,127,240,0.65)',1.3,true);
+  }
+  drawLine(F,cur,function(p){return p.n;},function(p){return p.r;},'#d9a441',1.6,true);
+  if(cap) cap.innerHTML='Per-stride RMS constraint error, log scale: the stride-indexed '+
+    'sequence hybrid convergence is about. Within-stride decay vs impact re-excitation '+
+    'means convergence to a floor, not to zero; better controllers reach a lower, '+
+    'flatter floor.'+
+    (held? ' <span style="color:#8f7ff0;">Violet: '+(AppState.scope.heldLabel||'held')+
+      '</span> vs <span style="color:#d9a441;">gold: current</span>.'
+     : ' Press HOLD REF, switch controllers, and compare.');
+}
+function drawTorque(){
+  const cap=document.getElementById('scope-cap');
+  const uh=AppState.uHist;
+  if(uh.length<2){ if(cap) cap.textContent='commanded torques: waiting for samples'; return; }
+  const t1=uh[uh.length-1].t, t0=Math.max(uh[0].t, t1-4);
+  const win=uh.filter(function(p){return p.t>=t0;});
+  const nch=uh[uh.length-1].u.length;
+  let vmax=1e-3;
+  for(const p of win) for(const v of p.u) vmax=Math.max(vmax,Math.abs(v));
+  const um=AppState.P.umax;
+  if(um) vmax=Math.max(vmax,um);
+  vmax*=1.08;
+  const F=axisFrame(t0,t1,-vmax,vmax,'t [s]','u [N m]');
+  if(um){
+    F.ctx.strokeStyle='rgba(226,87,76,0.55)'; F.ctx.setLineDash([4,4]); F.ctx.lineWidth=1;
+    for(const s of [um,-um]){ const y=F.Y(s);
+      F.ctx.beginPath(); F.ctx.moveTo(F.ml,y); F.ctx.lineTo(F.ml+F.pw,y); F.ctx.stroke(); }
+    F.ctx.setLineDash([]);
+  }
+  for(let c=0;c<nch;c++){
+    (function(cc){
+      drawLine(F,win,function(p){return p.t;},function(p){return p.u[cc]||0;},
+        CHCOL[cc%CHCOL.length],1.0);
+    })(c);
+  }
+  if(cap) cap.innerHTML='Commanded joint torques, one color per actuator'+
+    (um? ' &middot; dashed red: torque limit &plusmn;'+um+' N m':'')+
+    ' &middot; saturation and chatter are controller signatures.';
+}
+function drawEnergyTab(){
+  const cap=document.getElementById('scope-cap');
+  const Eh=AppState.history;
+  if(Eh.E.length<2){ if(cap) cap.textContent='total mechanical energy: waiting'; return; }
+  let mn=Math.min.apply(null,Eh.E), mx=Math.max.apply(null,Eh.E);
+  if(mx-mn<1e-6){ mn-=1; mx+=1; }
+  const pad=(mx-mn)*0.12;
+  const pts=Eh.E.map(function(e,i){return {t:Eh.t[i], e:e};});
+  const F=axisFrame(Eh.t[0],Eh.t[Eh.t.length-1],mn-pad,mx+pad,'t [s]','E [J]');
+  drawLine(F,pts,function(p){return p.t;},function(p){return p.e;},COL.violetHex,1.4);
+  if(cap) cap.textContent='Total mechanical energy in the tilted frame; steps down at each impact, pumped back by actuation within the stride.';
+}
+function drawPhase(){
+  const cap=document.getElementById('scope-cap');
+  const trail=AppState.phaseTrail;
+  if(trail.length<2){ if(cap) cap.textContent='phase portrait: waiting'; return; }
+  let xmin=1e9,xmax=-1e9,ymin=1e9,ymax=-1e9;
+  for(const p of trail){ xmin=Math.min(xmin,p.x); xmax=Math.max(xmax,p.x);
+    ymin=Math.min(ymin,p.y); ymax=Math.max(ymax,p.y); }
+  const xr=Math.max(xmax-xmin,0.2), yr=Math.max(ymax-ymin,0.2);
+  const F=axisFrame(xmin-0.12*xr,xmax+0.12*xr,ymin-0.12*yr,ymax+0.12*yr,
+    'phase q [rad]','dq [rad/s]');
+  drawLine(F,trail,function(p){return p.x;},function(p){return p.y;},'#d9a441',1.4);
+  const lastP=trail[trail.length-1];
+  F.ctx.fillStyle='#fff3de';
+  F.ctx.beginPath(); F.ctx.arc(F.X(lastP.x),F.Y(lastP.y),3*F.dpr,0,Math.PI*2); F.ctx.fill();
+  F.ctx.fillStyle=COL.violetHex;
+  for(const p of AppState.poincare){
+    F.ctx.beginPath(); F.ctx.arc(F.X(p.x),F.Y(p.y),3*F.dpr,0,Math.PI*2); F.ctx.fill();
+  }
+  if(cap) cap.innerHTML='Phase portrait of the gait phase variable &middot; gold: trajectory '+
+    '&middot; violet: Poincare (post-impact) samples; a tight cluster is an attracting gait.';
+}
 function drawScope(){
   if(!scopeCanvas.clientWidth||!scopeCanvas.clientHeight) return;
-  const w=scopeCanvas.width=scopeCanvas.clientWidth*devicePixelRatio;
-  const h=scopeCanvas.height=scopeCanvas.clientHeight*devicePixelRatio;
-  const ctx=scopeCtx;
-  ctx.clearRect(0,0,w,h);
-  ctx.fillStyle='#0a0a0d'; ctx.fillRect(0,0,w,h);
-  ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=1;
-  for(let i=1;i<6;i++){ const x=w*i/6; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
-  for(let i=1;i<4;i++){ const y=h*i/4; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
-  ctx.strokeStyle='rgba(255,255,255,0.14)';
-  ctx.beginPath(); ctx.moveTo(w/2,0); ctx.lineTo(w/2,h); ctx.moveTo(0,h/2); ctx.lineTo(w,h/2); ctx.stroke();
-
-  const trail=AppState.phaseTrail;
-  if(trail.length<2) return;
+  const m=AppState.scope.mode;
+  if(m==='err') return drawErr();
+  if(m==='stride') return drawStride();
+  if(m==='torque') return drawTorque();
+  if(m==='energy') return drawEnergyTab();
+  return drawPhase();
+}
+/* ============================================================
+   PUBLICATION FIGURE EXPORT
+   The active scope view is re-rendered into a light publication
+   theme (serif, black axes, colorblind-safe palette) as vector
+   SVG, high-resolution PNG, and the plotted series as CSV.
+   ============================================================ */
+/* lazy MathJax (TeX -> SVG paths) for publication-grade math in figures;
+   falls back to plain serif text when the CDN is unreachable */
+let mjState='none';
+function ensureMathJax(cb){
+  if(window.MathJax && window.MathJax.tex2svg){ mjState='ready'; cb(); return; }
+  if(mjState==='loading'){ setTimeout(function(){ensureMathJax(cb);},300); return; }
+  mjState='loading';
+  window.MathJax={ startup:{typeset:false}, svg:{fontCache:'none'} };
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js';
+  s.onload=function(){ const w=function(){
+    if(window.MathJax && window.MathJax.tex2svg){ mjState='ready'; cb(); }
+    else setTimeout(w,120); }; w(); };
+  s.onerror=function(){ mjState='failed'; cb(); };
+  document.head.appendChild(s);
+}
+let mjUid=0;
+function texSnippet(tex, sizePx){
+  // returns {svg:'<g...>', w, h} with glyphs as paths and unique ids, or null
+  if(!(window.MathJax&&window.MathJax.tex2svg)) return null;
+  try{
+    const node=window.MathJax.tex2svg(tex,{display:false});
+    const svg=node.querySelector('svg');
+    const exW=parseFloat(svg.getAttribute('width')), exH=parseFloat(svg.getAttribute('height'));
+    const pxPerEx=sizePx*0.482;
+    const w=exW*pxPerEx, h=exH*pxPerEx;
+    svg.setAttribute('width', w.toFixed(2));
+    svg.setAttribute('height', h.toFixed(2));
+    let inner=svg.outerHTML;
+    const uid='mj'+(mjUid++)+'x';
+    inner=inner.replace(/id="/g,'id="'+uid)
+               .replace(/href="#/g,'href="#'+uid)
+               .replace(/url\(#/g,'url(#'+uid);
+    return {svg:inner, w:w, h:h};
+  }catch(e){ return null; }
+}
+const PUBCOL=['#1f77b4','#d62728','#2ca02c','#9467bd','#ff7f0e',
+              '#8c564b','#e377c2','#7f7f7f','#17becf'];
+function envSummary(){
+  const e=AppState.env, pe=AppState.pert, parts=[];
+  if(e.fricC) parts.push('joint Coulomb '+e.fricC+' N m');
+  if(e.fricV) parts.push('viscous '+e.fricV);
+  if(e.muS) parts.push('ground mu '+e.muS+(e.iceEvery? (', ice mu '+e.muIce+' every '+e.iceEvery):''));
+  if(e.tripImp&&e.tripEvery) parts.push('trips '+e.tripImp+' N s / '+e.tripEvery);
+  if(pe.massScale!==1) parts.push('mass x'+pe.massScale);
+  if(pe.eff!==1) parts.push('actuator eff '+pe.eff);
+  if(pe.payload) parts.push('payload '+pe.payload+' kg');
+  return parts.join(', ');
+}
+function ctrlName(){
+  const cu=AppState.preset._custom;
+  let n=(cu&&cu.active&&cu.name)? cu.name : 'Built-in FL reference';
+  n=n.replace(/\s*\(uses mem\)\s*/,'');
+  return n.charAt(0).toUpperCase()+n.slice(1);
+}
+function figName(){
+  return 'fig_'+AppState.modelKey+'_'+AppState.scope.mode+'_t'+AppState.sim.t.toFixed(0)+'s';
+}
+function figureSpec(){
+  const m=AppState.scope.mode, sim=AppState.sim;
+  const title=(PRESETS[AppState.modelKey].label||AppState.modelKey).split('(')[0].trim()
+    +', '+ctrlName();
+  const sub=envSummary();
+  if(m==='err'){
+    const eh=AppState.errHist; if(eh.length<2) return null;
+    const t1=eh[eh.length-1].t, t0=Math.max(eh[0].t,t1-6);
+    const win=eh.filter(function(p){return p.t>=t0;});
+    const nch=(eh[eh.length-1].y||[]).length;
+    let v=1e-4; for(const p of win) if(p.y) for(const x of p.y) v=Math.max(v,Math.abs(x));
+    const names=yNames(nch), series=[];
+    for(let c=0;c<nch;c++){
+      series.push({label:names[c],
+        pts:win.map(function(p){return [p.t,(p.y&&p.y[c]!==undefined)?p.y[c]:0];})});
+    }
+    return {title:title, sub:sub,
+      xlab:{tex:'\\text{Time }t\\ [\\mathrm{s}]', plain:'Time t [s]'},
+      ylab:{tex:'\\text{Constraint errors }y_i\\ [\\mathrm{rad}]', plain:'Constraint errors y_i [rad]'},
+      xlo:t0, xhi:t1, ylo:-1.12*v, yhi:1.12*v, series:series, zeroline:true};
+  }
+  if(m==='stride'){
+    const cur=strideSeries(); if(cur.length<2) return null;
+    const held=AppState.scope.heldStride;
+    let lo=1e9,hi=1e-9,nmax=0;
+    for(const p of cur){lo=Math.min(lo,p.r);hi=Math.max(hi,p.r);nmax=Math.max(nmax,p.n);}
+    if(held) for(const p of held){lo=Math.min(lo,p.r);hi=Math.max(hi,p.r);}
+    const series=[];
+    if(held&&held.length>1){
+      const off=held[held.length-1].n-nmax;
+      series.push({label:(function(s){s=(s||'Held reference').replace(/\s*\(uses mem\)\s*/,'');
+        return s.charAt(0).toUpperCase()+s.slice(1);})(AppState.scope.heldLabel), dots:true,
+        pts:held.map(function(p){return [p.n-off,p.r];})});
+    }
+    series.push({label:ctrlName(), dots:true,
+      pts:cur.map(function(p){return [p.n,p.r];})});
+    const n0=Math.max(1,nmax-23);
+    return {title:title, sub:sub,
+      xlab:{tex:'\\text{Stride index }n', plain:'Stride index n'},
+      ylab:{tex:'\\text{Per-stride RMS }\\lVert y\\rVert\\ [\\mathrm{rad}]', plain:'Per-stride RMS ||y|| [rad]'},
+      xlo:n0, xhi:Math.max(nmax,n0+5),
+      ylo:Math.floor(Math.log10(Math.max(lo,1e-6)))-0.1,
+      yhi:Math.ceil(Math.log10(hi))+0.1, ylog:true, series:series};
+  }
+  if(m==='torque'){
+    const uh=AppState.uHist; if(uh.length<2) return null;
+    const t1=uh[uh.length-1].t, t0=Math.max(uh[0].t,t1-4);
+    const win=uh.filter(function(p){return p.t>=t0;});
+    const nch=uh[uh.length-1].u.length;
+    let v=1e-3; for(const p of win) for(const x of p.u) v=Math.max(v,Math.abs(x));
+    const um=AppState.P.umax; if(um) v=Math.max(v,um);
+    const series=[];
+    for(let c=0;c<nch;c++)
+      series.push({label:'Torque u'+(c+1),
+        pts:win.map(function(p){return [p.t,p.u[c]||0];})});
+    return {title:title, sub:sub,
+      xlab:{tex:'\\text{Time }t\\ [\\mathrm{s}]', plain:'Time t [s]'},
+      ylab:{tex:'\\text{Commanded torques }u\\ [\\mathrm{N\\,m}]', plain:'Commanded torques u [N m]'},
+      xlo:t0, xhi:t1, ylo:-1.08*v, yhi:1.08*v, series:series, zeroline:true,
+      hlines:um? [{y:um,label:'torque limit'},{y:-um}] : []};
+  }
+  if(m==='energy'){
+    const H=AppState.history; if(H.E.length<2) return null;
+    let mn=Math.min.apply(null,H.E), mx=Math.max.apply(null,H.E);
+    if(mx-mn<1e-6){mn-=1;mx+=1;}
+    const pad=(mx-mn)*0.12;
+    return {title:title, sub:sub,
+      xlab:{tex:'\\text{Time }t\\ [\\mathrm{s}]', plain:'Time t [s]'},
+      ylab:{tex:'\\text{Total mechanical energy }E\\ [\\mathrm{J}]', plain:'Total mechanical energy E [J]'},
+      xlo:H.t[0], xhi:H.t[H.t.length-1], ylo:mn-pad, yhi:mx+pad,
+      series:[{label:'Total energy', pts:H.E.map(function(e,i){return [H.t[i],e];})}]};
+  }
+  // phase
+  const tr=AppState.phaseTrail; if(tr.length<2) return null;
   let xmin=1e9,xmax=-1e9,ymin=1e9,ymax=-1e9;
-  for(const p of trail){ xmin=Math.min(xmin,p.x); xmax=Math.max(xmax,p.x); ymin=Math.min(ymin,p.y); ymax=Math.max(ymax,p.y); }
-  const pad=0.15;
+  for(const p of tr){xmin=Math.min(xmin,p.x);xmax=Math.max(xmax,p.x);
+    ymin=Math.min(ymin,p.y);ymax=Math.max(ymax,p.y);}
   const xr=Math.max(xmax-xmin,0.2), yr=Math.max(ymax-ymin,0.2);
-  xmin-=xr*pad; xmax+=xr*pad; ymin-=yr*pad; ymax+=yr*pad;
-  const sx=(x)=> (x-xmin)/(xmax-xmin)*w;
-  const sy=(y)=> h - (y-ymin)/(ymax-ymin)*h;
-
-  ctx.strokeStyle=COL.goldHex; ctx.lineWidth=1.6*devicePixelRatio; ctx.beginPath();
-  for(let i=0;i<trail.length;i++){
-    const p=trail[i]; const X=sx(p.x), Y=sy(p.y);
-    if(i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
-  }
-  ctx.stroke();
-  const last=trail[trail.length-1];
-  ctx.fillStyle='#fff3de';
-  ctx.beginPath(); ctx.arc(sx(last.x),sy(last.y),3*devicePixelRatio,0,Math.PI*2); ctx.fill();
-
-  ctx.fillStyle=COL.violetHex;
-  for(const p of AppState.poincare){
-    ctx.beginPath(); ctx.arc(sx(p.x),sy(p.y),3.2*devicePixelRatio,0,Math.PI*2); ctx.fill();
-  }
+  const series=[{label:'Trajectory', pts:tr.map(function(p){return [p.x,p.y];})}];
+  if(AppState.poincare.length)
+    series.push({label:'Poincar\u00e9 samples', dotsOnly:true,
+      pts:AppState.poincare.map(function(p){return [p.x,p.y];})});
+  return {title:title, sub:sub,
+    xlab:{tex:'\\text{Gait phase }q\\ [\\mathrm{rad}]', plain:'Gait phase q [rad]'},
+    ylab:{tex:'\\text{Phase rate }\\dot{q}\\ [\\mathrm{rad\\,s^{-1}}]', plain:'Phase rate dq/dt [rad/s]'},
+    xlo:xmin-0.12*xr, xhi:xmax+0.12*xr, ylo:ymin-0.12*yr, yhi:ymax+0.12*yr, series:series};
 }
-
-function drawSpark(){
-  if(!sparkCanvas.clientWidth||!sparkCanvas.clientHeight) return;
-  const w=sparkCanvas.width=sparkCanvas.clientWidth*devicePixelRatio;
-  const h=sparkCanvas.height=sparkCanvas.clientHeight*devicePixelRatio;
-  const ctx=sparkCtx;
-  ctx.clearRect(0,0,w,h); ctx.fillStyle='#0a0a0d'; ctx.fillRect(0,0,w,h);
-  const E=AppState.history.E;
-  if(E.length<2) return;
-  let mn=Math.min.apply(null,E), mx=Math.max.apply(null,E);
-  if(mx-mn<1e-6){ mn-=1; mx+=1; }
-  const pad=(mx-mn)*0.1; mn-=pad; mx+=pad;
-  ctx.strokeStyle=COL.violetHex; ctx.lineWidth=1.4*devicePixelRatio; ctx.beginPath();
-  for(let i=0;i<E.length;i++){
-    const X=i/(E.length-1)*w, Y=h-(E[i]-mn)/(mx-mn)*h;
-    if(i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+/* shared geometry over an abstract drawing adapter */
+function renderSpec(A, sp, W, H){
+  const ml=64, mr=16, mt=sp.sub?52:38, mb=46;
+  const pw=W-ml-mr, ph=H-mt-mb;
+  const X=function(v){return ml+(v-sp.xlo)/(sp.xhi-sp.xlo)*pw;};
+  const Yl=function(v){return mt+ph-(v-sp.ylo)/(sp.yhi-sp.ylo)*ph;};
+  const Y=sp.ylog? function(v){return Yl(Math.log10(Math.max(v,Math.pow(10,sp.ylo))));} : Yl;
+  A.rect(0,0,W,H,'#ffffff');
+  A.text(sp.title, ml, 16, 13, '#000', 'left', 'bold');
+  if(sp.sub) A.text(sp.sub, ml, 32, 10, '#444', 'left');
+  // grid + ticks
+  for(const v of niceTicks(sp.xlo,sp.xhi,6)){
+    A.line(X(v),mt,X(v),mt+ph,'#dddddd',0.6);
+    A.text(fmtTick(v), X(v), mt+ph+14, 10, '#000', 'middle');
   }
-  ctx.stroke();
+  if(sp.ylog){
+    for(let d=Math.ceil(sp.ylo); d<=Math.floor(sp.yhi); d++){
+      A.line(ml,Yl(d),ml+pw,Yl(d),'#dddddd',0.6);
+      A.label({tex:'10^{'+d+'}', plain:'10^'+d}, ml-6, Yl(d)+3, 10, 'right', 0);
+      for(const m of [2,5]){ const y=Yl(d+Math.log10(m));
+        if(y>mt&&y<mt+ph) A.line(ml,y,ml+pw,y,'#eeeeee',0.5); }
+    }
+  } else {
+    for(const v of niceTicks(sp.ylo,sp.yhi,5)){
+      A.line(ml,Yl(v),ml+pw,Yl(v),(v===0&&sp.zeroline)?'#999999':'#dddddd',(v===0&&sp.zeroline)?0.9:0.6);
+      A.text(fmtTick(v), ml-6, Yl(v)+3, 10, '#000', 'right');
+    }
+  }
+  for(const hl of (sp.hlines||[]))
+    A.line(ml,Y(hl.y),ml+pw,Y(hl.y),'#d62728',1.0,[5,4]);
+  // series
+  sp.series.forEach(function(s,i){
+    const col=PUBCOL[i%PUBCOL.length];
+    if(!s.dotsOnly){
+      const path=s.pts.map(function(p){return [X(p[0]),Y(p[1])];});
+      A.polyline(path, col, 1.5);
+    }
+    if(s.dots||s.dotsOnly)
+      for(const p of s.pts) A.circle(X(p[0]),Y(p[1]),2.6,s.dotsOnly?'#9467bd':col);
+  });
+  // frame + axis labels
+  A.frame(ml,mt,pw,ph,'#000000',1.0);
+  A.label(sp.xlab, ml+pw/2, H-10, 11, 'middle', 0);
+  A.label(sp.ylab, 16, mt+ph/2, 11, 'middle', -90);
+  // legend
+  let lx=ml+10, ly=mt+12;
+  sp.series.forEach(function(s,i){
+    const col=s.dotsOnly? '#9467bd' : PUBCOL[i%PUBCOL.length];
+    A.line(lx,ly-3,lx+18,ly-3,col,2);
+    A.text(s.label, lx+23, ly, 10, '#000', 'left');
+    ly+=15;
+    if(ly>mt+ph-8){ ly=mt+12; lx+=150; }
+  });
 }
-
+function svgFromSpec(sp, opt){
+  opt=opt||{};
+  const W=760, H=470, out=[];
+  const esc=function(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');};
+  const F='Times New Roman, STIXGeneral, serif';
+  const A={
+    rect:function(x,y,w,h,c){ out.push('<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+c+'"/>'); },
+    frame:function(x,y,w,h,c,lw){ out.push('<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="none" stroke="'+c+'" stroke-width="'+lw+'"/>'); },
+    line:function(x1,y1,x2,y2,c,lw,dash){ out.push('<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+c+'" stroke-width="'+lw+'"'+(dash?' stroke-dasharray="'+dash.join(',')+'"':'')+'/>'); },
+    polyline:function(pts,c,lw){ out.push('<polyline points="'+pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' ')+'" fill="none" stroke="'+c+'" stroke-width="'+lw+'" stroke-linejoin="round"/>'); },
+    circle:function(x,y,r,c){ out.push('<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+r+'" fill="'+c+'"/>'); },
+    text:function(s,x,y,size,c,anchor,weight){ out.push('<text x="'+x+'" y="'+y+'" font-family="'+F+'" font-size="'+size+'" fill="'+c+'" text-anchor="'+(anchor==='middle'?'middle':(anchor==='right'?'end':'start'))+'"'+(weight?' font-weight="'+weight+'"':'')+'>'+esc(s)+'</text>'); },
+    vtext:function(s,x,y,size,c){ out.push('<text x="'+x+'" y="'+y+'" font-family="'+F+'" font-size="'+size+'" fill="'+c+'" text-anchor="middle" transform="rotate(-90 '+x+' '+y+')">'+esc(s)+'</text>'); },
+    label:function(lab,x,y,size,anchor,rot){
+      const tex=(lab&&lab.tex)? lab.tex : null;
+      const plain=(lab&&lab.plain!==undefined)? lab.plain : String(lab);
+      const m=(tex && !opt.noMath)? texSnippet(tex,size) : null;
+      if(!m){
+        if(rot) this.vtext(plain,x,y,size,'#000');
+        else this.text(plain,x,y,size,'#000',anchor);
+        return;
+      }
+      let dx=0;
+      if(anchor==='middle') dx=-m.w/2;
+      else if(anchor==='right') dx=-m.w;
+      const dy=-m.h*0.62;
+      out.push('<g transform="translate('+x+','+y+')'+
+        (rot? ' rotate('+rot+')':'')+
+        ' translate('+dx.toFixed(1)+','+dy.toFixed(1)+')">'+m.svg+'</g>');
+    },
+  };
+  renderSpec(A, sp, W, H);
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+
+    '" width="'+W+'" height="'+H+'">'+out.join('')+'</svg>';
+}
+function pngFromSpec(sp, fname){
+  // rasterize the identical SVG figure at print scale: the PNG is the SVG
+  const W=760, H=470, S=4;
+  let triedPlain=false;
+  function attempt(svg){
+  const img=new Image();
+  const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));
+  img.onerror=function(){
+    URL.revokeObjectURL(url);
+    if(!triedPlain){ triedPlain=true; attempt(svgFromSpec(sp,{noMath:true})); }
+  };
+  img.onload=function(){
+    const cv=document.createElement('canvas'); cv.width=W*S; cv.height=H*S;
+    const c=cv.getContext('2d');
+    c.fillStyle='#ffffff'; c.fillRect(0,0,W*S,H*S);
+    c.drawImage(img,0,0,W*S,H*S);
+    URL.revokeObjectURL(url);
+    cv.toBlob(function(b){
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(b); a.download=fname;
+      document.body.appendChild(a); a.click();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },200);
+    },'image/png');
+  };
+  img.src=url;
+  }
+  attempt(svgFromSpec(sp));
+}
+function csvFromSpec(sp){
+  const rows=['# '+sp.title+(sp.sub? ' | '+sp.sub:'')];
+  const pl=function(l){ return (l&&l.plain)? l.plain : String(l); };
+  rows.push('# x: '+pl(sp.xlab)+' | y: '+pl(sp.ylab));
+  const head=['x']; sp.series.forEach(function(s){head.push(s.label.replace(/,/g,';'));});
+  rows.push(head.join(','));
+  // union of x values, series sampled by index where aligned, else sparse
+  const nmax=Math.max.apply(null, sp.series.map(function(s){return s.pts.length;}));
+  for(let i=0;i<nmax;i++){
+    const row=[];
+    let x=null;
+    for(const s of sp.series){ if(s.pts[i]){ x=s.pts[i][0]; break; } }
+    row.push(x===null?'':x);
+    for(const s of sp.series) row.push(s.pts[i]? s.pts[i][1] : '');
+    rows.push(row.join(','));
+  }
+  return rows.join('\n');
+}
+function drawMetrics(){
+  const el=document.getElementById('met-row'); if(!el) return;
+  const sim=AppState.sim;
+  const t1=sim.t;
+  let sacc=0,n=0;
+  for(const p of AppState.errHist) if(p.t>t1-3){ sacc+=p.e*p.e; n++; }
+  const rms=n? Math.sqrt(sacc/n):0;
+  let ue=0,un=0;
+  for(const p of AppState.uHist) if(p.t>t1-3){
+    let m=0; for(const v of p.u) m+=Math.abs(v);
+    ue+=m/Math.max(p.u.length,1); un++; }
+  const eff=un? ue/un:0;
+  const v=sim.events.length? sim.events[sim.events.length-1].speed:0;
+  let rho='-';
+  const Pn=AppState.poincare;
+  if(Pn.length>=6){
+    const K=Math.min(Pn.length,12), S=Pn.slice(-K);
+    let mx=0,my=0;
+    for(const p of S){ mx+=p.x/K; my+=p.y/K; }
+    const d=S.map(function(p){return Math.hypot(p.x-mx,p.y-my);});
+    let num=0,den=0;
+    for(let i=0;i+1<d.length;i++){ num+=d[i+1]*d[i]; den+=d[i]*d[i]; }
+    if(den>1e-12){ const r=num/den; if(isFinite(r)) rho=r.toFixed(2); }
+  }
+  el.innerHTML=
+    '<span>RMS ||y|| (3 s)</span><span style="color:var(--text);text-align:right;">'+rms.toFixed(4)+'</span>'+
+    '<span>mean |u| (3 s)</span><span style="color:var(--text);text-align:right;">'+eff.toFixed(1)+' N m</span>'+
+    '<span>stride speed</span><span style="color:var(--text);text-align:right;">'+v.toFixed(2)+' m/s</span>'+
+    '<span>Poincare contraction &rho;</span><span style="color:var(--text);text-align:right;">'+rho+'</span>';
+}
 function setLamp(el,ok){
   el.classList.remove('ok','bad');
   el.classList.add(ok?'ok':'bad');
@@ -4601,10 +5173,22 @@ function updateInstruments(){
     if(AppState.trajLog.length>4000) AppState.trajLog.shift();
     AppState.history.E.push(E); AppState.history.t.push(sim.t);
     if(AppState.history.E.length>600){ AppState.history.E.shift(); AppState.history.t.shift(); }
+    try{
+      const ry=AppState.refCtrl? AppState.refCtrl(sim.mo,sim.q,sim.dq,sim.t):null;
+      if(ry && ry.y){
+        let sacc=0; for(const v of ry.y) sacc+=v*v;
+        AppState.errHist.push({t:sim.t, e:Math.sqrt(sacc), y:ry.y.slice()});
+        if(AppState.errHist.length>700) AppState.errHist.shift();
+      }
+    }catch(e){}
+    if(sim.lastU){
+      AppState.uHist.push({t:sim.t, u:sim.lastU.slice()});
+      if(AppState.uHist.length>700) AppState.uHist.shift();
+    }
   }
 
   instrumentFrameCounter++;
-  if(instrumentFrameCounter%3===0){ drawScope(); drawSpark(); }
+  if(instrumentFrameCounter%3===0){ drawScope(); drawMetrics(); }
 
   const im=sim.lastImpact;
   if(im){
@@ -5221,6 +5805,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 else boot();
 
 window.ARCApp = { resetSim, AppState, PRESETS, applyPerturbation, applyEnv, envExtQ,
+  figureSpec, svgFromSpec, csvFromSpec,
   runBatch, protocolTick, exportTraj, exportPoincare, exportBatch, exportMem };
 
 })();
