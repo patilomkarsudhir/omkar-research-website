@@ -47,7 +47,7 @@ export default function DemosPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {demos.map((demo) => (
               <Link href={demo.href} key={demo.href} passHref>
-                <div className="block rounded-lg border p-4 hover:bg-gray-100 dark:hover:bg-gray-800">
+                <div className="block rounded-lg border border-white/10 bg-[var(--panel)] p-4 transition-colors hover:border-[var(--accent)]/50">
                   <h3 className="text-lg font-semibold">{demo.name}</h3>
                 </div>
               </Link>

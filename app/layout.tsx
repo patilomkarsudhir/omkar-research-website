@@ -2,8 +2,24 @@ import "./globals.css";
 import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
 import SiteTracker from "./components/SiteTracker";
+import SiteBackground from "./components/SiteBackground";
 import { Analytics } from '@vercel/analytics/next';
 import { Metadata, Viewport } from "next";
+import { Source_Serif_4, IBM_Plex_Sans } from "next/font/google";
+
+const sourceSerif = Source_Serif_4({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  variable: "--font-source-serif",
+  display: "swap",
+});
+
+const plexSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-plex-sans",
+  display: "swap",
+});
 
 const websiteStructuredData = {
   "@context": "https://schema.org",
@@ -117,12 +133,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#667eea',
+  themeColor: '#461d7c',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${sourceSerif.variable} ${plexSans.variable}`}>
       <head>
         <script
           type="application/ld+json"
@@ -130,6 +146,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen flex flex-col">
+        <SiteBackground />
         <SiteTracker />
         <NavBar />
         <main className="flex-1 container py-10">{children}</main>

@@ -7,12 +7,79 @@
   --panel: #101522;
   --text: #e8eefc;
   --muted: #9fb2d8;
-  --accent: #79b8ff;
+
+  /* Accent system: LSU purple + gold, adapted for a dark UI.
+     --accent is gold (primary interactive color; high contrast on navy).
+     --purple family is the LSU branding hue used for structure/gradients. */
+  --accent: #f4c542;        /* interactive gold */
+  --accent-strong: #ffd75e; /* hover / emphasis gold */
+  --gold: #fdd023;          /* true LSU gold, for branding accents */
+  --purple: #a98ce6;        /* lightened LSU purple, readable on dark */
+  --purple-mid: #6c4bb0;    /* mid purple for gradients */
+  --purple-deep: #461d7c;   /* true LSU purple */
+
+  /* Typographic scale */
+  --font-serif: var(--font-source-serif), "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-plex-sans), "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
 html, body { height: 100%; }
 body {
   color: var(--text);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv05";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   background: radial-gradient(1000px 600px at 20% -10%, #13223f 0%, #0b0f19 40%);
 }
 .container { max-width: 72rem; margin: 0 auto; padding: 0 1rem; }
+
+/* ------------------------------------------------------------------ */
+/* Typographic identity                                                */
+/* Serif display for titles (echoes the Computer Modern of the papers) */
+/* IBM Plex Sans for body copy.                                        */
+/* ------------------------------------------------------------------ */
+.font-display {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+/* Hero display size */
+.text-display {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.03;
+  font-size: clamp(2.5rem, 6vw, 4.25rem);
+}
+
+/* Section titles */
+.text-section-title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+}
+
+/* Card / sub titles */
+.text-card-title {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Comfortable measure for long-form prose (~65ch) */
+.prose-measure { max-width: 65ch; }
+
+/* A pulled-out result statement between paragraphs */
+.result-statement {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+  color: var(--text);
+}
+.result-statement .accent { color: var(--gold); }
