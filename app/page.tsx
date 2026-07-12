@@ -176,44 +176,23 @@ export default function Page() {
 				<div className="grid gap-4 justify-center grid-cols-[repeat(auto-fit,minmax(180px,1fr))] sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
 					{demos.map((demo) => (
 						<a href={demo.href} key={demo.href} className="group">
-							{demo.name === "Neural ODE" ? (
-								<div className="relative overflow-hidden rounded-xl border border-white/10 bg-[var(--panel)] transition duration-300 hover:border-[var(--accent)]/50 hover:-translate-y-0.5 max-w-[210px] mx-auto h-48">
-									{/* Full-image background for Neural ODE */}
+							<div className="relative overflow-hidden rounded-xl border border-white/10 bg-[var(--panel)] transition duration-300 hover:border-[var(--accent)]/50 hover:-translate-y-0.5 max-w-[210px] mx-auto h-48">
+								<div className={`relative h-28 sm:h-32 w-full overflow-hidden ${demo.name === "Neural ODE" ? "bg-[var(--purple-deep)]/10" : ""}`}>
 									<img
 										src={demo.thumb}
 										alt={demo.name + ' thumbnail'}
-										className="absolute inset-0 h-full w-full object-contain object-center scale-[1.01] transition-transform duration-500 group-hover:scale-[1.05]"
+										className={`h-full w-full object-center scale-[1.01] transition-transform duration-500 group-hover:scale-[1.05] ${demo.name === "Neural ODE" ? "object-contain p-2" : "object-cover"}`}
 										loading="lazy"
 									/>
-									{/* Unifying purple duotone + legibility overlay */}
-									<div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--purple-deep)]/70 via-[var(--purple-deep)]/10 to-transparent" />
-									<div className="pointer-events-none absolute inset-0 flex items-end">
-										<div className="p-3">
-											<h3 className="text-card-title text-base">{demo.name}</h3>
-										</div>
-									</div>
-									<div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl" />
+									<div className={`pointer-events-none absolute inset-0 bg-[var(--purple-deep)]/25 ${demo.name === "Neural ODE" ? "" : "mix-blend-multiply"}`} />
 								</div>
-							) : (
-								<div className="relative overflow-hidden rounded-xl border border-white/10 bg-[var(--panel)] transition duration-300 hover:border-[var(--accent)]/50 hover:-translate-y-0.5 max-w-[210px] mx-auto h-48">
-									<div className="relative h-28 sm:h-32 w-full overflow-hidden">
-										<img
-											src={demo.thumb}
-											alt={demo.name + ' thumbnail'}
-											className="h-full w-full object-cover object-center scale-[1.01] transition-transform duration-500 group-hover:scale-[1.05]"
-											loading="lazy"
-										/>
-										{/* Unifying purple duotone overlay to harmonize mixed thumbnails */}
-										<div className="pointer-events-none absolute inset-0 bg-[var(--purple-deep)]/25 mix-blend-multiply" />
+								<div className="p-3 flex items-start gap-3">
+									<div className="flex-1">
+										<h3 className="text-card-title text-base">{demo.name}</h3>
 									</div>
-									<div className="p-3 flex items-start gap-3">
-										<div className="flex-1">
-											<h3 className="text-card-title text-base">{demo.name}</h3>
-										</div>
-									</div>
-									<div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl" />
 								</div>
-							)}
+								<div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl" />
+							</div>
 						</a>
 					))}
 				</div>

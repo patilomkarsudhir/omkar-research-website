@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Site-wide animated background: a slow, multi-attractor phase portrait.
@@ -180,12 +180,25 @@ type Agent = {
 
 export default function SiteBackground() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [scrimRgb, setScrimRgb] = useState("255, 255, 255");
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    // Colors that must track the active theme. Read from CSS custom
+    // properties so the picker (which flips [data-theme]) restyles the
+    // canvas without a reload.
+    const themeColors = { halo: "255, 255, 255", glyph: "39, 47, 68" };
+    const readThemeColors = () => {
+      const cs = getComputedStyle(document.documentElement);
+      themeColors.halo = cs.getPropertyValue("--halo-rgb").trim() || "255, 255, 255";
+      themeColors.glyph = cs.getPropertyValue("--glyph-rgb").trim() || "39, 47, 68";
+      setScrimRgb(cs.getPropertyValue("--scrim-rgb").trim() || "255, 255, 255");
+    };
+    readThemeColors();
 
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
@@ -375,16 +388,16 @@ export default function SiteBackground() {
       // than full rotation.
       ctx.rotate(Math.sin(a.heading) * 0.18);
 
-      // Soft dark halo for separation from the streamlines.
+      // Soft halo (theme background tint) for separation from streamlines.
       const halo = ctx.createRadialGradient(0, 0, 0, 0, 0, a.size * 1.5);
-      halo.addColorStop(0, `rgba(11,15,25,${0.5 * env})`);
-      halo.addColorStop(1, "rgba(11,15,25,0)");
+      halo.addColorStop(0, `rgba(${themeColors.halo},${0.54 * env})`);
+      halo.addColorStop(1, `rgba(${themeColors.halo},0)`);
       ctx.fillStyle = halo;
       ctx.beginPath();
       ctx.arc(0, 0, a.size * 1.5, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.strokeStyle = `rgba(222,208,186,${0.52 * env})`;
+      ctx.strokeStyle = `rgba(${themeColors.glyph},${0.5 * env})`;
       ctx.lineWidth = 1.2;
       ctx.lineJoin = "round";
       ctx.lineCap = "round";
@@ -500,10 +513,21 @@ export default function SiteBackground() {
     };
     window.addEventListener("resize", onResize);
 
+    // Restyle the canvas when the theme changes.
+    const themeObserver = new MutationObserver(() => {
+      readThemeColors();
+      if (reduceMotion) render();
+    });
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(resizeTimer);
       window.removeEventListener("resize", onResize);
+      themeObserver.disconnect();
     };
   }, []);
 
@@ -523,7 +547,7 @@ export default function SiteBackground() {
         className="pointer-events-none fixed inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(90% 100% at 50% 45%, rgba(11,15,25,0.78) 0%, rgba(11,15,25,0.5) 55%, rgba(11,15,25,0.12) 100%)",
+            `radial-gradient(90% 100% at 50% 45%, rgba(${scrimRgb},0.78) 0%, rgba(${scrimRgb},0.52) 55%, rgba(${scrimRgb},0.1) 100%)`,
         }}
       />
     </>

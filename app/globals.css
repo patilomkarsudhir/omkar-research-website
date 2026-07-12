@@ -3,24 +3,170 @@
 @tailwind utilities;
 
 :root {
-  --bg: #0b0f19;
-  --panel: #101522;
-  --text: #e8eefc;
-  --muted: #9fb2d8;
+  /* ---- Light (default) ---- */
+  --bg: #f4f7fb;
+  --panel: #ffffff;
+  --text: #172033;
+  --muted: #4c5c79;
+  --surface-weak: rgba(23, 32, 51, 0.05);
+  --surface-strong: rgba(23, 32, 51, 0.09);
+  --border-soft: rgba(23, 32, 51, 0.16);
+  --ring-soft: rgba(23, 32, 51, 0.14);
 
-  /* Accent system: LSU purple + gold, adapted for a dark UI.
-     --accent is gold (primary interactive color; high contrast on navy).
-     --purple family is the LSU branding hue used for structure/gradients. */
-  --accent: #f4c542;        /* interactive gold */
-  --accent-strong: #ffd75e; /* hover / emphasis gold */
-  --gold: #fdd023;          /* true LSU gold, for branding accents */
-  --purple: #a98ce6;        /* lightened LSU purple, readable on dark */
-  --purple-mid: #6c4bb0;    /* mid purple for gradients */
+  --accent: #5b3f9e;        /* interactive purple for accessible contrast */
+  --accent-strong: #6f51b8; /* hover / emphasis purple */
+  --gold: #c79300;          /* LSU gold for restrained highlights */
+  --purple: #6d51ad;        /* LSU-inspired purple, readable on light */
+  --purple-mid: #5a3f94;    /* mid purple for gradients */
   --purple-deep: #461d7c;   /* true LSU purple */
+
+  /* Animated-background helpers (consumed by SiteBackground.tsx) */
+  --scrim-rgb: 255, 255, 255;
+  --halo-rgb: 255, 255, 255;
+  --glyph-rgb: 39, 47, 68;
+  --page-gradient:
+    radial-gradient(1000px 700px at 8% -15%, rgba(128, 89, 199, 0.14) 0%, rgba(128, 89, 199, 0) 58%),
+    radial-gradient(900px 700px at 95% -20%, rgba(251, 212, 89, 0.16) 0%, rgba(251, 212, 89, 0) 62%),
+    linear-gradient(180deg, #f8f9fd 0%, var(--bg) 42%, #ecf2fb 100%);
 
   /* Typographic scale */
   --font-serif: var(--font-source-serif), "Source Serif 4", Georgia, "Times New Roman", serif;
   --font-sans: var(--font-plex-sans), "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+/* ---- Dark (true dark, neutral text) ---- */
+html[data-theme="dark"] {
+  --bg: #0a0c12;
+  --panel: #141821;
+  --text: #edeef2;
+  --muted: #9aa3b2;
+  --surface-weak: rgba(255, 255, 255, 0.05);
+  --surface-strong: rgba(255, 255, 255, 0.1);
+  --border-soft: rgba(255, 255, 255, 0.14);
+  --ring-soft: rgba(255, 255, 255, 0.14);
+
+  --accent: #f4c542;
+  --accent-strong: #ffd75e;
+  --gold: #fdd023;
+  --purple: #b7a6e6;
+  --purple-mid: #6c4bb0;
+  --purple-deep: #461d7c;
+
+  --scrim-rgb: 8, 10, 16;
+  --halo-rgb: 8, 10, 16;
+  --glyph-rgb: 205, 210, 222;
+  --page-gradient:
+    radial-gradient(1100px 700px at 12% -12%, rgba(90, 63, 148, 0.20) 0%, rgba(90, 63, 148, 0) 55%),
+    radial-gradient(900px 700px at 92% -18%, rgba(244, 197, 66, 0.09) 0%, rgba(244, 197, 66, 0) 60%),
+    linear-gradient(180deg, #0c1018 0%, #0a0c12 45%, #07090e 100%);
+}
+
+/* ---- Midnight (deep indigo) ---- */
+html[data-theme="midnight"] {
+  --bg: #0b0a1c;
+  --panel: #15122e;
+  --text: #eae7f7;
+  --muted: #a79dcb;
+  --surface-weak: rgba(255, 255, 255, 0.05);
+  --surface-strong: rgba(255, 255, 255, 0.1);
+  --border-soft: rgba(255, 255, 255, 0.14);
+  --ring-soft: rgba(255, 255, 255, 0.14);
+
+  --accent: #c3b1ff;
+  --accent-strong: #d8ccff;
+  --gold: #ffd75e;
+  --purple: #c3b1ff;
+  --purple-mid: #7a5cc0;
+  --purple-deep: #4a2f8f;
+
+  --scrim-rgb: 10, 8, 24;
+  --halo-rgb: 10, 8, 24;
+  --glyph-rgb: 200, 196, 224;
+  --page-gradient:
+    radial-gradient(1100px 700px at 15% -10%, rgba(120, 80, 220, 0.25) 0%, rgba(120, 80, 220, 0) 55%),
+    radial-gradient(900px 700px at 90% -15%, rgba(80, 120, 255, 0.14) 0%, rgba(80, 120, 255, 0) 60%),
+    linear-gradient(180deg, #0e0b22 0%, #0b0a1c 45%, #080615 100%);
+}
+
+/* ---- Ocean (teal dark) ---- */
+html[data-theme="ocean"] {
+  --bg: #061a1e;
+  --panel: #0b262b;
+  --text: #e2f1f1;
+  --muted: #8fb6b7;
+  --surface-weak: rgba(255, 255, 255, 0.05);
+  --surface-strong: rgba(255, 255, 255, 0.1);
+  --border-soft: rgba(255, 255, 255, 0.13);
+  --ring-soft: rgba(255, 255, 255, 0.14);
+
+  --accent: #34d3b6;
+  --accent-strong: #57e6cd;
+  --gold: #ffd75e;
+  --purple: #6fd0c4;
+  --purple-mid: #2f9e8c;
+  --purple-deep: #0e6b60;
+
+  --scrim-rgb: 6, 20, 24;
+  --halo-rgb: 6, 20, 24;
+  --glyph-rgb: 190, 220, 218;
+  --page-gradient:
+    radial-gradient(1100px 700px at 15% -10%, rgba(52, 211, 182, 0.16) 0%, rgba(52, 211, 182, 0) 55%),
+    radial-gradient(900px 700px at 90% -15%, rgba(56, 140, 180, 0.14) 0%, rgba(56, 140, 180, 0) 60%),
+    linear-gradient(180deg, #082226 0%, #061a1e 45%, #041215 100%);
+}
+
+/* ---- Sepia (warm paper, light) ---- */
+html[data-theme="sepia"] {
+  --bg: #f1e7d6;
+  --panel: #fbf5e9;
+  --text: #3b2f22;
+  --muted: #6f5d47;
+  --surface-weak: rgba(59, 47, 34, 0.05);
+  --surface-strong: rgba(59, 47, 34, 0.09);
+  --border-soft: rgba(59, 47, 34, 0.16);
+  --ring-soft: rgba(59, 47, 34, 0.14);
+
+  --accent: #9a5a2c;
+  --accent-strong: #b56a34;
+  --gold: #a9781f;
+  --purple: #7a5a9e;
+  --purple-mid: #6a4d8a;
+  --purple-deep: #5a3f74;
+
+  --scrim-rgb: 251, 245, 233;
+  --halo-rgb: 251, 245, 233;
+  --glyph-rgb: 70, 56, 40;
+  --page-gradient:
+    radial-gradient(1000px 700px at 8% -15%, rgba(154, 90, 44, 0.10) 0%, rgba(154, 90, 44, 0) 58%),
+    radial-gradient(900px 700px at 95% -20%, rgba(169, 120, 31, 0.12) 0%, rgba(169, 120, 31, 0) 62%),
+    linear-gradient(180deg, #f6eedd 0%, var(--bg) 42%, #ece0c9 100%);
+}
+
+/* ---- Slate (cool gray, light) ---- */
+html[data-theme="slate"] {
+  --bg: #e6eaf0;
+  --panel: #f6f8fb;
+  --text: #1d2632;
+  --muted: #506070;
+  --surface-weak: rgba(29, 38, 50, 0.05);
+  --surface-strong: rgba(29, 38, 50, 0.09);
+  --border-soft: rgba(29, 38, 50, 0.16);
+  --ring-soft: rgba(29, 38, 50, 0.14);
+
+  --accent: #3d5a80;
+  --accent-strong: #4a6d99;
+  --gold: #a07c1e;
+  --purple: #5a6b8c;
+  --purple-mid: #46586f;
+  --purple-deep: #34435c;
+
+  --scrim-rgb: 246, 248, 251;
+  --halo-rgb: 246, 248, 251;
+  --glyph-rgb: 40, 52, 68;
+  --page-gradient:
+    radial-gradient(1000px 700px at 8% -15%, rgba(61, 90, 128, 0.12) 0%, rgba(61, 90, 128, 0) 58%),
+    radial-gradient(900px 700px at 95% -20%, rgba(90, 107, 140, 0.10) 0%, rgba(90, 107, 140, 0) 62%),
+    linear-gradient(180deg, #eef1f6 0%, var(--bg) 42%, #dde3ec 100%);
 }
 
 html, body { height: 100%; }
@@ -30,9 +176,40 @@ body {
   font-feature-settings: "ss01", "cv05";
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  background: radial-gradient(1000px 600px at 20% -10%, #13223f 0%, #0b0f19 40%);
+  background: var(--page-gradient);
+  background-attachment: fixed;
+  transition: color 0.25s ease;
 }
 .container { max-width: 72rem; margin: 0 auto; padding: 0 1rem; }
+
+/*
+  Light-mode compatibility layer for existing utility classes that were
+  authored for a dark-first palette.
+*/
+.text-white,
+.text-white\/95,
+.text-white\/90,
+.text-white\/80,
+.text-white\/70 {
+  color: var(--text) !important;
+}
+
+.bg-white\/5 {
+  background-color: var(--surface-weak) !important;
+}
+
+.bg-white\/10,
+.bg-white\/20 {
+  background-color: var(--surface-strong) !important;
+}
+
+.border-white\/10,
+.border-white\/20,
+.border-white\/30,
+.ring-white\/10 {
+  border-color: var(--border-soft) !important;
+  --tw-ring-color: var(--ring-soft) !important;
+}
 
 /* ------------------------------------------------------------------ */
 /* Typographic identity                                                */

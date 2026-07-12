@@ -133,13 +133,48 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#461d7c',
+  themeColor: '#f4f7fb',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const themeInitScript = `(() => {
+    try {
+      var valid = ['light','dark','midnight','sepia','slate','ocean'];
+      function autoTheme() {
+        var d = new Date();
+        var h = d.getHours();
+        var pools = {
+          dawn: ['sepia','light','slate'],
+          day: ['light','slate','sepia'],
+          dusk: ['ocean','slate','midnight'],
+          night: ['dark','midnight','ocean']
+        };
+        var b = (h>=5&&h<9)?'dawn':(h>=9&&h<17)?'day':(h>=17&&h<20)?'dusk':'night';
+        var key = d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+        var x = key ^ 0x9e3779b9;
+        x = Math.imul(x ^ (x >>> 15), 0x85ebca6b);
+        x ^= x >>> 13;
+        x = x >>> 0;
+        var pool = pools[b];
+        return pool[x % pool.length];
+      }
+      var mode = localStorage.getItem('themeMode');
+      var legacy = localStorage.getItem('theme');
+      var theme;
+      if (mode === 'auto') theme = autoTheme();
+      else if (valid.indexOf(mode) !== -1) theme = mode;
+      else if (valid.indexOf(legacy) !== -1) theme = legacy;
+      else theme = autoTheme();
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  })();`;
+
   return (
     <html lang="en" className={`${sourceSerif.variable} ${plexSans.variable}`}>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
