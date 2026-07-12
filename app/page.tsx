@@ -255,7 +255,7 @@ export default function Page() {
 							<div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl" />
 						</div>
 					</a>
-					<a href="/real_time_latex.html" className="group">
+					<a href="/Real Time LaTeX.html" className="group">
 						<div className="relative overflow-hidden rounded-xl border border-white/10 bg-[var(--panel)] transition duration-300 hover:border-[var(--accent)]/50 hover:-translate-y-0.5 w-[210px] h-48">
 							<div className="h-28 sm:h-32 w-full overflow-hidden flex items-center justify-center bg-[var(--purple-deep)]/15">
 								{/* Simple LaTeX wordmark-style icon */}
