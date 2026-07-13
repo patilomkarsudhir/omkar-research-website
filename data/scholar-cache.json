@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 635,
-      "recent": 630
+      "all": 639,
+      "recent": 634
     },
     "h-index": {
       "all": 14,
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 109,
+      "cited": 110,
       "year": 2021
     },
     {
@@ -27,7 +27,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:9yKSN-GCB0IC",
       "authors": "A Isaly, OS Patil, RG Sanfelice, WE Dixon",
       "venue": "2021 American Control Conference (ACC), 3719-3724, 2021",
-      "cited": 53,
+      "cited": 54,
       "year": 2021
     },
     {
@@ -59,7 +59,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:W7OEmFMy1HYC",
       "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
       "venue": "2022 IEEE 61st Conference on Decision and Control (CDC), 3487-3492, 2022",
-      "cited": 44,
+      "cited": 45,
       "year": 2022
     },
     {
@@ -99,7 +99,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Se3iqnhoufwC",
       "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
       "venue": "IFAC-PapersOnLine 56 (2), 6851-6856, 2023",
-      "cited": 18,
+      "cited": 19,
       "year": 2023
     },
     {
