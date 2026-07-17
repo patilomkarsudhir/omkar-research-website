@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 639,
-      "recent": 634
+      "all": 640,
+      "recent": 635
     },
     "h-index": {
       "all": 14,
@@ -75,7 +75,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:hqOjcs7Dif8C",
       "authors": "RG Hart, EJ Griffis, OS Patil, WE Dixon",
       "venue": "IEEE control systems letters 8, 13-18, 2023",
-      "cited": 28,
+      "cited": 29,
       "year": 2023
     },
     {
