@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 637,
-      "recent": 632
+      "all": 638,
+      "recent": 633
     },
     "h-index": {
       "all": 14,
@@ -247,6 +247,14 @@
       "year": 2025
     },
     {
+      "title": "Saturated RISE controllers with exponential stability guarantees: A projected dynamical systems approach",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Wp0gIr-vW9MC",
+      "authors": "OS Patil, R Kamalapurkar, WE Dixon",
+      "venue": "IEEE Transactions on Automatic Control 70 (7), 4936-4942, 2025",
+      "cited": 3,
+      "year": 2025
+    },
+    {
       "title": "Lyapunov-Based Deep Neural Networks for Adaptive Control of Stochastic Nonlinear Systems",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:M3ejUd6NZC8C",
       "authors": "S Akbari, CF Nino, OS Patil, WE Dixon",
@@ -269,14 +277,6 @@
       "venue": "IEEE Control Systems Letters 7, 3663-3668, 2023",
       "cited": 3,
       "year": 2023
-    },
-    {
-      "title": "Saturated RISE controllers with exponential stability guarantees: A projected dynamical systems approach",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Wp0gIr-vW9MC",
-      "authors": "OS Patil, R Kamalapurkar, WE Dixon",
-      "venue": "IEEE Transactions on Automatic Control 70 (7), 4936-4942, 2025",
-      "cited": 2,
-      "year": 2025
     },
     {
       "title": "LyLA-Therm: Lyapunov-based Langevin Adaptive Thermodynamic Neural Network Controller",
