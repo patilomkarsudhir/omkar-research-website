@@ -34,6 +34,24 @@ npm start
 npm run update-scholar
 ```
 
+## Machine Transfer Protocol (Important)
+
+When setting this project up on a new machine, always follow `TRANSFER_SETUP.md` first.
+
+Required transfer scripts:
+
+- `scripts/bootstrap-new-machine.ps1` for first-time setup
+- `scripts/verify-machine-setup.ps1` for validation
+- `scripts/register-scholar-task.ps1` to enable daily scholar updates
+- `scripts/remove-scholar-task.ps1` to remove local scheduler tasks
+
+Agent expectations:
+
+1. Prefer script-driven setup over manual step-by-step edits.
+2. Ensure `.env.local` exists (from `.env.example`) and confirm required variables.
+3. Validate scheduled task state explicitly when automation is requested.
+4. Do not assume old machine paths; use repository-relative script execution.
+
 ## Development Environment
 
 - **Node.js**: 18+ required

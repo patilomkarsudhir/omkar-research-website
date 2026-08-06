@@ -104,3 +104,55 @@ You could set up a scheduled task or cron job to run this automatically:
 # Run every Sunday at 9 AM
 0 9 * * 0 cd /path/to/project && npm run update-scholar
 ```
+
+## Portable Windows Scheduler Setup
+
+Use the helper scripts below to remove or register the daily scholar update task on any Windows machine without hardcoding paths.
+
+### Remove task from current machine
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\remove-scholar-task.ps1
+```
+
+If you get an access error, run PowerShell as Administrator and retry.
+
+### Register task on a new machine
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\register-scholar-task.ps1
+```
+
+Optional custom start time:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\register-scholar-task.ps1 -StartTime "07:30"
+```
+
+### Verify task
+
+```powershell
+schtasks /Query /TN "\Update Scholar Cache" /V /FO LIST
+```
+
+### Bootstrap on a new machine
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap-new-machine.ps1 -RunBuild -EnableScholarTask
+```
+
+What it does:
+
+1. Verifies `git`, `node`, and `npm` are installed.
+2. Creates `.env.local` from `.env.example` if missing.
+3. Runs `npm install`.
+4. Optionally runs `npm run build`.
+5. Optionally registers the daily scholar scheduled task.
+
+### Verify machine setup health
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\verify-machine-setup.ps1
+```
+
+This checks tool availability, env configuration, dependency installation, and scheduled task status.

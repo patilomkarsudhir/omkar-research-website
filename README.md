@@ -11,6 +11,10 @@ npm install
 npm run dev
 ```
 
+## Machine transfer
+
+For moving this repo to a new machine with scheduler/env setup, follow `TRANSFER_SETUP.md`.
+
 ## Deploy on Vercel
 1) Push folder to a GitHub repo.
 2) Create Vercel project from that repo.
