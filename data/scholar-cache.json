@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 638,
-      "recent": 633
+      "all": 663,
+      "recent": 658
     },
     "h-index": {
       "all": 14,
@@ -19,8 +19,24 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 109,
+      "cited": 113,
       "year": 2021
+    },
+    {
+      "title": "Lyapunov-based long short-term memory (Lb-LSTM) neural network-based control",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ufrVoPGSRksC",
+      "authors": "EJ Griffis, OS Patil, ZI Bell, WE Dixon",
+      "venue": "IEEE Control Systems Letters 7, 2976-2981, 2023",
+      "cited": 55,
+      "year": 2023
+    },
+    {
+      "title": "Adaptive control of time-varying parameter systems with asymptotic tracking",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:u-x6o8ySG0sC",
+      "authors": "OS Patil, R Sun, S Bhasin, WE Dixon",
+      "venue": "IEEE Transactions on Automatic Control 67 (9), 4809-4815, 2022",
+      "cited": 54,
+      "year": 2022
     },
     {
       "title": "Adaptive safety with multiple barrier functions using integral concurrent learning",
@@ -31,27 +47,11 @@
       "year": 2021
     },
     {
-      "title": "Lyapunov-based long short-term memory (Lb-LSTM) neural network-based control",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ufrVoPGSRksC",
-      "authors": "EJ Griffis, OS Patil, ZI Bell, WE Dixon",
-      "venue": "IEEE Control Systems Letters 7, 2976-2981, 2023",
-      "cited": 52,
-      "year": 2023
-    },
-    {
-      "title": "Adaptive control of time-varying parameter systems with asymptotic tracking",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:u-x6o8ySG0sC",
-      "authors": "OS Patil, R Sun, S Bhasin, WE Dixon",
-      "venue": "IEEE Transactions on Automatic Control 67 (9), 4809-4815, 2022",
-      "cited": 52,
-      "year": 2022
-    },
-    {
       "title": "Exponential stability with RISE controllers",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:2osOgNQ5qMEC",
       "authors": "OS Patil, A Isaly, B Xian, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1592-1597, 2021",
-      "cited": 47,
+      "cited": 50,
       "year": 2021
     },
     {
@@ -67,7 +67,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
       "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
       "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
-      "cited": 29,
+      "cited": 31,
       "year": 2024
     },
     {
@@ -75,7 +75,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:hqOjcs7Dif8C",
       "authors": "RG Hart, EJ Griffis, OS Patil, WE Dixon",
       "venue": "IEEE control systems letters 8, 13-18, 2023",
-      "cited": 29,
+      "cited": 30,
       "year": 2023
     },
     {
@@ -83,7 +83,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:MXK_kJrjxJIC",
       "authors": "A Isaly, OS Patil, HM Sweatland, RG Sanfelice, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 69 (7), 4883-4890, 2024",
-      "cited": 27,
+      "cited": 29,
       "year": 2024
     },
     {
@@ -107,7 +107,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Y0pCki6q_DkC",
       "authors": "DM Le, OS Patil, PM Amy, WE Dixon",
       "venue": "2022 American Control Conference (ACC), 806-811, 2022",
-      "cited": 16,
+      "cited": 19,
       "year": 2022
     },
     {
@@ -115,7 +115,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:0EnyYjriUFMC",
       "authors": "EJ Griffis, OS Patil, RG Hart, WE Dixon",
       "venue": "IEEE Control Systems Letters 8, 97-102, 2023",
-      "cited": 14,
+      "cited": 15,
       "year": 2023
     },
     {
@@ -123,7 +123,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:u5HHmVD_uO8C",
       "authors": "R Dasgupta, SB Roy, OS Patil, S Bhasin",
       "venue": "2019 American Control Conference (ACC), 3075-3080, 2019",
-      "cited": 14,
+      "cited": 15,
       "year": 2019
     },
     {
@@ -195,7 +195,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:TQgYirikUcIC",
       "authors": "WA Makumi, OS Patil, WE Dixon",
       "venue": "Automatica 180, 112462, 2025",
-      "cited": 5,
+      "cited": 6,
       "year": 2025
     },
     {
@@ -203,7 +203,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
       "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
       "venue": "IEEE Access 13, 117943-117952, 2025",
-      "cited": 5,
+      "cited": 6,
       "year": 2025
     },
     {
@@ -219,6 +219,14 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ZeXyd9-uunAC",
       "authors": "RG Hart, OS Patil, ZI Bell, WE Dixon",
       "venue": "arXiv preprint arXiv:2505.10678, 2025",
+      "cited": 4,
+      "year": 2025
+    },
+    {
+      "title": "Saturated RISE controllers with exponential stability guarantees: A projected dynamical systems approach",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Wp0gIr-vW9MC",
+      "authors": "OS Patil, R Kamalapurkar, WE Dixon",
+      "venue": "IEEE Transactions on Automatic Control 70 (7), 4936-4942, 2025",
       "cited": 4,
       "year": 2025
     },
@@ -243,14 +251,6 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:mVmsd5A6BfQC",
       "authors": "CF Nino, OS Patil, JC Insinger, MR Eisman, WE Dixon",
       "venue": "IEEE Control Systems Letters 9, 907-912, 2025",
-      "cited": 3,
-      "year": 2025
-    },
-    {
-      "title": "Saturated RISE controllers with exponential stability guarantees: A projected dynamical systems approach",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Wp0gIr-vW9MC",
-      "authors": "OS Patil, R Kamalapurkar, WE Dixon",
-      "venue": "IEEE Transactions on Automatic Control 70 (7), 4936-4942, 2025",
       "cited": 3,
       "year": 2025
     },
