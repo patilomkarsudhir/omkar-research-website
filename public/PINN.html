@@ -1497,7 +1497,7 @@
                             </li>
                             <li class="feature-item">
                                 <span class="feature-icon">📊</span>
-                                <span><strong>Multi-scale Collocation:</strong> Strategic sampling with 25% points near high spatial gradients \((x=L/4, 3L/4)\), 25% near temporal inflection points \((t=T/4, T/2, 3T/4)\), 15% in corner regions for boundary effects</span>
+                                <span><strong>Collocation Sampling:</strong> Uniform coverage of the \((x,t)\) domain with 25% extra density in the first quarter of the time window to pin down the second-order initial conditions</span>
                             </li>
                             <li class="feature-item">
                                 <span class="feature-icon">✂️</span>
@@ -2264,83 +2264,17 @@
                 return { dR_du: 0, dR_dux: 0, dR_dut: 0, dR_duxx: -c * c, dR_dutt: 1, dR_duxt: 0 };
             }
 
-            // Strategic collocation sampling for balanced gradient computation with mathematical insights
+            // Collocation: uniform domain coverage with extra density near t=0,
+            // where the second-order initial conditions must be pinned down
             sampleCollocation(m, T = 20) {
                 const points = [];
-                
-                // INSIGHT 23: Multi-scale collocation sampling for frequency-aware training
-                // Sample across different phases of sin(πx/L) and cos(cπt/L) with emphasis on critical regions
-                
-                let pointsAdded = 0;
-                
-                // Region 1: High spatial gradient regions (near x=L/2 where sin'(πx/L) is largest)
-                const criticalSpatialPoints = Math.ceil(m * 0.25); // 25% of points
-                for (let i = 0; i < criticalSpatialPoints && pointsAdded < m; i++) {
-                    // Focus around x = L/4 and x = 3L/4 where spatial derivatives are significant
-                    const xCenter = (i % 2 === 0) ? this.L / 4 : 3 * this.L / 4;
-                    const xSpread = this.L / 8; // ±L/8 around centers
-                    const x = Math.max(0, Math.min(this.L, xCenter + (Math.random() - 0.5) * xSpread));
-                    const t = Math.random() * T;
-                    points.push({ x, t });
-                    pointsAdded++;
+                const early = Math.floor(m * 0.25);
+                for (let i = 0; i < early; i++) {
+                    points.push({ x: Math.random() * this.L, t: Math.random() * 0.25 * T });
                 }
-                
-                // Region 2: High temporal gradient regions (when cos(cπt/L) changes rapidly)
-                const criticalTemporalPoints = Math.ceil(m * 0.25); // 25% of points
-                for (let i = 0; i < criticalTemporalPoints && pointsAdded < m; i++) {
-                    // Focus on temporal inflection points where ∂²u/∂t² is large
-                    const tCritical = [T/4, T/2, 3*T/4]; // Critical time points
-                    const tCenter = tCritical[i % tCritical.length];
-                    const tSpread = T / 16; // ±T/16 around critical times
-                    const t = Math.max(0, Math.min(T, tCenter + (Math.random() - 0.5) * tSpread));
-                    const x = Math.random() * this.L;
-                    points.push({ x, t });
-                    pointsAdded++;
+                while (points.length < m) {
+                    points.push({ x: Math.random() * this.L, t: Math.random() * T });
                 }
-                
-                // Region 3: Corner regions for boundary interaction effects
-                const cornerPoints = Math.ceil(m * 0.15); // 15% of points
-                for (let i = 0; i < cornerPoints && pointsAdded < m; i++) {
-                    let x, t;
-                    if (i % 4 === 0) {
-                        // Near (0, 0) - initial boundary
-                        x = Math.random() * this.L / 5;
-                        t = Math.random() * T / 5;
-                    } else if (i % 4 === 1) {
-                        // Near (L, 0) - initial boundary
-                        x = 4 * this.L / 5 + Math.random() * this.L / 5;
-                        t = Math.random() * T / 5;
-                    } else if (i % 4 === 2) {
-                        // Near (0, T) - final boundary
-                        x = Math.random() * this.L / 5;
-                        t = 4 * T / 5 + Math.random() * T / 5;
-                    } else {
-                        // Near (L, T) - final boundary
-                        x = 4 * this.L / 5 + Math.random() * this.L / 5;
-                        t = 4 * T / 5 + Math.random() * T / 5;
-                    }
-                    points.push({ x, t });
-                    pointsAdded++;
-                }
-                
-                // Region 4: Medium gradient transition regions
-                const transitionPoints = Math.ceil(m * 0.15); // 15% of points
-                for (let i = 0; i < transitionPoints && pointsAdded < m; i++) {
-                    // Sample in regions where solution transitions between positive/negative
-                    const x = this.L / 2 + (Math.random() - 0.5) * this.L / 3; // Around x = L/2
-                    const t = T / 2 + (Math.random() - 0.5) * T / 3; // Around t = T/2
-                    points.push({ x, t });
-                    pointsAdded++;
-                }
-                
-                // Region 5: Random uniform sampling for overall coverage
-                while (pointsAdded < m) {
-                    const x = Math.random() * this.L;
-                    const t = Math.random() * T;
-                    points.push({ x, t });
-                    pointsAdded++;
-                }
-                
                 return points;
             }
 
@@ -2452,51 +2386,31 @@
             // System-owned sampling for better separation of concerns
             sampleTrainingData(n, T = 20, trainingTimeRange = T) {
                 const data = [];
-                // Calculate realistic noise level for wave measurements
                 const noiseLevel = this.A * 0.015; // Uniform ±1.5% half-width of amplitude
                 // Restrict supervised data to the early time window (collocation still spans full T)
                 const tMax = Math.min(trainingTimeRange, T);
-                
-                // Enhanced sampling strategy focusing on temporal dynamics
-                const earlyTimeFraction = 0.4; // 40% in early time (critical for wave learning)
-                const boundaryFraction = 0.3; // 30% near boundaries (reflection points)
-                
-                const earlyPoints = Math.floor(n * earlyTimeFraction);
-                const boundaryPoints = Math.floor(n * boundaryFraction);
-                const regularPoints = n - earlyPoints - boundaryPoints;
-                
-                // Early time points - critical for initial condition learning
+                // Boundaries carry no amplitude information (u=0 there is already enforced
+                // by the BC loss), so keep the scarce supervised points in the interior
+                const interiorX = () => (0.1 + 0.8 * Math.random()) * this.L;
+
+                // Early-time points - critical for locking the initial phase
+                const earlyPoints = Math.floor(n * 0.4);
                 for (let i = 0; i < earlyPoints; i++) {
-                    const x = Math.random() * this.L;
-                    const t = Math.random() * 0.25 * tMax; // First 25% of the training window
+                    const x = interiorX();
+                    const t = Math.random() * 0.25 * tMax;
                     const u = this.getTruePosition(x, t) + (Math.random() * 2 - 1) * noiseLevel;
                     data.push({ x, t, u });
                 }
-                
-                // Boundary-focused points - critical for wave reflections
-                for (let i = 0; i < boundaryPoints; i++) {
-                    const nearLeft = Math.random() < 0.5;
-                    const x = nearLeft ? Math.random() * 0.15 * this.L : (0.85 + Math.random() * 0.15) * this.L;
-                    const t = Math.random() * tMax;
+
+                // Remaining points stratified across the full training window
+                const rest = n - earlyPoints;
+                for (let i = 0; i < rest; i++) {
+                    const t = ((i + Math.random()) / rest) * tMax;
+                    const x = interiorX();
                     const u = this.getTruePosition(x, t) + (Math.random() * 2 - 1) * noiseLevel;
                     data.push({ x, t, u });
                 }
-                
-                // Regular grid points - uniform coverage
-                const nSpatial = Math.ceil(Math.sqrt(regularPoints));
-                const nTemporal = Math.ceil(regularPoints / nSpatial);
-                
-                for (let i = 0; i < nTemporal; i++) {
-                    for (let j = 0; j < nSpatial; j++) {
-                        if (data.length >= n) break;
-                        const t = (i / Math.max(1, nTemporal - 1)) * tMax;
-                        const x = (j / Math.max(1, nSpatial - 1)) * this.L;
-                        const u = this.getTruePosition(x, t) + (Math.random() * 2 - 1) * noiseLevel;
-                        data.push({ x, t, u });
-                    }
-                    if (data.length >= n) break;
-                }
-                
+
                 return data;
             }
 
@@ -3488,8 +3402,8 @@
                 // INSIGHT 14: Adaptive learning rates based on gradient statistics and system type
                 let physicsLR;
                 if (this.physicalSystem instanceof WaveEquationSystem) {
-                    // Start with base learning rate and adapt based on gradient history
-                    const baseRate = lr * 0.05;
+                    // Same base rate as the heat equation; adapt from gradient history
+                    const baseRate = lr * 0.1;
                     
                     // Adaptive adjustment based on recent gradient magnitudes
                     if (this.gradStats.paramGrads.length > 10) {
@@ -3755,15 +3669,17 @@
                 
                 // Apply research-based parameter optimization for different systems
                 if (systemType === "wave") {
-                    // Wave equation: fast-converging defaults (IC bug fixed)
-                    document.getElementById("epochsSlider").value = "800";
-                    document.getElementById("epochsValue").value = "800";
+                    // Wave equation: oscillatory 2D field needs more data/collocation/epochs
+                    document.getElementById("epochsSlider").value = "1200";
+                    document.getElementById("epochsValue").value = "1200";
                     document.getElementById("lrSlider").value = "0.02";
                     document.getElementById("lrValue").value = "0.02";
                     document.getElementById("hiddenSizeSlider").value = "12";
                     document.getElementById("hiddenSizeValue").value = "12";
-                    document.getElementById("collocationSlider").value = "60";
-                    document.getElementById("collocationValue").value = "60";
+                    document.getElementById("dataSlider").value = "16";
+                    document.getElementById("dataValue").value = "16";
+                    document.getElementById("collocationSlider").value = "80";
+                    document.getElementById("collocationValue").value = "80";
                     document.getElementById("physicsWeightSlider").value = "0.8";
                     document.getElementById("physicsWeightValue").value = "0.8";
                 } else if (systemType === "heat") {
@@ -4200,7 +4116,10 @@
                             const trainingDataStructured = { spatial: augSpatial, temporal: augTemporal, targets: augTargets };
                             const gPhys = net.computePhysicsGradients(this.collocationPoints);
                             net.updateParameters(combinedNN, currentLR);
-                            net.updatePhysicsParameters(gPhys, currentLR);
+                            // Freeze wave-speed discovery until the field fit stabilizes; updating c
+                            // while u_tt≈0 drives it toward 0 and anchors the wrong solution
+                            const paramWarmupDone = this.currentSystemType !== "wave" || epoch >= this.epochs * 0.3;
+                            if (paramWarmupDone) net.updatePhysicsParameters(gPhys, currentLR);
                             history.push(Math.max(1e-8, net.totalLoss(trainingDataStructured, this.collocationPoints, [], [])
                                         + this.physicsWeight * net.velocityICLoss(velIC)));
                             
