@@ -2180,24 +2180,15 @@
             // System-owned sampling for better separation of concerns
             sampleTrainingData(n, T = 20, trainingTimeRange = T) {
                 const data = [];
-                // Calculate realistic noise level for temperature measurements
                 const noiseLevel = 0.01; // Uniform ±1% half-width of typical temperature range
                 // Restrict supervised data to the early time window (collocation still spans full T)
                 const tMax = Math.min(trainingTimeRange, T);
-                
-                // Sample uniformly across both spatial and temporal domains
-                const nSpatial = Math.ceil(Math.sqrt(n)); // e.g., if n=50, sample ~7x7 grid
-                const nTemporal = Math.ceil(n / nSpatial);
-                
-                for (let i = 0; i < nTemporal; i++) {
-                    for (let j = 0; j < nSpatial; j++) {
-                        if (data.length >= n) break;
-                        const t = (i / Math.max(1, nTemporal - 1)) * tMax;
-                        const x = (j / Math.max(1, nSpatial - 1)) * this.L;
-                        const u = this.getTruePosition(x, t) + (Math.random() * 2 - 1) * noiseLevel;
-                        data.push({ x, t, u });
-                    }
-                    if (data.length >= n) break;
+                // Boundaries carry no information (u=0 enforced by BC loss); sample the interior
+                for (let i = 0; i < n; i++) {
+                    const t = ((i + Math.random()) / n) * tMax;
+                    const x = (0.1 + 0.8 * Math.random()) * this.L;
+                    const u = this.getTruePosition(x, t) + (Math.random() * 2 - 1) * noiseLevel;
+                    data.push({ x, t, u });
                 }
                 return data;
             }
