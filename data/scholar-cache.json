@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 663,
-      "recent": 658
+      "all": 665,
+      "recent": 660
     },
     "h-index": {
       "all": 14,
@@ -75,7 +75,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:hqOjcs7Dif8C",
       "authors": "RG Hart, EJ Griffis, OS Patil, WE Dixon",
       "venue": "IEEE control systems letters 8, 13-18, 2023",
-      "cited": 30,
+      "cited": 31,
       "year": 2023
     },
     {
@@ -83,7 +83,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:MXK_kJrjxJIC",
       "authors": "A Isaly, OS Patil, HM Sweatland, RG Sanfelice, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 69 (7), 4883-4890, 2024",
-      "cited": 29,
+      "cited": 30,
       "year": 2024
     },
     {
