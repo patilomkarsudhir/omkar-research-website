@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 665,
-      "recent": 660
+      "all": 667,
+      "recent": 662
     },
     "h-index": {
       "all": 14,
@@ -27,7 +27,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ufrVoPGSRksC",
       "authors": "EJ Griffis, OS Patil, ZI Bell, WE Dixon",
       "venue": "IEEE Control Systems Letters 7, 2976-2981, 2023",
-      "cited": 55,
+      "cited": 56,
       "year": 2023
     },
     {
@@ -115,7 +115,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:0EnyYjriUFMC",
       "authors": "EJ Griffis, OS Patil, RG Hart, WE Dixon",
       "venue": "IEEE Control Systems Letters 8, 97-102, 2023",
-      "cited": 15,
+      "cited": 16,
       "year": 2023
     },
     {
