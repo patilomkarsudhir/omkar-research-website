@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 667,
-      "recent": 662
+      "all": 672,
+      "recent": 667
     },
     "h-index": {
       "all": 14,
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 113,
+      "cited": 114,
       "year": 2021
     },
     {
@@ -67,7 +67,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
       "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
       "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
-      "cited": 31,
+      "cited": 32,
       "year": 2024
     },
     {
@@ -75,7 +75,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:hqOjcs7Dif8C",
       "authors": "RG Hart, EJ Griffis, OS Patil, WE Dixon",
       "venue": "IEEE control systems letters 8, 13-18, 2023",
-      "cited": 31,
+      "cited": 32,
       "year": 2023
     },
     {
@@ -131,7 +131,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Zph67rFs4hoC",
       "authors": "HM Sweatland, OS Patil, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control, 2026",
-      "cited": 11,
+      "cited": 12,
       "year": 2026
     },
     {
@@ -231,6 +231,14 @@
       "year": 2025
     },
     {
+      "title": "Lyapunov-Based Deep Neural Networks for Adaptive Control of Stochastic Nonlinear Systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:M3ejUd6NZC8C",
+      "authors": "S Akbari, CF Nino, OS Patil, WE Dixon",
+      "venue": "arXiv preprint arXiv:2412.21095, 2024",
+      "cited": 4,
+      "year": 2024
+    },
+    {
       "title": "Concurrent learning for system identification and control using Lyapunov-based deep neural networks",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:r0BpntZqJG4C",
       "authors": "RG Hart, OS Patil, ZI Bell, WE Dixon",
@@ -253,14 +261,6 @@
       "venue": "IEEE Control Systems Letters 9, 907-912, 2025",
       "cited": 3,
       "year": 2025
-    },
-    {
-      "title": "Lyapunov-Based Deep Neural Networks for Adaptive Control of Stochastic Nonlinear Systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:M3ejUd6NZC8C",
-      "authors": "S Akbari, CF Nino, OS Patil, WE Dixon",
-      "venue": "arXiv preprint arXiv:2412.21095, 2024",
-      "cited": 3,
-      "year": 2024
     },
     {
       "title": "Distributed target tracking under partial feedback using Lyapunov-based deep neural networks",
