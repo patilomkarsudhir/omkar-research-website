@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 672,
-      "recent": 667
+      "all": 673,
+      "recent": 668
     },
     "h-index": {
       "all": 14,
@@ -63,20 +63,20 @@
       "year": 2022
     },
     {
+      "title": "Lyapunov-based physics-informed long short-term memory (LSTM) neural network-based adaptive control",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:hqOjcs7Dif8C",
+      "authors": "RG Hart, EJ Griffis, OS Patil, WE Dixon",
+      "venue": "IEEE control systems letters 8, 13-18, 2023",
+      "cited": 33,
+      "year": 2023
+    },
+    {
       "title": "Accelerated gradient approach for deep neural network-based adaptive control of unknown nonlinear systems",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:KlAtU1dfN6UC",
       "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
       "venue": "IEEE Transactions on Neural Networks and Learning Systems 36 (4), 6299-6313, 2024",
       "cited": 32,
       "year": 2024
-    },
-    {
-      "title": "Lyapunov-based physics-informed long short-term memory (LSTM) neural network-based adaptive control",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:hqOjcs7Dif8C",
-      "authors": "RG Hart, EJ Griffis, OS Patil, WE Dixon",
-      "venue": "IEEE control systems letters 8, 13-18, 2023",
-      "cited": 32,
-      "year": 2023
     },
     {
       "title": "Adaptive safety with a rise-based disturbance observer",
