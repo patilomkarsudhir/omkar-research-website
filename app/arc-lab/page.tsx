@@ -48,8 +48,8 @@ export default function ARCLabPage() {
                 stability and safety.
               </p>
               <p className="text-[var(--muted)]">
-                The lab is launching with Omkar Sudhir Patil joining Louisiana State University as
-                an incoming Assistant Professor (Fall 2026) in Electrical and Computer Engineering.
+                The lab is led by Omkar Sudhir Patil, an Assistant Professor in the Department of
+                Electrical and Computer Engineering at Louisiana State University.
               </p>
               <div className="flex flex-wrap gap-3">
                 <a

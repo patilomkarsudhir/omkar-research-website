@@ -27,7 +27,7 @@ const websiteStructuredData = {
   "@id": "https://omkarsudhirpatil.com/#website",
   url: "https://omkarsudhirpatil.com",
   name: "Omkar Patil Research and ARC Lab",
-  description: "Incoming LSU faculty site and ARC Lab home for research in adaptive control, robotics, and AI-driven safety-critical systems",
+  description: "LSU faculty site and ARC Lab home for research in adaptive control, robotics, and AI-driven safety-critical systems",
   publisher: {
     "@id": "https://omkarsudhirpatil.com/#person",
   },
@@ -52,8 +52,8 @@ const personStructuredData = {
   "@id": "https://omkarsudhirpatil.com/#person",
   name: "Omkar Sudhir Patil",
   alternateName: ["Omkar Patil"],
-  jobTitle: "Incoming Assistant Professor (Fall 2026)",
-  description: "Incoming Assistant Professor at LSU and founder of ARC Lab, specializing in adaptive control, robotics, and AI-driven safety-critical systems.",
+  jobTitle: "Assistant Professor",
+  description: "Assistant Professor at LSU and founder of ARC Lab, specializing in adaptive control, robotics, and AI-driven safety-critical systems.",
   url: "https://omkarsudhirpatil.com",
   image: "https://omkarsudhirpatil.com/Profile%20Pic.jpg",
   worksFor: {

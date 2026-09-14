@@ -10,6 +10,6 @@ export const NAV_LINKS = [
 export const SITE = {
   owner: "Omkar Sudhir Patil",
   navName: "Omkar Sudhir Patil",
-  role: "Incoming Assistant Professor",
+  role: "Assistant Professor",
   tag: "Control • AI • Robotics • ARC Lab",
 };
