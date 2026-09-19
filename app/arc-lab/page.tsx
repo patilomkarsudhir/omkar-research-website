@@ -1,4 +1,5 @@
 import Section from "../components/Section";
+import Image from "next/image";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -29,6 +30,15 @@ const applications = [
   "Multi-agent and swarm autonomy with distributed guarantees",
   "Autonomy under intermittent and degraded feedback",
   "Energy, power, and physical infrastructure with decentralized constraints",
+];
+
+const groupMembers = [
+  {
+    name: "Hossein Papi",
+    role: "Ph.D. Student",
+    photo: "/Student Photos/Hossein.jpg",
+    bio: "Hossein Papi is a Ph.D. student in the Department of Electrical and Computer Engineering at Louisiana State University, conducting research in the Adaptive Control and Robotics (ARC) Lab under the supervision of Dr. Omkar Sudhir Patil. He received his B.S. in Iran and his M.S. degree in Mechanical and Aerospace Engineering from the University of Florida, building a strong foundation in nonlinear control systems, multi-agent frameworks, and autonomous networks through previous research experiences. His current doctoral research focuses on Lyapunov-based deep neural network control and structure-constrained learning architectures for robotic systems, bridging rigorous theoretical stability guarantees with practical implementations.",
+  },
 ];
 
 export default function ARCLabPage() {
@@ -69,6 +79,32 @@ export default function ARCLabPage() {
               </div>
             </div>
           </div>
+        </div>
+      </Section>
+
+      <Section title="Group Members" subtitle="Researchers in the Adaptive Control and Robotics Lab">
+        <div className="grid gap-5">
+          {groupMembers.map((member) => (
+            <article
+              key={member.name}
+              className="grid overflow-hidden rounded-lg border border-white/10 bg-[var(--panel)] sm:grid-cols-[14rem_1fr]"
+            >
+              <div className="relative aspect-[4/5] w-full overflow-hidden bg-[var(--surface-weak)] sm:aspect-auto sm:min-h-72">
+                <Image
+                  src={member.photo}
+                  alt={`${member.name}, ${member.role} in the ARC Lab`}
+                  fill
+                  sizes="(min-width: 640px) 224px, 100vw"
+                  className="object-cover object-top"
+                />
+              </div>
+              <div className="flex flex-col justify-center p-5 sm:p-7">
+                <h3 className="text-card-title text-xl">{member.name}</h3>
+                <p className="mt-1 text-sm font-medium text-[var(--accent)]">{member.role}</p>
+                <p className="mt-4 text-[var(--muted)]">{member.bio}</p>
+              </div>
+            </article>
+          ))}
         </div>
       </Section>
 
