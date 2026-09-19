@@ -32,6 +32,13 @@ const applications = [
   "Energy, power, and physical infrastructure with decentralized constraints",
 ];
 
+const sectionLinks = [
+  ["Overview", "#overview"],
+  ["Research", "#research"],
+  ["People", "#people"],
+  ["Join", "#join"],
+];
+
 const principalInvestigator = {
   name: "Omkar Sudhir Patil",
   role: "Principal Investigator and Lab Director",
@@ -57,10 +64,84 @@ const mastersResearchers = [
   },
 ];
 
+interface MemberCardProps {
+  member: {
+    name: string;
+    role: string;
+    photo: string;
+    bio: string;
+  };
+  isPrincipalInvestigator?: boolean;
+}
+
+function MemberCard({ member, isPrincipalInvestigator = false }: MemberCardProps) {
+  return (
+    <article className="grid overflow-hidden rounded-lg border border-white/10 bg-[var(--panel)] sm:grid-cols-[14rem_1fr]">
+      <div className="relative aspect-[4/5] w-full overflow-hidden bg-[var(--surface-weak)] sm:aspect-auto sm:min-h-72">
+        <Image
+          src={member.photo}
+          alt={`${member.name}, ${member.role} ${isPrincipalInvestigator ? "of" : "in"} the ARC Lab`}
+          fill
+          sizes="(min-width: 640px) 224px, 100vw"
+          className={isPrincipalInvestigator ? "object-cover" : "object-cover object-top"}
+          style={isPrincipalInvestigator ? { transform: "scale(1.5)", transformOrigin: "50% 25%" } : undefined}
+        />
+      </div>
+      <div className="flex flex-col justify-center p-5 sm:p-7">
+        <h3 className="text-card-title text-xl">{member.name}</h3>
+        <p className="mt-1 text-sm font-medium text-[var(--accent)]">{member.role}</p>
+        <p className="mt-4 text-[var(--muted)]">{member.bio}</p>
+        {isPrincipalInvestigator && (
+          <a href="/cv" className="mt-4 w-fit text-sm font-medium text-[var(--accent)] hover:underline">
+            View full CV
+          </a>
+        )}
+      </div>
+    </article>
+  );
+}
+
 export default function ARCLabPage() {
   return (
-    <div className="space-y-10">
-      <Section title="ARC Lab at LSU" subtitle="Adaptive Control and Robotics Lab">
+    <div>
+      <nav
+        aria-label="ARC Lab page sections"
+        className="mb-8 rounded-lg border border-[var(--border-soft)] bg-[var(--panel)] p-1 lg:hidden"
+      >
+        <div className="grid grid-cols-4 gap-1">
+          {sectionLinks.map(([label, href]) => (
+            <a
+              key={href}
+              href={href}
+              className="rounded-md px-2 py-2 text-center text-sm font-medium text-[var(--muted)] transition-colors hover:bg-[var(--surface-weak)] hover:text-[var(--accent)]"
+            >
+              {label}
+            </a>
+          ))}
+        </div>
+      </nav>
+
+      <div className="lg:grid lg:grid-cols-[10rem_minmax(0,1fr)] lg:gap-8 xl:grid-cols-[11rem_minmax(0,1fr)]">
+        <aside className="hidden lg:block">
+          <nav aria-label="ARC Lab page sections" className="sticky top-6 border-l border-[var(--border-soft)] pl-4">
+            <p className="mb-3 text-xs font-semibold uppercase text-[var(--muted)]">On this page</p>
+            <div className="space-y-1">
+              {sectionLinks.map(([label, href]) => (
+                <a
+                  key={href}
+                  href={href}
+                  className="block rounded-r-md border-l-2 border-transparent px-3 py-2 text-sm font-medium text-[var(--muted)] transition-colors hover:border-[var(--accent)] hover:bg-[var(--surface-weak)] hover:text-[var(--accent)]"
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+          </nav>
+        </aside>
+
+        <div className="min-w-0 space-y-8">
+      <div id="overview" className="scroll-mt-6">
+        <Section title="ARC Lab at LSU" subtitle="Adaptive Control and Robotics Lab">
         <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-[var(--panel)] to-white/[0.02] p-6 md:p-7">
           <div className="grid gap-6 md:grid-cols-12 md:items-center">
             <div className="md:col-span-4 flex justify-center md:justify-start">
@@ -77,60 +158,49 @@ export default function ARCLabPage() {
                 The lab is led by Omkar Sudhir Patil, an Assistant Professor in the Department of
                 Electrical and Computer Engineering at Louisiana State University.
               </p>
-              <div className="flex flex-wrap gap-3">
-                <a
-                  href="/ARC_Lab_PhD_Flyer.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center rounded-md border border-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--accent)] hover:bg-[var(--accent)]/10 transition-colors"
-                >
-                  Download PhD Flyer
-                </a>
-                <a
-                  href="mailto:opatil1@lsu.edu?subject=[ARC%20Lab%20PhD]"
-                  className="inline-flex items-center rounded-md border border-white/20 px-4 py-2 text-sm font-medium hover:bg-white/5 transition-colors"
-                >
-                  Contact: opatil1@lsu.edu
-                </a>
-              </div>
             </div>
           </div>
         </div>
-      </Section>
+        </Section>
+      </div>
 
-      <Section title="Group Members" subtitle="Researchers in the Adaptive Control and Robotics Lab">
+      <div id="research" className="scroll-mt-24">
+        <Section title="Research" subtitle="Certified learning and control for real-world autonomy">
+          <p className="max-w-4xl text-[var(--muted)]">
+            The next frontier of autonomy is embodied AI operating safely in the real world. ARC Lab
+            focuses on the gap between high-capacity learning and rigorous control guarantees. We
+            pursue frameworks where adaptation laws are paired with analyzable certificates so that
+            stability and convergence can be verified, not just observed in simulation.
+          </p>
+          <div className="mt-6 grid gap-8 md:grid-cols-2">
+            <div className="border-l-2 border-[var(--accent)] pl-5">
+              <h3 className="text-card-title text-lg">Research Thrusts</h3>
+              <ul className="mt-3 space-y-3 text-[var(--muted)]">
+                {thrusts.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="border-l-2 border-[var(--gold)] pl-5">
+              <h3 className="text-card-title text-lg">Application Frontiers</h3>
+              <ul className="mt-3 space-y-3 text-[var(--muted)]">
+                {applications.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </Section>
+      </div>
+
+      <div id="people" className="scroll-mt-24">
+        <Section title="People" subtitle="Researchers in the Adaptive Control and Robotics Lab">
         <div className="space-y-8">
           <div>
             <p className="mb-3 text-sm font-semibold uppercase text-[var(--accent)]">
               Principal Investigator
             </p>
-            <article
-              className="grid overflow-hidden rounded-lg border border-white/10 bg-[var(--panel)] sm:grid-cols-[14rem_1fr]"
-            >
-              <div className="relative aspect-[4/5] w-full overflow-hidden bg-[var(--surface-weak)] sm:aspect-auto sm:min-h-72">
-                <Image
-                  src={principalInvestigator.photo}
-                  alt={`${principalInvestigator.name}, ${principalInvestigator.role} of the ARC Lab`}
-                  fill
-                  sizes="(min-width: 640px) 224px, 100vw"
-                  className="object-cover"
-                  style={{ transform: "scale(1.5)", transformOrigin: "50% 25%" }}
-                />
-              </div>
-              <div className="flex flex-col justify-center p-5 sm:p-7">
-                <h3 className="text-card-title text-xl">{principalInvestigator.name}</h3>
-                <p className="mt-1 text-sm font-medium text-[var(--accent)]">
-                  {principalInvestigator.role}
-                </p>
-                <p className="mt-4 text-[var(--muted)]">{principalInvestigator.bio}</p>
-                <a
-                  href="/cv"
-                  className="mt-4 w-fit text-sm font-medium text-[var(--accent)] hover:underline"
-                >
-                  View full CV
-                </a>
-              </div>
-            </article>
+            <MemberCard member={principalInvestigator} isPrincipalInvestigator />
           </div>
 
           <div>
@@ -139,25 +209,7 @@ export default function ARCLabPage() {
             </p>
             <div className="grid gap-5">
               {doctoralResearchers.map((member) => (
-                <article
-                  key={member.name}
-                  className="grid overflow-hidden rounded-lg border border-white/10 bg-[var(--panel)] sm:grid-cols-[14rem_1fr]"
-                >
-                  <div className="relative aspect-[4/5] w-full overflow-hidden bg-[var(--surface-weak)] sm:aspect-auto sm:min-h-72">
-                    <Image
-                      src={member.photo}
-                      alt={`${member.name}, ${member.role} in the ARC Lab`}
-                      fill
-                      sizes="(min-width: 640px) 224px, 100vw"
-                      className="object-cover object-top"
-                    />
-                  </div>
-                  <div className="flex flex-col justify-center p-5 sm:p-7">
-                    <h3 className="text-card-title text-xl">{member.name}</h3>
-                    <p className="mt-1 text-sm font-medium text-[var(--accent)]">{member.role}</p>
-                    <p className="mt-4 text-[var(--muted)]">{member.bio}</p>
-                  </div>
-                </article>
+                <MemberCard key={member.name} member={member} />
               ))}
             </div>
           </div>
@@ -168,57 +220,16 @@ export default function ARCLabPage() {
             </p>
             <div className="grid gap-5">
               {mastersResearchers.map((member) => (
-                <article
-                  key={member.name}
-                  className="grid overflow-hidden rounded-lg border border-white/10 bg-[var(--panel)] sm:grid-cols-[14rem_1fr]"
-                >
-                  <div className="relative aspect-[4/5] w-full overflow-hidden bg-[var(--surface-weak)] sm:aspect-auto sm:min-h-72">
-                    <Image
-                      src={member.photo}
-                      alt={`${member.name}, ${member.role} in the ARC Lab`}
-                      fill
-                      sizes="(min-width: 640px) 224px, 100vw"
-                      className="object-cover object-top"
-                    />
-                  </div>
-                  <div className="flex flex-col justify-center p-5 sm:p-7">
-                    <h3 className="text-card-title text-xl">{member.name}</h3>
-                    <p className="mt-1 text-sm font-medium text-[var(--accent)]">{member.role}</p>
-                    <p className="mt-4 text-[var(--muted)]">{member.bio}</p>
-                  </div>
-                </article>
+                <MemberCard key={member.name} member={member} />
               ))}
             </div>
           </div>
         </div>
-      </Section>
+        </Section>
+      </div>
 
-      <Section title="The Frontier and Our Answer">
-        <p className="text-[var(--muted)]">
-          The next frontier of autonomy is embodied AI operating safely in the real world. ARC Lab
-          focuses on the gap between high-capacity learning and rigorous control guarantees. We
-          pursue frameworks where adaptation laws are paired with analyzable certificates so that
-          stability and convergence can be verified, not just observed in simulation.
-        </p>
-      </Section>
-
-      <Section title="Open Research Thrusts">
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[var(--muted)] list-disc pl-5">
-          {thrusts.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      </Section>
-
-      <Section title="Application Frontiers">
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[var(--muted)] list-disc pl-5">
-          {applications.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      </Section>
-
-      <Section title="PhD Recruiting (Spring 2027 and Fall 2027)">
+      <div id="join" className="scroll-mt-24">
+        <Section title="Join the Lab" subtitle="Funded Ph.D. positions for Spring 2027 and Fall 2027">
         <div className="rounded-xl border border-white/10 bg-gradient-to-r from-amber-400/10 to-yellow-500/10 p-5">
           <p className="text-[var(--muted)]">
             Funded PhD positions are open for Spring 2027 and Fall 2027. To apply, email <strong>opatil1@lsu.edu</strong> with
@@ -229,8 +240,27 @@ export default function ARCLabPage() {
             Department of Electrical and Computer Engineering, Louisiana State University,
             Baton Rouge, LA.
           </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <a
+              href="mailto:opatil1@lsu.edu?subject=[ARC%20Lab%20PhD]"
+              className="inline-flex items-center rounded-md border border-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--accent)] hover:bg-[var(--accent)]/10 transition-colors"
+            >
+              Contact the Lab
+            </a>
+            <a
+              href="/ARC_Lab_PhD_Flyer.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center rounded-md border border-white/20 px-4 py-2 text-sm font-medium hover:bg-white/5 transition-colors"
+            >
+              View Ph.D. Flyer
+            </a>
+          </div>
         </div>
-      </Section>
+        </Section>
+      </div>
+        </div>
+      </div>
     </div>
   );
 }
