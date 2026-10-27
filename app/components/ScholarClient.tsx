@@ -21,8 +21,7 @@ export default function ScholarClient({ user }: { user: string }) {
   const [paperMapping, setPaperMapping] = useState<Record<string, string>>({});
 
   const cacheKey = `scholar_cache:${user}`;
-  // Keep client refreshes infrequent; CDN and server also cache.
-  const maxAgeMs = 6 * 60 * 60 * 1000; // 6 hours
+  const scholarProfileUrl = `https://scholar.google.com/citations?user=${encodeURIComponent(user)}`;
 
   async function sync(force = false) {
     try {
@@ -40,19 +39,15 @@ export default function ScholarClient({ user }: { user: string }) {
   }
   useEffect(() => {
     const cached = localStorage.getItem(cacheKey);
-    let cachedTs = 0;
     if (cached) {
       try {
         const data = JSON.parse(cached) as CachedScholarData;
-        cachedTs = typeof data._ts === "number" ? data._ts : 0;
         setMetrics(data.metrics || null);
         setPubs(data.publications || []);
       } catch {}
     }
 
-    if (!cachedTs || Date.now() - cachedTs > maxAgeMs) {
-      sync(false);
-    }
+    sync(false);
     
     // Load paper mapping
     loadPaperMapping().then(setPaperMapping).catch(console.warn);
@@ -85,11 +80,18 @@ export default function ScholarClient({ user }: { user: string }) {
       {metrics && (
         <div className="grid grid-cols-3 gap-4">
           {Object.entries(metrics).map(([k, v]) => (
-            <div key={k} className="rounded-2xl border border-white/10 p-4 bg-white/5">
+            <a
+              key={k}
+              href={scholarProfileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`View ${k} on Google Scholar`}
+              className="rounded-2xl border border-white/10 p-4 bg-white/5 transition-colors hover:border-white/20 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            >
               <div className="text-xs uppercase tracking-wide text-[var(--muted)]">{k}</div>
               <div className="mt-1 text-2xl font-semibold">{v.all} <span className="text-sm text-[var(--muted)]">all</span></div>
               <div className="text-sm text-[var(--muted)]">{v.recent} recent</div>
-            </div>
+            </a>
           ))}
         </div>
       )}
