@@ -38,5 +38,10 @@
   "distributed risebased control for exponential heterogeneous multiagent target tracking of secondorder nonlinear systems": "Distributed_RISE-Based_Control_for_Exponential_Heterogeneous_Multi-Agent_Target_Tracking_of_Sec.pdf",
   "implicit and deep learningbased control methods for uncertain nonlinear systems": "implicit-and-deep-learning-based-control-methods-for-uncertain-nonlinear-systems.pdf",
   "lyapunov based hierarchical trajectory control of an autonomous ground vehicle subjected to slip": "Lyapunov Based Hierarchical Trajectory Control of an Autonomous Groun.pdf",
-  "simultaneous online system identification and control using composite adaptive lyapunovbased deep neural networks": "system-identification-and-control-using-lyapunov-based-deep-neural-networks-without-persistent-excit.pdf"
+  "simultaneous online system identification and control using composite adaptive lyapunovbased deep neural networks": "system-identification-and-control-using-lyapunov-based-deep-neural-networks-without-persistent-excit.pdf",
+  "adaptive control as an information gradient flow excitation constraints energy and stochastic learning": "adaptive-control-as-an-information-gradient-flow.pdf",
+  "nesterovaccelerated concurrent learning for lyapunovbased deep neural networks": "nesterov-accelerated-concurrent-learning-for-lyapunov-based-deep-neural-networks.pdf",
+  "decentralized scalar field mapping using gaussian process": "decentralized-scalar-field-mapping-using-gaussian-process.pdf",
+  "neural odes meet concurrent learning stable online learning with lyapunov guarantees": "neural-odes-meet-concurrent-learning.pdf",
+  "riemannian lyapunov optimizer a unified framework for optimization": "riemannian-lyapunov-optimizer.pdf"
 }
