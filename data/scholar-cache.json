@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 709,
-      "recent": 704
+      "all": 718,
+      "recent": 713
     },
     "h-index": {
       "all": 14,
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 118,
+      "cited": 119,
       "year": 2021
     },
     {
@@ -27,7 +27,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ufrVoPGSRksC",
       "authors": "EJ Griffis, OS Patil, ZI Bell, WE Dixon",
       "venue": "IEEE Control Systems Letters 7, 2976-2981, 2023",
-      "cited": 59,
+      "cited": 60,
       "year": 2023
     },
     {
@@ -35,7 +35,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:u-x6o8ySG0sC",
       "authors": "OS Patil, R Sun, S Bhasin, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 67 (9), 4809-4815, 2022",
-      "cited": 58,
+      "cited": 59,
       "year": 2022
     },
     {
@@ -43,7 +43,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:9yKSN-GCB0IC",
       "authors": "A Isaly, OS Patil, RG Sanfelice, WE Dixon",
       "venue": "2021 American Control Conference (ACC), 3719-3724, 2021",
-      "cited": 56,
+      "cited": 58,
       "year": 2021
     },
     {
@@ -59,7 +59,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:W7OEmFMy1HYC",
       "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
       "venue": "2022 IEEE 61st Conference on Decision and Control (CDC), 3487-3492, 2022",
-      "cited": 45,
+      "cited": 46,
       "year": 2022
     },
     {
@@ -67,7 +67,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:MXK_kJrjxJIC",
       "authors": "A Isaly, OS Patil, HM Sweatland, RG Sanfelice, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 69 (7), 4883-4890, 2024",
-      "cited": 34,
+      "cited": 35,
       "year": 2024
     },
     {
@@ -147,8 +147,16 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:roLk4NBRz8UC",
       "authors": "OS Patil, EJ Griffis, WA Makumi, WE Dixon",
       "venue": "arXiv preprint arXiv:2311.13056, 2023",
-      "cited": 10,
+      "cited": 11,
       "year": 2023
+    },
+    {
+      "title": "Bounds on deep neural network partial derivatives with respect to parameters",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:dhFuZR0502QC",
+      "authors": "OS Patil, BC Fallin, CF Nino, RG Hart, WE Dixon",
+      "venue": "arXiv preprint arXiv:2503.21007, 2025",
+      "cited": 9,
+      "year": 2025
     },
     {
       "title": "Accelerated gradient approach for neural network-based adaptive control of nonlinear systems",
@@ -157,14 +165,6 @@
       "venue": "Proc. IEEE Conf. Decis. Control, 3475-3480, 2022",
       "cited": 9,
       "year": 2022
-    },
-    {
-      "title": "Bounds on deep neural network partial derivatives with respect to parameters",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:dhFuZR0502QC",
-      "authors": "OS Patil, BC Fallin, CF Nino, RG Hart, WE Dixon",
-      "venue": "arXiv preprint arXiv:2503.21007, 2025",
-      "cited": 8,
-      "year": 2025
     },
     {
       "title": "Lyapunov-based graph neural networks for adaptive control of multi-agent systems",
@@ -331,6 +331,14 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:O3NaXMp0MMsC",
       "authors": "H Papi, M Qureshi, K Volle, OS Patil, R Kamalapurkar",
       "venue": "arXiv preprint arXiv:2610.04207, 2026",
+      "cited": 0,
+      "year": 2026
+    },
+    {
+      "title": "Technical Notes and Correspondence",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:RGFaLdJalmkC",
+      "authors": "HM Sweatland, OS Patil, WE Dixon",
+      "venue": "IEEE TRANSACTIONS ON AUTOMATIC CONTROL 71 (10), 6819, 2026",
       "cited": 0,
       "year": 2026
     },
