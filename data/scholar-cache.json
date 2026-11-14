@@ -1,12 +1,12 @@
 {
   "metrics": {
     "citations": {
-      "all": 725,
-      "recent": 720
+      "all": 727,
+      "recent": 722
     },
     "h-index": {
       "all": 14,
-      "recent": 13
+      "recent": 14
     },
     "i10-index": {
       "all": 17,
@@ -131,7 +131,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Zph67rFs4hoC",
       "authors": "HM Sweatland, OS Patil, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control, 2026",
-      "cited": 13,
+      "cited": 14,
       "year": 2026
     },
     {
@@ -159,20 +159,20 @@
       "year": 2025
     },
     {
+      "title": "Lyapunov-based graph neural networks for adaptive control of multi-agent systems",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:QIV2ME_5wuYC",
+      "authors": "BC Fallin, CF Nino, OS Patil, ZI Bell, WE Dixon",
+      "venue": "arXiv preprint arXiv:2503.15360, 2025",
+      "cited": 9,
+      "year": 2025
+    },
+    {
       "title": "Accelerated gradient approach for neural network-based adaptive control of nonlinear systems",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:M3NEmzRMIkIC",
       "authors": "DM Le, OS Patil, C Nino, WE Dixon",
       "venue": "Proc. IEEE Conf. Decis. Control, 3475-3480, 2022",
       "cited": 9,
       "year": 2022
-    },
-    {
-      "title": "Lyapunov-based graph neural networks for adaptive control of multi-agent systems",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:QIV2ME_5wuYC",
-      "authors": "BC Fallin, CF Nino, OS Patil, ZI Bell, WE Dixon",
-      "venue": "arXiv preprint arXiv:2503.15360, 2025",
-      "cited": 8,
-      "year": 2025
     },
     {
       "title": "Exponential stability with RISE controllers for uncertain nonlinear systems with unknown time-varying state delays",
@@ -347,6 +347,14 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:BqipwSGYUEgC",
       "authors": "OS Patil",
       "venue": "arXiv preprint arXiv:2609.32289, 2026",
+      "cited": 0,
+      "year": 2026
+    },
+    {
+      "title": "Neural ODEs Meet Concurrent Learning: Stable Online Learning with Lyapunov Guarantees",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:NaGl4SEjCO4C",
+      "authors": "O Sudhir Patil",
+      "venue": "arXiv e-prints, arXiv: 2609.32289, 2026",
       "cited": 0,
       "year": 2026
     },
