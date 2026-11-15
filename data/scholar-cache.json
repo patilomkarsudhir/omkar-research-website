@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 727,
-      "recent": 722
+      "all": 730,
+      "recent": 725
     },
     "h-index": {
       "all": 14,
@@ -35,7 +35,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ufrVoPGSRksC",
       "authors": "EJ Griffis, OS Patil, ZI Bell, WE Dixon",
       "venue": "IEEE Control Systems Letters 7, 2976-2981, 2023",
-      "cited": 60,
+      "cited": 61,
       "year": 2023
     },
     {
@@ -103,19 +103,19 @@
       "year": 2022
     },
     {
+      "title": "Lyapunov-based long short-term memory (Lb-LSTM) neural network-based adaptive observer",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:0EnyYjriUFMC",
+      "authors": "EJ Griffis, OS Patil, RG Hart, WE Dixon",
+      "venue": "IEEE Control Systems Letters 8, 97-102, 2023",
+      "cited": 19,
+      "year": 2023
+    },
+    {
       "title": "Deep Lyapunov-based physics-informed neural networks (DeLb-PINN) for adaptive control design",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:8k81kl-MbHgC",
       "authors": "RG Hart, OS Patil, EJ Griffis, WE Dixon",
       "venue": "2023 62nd IEEE Conference on Decision and Control (CDC), 1511-1516, 2023",
       "cited": 19,
-      "year": 2023
-    },
-    {
-      "title": "Lyapunov-based long short-term memory (Lb-LSTM) neural network-based adaptive observer",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:0EnyYjriUFMC",
-      "authors": "EJ Griffis, OS Patil, RG Hart, WE Dixon",
-      "venue": "IEEE Control Systems Letters 8, 97-102, 2023",
-      "cited": 18,
       "year": 2023
     },
     {
@@ -207,19 +207,19 @@
       "year": 2025
     },
     {
+      "title": "Adaptive output feedback control using Lyapunov-based deep recurrent neural networks (Lb-DRNNs)",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:R3hNpaxXUhUC",
+      "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
+      "venue": "IEEE Transactions on Automatic Control, 2025",
+      "cited": 6,
+      "year": 2025
+    },
+    {
       "title": "Lyapunov-based deep residual neural network (ResNet) adaptive control",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
       "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
       "venue": "IEEE Access 13, 117943-117952, 2025",
       "cited": 6,
-      "year": 2025
-    },
-    {
-      "title": "Adaptive output feedback control using Lyapunov-based deep recurrent neural networks (Lb-DRNNs)",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:R3hNpaxXUhUC",
-      "authors": "EJ Griffis, OS Patil, WA Makumi, WE Dixon",
-      "venue": "IEEE Transactions on Automatic Control, 2025",
-      "cited": 5,
       "year": 2025
     },
     {
@@ -331,6 +331,14 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:O3NaXMp0MMsC",
       "authors": "H Papi, M Qureshi, K Volle, OS Patil, R Kamalapurkar",
       "venue": "arXiv preprint arXiv:2610.04207, 2026",
+      "cited": 0,
+      "year": 2026
+    },
+    {
+      "title": "Adaptive Control as an Information Gradient Flow: Excitation, Constraints, Energy, and Stochastic Learning",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:J_g5lzvAfSwC",
+      "authors": "O Sudhir Patil",
+      "venue": "arXiv e-prints, arXiv: 2610.04822, 2026",
       "cited": 0,
       "year": 2026
     },
