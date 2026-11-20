@@ -135,7 +135,7 @@ export default function Page() {
 					</div>
 					<div className="space-y-4 prose-measure">
 						<p className="text-[var(--muted)]">
-							I am a tenure-track Assistant Professor in the Department of Electrical and Computer Engineering at Louisiana State University, where I lead the Adaptive Control and Robotics (ARC) Lab. My research integrates control theory, adaptive methods, and deep learning to build autonomous systems with mathematically certifiable stability and safety guarantees.
+							I am a tenure-track Assistant Professor in the Department of Electrical and Computer Engineering at Louisiana State University, where I lead the Adaptive Robotics and Control (ARC) Lab. My research integrates control theory, adaptive methods, and deep learning to build autonomous systems with mathematically certifiable stability and safety guarantees.
 						</p>
 						<p className="text-[var(--muted)]">
 							My work has focused on Lyapunov-based learning and control for uncertain nonlinear systems, including deep neural network adaptation, safe control with barrier methods, and online physics-aware learning. I aim to develop methods that can move reliably from proof to platform, with validation on real robotic systems.
@@ -143,7 +143,7 @@ export default function Page() {
 					</div>
 				</div>
 			</Section>
-			<Section title="ARC Lab at LSU" subtitle="Adaptive Control and Robotics Lab">
+			<Section title="ARC Lab at LSU" subtitle="Adaptive Robotics and Control Lab">
 				<div className="rounded-2xl border border-white/10 bg-gradient-to-br from-[var(--panel)] to-white/[0.02] p-6 md:p-7">
 					<div className="grid gap-6 md:grid-cols-12 md:items-center">
 						<div className="md:col-span-4 flex justify-center md:justify-start">
