@@ -1,8 +1,8 @@
 {
   "metrics": {
     "citations": {
-      "all": 728,
-      "recent": 723
+      "all": 731,
+      "recent": 726
     },
     "h-index": {
       "all": 14,
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 119,
+      "cited": 120,
       "year": 2021
     },
     {
@@ -107,7 +107,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:0EnyYjriUFMC",
       "authors": "EJ Griffis, OS Patil, RG Hart, WE Dixon",
       "venue": "IEEE Control Systems Letters 8, 97-102, 2023",
-      "cited": 19,
+      "cited": 20,
       "year": 2023
     },
     {
@@ -287,6 +287,14 @@
       "year": 2023
     },
     {
+      "title": "Riemannian Lyapunov Optimizer: A Unified Framework for Optimization",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:bEWYMUwI8FkC",
+      "authors": "Y Wang, OS Patil, WE Dixon",
+      "venue": "arXiv preprint arXiv:2601.22284, 2026",
+      "cited": 1,
+      "year": 2026
+    },
+    {
       "title": "LyLA-Therm: Lyapunov-based Langevin Adaptive Thermodynamic Neural Network Controller",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:e5wmG9Sq2KIC",
       "authors": "S Akbari, OS Patil, WE Dixon",
@@ -363,14 +371,6 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:NaGl4SEjCO4C",
       "authors": "O Sudhir Patil",
       "venue": "arXiv e-prints, arXiv: 2609.32289, 2026",
-      "cited": 0,
-      "year": 2026
-    },
-    {
-      "title": "Riemannian Lyapunov Optimizer: A Unified Framework for Optimization",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:bEWYMUwI8FkC",
-      "authors": "Y Wang, OS Patil, WE Dixon",
-      "venue": "arXiv preprint arXiv:2601.22284, 2026",
       "cited": 0,
       "year": 2026
     },
