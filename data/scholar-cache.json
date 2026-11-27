@@ -1,16 +1,16 @@
 {
   "metrics": {
     "citations": {
-      "all": 731,
-      "recent": 726
+      "all": 735,
+      "recent": 730
     },
     "h-index": {
       "all": 14,
       "recent": 14
     },
     "i10-index": {
-      "all": 17,
-      "recent": 17
+      "all": 18,
+      "recent": 18
     }
   },
   "publications": [
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 120,
+      "cited": 121,
       "year": 2021
     },
     {
@@ -27,7 +27,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ufrVoPGSRksC",
       "authors": "EJ Griffis, OS Patil, ZI Bell, WE Dixon",
       "venue": "IEEE Control Systems Letters 7, 2976-2981, 2023",
-      "cited": 62,
+      "cited": 63,
       "year": 2023
     },
     {
@@ -151,18 +151,18 @@
       "year": 2023
     },
     {
-      "title": "Bounds on deep neural network partial derivatives with respect to parameters",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:dhFuZR0502QC",
-      "authors": "OS Patil, BC Fallin, CF Nino, RG Hart, WE Dixon",
-      "venue": "arXiv preprint arXiv:2503.21007, 2025",
-      "cited": 9,
-      "year": 2025
-    },
-    {
       "title": "Lyapunov-based graph neural networks for adaptive control of multi-agent systems",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:QIV2ME_5wuYC",
       "authors": "BC Fallin, CF Nino, OS Patil, ZI Bell, WE Dixon",
       "venue": "arXiv preprint arXiv:2503.15360, 2025",
+      "cited": 10,
+      "year": 2025
+    },
+    {
+      "title": "Bounds on deep neural network partial derivatives with respect to parameters",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:dhFuZR0502QC",
+      "authors": "OS Patil, BC Fallin, CF Nino, RG Hart, WE Dixon",
+      "venue": "arXiv preprint arXiv:2503.21007, 2025",
       "cited": 9,
       "year": 2025
     },
@@ -215,6 +215,14 @@
       "year": 2025
     },
     {
+      "title": "Saturated RISE controllers with exponential stability guarantees: A projected dynamical systems approach",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Wp0gIr-vW9MC",
+      "authors": "OS Patil, R Kamalapurkar, WE Dixon",
+      "venue": "IEEE Transactions on Automatic Control 70 (7), 4936-4942, 2025",
+      "cited": 6,
+      "year": 2025
+    },
+    {
       "title": "Lyapunov-based deep residual neural network (ResNet) adaptive control",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
       "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
@@ -227,14 +235,6 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ZeXyd9-uunAC",
       "authors": "RG Hart, OS Patil, ZI Bell, WE Dixon",
       "venue": "arXiv preprint arXiv:2505.10678, 2025",
-      "cited": 5,
-      "year": 2025
-    },
-    {
-      "title": "Saturated RISE controllers with exponential stability guarantees: A projected dynamical systems approach",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Wp0gIr-vW9MC",
-      "authors": "OS Patil, R Kamalapurkar, WE Dixon",
-      "venue": "IEEE Transactions on Automatic Control 70 (7), 4936-4942, 2025",
       "cited": 5,
       "year": 2025
     },
