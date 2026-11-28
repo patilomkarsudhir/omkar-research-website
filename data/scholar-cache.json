@@ -1,16 +1,16 @@
 {
   "metrics": {
     "citations": {
-      "all": 735,
-      "recent": 730
+      "all": 755,
+      "recent": 750
     },
     "h-index": {
       "all": 14,
       "recent": 14
     },
     "i10-index": {
-      "all": 18,
-      "recent": 18
+      "all": 19,
+      "recent": 19
     }
   },
   "publications": [
@@ -19,7 +19,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:qjMakFHDy7sC",
       "authors": "OS Patil, DM Le, ML Greene, WE Dixon",
       "venue": "IEEE Control Systems Letters 6, 1855-1860, 2021",
-      "cited": 121,
+      "cited": 122,
       "year": 2021
     },
     {
@@ -35,7 +35,7 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:u-x6o8ySG0sC",
       "authors": "OS Patil, R Sun, S Bhasin, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 67 (9), 4809-4815, 2022",
-      "cited": 62,
+      "cited": 63,
       "year": 2022
     },
     {
@@ -119,6 +119,14 @@
       "year": 2023
     },
     {
+      "title": "A singularity-free hierarchical nonlinear quad-rotorcraft control using saturation and barrier lyapunov function",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:u5HHmVD_uO8C",
+      "authors": "R Dasgupta, SB Roy, OS Patil, S Bhasin",
+      "venue": "2019 American Control Conference (ACC), 3075-3080, 2019",
+      "cited": 15,
+      "year": 2019
+    },
+    {
       "title": "Adaptive deep neural network-based control barrier functions",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Zph67rFs4hoC",
       "authors": "HM Sweatland, OS Patil, WE Dixon",
@@ -127,12 +135,12 @@
       "year": 2026
     },
     {
-      "title": "A singularity-free hierarchical nonlinear quad-rotorcraft control using saturation and barrier lyapunov function",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:u5HHmVD_uO8C",
-      "authors": "R Dasgupta, SB Roy, OS Patil, S Bhasin",
-      "venue": "2019 American Control Conference (ACC), 3075-3080, 2019",
-      "cited": 14,
-      "year": 2019
+      "title": "You've Got a Golden Ticket: Improving Generative Robot Policies With A Single Noise Vector",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:2P1L_qKh6hAC",
+      "authors": "O Patil, O Biza, T Weng, K Schmeckpeper, W Thomason, X Zhang, ...",
+      "venue": "arXiv preprint arXiv:2603.15757, 2026",
+      "cited": 12,
+      "year": 2026
     },
     {
       "title": "Deep adaptive indirect herding of multiple target agents with unknown interaction dynamics",
@@ -215,19 +223,19 @@
       "year": 2025
     },
     {
+      "title": "Lyapunov-based deep residual neural network (ResNet) adaptive control",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
+      "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
+      "venue": "IEEE Access 13, 117943-117952, 2025",
+      "cited": 6,
+      "year": 2025
+    },
+    {
       "title": "Saturated RISE controllers with exponential stability guarantees: A projected dynamical systems approach",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:Wp0gIr-vW9MC",
       "authors": "OS Patil, R Kamalapurkar, WE Dixon",
       "venue": "IEEE Transactions on Automatic Control 70 (7), 4936-4942, 2025",
       "cited": 6,
-      "year": 2025
-    },
-    {
-      "title": "Lyapunov-based deep residual neural network (ResNet) adaptive control",
-      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:3fE2CSJIrl8C",
-      "authors": "OS Patil, DM Le, EJ Griffis, WE Dixon",
-      "venue": "IEEE Access 13, 117943-117952, 2025",
-      "cited": 5,
       "year": 2025
     },
     {
@@ -287,6 +295,22 @@
       "year": 2023
     },
     {
+      "title": "StageCraft: Execution Aware Mitigation of Distractor and Obstruction Failures in VLA Models",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:35N4QoGY0k4C",
+      "authors": "KM Pangaonkar, PK Rath, O Patil, N Gopalan",
+      "venue": "2026 IEEE/RSJ International Conference on Intelligent Robots and Systems …, 2026",
+      "cited": 2,
+      "year": 2026
+    },
+    {
+      "title": "Meanings and measurements: Multi-agent probabilistic grounding for vision-language navigation",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:vV6vV6tmYwMC",
+      "authors": "S Padhan, L Jain, BM Shah, O Patil, T Nguyen, N Gopalan",
+      "venue": "arXiv preprint arXiv:2603.19166, 2026",
+      "cited": 1,
+      "year": 2026
+    },
+    {
       "title": "Riemannian Lyapunov Optimizer: A Unified Framework for Optimization",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:bEWYMUwI8FkC",
       "authors": "Y Wang, OS Patil, WE Dixon",
@@ -311,12 +335,28 @@
       "year": 2025
     },
     {
+      "title": "Design and Implementation of a Java-Based Client-Server Application",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:RYcK_YlVTxYC",
+      "authors": "O Patil, A Shirbhate",
+      "venue": "arXiv preprint arXiv:2404.10107, 2024",
+      "cited": 1,
+      "year": 2024
+    },
+    {
       "title": "Accelerated gradient approach for neural network adaptive control of nonlinear systems",
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:YsMSGLbcyi4C",
       "authors": "DM Le, OS Patil, CF Nino, WE Dixon",
       "venue": "2022 IEEE 61st Conference on Decision and Control (CDC), 3475-3480, 2022",
       "cited": 1,
       "year": 2022
+    },
+    {
+      "title": "Self-Supervised Keyframe Discovery for Horizon-Invariant Behavior Cloning",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:ldfaerwXgEUC",
+      "authors": "PK Rath, O Patil, N Gopalan",
+      "venue": "arXiv preprint arXiv:2610.10857, 2026",
+      "cited": 0,
+      "year": 2026
     },
     {
       "title": "Adaptive Control as an Information Gradient Flow: Excitation, Constraints, Energy, and Stochastic Learning",
@@ -371,6 +411,14 @@
       "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:NaGl4SEjCO4C",
       "authors": "O Sudhir Patil",
       "venue": "arXiv e-prints, arXiv: 2609.32289, 2026",
+      "cited": 0,
+      "year": 2026
+    },
+    {
+      "title": "StageCraft: Execution Aware Mitigation of Distractor and Obstruction Failures in VLA Models",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:lSLTfruPkqcC",
+      "authors": "K Milind Pangaonkar, P Rath, O Patil, N Gopalan",
+      "venue": "arXiv e-prints, arXiv: 2603.20659, 2026",
       "cited": 0,
       "year": 2026
     },
@@ -445,6 +493,14 @@
       "venue": "IFAC-PapersOnLine 53 (2), 6340-6345, 2020",
       "cited": 0,
       "year": 2020
+    },
+    {
+      "title": "Motion Composition and Interpolation Using Diffusion Models",
+      "link": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=EtkfNQMAAAAJ&pagesize=100&citation_for_view=EtkfNQMAAAAJ:70eg2SAEIzsC",
+      "authors": "O Patil, N Gopalan",
+      "venue": "",
+      "cited": 0,
+      "year": 0
     }
   ],
   "source": "live-script",
